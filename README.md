@@ -7,7 +7,7 @@ Part of [killertools.net](https://killertools.net).
 ## Features
 
 - Filename search with wildcard patterns (`*.log`, `report_*.xlsx`, etc.)
-- Content search — streams through files line by line without loading them into RAM
+- Content search - streams through files line by line without loading them into RAM
 - Multiple search terms in a single pass, each independently tracked
 - Include/exclude filters with semicolon-separated patterns
 - Case sensitive toggle
@@ -26,4 +26,4 @@ Open `KillerFind.sln` in Visual Studio 2022 and build. No external dependencies 
 
 ## License
 
-GPL-3.0 — see [LICENSE](LICENSE).
+GPL-3.0 - see [LICENSE](LICENSE).
