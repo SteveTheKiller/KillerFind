@@ -1,0 +1,177 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- ================================================================
+         KillerFind - English (en-US) strings. x:Key values are looked up at
+         runtime; never change them. Other locales layer over this file; any
+         key they omit falls back here. {0}/{1} placeholders are filled by the
+         app - keep them.
+         ================================================================ -->
+
+    <!-- Title bar / flyout -->
+    <sys:String x:Key="Str_TT_Language">語言</sys:String>
+    <sys:String x:Key="Str_TT_Theme">佈景主題</sys:String>
+    <sys:String x:Key="Str_Lbl_Theme">佈景主題</sys:String>
+    <sys:String x:Key="Str_Lbl_Accent">強調色</sys:String>
+
+    <!-- Scope bar -->
+    <sys:String x:Key="Str_Lbl_In">位置：</sys:String>
+    <sys:String x:Key="Str_Scope_Empty">(未選取資料夾 - 按一下以選擇)</sys:String>
+    <sys:String x:Key="Str_TT_Scope">按一下以變更搜尋資料夾</sys:String>
+    <sys:String x:Key="Str_Dlg_SelectFolder">選取根搜尋資料夾</sys:String>
+
+    <!-- Search config -->
+    <sys:String x:Key="Str_Lbl_Filters">篩選條件</sys:String>
+    <sys:String x:Key="Str_Lbl_Include">包含</sys:String>
+    <sys:String x:Key="Str_Lbl_Exclude">排除</sys:String>
+    <sys:String x:Key="Str_TT_Include">以分號分隔的模式，例如 *.txt;*.log</sys:String>
+    <sys:String x:Key="Str_TT_Exclude">要略過的路徑或模式，以分號分隔</sys:String>
+    <sys:String x:Key="Str_Chk_CaseSensitive">區分大小寫</sys:String>
+    <sys:String x:Key="Str_Btn_AddFilter">+ 新增篩選</sys:String>
+    <sys:String x:Key="Str_Lbl_Advanced">進階</sys:String>
+    <sys:String x:Key="Str_Filter_Ext">副檔名</sys:String>
+    <sys:String x:Key="Str_Filter_Date">修改日期</sys:String>
+    <sys:String x:Key="Str_Filter_Size">大小</sys:String>
+    <sys:String x:Key="Str_Cond_Is">是</sys:String>
+    <sys:String x:Key="Str_Cond_IsNot">不是</sys:String>
+    <sys:String x:Key="Str_Cond_Before">早於</sys:String>
+    <sys:String x:Key="Str_Cond_After">晚於</sys:String>
+    <sys:String x:Key="Str_Cond_Larger">大於</sys:String>
+    <sys:String x:Key="Str_Cond_Smaller">小於</sys:String>
+
+    <!-- Pattern help card -->
+    <sys:String x:Key="Str_TT_PatternHelp">模式說明</sys:String>
+    <sys:String x:Key="Str_Help_Title">模式</sys:String>
+    <sys:String x:Key="Str_Help_Star">所有以 .log 結尾的檔案</sys:String>
+    <sys:String x:Key="Str_Help_Prefix">以 report 開頭的名稱</sys:String>
+    <sys:String x:Key="Str_Help_Middle">包含 2024 的名稱</sys:String>
+    <sys:String x:Key="Str_Help_Q">? 代表恰好一個字元</sys:String>
+    <sys:String x:Key="Str_Help_List">用 ; 分隔多個模式</sys:String>
+    <sys:String x:Key="Str_Help_Plain">純文字也可以 - 符合包含它的名稱</sys:String>
+    <sys:String x:Key="Str_Help_Exclude">排除也會依名稱略過整個資料夾</sys:String>
+
+    <!-- Tabs -->
+    <sys:String x:Key="Str_Tab_New">新搜尋</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">新增搜尋分頁</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">關閉分頁</sys:String>
+
+    <!-- Folder picker -->
+    <sys:String x:Key="Str_Btn_Cancel">取消</sys:String>
+    <sys:String x:Key="Str_Btn_Select">選擇</sys:String>
+    <sys:String x:Key="Str_QA_Home">主資料夾</sys:String>
+    <sys:String x:Key="Str_QA_Desktop">桌面</sys:String>
+    <sys:String x:Key="Str_QA_Documents">文件</sys:String>
+    <sys:String x:Key="Str_QA_Downloads">下載</sys:String>
+    <sys:String x:Key="Str_QA_Pictures">圖片</sys:String>
+    <sys:String x:Key="Str_TT_Up">上一層資料夾</sys:String>
+    <sys:String x:Key="Str_Dlg_NoSubfolders">（無子資料夾 - 按選擇以使用此資料夾）</sys:String>
+    <sys:String x:Key="Str_Col_Name">名稱</sys:String>
+    <sys:String x:Key="Str_Col_Folder">位置</sys:String>
+    <sys:String x:Key="Str_Sort_Found">預設順序</sys:String>
+    <sys:String x:Key="Str_TT_FilterResults">篩選這些結果（Ctrl+F）</sys:String>
+    <sys:String x:Key="Str_TT_Pipe">在這些結果中搜尋</sys:String>
+    <sys:String x:Key="Str_Menu_PipeTab">在這些結果中搜尋</sys:String>
+    <sys:String x:Key="Str_Pipe_Scope">來自 {1} 的 {0} 個結果  |  {2}</sys:String>
+    <sys:String x:Key="Str_Status_NoPipe">還沒有可供搜尋的結果。</sys:String>
+
+    <!-- Portable install + quit dialog -->
+    <sys:String x:Key="Str_Portable">可攜版</sys:String>
+    <sys:String x:Key="Str_Btn_Install">安裝 KillerFind...</sys:String>
+    <sys:String x:Key="Str_Btn_DoInstall">安裝</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallMsg">將 KillerFind 安裝到你的使用者設定檔？</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallBullets">- 開始功能表捷徑&#x0A;- 顯示在新增/移除程式中</sys:String>
+    <sys:String x:Key="Str_Chk_Desktop">桌面捷徑</sys:String>
+    <sys:String x:Key="Str_Dlg_QuitMsg">結束 KillerFind？</sys:String>
+    <sys:String x:Key="Str_Chk_RememberTabs">記住我開啟的分頁</sys:String>
+    <sys:String x:Key="Str_Chk_RememberChoice">記住我的選擇</sys:String>
+    <sys:String x:Key="Str_Btn_Quit">結束</sys:String>
+    <sys:String x:Key="Str_Col_Size">大小</sys:String>
+    <sys:String x:Key="Str_Col_Modified">修改時間</sys:String>
+    <sys:String x:Key="Str_Sum_Counts">{0} 個資料夾，{1} 個檔案</sys:String>
+    <sys:String x:Key="Str_TT_ViewList">清單檢視</sys:String>
+    <sys:String x:Key="Str_TT_ViewIcons">圖示檢視</sys:String>
+    <sys:String x:Key="Str_TT_ViewDetails">詳細資料檢視</sys:String>
+    <sys:String x:Key="Str_Lbl_SearchTerms">搜尋關鍵字</sys:String>
+    <sys:String x:Key="Str_Btn_AddTerm">+ 新增關鍵字</sys:String>
+    <sys:String x:Key="Str_Btn_Clear">清除</sys:String>
+
+    <!-- Search button (code-behind swaps idle/stop; keep the brackets) -->
+    <sys:String x:Key="Str_Btn_Search">搜尋</sys:String>
+    <sys:String x:Key="Str_Btn_Stop">停止</sys:String>
+
+    <!-- Results -->
+    <sys:String x:Key="Str_Lbl_Results">搜尋結果</sys:String>
+    <sys:String x:Key="Str_Lbl_ResultsCount">搜尋結果  ({0})</sys:String>
+    <sys:String x:Key="Str_Btn_Export">匯出 HTML</sys:String>
+    <sys:String x:Key="Str_TT_Result">按一下展開  |  連按兩下在檔案總管中顯示  |  按右鍵以取得更多選項</sys:String>
+    <sys:String x:Key="Str_Btn_ExpandAll">全部展開</sys:String>
+    <sys:String x:Key="Str_Btn_CollapseAll">全部摺疊</sys:String>
+    <sys:String x:Key="Str_Menu_OpenFile">開啟檔案</sys:String>
+    <sys:String x:Key="Str_Menu_OpenWith">開啟方式...</sys:String>
+    <sys:String x:Key="Str_Menu_ShowExplorer">在檔案總管中顯示</sys:String>
+    <sys:String x:Key="Str_Menu_Minimize">最小化</sys:String>
+    <sys:String x:Key="Str_Menu_Maximize">最大化</sys:String>
+    <sys:String x:Key="Str_Menu_Restore">還原</sys:String>
+    <sys:String x:Key="Str_Menu_Close">關閉</sys:String>
+
+    <!-- Status messages -->
+    <sys:String x:Key="Str_Status_Ready">就緒</sys:String>
+    <sys:String x:Key="Str_Status_InvalidRoot">根路徑無效或遺失。</sys:String>
+    <sys:String x:Key="Str_Status_NoTerms">請至少新增一個搜尋關鍵字或篩選條件。</sys:String>
+    <sys:String x:Key="Str_Status_Done">於 {0} 秒內完成  -  {1} 個檔案相符。</sys:String>
+    <sys:String x:Key="Str_Status_Stopped">已停止。</sys:String>
+    <sys:String x:Key="Str_Status_Cleared">已清除。</sys:String>
+    <sys:String x:Key="Str_Status_NothingExport">目前沒有可匯出的內容。</sys:String>
+    <sys:String x:Key="Str_Status_Exported">已匯出：{0}</sys:String>
+    <sys:String x:Key="Str_Status_ExportFailed">匯出失敗：{0}</sys:String>
+    <sys:String x:Key="Str_Status_Scanned">已掃描 {0} 個檔案</sys:String>
+    <sys:String x:Key="Str_Count_Matches">{0} 筆相符</sys:String>
+
+    <!-- About overlay -->
+    <sys:String x:Key="Str_About_Tagline">適用於 Windows 的快速檔案搜尋。無須索引。</sys:String>
+    <sys:String x:Key="Str_About_Version">版本</sys:String>
+    <sys:String x:Key="Str_About_Publisher">發行者</sys:String>
+    <sys:String x:Key="Str_About_Thumbprint">憑證指紋</sys:String>
+    <sys:String x:Key="Str_About_Sha">SHA-256</sys:String>
+    <sys:String x:Key="Str_About_Footer">GPLv3  |  由現場技術人員打造</sys:String>
+
+    <!-- HTML report -->
+    <sys:String x:Key="Str_Rpt_Meta">產生於 {0} &#183; {1} 個檔案 &#183; {2} 個符合</sys:String>
+    <sys:String x:Key="Str_Rpt_Query">在 {0} 中搜尋{1}。</sys:String>
+    <sys:String x:Key="Str_Rpt_TermName">檔名包含 {0}</sys:String>
+    <sys:String x:Key="Str_Rpt_TermContent">檔案內容包含 {0}</sys:String>
+    <sys:String x:Key="Str_Rpt_Everything">所有內容</sys:String>
+    <sys:String x:Key="Str_Rpt_Or">或</sys:String>
+    <sys:String x:Key="Str_Rpt_Found">命中方式</sys:String>
+    <sys:String x:Key="Str_Rpt_More">... 還有 {0} 條</sys:String>
+    <sys:String x:Key="Str_Rpt_GenBy">由 {0} 產生</sys:String>
+
+    <!-- Term/group chips + tooltips -->
+    <sys:String x:Key="Str_Mode_Name">名稱</sys:String>
+    <sys:String x:Key="Str_Mode_Content">內容</sys:String>
+    <sys:String x:Key="Str_TT_ModeName">檔名 / 萬用字元（如 *.log）</sys:String>
+    <sys:String x:Key="Str_TT_ModeContent">內容搜尋（檔案內的文字）</sys:String>
+    <sys:String x:Key="Str_Group_Any">任一</sys:String>
+    <sys:String x:Key="Str_Group_All">全部</sys:String>
+    <sys:String x:Key="Str_TT_GroupAny">任一：本組中任何一個搜尋詞命中即符合</sys:String>
+    <sys:String x:Key="Str_TT_GroupAll">全部：檔案必須符合本組中的每個搜尋詞</sys:String>
+    <sys:String x:Key="Str_Join_And">且</sys:String>
+    <sys:String x:Key="Str_Join_Or">或</sys:String>
+    <sys:String x:Key="Str_Chk_CloseTabs">關閉我開啟的分頁</sys:String>
+
+    <!-- Help card: shortcuts -->
+    <sys:String x:Key="Str_Help_Shortcuts">快速鍵</sys:String>
+    <sys:String x:Key="Str_Ks_Run">執行搜尋</sys:String>
+    <sys:String x:Key="Str_Ks_Esc">關閉彈窗、停止搜尋，然後詢問是否離開</sys:String>
+    <sys:String x:Key="Str_Ks_FilterResults">篩選結果</sys:String>
+    <sys:String x:Key="Str_Ks_NewTab">新增搜尋分頁</sys:String>
+    <sys:String x:Key="Str_Ks_CloseTab">關閉目前分頁</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">下一個分頁（Shift：上一個）</sys:String>
+    <sys:String x:Key="Str_Ks_JumpTab">跳到分頁 1-9（9 = 最後）</sys:String>
+    <sys:String x:Key="Str_Ks_AddTerm">新增搜尋詞</sys:String>
+    <sys:String x:Key="Str_Ks_AddFilter">新增篩選器</sys:String>
+    <sys:String x:Key="Str_Ks_Folder">選擇資料夾</sys:String>
+    <sys:String x:Key="Str_Ks_Help">顯示此卡片</sys:String>
+
+</ResourceDictionary>

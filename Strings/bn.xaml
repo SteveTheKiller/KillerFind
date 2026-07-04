@@ -1,0 +1,177 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- ================================================================
+         KillerFind - English (en-US) strings. x:Key values are looked up at
+         runtime; never change them. Other locales layer over this file; any
+         key they omit falls back here. {0}/{1} placeholders are filled by the
+         app - keep them.
+         ================================================================ -->
+
+    <!-- Title bar / flyout -->
+    <sys:String x:Key="Str_TT_Language">ভাষা</sys:String>
+    <sys:String x:Key="Str_TT_Theme">থিম</sys:String>
+    <sys:String x:Key="Str_Lbl_Theme">থিম</sys:String>
+    <sys:String x:Key="Str_Lbl_Accent">অ্যাকসেন্ট</sys:String>
+
+    <!-- Scope bar -->
+    <sys:String x:Key="Str_Lbl_In">যেখানে:</sys:String>
+    <sys:String x:Key="Str_Scope_Empty">(কোনো ফোল্ডার নির্বাচন করা হয়নি - বেছে নিতে ক্লিক করুন)</sys:String>
+    <sys:String x:Key="Str_TT_Scope">অনুসন্ধানের ফোল্ডার পরিবর্তন করতে ক্লিক করুন</sys:String>
+    <sys:String x:Key="Str_Dlg_SelectFolder">অনুসন্ধানের মূল ফোল্ডার নির্বাচন করুন</sys:String>
+
+    <!-- Search config -->
+    <sys:String x:Key="Str_Lbl_Filters">ফিল্টার</sys:String>
+    <sys:String x:Key="Str_Lbl_Include">অন্তর্ভুক্ত</sys:String>
+    <sys:String x:Key="Str_Lbl_Exclude">বাদ দিন</sys:String>
+    <sys:String x:Key="Str_TT_Include">সেমিকোলন দিয়ে পৃথক করা প্যাটার্ন, যেমন *.txt;*.log</sys:String>
+    <sys:String x:Key="Str_TT_Exclude">এড়িয়ে যাওয়ার জন্য সেমিকোলন দিয়ে পৃথক করা পাথ বা প্যাটার্ন</sys:String>
+    <sys:String x:Key="Str_Chk_CaseSensitive">অক্ষরের ছোট-বড় বিবেচ্য</sys:String>
+    <sys:String x:Key="Str_Btn_AddFilter">+ ফিল্টার যোগ করুন</sys:String>
+    <sys:String x:Key="Str_Lbl_Advanced">উন্নত</sys:String>
+    <sys:String x:Key="Str_Filter_Ext">এক্সটেনশন</sys:String>
+    <sys:String x:Key="Str_Filter_Date">পরিবর্তনের তারিখ</sys:String>
+    <sys:String x:Key="Str_Filter_Size">আকার</sys:String>
+    <sys:String x:Key="Str_Cond_Is">হল</sys:String>
+    <sys:String x:Key="Str_Cond_IsNot">নয়</sys:String>
+    <sys:String x:Key="Str_Cond_Before">আগে</sys:String>
+    <sys:String x:Key="Str_Cond_After">পরে</sys:String>
+    <sys:String x:Key="Str_Cond_Larger">এর বেশি</sys:String>
+    <sys:String x:Key="Str_Cond_Smaller">এর কম</sys:String>
+
+    <!-- Pattern help card -->
+    <sys:String x:Key="Str_TT_PatternHelp">প্যাটার্ন সহায়তা</sys:String>
+    <sys:String x:Key="Str_Help_Title">প্যাটার্ন</sys:String>
+    <sys:String x:Key="Str_Help_Star">.log দিয়ে শেষ হওয়া সবকিছু</sys:String>
+    <sys:String x:Key="Str_Help_Prefix">report দিয়ে শুরু হওয়া নাম</sys:String>
+    <sys:String x:Key="Str_Help_Middle">2024 আছে এমন নাম</sys:String>
+    <sys:String x:Key="Str_Help_Q">? মানে ঠিক একটি অক্ষর</sys:String>
+    <sys:String x:Key="Str_Help_List">একাধিক প্যাটার্ন ; দিয়ে আলাদা করুন</sys:String>
+    <sys:String x:Key="Str_Help_Plain">সাধারণ লেখাও চলবে - যে নামে এটি আছে তার সাথে মিলবে</sys:String>
+    <sys:String x:Key="Str_Help_Exclude">বাদ দেওয়া নাম অনুযায়ী পুরো ফোল্ডারও এড়িয়ে যায়</sys:String>
+
+    <!-- Tabs -->
+    <sys:String x:Key="Str_Tab_New">নতুন অনুসন্ধান</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">নতুন অনুসন্ধান ট্যাব</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">ট্যাব বন্ধ করুন</sys:String>
+
+    <!-- Folder picker -->
+    <sys:String x:Key="Str_Btn_Cancel">বাতিল</sys:String>
+    <sys:String x:Key="Str_Btn_Select">নির্বাচন করুন</sys:String>
+    <sys:String x:Key="Str_QA_Home">হোম</sys:String>
+    <sys:String x:Key="Str_QA_Desktop">ডেস্কটপ</sys:String>
+    <sys:String x:Key="Str_QA_Documents">ডকুমেন্টস</sys:String>
+    <sys:String x:Key="Str_QA_Downloads">ডাউনলোড</sys:String>
+    <sys:String x:Key="Str_QA_Pictures">ছবি</sys:String>
+    <sys:String x:Key="Str_TT_Up">এক ফোল্ডার উপরে</sys:String>
+    <sys:String x:Key="Str_Dlg_NoSubfolders">(কোনো সাবফোল্ডার নেই - এই ফোল্ডারটি ব্যবহার করতে নির্বাচন করুন চাপুন)</sys:String>
+    <sys:String x:Key="Str_Col_Name">নাম</sys:String>
+    <sys:String x:Key="Str_Col_Folder">অবস্থান</sys:String>
+    <sys:String x:Key="Str_Sort_Found">যেমন পাওয়া</sys:String>
+    <sys:String x:Key="Str_TT_FilterResults">এই ফলাফলগুলি ফিল্টার করুন (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_Pipe">এই ফলাফলগুলির মধ্যে অনুসন্ধান করুন</sys:String>
+    <sys:String x:Key="Str_Menu_PipeTab">এই ফলাফলগুলির মধ্যে অনুসন্ধান করুন</sys:String>
+    <sys:String x:Key="Str_Pipe_Scope">{1} থেকে {0}টি ফলাফল  |  {2}</sys:String>
+    <sys:String x:Key="Str_Status_NoPipe">অনুসন্ধানের জন্য এখনও কোনো ফলাফল নেই।</sys:String>
+
+    <!-- Portable install + quit dialog -->
+    <sys:String x:Key="Str_Portable">পোর্টেবল</sys:String>
+    <sys:String x:Key="Str_Btn_Install">KillerFind ইনস্টল করুন...</sys:String>
+    <sys:String x:Key="Str_Btn_DoInstall">ইনস্টল</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallMsg">আপনার ইউজার প্রোফাইলে KillerFind ইনস্টল করবেন?</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallBullets">- স্টার্ট মেনু শর্টকাট&#x0A;- Add/Remove Programs-এ দেখা যাবে</sys:String>
+    <sys:String x:Key="Str_Chk_Desktop">ডেস্কটপ শর্টকাট</sys:String>
+    <sys:String x:Key="Str_Dlg_QuitMsg">KillerFind বন্ধ করবেন?</sys:String>
+    <sys:String x:Key="Str_Chk_RememberTabs">আমার খোলা ট্যাবগুলি মনে রাখুন</sys:String>
+    <sys:String x:Key="Str_Chk_RememberChoice">আমার পছন্দ মনে রাখুন</sys:String>
+    <sys:String x:Key="Str_Btn_Quit">বন্ধ করুন</sys:String>
+    <sys:String x:Key="Str_Col_Size">আকার</sys:String>
+    <sys:String x:Key="Str_Col_Modified">পরিবর্তিত</sys:String>
+    <sys:String x:Key="Str_Sum_Counts">{0}টি ফোল্ডার, {1}টি ফাইল</sys:String>
+    <sys:String x:Key="Str_TT_ViewList">তালিকা ভিউ</sys:String>
+    <sys:String x:Key="Str_TT_ViewIcons">আইকন ভিউ</sys:String>
+    <sys:String x:Key="Str_TT_ViewDetails">বিস্তারিত ভিউ</sys:String>
+    <sys:String x:Key="Str_Lbl_SearchTerms">অনুসন্ধানের শব্দ</sys:String>
+    <sys:String x:Key="Str_Btn_AddTerm">+ শব্দ যোগ করুন</sys:String>
+    <sys:String x:Key="Str_Btn_Clear">পরিষ্কার করুন</sys:String>
+
+    <!-- Search button (code-behind swaps idle/stop; keep the brackets) -->
+    <sys:String x:Key="Str_Btn_Search">অনুসন্ধান</sys:String>
+    <sys:String x:Key="Str_Btn_Stop">থামুন</sys:String>
+
+    <!-- Results -->
+    <sys:String x:Key="Str_Lbl_Results">ফলাফল</sys:String>
+    <sys:String x:Key="Str_Lbl_ResultsCount">ফলাফল  ({0})</sys:String>
+    <sys:String x:Key="Str_Btn_Export">HTML রপ্তানি করুন</sys:String>
+    <sys:String x:Key="Str_TT_Result">প্রসারিত করতে ক্লিক করুন  |  Explorer-এ দেখাতে ডাবল-ক্লিক করুন  |  আরও অপশনের জন্য ডান-ক্লিক করুন</sys:String>
+    <sys:String x:Key="Str_Btn_ExpandAll">সব প্রসারিত করুন</sys:String>
+    <sys:String x:Key="Str_Btn_CollapseAll">সব সংকুচিত করুন</sys:String>
+    <sys:String x:Key="Str_Menu_OpenFile">ফাইল খুলুন</sys:String>
+    <sys:String x:Key="Str_Menu_OpenWith">এর মাধ্যমে খুলুন...</sys:String>
+    <sys:String x:Key="Str_Menu_ShowExplorer">Explorer-এ দেখান</sys:String>
+    <sys:String x:Key="Str_Menu_Minimize">মিনিমাইজ</sys:String>
+    <sys:String x:Key="Str_Menu_Maximize">ম্যাক্সিমাইজ</sys:String>
+    <sys:String x:Key="Str_Menu_Restore">পুনরুদ্ধার</sys:String>
+    <sys:String x:Key="Str_Menu_Close">বন্ধ করুন</sys:String>
+
+    <!-- Status messages -->
+    <sys:String x:Key="Str_Status_Ready">প্রস্তুত</sys:String>
+    <sys:String x:Key="Str_Status_InvalidRoot">অবৈধ বা অনুপস্থিত মূল পাথ।</sys:String>
+    <sys:String x:Key="Str_Status_NoTerms">অন্তত একটি অনুসন্ধানের শব্দ বা ফিল্টার যোগ করুন।</sys:String>
+    <sys:String x:Key="Str_Status_Done">{0} সেকেন্ডে সম্পন্ন  -  {1}টি ফাইল মিলেছে।</sys:String>
+    <sys:String x:Key="Str_Status_Stopped">থামানো হয়েছে।</sys:String>
+    <sys:String x:Key="Str_Status_Cleared">পরিষ্কার করা হয়েছে।</sys:String>
+    <sys:String x:Key="Str_Status_NothingExport">রপ্তানি করার মতো এখনও কিছু নেই।</sys:String>
+    <sys:String x:Key="Str_Status_Exported">রপ্তানি করা হয়েছে: {0}</sys:String>
+    <sys:String x:Key="Str_Status_ExportFailed">রপ্তানি ব্যর্থ হয়েছে: {0}</sys:String>
+    <sys:String x:Key="Str_Status_Scanned">{0}টি ফাইল স্ক্যান করা হয়েছে</sys:String>
+    <sys:String x:Key="Str_Count_Matches">{0}টি মিল</sys:String>
+
+    <!-- About overlay -->
+    <sys:String x:Key="Str_About_Tagline">Windows-এর জন্য দ্রুত ফাইল অনুসন্ধান। কোনো ইনডেক্সিং নেই।</sys:String>
+    <sys:String x:Key="Str_About_Version">সংস্করণ</sys:String>
+    <sys:String x:Key="Str_About_Publisher">প্রকাশক</sys:String>
+    <sys:String x:Key="Str_About_Thumbprint">থাম্বপ্রিন্ট</sys:String>
+    <sys:String x:Key="Str_About_Sha">SHA-256</sys:String>
+    <sys:String x:Key="Str_About_Footer">GPLv3  |  একজন ফিল্ড টেক দ্বারা নির্মিত</sys:String>
+
+    <!-- HTML report -->
+    <sys:String x:Key="Str_Rpt_Meta">তৈরি {0} &#183; {1}টি ফাইল &#183; {2}টি ম্যাচ</sys:String>
+    <sys:String x:Key="Str_Rpt_Query">{0}-এ খোঁজা হয়েছে: {1}।</sys:String>
+    <sys:String x:Key="Str_Rpt_TermName">ফাইলনামে {0} আছে</sys:String>
+    <sys:String x:Key="Str_Rpt_TermContent">ফাইলের কনটেন্টে {0} আছে</sys:String>
+    <sys:String x:Key="Str_Rpt_Everything">সবকিছু</sys:String>
+    <sys:String x:Key="Str_Rpt_Or">বা</sys:String>
+    <sys:String x:Key="Str_Rpt_Found">যেভাবে মিলেছে</sys:String>
+    <sys:String x:Key="Str_Rpt_More">... আরও {0}টি</sys:String>
+    <sys:String x:Key="Str_Rpt_GenBy">{0} দিয়ে তৈরি</sys:String>
+
+    <!-- Term/group chips + tooltips -->
+    <sys:String x:Key="Str_Mode_Name">নাম</sys:String>
+    <sys:String x:Key="Str_Mode_Content">কনটেন্ট</sys:String>
+    <sys:String x:Key="Str_TT_ModeName">ফাইলনাম / ওয়াইল্ডকার্ড  (যেমন *.log)</sys:String>
+    <sys:String x:Key="Str_TT_ModeContent">কনটেন্ট সার্চ  (ফাইলের ভেতরের টেক্সট)</sys:String>
+    <sys:String x:Key="Str_Group_Any">যেকোনো</sys:String>
+    <sys:String x:Key="Str_Group_All">সব</sys:String>
+    <sys:String x:Key="Str_TT_GroupAny">যেকোনো: এই গ্রুপের যেকোনো টার্ম মিললেই ফাইল মেলে</sys:String>
+    <sys:String x:Key="Str_TT_GroupAll">সব: ফাইলকে এই গ্রুপের প্রতিটি টার্মের সাথে মিলতে হবে</sys:String>
+    <sys:String x:Key="Str_Join_And">এবং</sys:String>
+    <sys:String x:Key="Str_Join_Or">বা</sys:String>
+    <sys:String x:Key="Str_Chk_CloseTabs">আমার খোলা ট্যাব বন্ধ করুন</sys:String>
+
+    <!-- Help card: shortcuts -->
+    <sys:String x:Key="Str_Help_Shortcuts">শর্টকাট</sys:String>
+    <sys:String x:Key="Str_Ks_Run">সার্চ চালান</sys:String>
+    <sys:String x:Key="Str_Ks_Esc">পপআপ বন্ধ, সার্চ থামানো, তারপর বেরোনোর প্রস্তাব</sys:String>
+    <sys:String x:Key="Str_Ks_FilterResults">ফলাফল ফিল্টার করুন</sys:String>
+    <sys:String x:Key="Str_Ks_NewTab">নতুন সার্চ ট্যাব</sys:String>
+    <sys:String x:Key="Str_Ks_CloseTab">বর্তমান ট্যাব বন্ধ করুন</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">পরের ট্যাব (Shift: আগেরটি)</sys:String>
+    <sys:String x:Key="Str_Ks_JumpTab">ট্যাব 1-9 এ যান (9 = শেষ)</sys:String>
+    <sys:String x:Key="Str_Ks_AddTerm">সার্চ টার্ম যোগ করুন</sys:String>
+    <sys:String x:Key="Str_Ks_AddFilter">ফিল্টার যোগ করুন</sys:String>
+    <sys:String x:Key="Str_Ks_Folder">ফোল্ডার বাছুন</sys:String>
+    <sys:String x:Key="Str_Ks_Help">এই কার্ড দেখান</sys:String>
+
+</ResourceDictionary>

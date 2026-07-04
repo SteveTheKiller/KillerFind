@@ -15,15 +15,33 @@ namespace KillerFind.Models
             {
                 _mode = value;
                 Notify();
-                Notify(nameof(ModeLabel));
-                Notify(nameof(ModeTooltip));
+                Notify(nameof(IsContent));
+                RefreshLocalized();
             }
         }
 
-        public string ModeLabel   => Mode == SearchMode.FileName ? "F" : "C";
+        public bool IsContent => Mode == SearchMode.Content;
+        public string ModeLabel => Mode == SearchMode.FileName ? "F" : "C";
+
+        // Localized: resolved through the app's locale resources so the chips and
+        // tooltips follow a live language switch (RefreshLocalized re-raises them).
+        public string ModeName => Mode == SearchMode.FileName
+            ? L("Str_Mode_Name",    "name")
+            : L("Str_Mode_Content", "content");
         public string ModeTooltip => Mode == SearchMode.FileName
-            ? "Filename / wildcard  (e.g. *.log)"
-            : "Content search  (text inside files)";
+            ? L("Str_TT_ModeName",    "Filename / wildcard  (e.g. *.log)")
+            : L("Str_TT_ModeContent", "Content search  (text inside files)");
+
+        /// <summary>Re-raises the localized computed properties after a language switch.</summary>
+        public void RefreshLocalized()
+        {
+            Notify(nameof(ModeLabel));
+            Notify(nameof(ModeName));
+            Notify(nameof(ModeTooltip));
+        }
+
+        private static string L(string key, string fallback) =>
+            System.Windows.Application.Current?.TryFindResource(key) as string ?? fallback;
 
         private string _pattern = string.Empty;
         public string Pattern

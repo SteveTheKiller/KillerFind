@@ -1,0 +1,177 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- ================================================================
+         KillerFind - English (en-US) strings. x:Key values are looked up at
+         runtime; never change them. Other locales layer over this file; any
+         key they omit falls back here. {0}/{1} placeholders are filled by the
+         app - keep them.
+         ================================================================ -->
+
+    <!-- Title bar / flyout -->
+    <sys:String x:Key="Str_TT_Language">Dil</sys:String>
+    <sys:String x:Key="Str_TT_Theme">Tema</sys:String>
+    <sys:String x:Key="Str_Lbl_Theme">tema</sys:String>
+    <sys:String x:Key="Str_Lbl_Accent">vurgu</sys:String>
+
+    <!-- Scope bar -->
+    <sys:String x:Key="Str_Lbl_In">konum:</sys:String>
+    <sys:String x:Key="Str_Scope_Empty">(klasor secilmedi - secmek icin tiklayin)</sys:String>
+    <sys:String x:Key="Str_TT_Scope">Arama klasorunu degistirmek icin tiklayin</sys:String>
+    <sys:String x:Key="Str_Dlg_SelectFolder">Kok arama klasorunu secin</sys:String>
+
+    <!-- Search config -->
+    <sys:String x:Key="Str_Lbl_Filters">FILTRELER</sys:String>
+    <sys:String x:Key="Str_Lbl_Include">dahil et</sys:String>
+    <sys:String x:Key="Str_Lbl_Exclude">haric tut</sys:String>
+    <sys:String x:Key="Str_TT_Include">Noktali virgulle ayrilmis kaliplar, orn. *.txt;*.log</sys:String>
+    <sys:String x:Key="Str_TT_Exclude">Atlanacak noktali virgulle ayrilmis yollar veya kaliplar</sys:String>
+    <sys:String x:Key="Str_Chk_CaseSensitive">buyuk/kucuk harf duyarli</sys:String>
+    <sys:String x:Key="Str_Btn_AddFilter">+ filtre ekle</sys:String>
+    <sys:String x:Key="Str_Lbl_Advanced">gelismis</sys:String>
+    <sys:String x:Key="Str_Filter_Ext">uzanti</sys:String>
+    <sys:String x:Key="Str_Filter_Date">degistirilme tarihi</sys:String>
+    <sys:String x:Key="Str_Filter_Size">boyut</sys:String>
+    <sys:String x:Key="Str_Cond_Is">esit</sys:String>
+    <sys:String x:Key="Str_Cond_IsNot">degil</sys:String>
+    <sys:String x:Key="Str_Cond_Before">once</sys:String>
+    <sys:String x:Key="Str_Cond_After">sonra</sys:String>
+    <sys:String x:Key="Str_Cond_Larger">uzeri</sys:String>
+    <sys:String x:Key="Str_Cond_Smaller">alti</sys:String>
+
+    <!-- Pattern help card -->
+    <sys:String x:Key="Str_TT_PatternHelp">Kalip yardimi</sys:String>
+    <sys:String x:Key="Str_Help_Title">KALIPLAR</sys:String>
+    <sys:String x:Key="Str_Help_Star">sonu .log olan her sey</sys:String>
+    <sys:String x:Key="Str_Help_Prefix">report ile baslayan adlar</sys:String>
+    <sys:String x:Key="Str_Help_Middle">2024 iceren adlar</sys:String>
+    <sys:String x:Key="Str_Help_Q">? tam olarak bir karakteri temsil eder</sys:String>
+    <sys:String x:Key="Str_Help_List">birden fazla kalibi ; ile ayirin</sys:String>
+    <sys:String x:Key="Str_Help_Plain">duz metin de olur - onu iceren adlarla eslesir</sys:String>
+    <sys:String x:Key="Str_Help_Exclude">haric tutma, klasorleri adiyla toptan atlar</sys:String>
+
+    <!-- Tabs -->
+    <sys:String x:Key="Str_Tab_New">yeni arama</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">Yeni arama sekmesi</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">Sekmeyi kapat</sys:String>
+
+    <!-- Folder picker -->
+    <sys:String x:Key="Str_Btn_Cancel">Iptal</sys:String>
+    <sys:String x:Key="Str_Btn_Select">Sec</sys:String>
+    <sys:String x:Key="Str_QA_Home">Ana klasor</sys:String>
+    <sys:String x:Key="Str_QA_Desktop">Masaustu</sys:String>
+    <sys:String x:Key="Str_QA_Documents">Belgeler</sys:String>
+    <sys:String x:Key="Str_QA_Downloads">Indirilenler</sys:String>
+    <sys:String x:Key="Str_QA_Pictures">Resimler</sys:String>
+    <sys:String x:Key="Str_TT_Up">Bir klasor yukari</sys:String>
+    <sys:String x:Key="Str_Dlg_NoSubfolders">(alt klasor yok - bu klasoru kullanmak icin Sec'e tiklayin)</sys:String>
+    <sys:String x:Key="Str_Col_Name">ad</sys:String>
+    <sys:String x:Key="Str_Col_Folder">konum</sys:String>
+    <sys:String x:Key="Str_Sort_Found">bulunma sirasi</sys:String>
+    <sys:String x:Key="Str_TT_FilterResults">Bu sonuclari filtrele (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_Pipe">Bu sonuclarin icinde ara</sys:String>
+    <sys:String x:Key="Str_Menu_PipeTab">Bu sonuclarin icinde ara</sys:String>
+    <sys:String x:Key="Str_Pipe_Scope">{1} icinden {0} sonuc  |  {2}</sys:String>
+    <sys:String x:Key="Str_Status_NoPipe">Icinde aranacak sonuc yok.</sys:String>
+
+    <!-- Portable install + quit dialog -->
+    <sys:String x:Key="Str_Portable">TASINABILIR</sys:String>
+    <sys:String x:Key="Str_Btn_Install">KillerFind'i yukle...</sys:String>
+    <sys:String x:Key="Str_Btn_DoInstall">Yukle</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallMsg">KillerFind kullanici profilinize yuklensin mi?</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallBullets">- Baslat menusu kisayolu&#x0A;- Program ekle/kaldir icinde gorunur</sys:String>
+    <sys:String x:Key="Str_Chk_Desktop">Masaustu kisayolu</sys:String>
+    <sys:String x:Key="Str_Dlg_QuitMsg">KillerFind kapatilsin mi?</sys:String>
+    <sys:String x:Key="Str_Chk_RememberTabs">Acik sekmelerimi hatirla</sys:String>
+    <sys:String x:Key="Str_Chk_RememberChoice">Secimimi hatirla</sys:String>
+    <sys:String x:Key="Str_Btn_Quit">Cikis</sys:String>
+    <sys:String x:Key="Str_Col_Size">boyut</sys:String>
+    <sys:String x:Key="Str_Col_Modified">degistirilme</sys:String>
+    <sys:String x:Key="Str_Sum_Counts">{0} klasor, {1} dosya</sys:String>
+    <sys:String x:Key="Str_TT_ViewList">Liste gorunumu</sys:String>
+    <sys:String x:Key="Str_TT_ViewIcons">Simge gorunumu</sys:String>
+    <sys:String x:Key="Str_TT_ViewDetails">Ayrinti gorunumu</sys:String>
+    <sys:String x:Key="Str_Lbl_SearchTerms">ARAMA TERIMLERI</sys:String>
+    <sys:String x:Key="Str_Btn_AddTerm">+ terim ekle</sys:String>
+    <sys:String x:Key="Str_Btn_Clear">TEMIZLE</sys:String>
+
+    <!-- Search button (code-behind swaps idle/stop; keep the brackets) -->
+    <sys:String x:Key="Str_Btn_Search">ARA</sys:String>
+    <sys:String x:Key="Str_Btn_Stop">DUR</sys:String>
+
+    <!-- Results -->
+    <sys:String x:Key="Str_Lbl_Results">SONUCLAR</sys:String>
+    <sys:String x:Key="Str_Lbl_ResultsCount">SONUCLAR  ({0})</sys:String>
+    <sys:String x:Key="Str_Btn_Export">HTML DISA AKTAR</sys:String>
+    <sys:String x:Key="Str_TT_Result">Genisletmek icin tiklayin  |  Explorer'da gostermek icin cift tiklayin  |  Daha fazlasi icin sag tiklayin</sys:String>
+    <sys:String x:Key="Str_Btn_ExpandAll">TUMUNU AC</sys:String>
+    <sys:String x:Key="Str_Btn_CollapseAll">TUMUNU KAPAT</sys:String>
+    <sys:String x:Key="Str_Menu_OpenFile">Dosyayi ac</sys:String>
+    <sys:String x:Key="Str_Menu_OpenWith">Birlikte ac...</sys:String>
+    <sys:String x:Key="Str_Menu_ShowExplorer">Explorer'da goster</sys:String>
+    <sys:String x:Key="Str_Menu_Minimize">Simge durumuna kucult</sys:String>
+    <sys:String x:Key="Str_Menu_Maximize">Ekrani kapla</sys:String>
+    <sys:String x:Key="Str_Menu_Restore">Geri yukle</sys:String>
+    <sys:String x:Key="Str_Menu_Close">Kapat</sys:String>
+
+    <!-- Status messages -->
+    <sys:String x:Key="Str_Status_Ready">Hazir</sys:String>
+    <sys:String x:Key="Str_Status_InvalidRoot">Gecersiz veya eksik kok yol.</sys:String>
+    <sys:String x:Key="Str_Status_NoTerms">En az bir arama terimi veya filtre ekleyin.</sys:String>
+    <sys:String x:Key="Str_Status_Done">{0}s icinde tamamlandi  -  {1} dosya eslesti.</sys:String>
+    <sys:String x:Key="Str_Status_Stopped">Durduruldu.</sys:String>
+    <sys:String x:Key="Str_Status_Cleared">Temizlendi.</sys:String>
+    <sys:String x:Key="Str_Status_NothingExport">Henuz disa aktarilacak bir sey yok.</sys:String>
+    <sys:String x:Key="Str_Status_Exported">Disa aktarildi: {0}</sys:String>
+    <sys:String x:Key="Str_Status_ExportFailed">Disa aktarma basarisiz: {0}</sys:String>
+    <sys:String x:Key="Str_Status_Scanned">{0} dosya tarandi</sys:String>
+    <sys:String x:Key="Str_Count_Matches">{0} eslesme</sys:String>
+
+    <!-- About overlay -->
+    <sys:String x:Key="Str_About_Tagline">Windows icin hizli dosya aramasi. Dizin olusturmaz.</sys:String>
+    <sys:String x:Key="Str_About_Version">SURUM</sys:String>
+    <sys:String x:Key="Str_About_Publisher">YAYINCI</sys:String>
+    <sys:String x:Key="Str_About_Thumbprint">PARMAK IZI</sys:String>
+    <sys:String x:Key="Str_About_Sha">SHA-256</sys:String>
+    <sys:String x:Key="Str_About_Footer">GPLv3  |  bir saha teknisyeni tarafindan yapildi</sys:String>
+
+    <!-- HTML report -->
+    <sys:String x:Key="Str_Rpt_Meta">Olusturuldu {0} &#183; {1} dosya &#183; {2} eslesme</sys:String>
+    <sys:String x:Key="Str_Rpt_Query">{0} icinde arandi: {1}.</sys:String>
+    <sys:String x:Key="Str_Rpt_TermName">{0} iceren dosya adlari</sys:String>
+    <sys:String x:Key="Str_Rpt_TermContent">{0} iceren dosya icerikleri</sys:String>
+    <sys:String x:Key="Str_Rpt_Everything">her sey</sys:String>
+    <sys:String x:Key="Str_Rpt_Or">veya</sys:String>
+    <sys:String x:Key="Str_Rpt_Found">bulan</sys:String>
+    <sys:String x:Key="Str_Rpt_More">... +{0} daha</sys:String>
+    <sys:String x:Key="Str_Rpt_GenBy">{0} tarafindan olusturuldu</sys:String>
+
+    <!-- Term/group chips + tooltips -->
+    <sys:String x:Key="Str_Mode_Name">ad</sys:String>
+    <sys:String x:Key="Str_Mode_Content">icerik</sys:String>
+    <sys:String x:Key="Str_TT_ModeName">Dosya adi / joker  (orn. *.log)</sys:String>
+    <sys:String x:Key="Str_TT_ModeContent">Icerik aramasi  (dosya icindeki metin)</sys:String>
+    <sys:String x:Key="Str_Group_Any">BIRI</sys:String>
+    <sys:String x:Key="Str_Group_All">TUMU</sys:String>
+    <sys:String x:Key="Str_TT_GroupAny">BIRI: bu gruptaki herhangi bir terim tutarsa dosya eslesir</sys:String>
+    <sys:String x:Key="Str_TT_GroupAll">TUMU: dosya bu gruptaki her terimle eslesmelidir</sys:String>
+    <sys:String x:Key="Str_Join_And">VE</sys:String>
+    <sys:String x:Key="Str_Join_Or">VEYA</sys:String>
+    <sys:String x:Key="Str_Chk_CloseTabs">Acik sekmelerimi kapat</sys:String>
+
+    <!-- Help card: shortcuts -->
+    <sys:String x:Key="Str_Help_Shortcuts">Kisayollar</sys:String>
+    <sys:String x:Key="Str_Ks_Run">aramayi calistir</sys:String>
+    <sys:String x:Key="Str_Ks_Esc">pencereleri kapat, aramayi durdur, sonra cikmayi oner</sys:String>
+    <sys:String x:Key="Str_Ks_FilterResults">sonuclari filtrele</sys:String>
+    <sys:String x:Key="Str_Ks_NewTab">yeni arama sekmesi</sys:String>
+    <sys:String x:Key="Str_Ks_CloseTab">gecerli sekmeyi kapat</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">sonraki sekme (Shift: onceki)</sys:String>
+    <sys:String x:Key="Str_Ks_JumpTab">1-9 sekmesine git (9 = son)</sys:String>
+    <sys:String x:Key="Str_Ks_AddTerm">arama terimi ekle</sys:String>
+    <sys:String x:Key="Str_Ks_AddFilter">filtre ekle</sys:String>
+    <sys:String x:Key="Str_Ks_Folder">klasor sec</sys:String>
+    <sys:String x:Key="Str_Ks_Help">bu karti goster</sys:String>
+
+</ResourceDictionary>

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,74 +11,102 @@ using KillerFind.Models;
 
 namespace KillerFind
 {
+    // Multicore search: one producer walks the directory tree into a bounded queue,
+    // one worker per core evaluates files, and the calling task pumps result batches
+    // to the UI every ~150ms. Wildcard regexes are compiled ONCE per term/pattern
+    // (the old code built a Regex per file per term). Cancellation stays graceful:
+    // Stop drains quietly via ct.IsCancellationRequested - no exceptions escape.
     public class SearchEngine
     {
-        // ── Events ───────────────────────────────────────────────
+        // ── Events (invoked from the pump task; the UI marshals via Dispatcher) ──
         public event Action<List<SearchResult>>? ResultsBatch;   // flushed every ~150 ms
         public event Action<string>?             StatusChanged;
         public event Action<int>?                ProgressChanged; // files scanned so far
 
         // ── Public entry point ───────────────────────────────────
+        // fileList: when non-null the engine searches THAT list of files (a piped
+        // snapshot of another search's results) instead of walking rootPath.
         public async Task SearchAsync(
-            string           rootPath,
-            IList<SearchTerm> terms,
-            string           includePatterns,   // e.g. "*.txt;*.log"
-            string           excludePatterns,   // e.g. "bin;obj;*.min.js"
-            bool             caseSensitive,
-            CancellationToken ct)
+            string             rootPath,
+            IList<TermGroup>   groups,
+            IList<SearchFilter> filters,          // dropdown filter rows, AND-ed with terms
+            string             includePatterns,   // e.g. "*.txt;*.log"
+            string             excludePatterns,   // e.g. "bin;obj;*.min.js"
+            bool               caseSensitive,
+            CancellationToken  ct,
+            IList<string>?     fileList = null)
         {
-            await Task.Run(() => RunSearch(rootPath, terms, includePatterns,
-                                           excludePatterns, caseSensitive, ct), ct);
+            await Task.Run(() => RunSearch(rootPath, groups, filters, includePatterns,
+                                           excludePatterns, caseSensitive, ct, fileList));
         }
 
-        // ── Core search loop ─────────────────────────────────────
+        // ── Core search (producer / workers / UI pump) ───────────
         private void RunSearch(
-            string           rootPath,
-            IList<SearchTerm> terms,
-            string           includePatterns,
-            string           excludePatterns,
-            bool             caseSensitive,
-            CancellationToken ct)
+            string             rootPath,
+            IList<TermGroup>   groups,
+            IList<SearchFilter> filters,
+            string             includePatterns,
+            string             excludePatterns,
+            bool               caseSensitive,
+            CancellationToken  ct,
+            IList<string>?     fileList)
         {
-            var includes = ParsePatterns(includePatterns);
-            var excludes = ParsePatterns(excludePatterns);
             var comparison = caseSensitive
                 ? StringComparison.Ordinal
                 : StringComparison.OrdinalIgnoreCase;
 
-            // Stream files lazily — never ToList() the full tree, which blocks
-            // indefinitely and eats RAM on large roots like C:\Users\steve.
-            int processed = 0;
-            var pending   = new List<SearchResult>();
+            // ---- One-time plan: patterns compiled up front, never per file ----
+            var excludeNames = ParsePatterns(excludePatterns);
+            var excludeRx    = excludeNames.Select(p => WildcardRegex(p, false)).ToList();
 
-            // Single timer gates all UI pushes (status, progress, result batches).
-            // Nothing hits the dispatcher more than once every 150 ms.
-            var uiTimer = System.Diagnostics.Stopwatch.StartNew();
-            const int UiIntervalMs = 150;
+            var includeNames = ParsePatterns(includePatterns);
+            // Idiot-proofing: "*.*" / "*" mean "everything" - same as an empty include box.
+            includeNames.RemoveAll(p => p == "*.*" || p == "*");
+            var includeRx = includeNames.Select(p => WildcardRegex(LoosenPattern(p), false)).ToList();
 
-            foreach (var filePath in SafeEnumerateFiles(rootPath))
+            var activeFilters = (filters ?? new List<SearchFilter>()).Where(f => f.IsActive).ToList();
+
+            // Term plan: per group, the AND/OR mode plus each term's compiled name regex
+            // (null for content terms, which stream the file instead).
+            var groupPlans = groups
+                .Select(g => (And: g.Mode == TermGroup.GroupMode.And,
+                              Terms: g.Terms
+                                  .Where(t => !string.IsNullOrWhiteSpace(t.Pattern))
+                                  .Select(t => (Term: t,
+                                                NameRx: t.Mode == SearchTerm.SearchMode.FileName
+                                                    ? WildcardRegex(LoosenPattern(t.Pattern.Trim()), caseSensitive)
+                                                    : null))
+                                  .ToList()))
+                .Where(p => p.Terms.Count > 0)
+                .ToList();
+            bool filterOnly = groupPlans.Count == 0 && activeFilters.Count > 0;
+
+            // ---- Shared state (closures hoist these; counters via Interlocked) ----
+            var    outQueue    = new ConcurrentQueue<SearchResult>();
+            int    processed   = 0;
+            int    seq         = 0;
+            string currentFile = string.Empty;   // reference writes are atomic; racy is fine for status
+
+            // Per-file evaluation, run concurrently on the workers.
+            void EvaluateFile(string filePath)
             {
-                ct.ThrowIfCancellationRequested();
+                // Piped lists are snapshots - files may have vanished since pass 1.
+                if (fileList != null && !File.Exists(filePath))
+                { Interlocked.Increment(ref processed); return; }
 
                 string fileName = Path.GetFileName(filePath);
 
-                if (IsExcluded(filePath, excludes)) { ++processed; continue; }
+                if (IsExcluded(filePath, fileName, excludeNames, excludeRx))
+                { Interlocked.Increment(ref processed); return; }
 
-                if (includes.Count > 0 && !IsIncluded(fileName, includes))
-                { ++processed; continue; }
+                if (includeRx.Count > 0 && !includeRx.Any(rx => rx.IsMatch(fileName)))
+                { Interlocked.Increment(ref processed); return; }
 
-                ++processed;
-                if (uiTimer.ElapsedMilliseconds >= UiIntervalMs)
-                {
-                    if (pending.Count > 0)
-                    {
-                        ResultsBatch?.Invoke(pending);
-                        pending = new List<SearchResult>();
-                    }
-                    StatusChanged?.Invoke(filePath);
-                    ProgressChanged?.Invoke(processed);
-                    uiTimer.Restart();
-                }
+                if (activeFilters.Count > 0 && !PassesFilters(filePath, fileName, activeFilters))
+                { Interlocked.Increment(ref processed); return; }
+
+                Interlocked.Increment(ref processed);
+                currentFile = filePath;
 
                 var result = new SearchResult
                 {
@@ -86,38 +115,93 @@ namespace KillerFind
                     Directory = Path.GetDirectoryName(filePath) ?? string.Empty
                 };
 
-                bool anyMatch = false;
-
-                foreach (var term in terms)
+                bool fileMatches = true;   // groups are AND-ed together
+                foreach (var plan in groupPlans)
                 {
-                    if (string.IsNullOrWhiteSpace(term.Pattern)) continue;
-
-                    if (term.Mode == SearchTerm.SearchMode.FileName)
+                    bool groupSat = plan.And;   // AND starts true, OR starts false
+                    foreach (var (term, nameRx) in plan.Terms)
                     {
-                        if (MatchesWildcard(fileName, term.Pattern, caseSensitive))
+                        bool hit;
+                        if (nameRx != null)
                         {
-                            result.Matches.Add(new TermMatch { Term = term });
-                            anyMatch = true;
+                            hit = nameRx.IsMatch(fileName);
+                            if (hit) result.Matches.Add(new TermMatch { Term = term });
                         }
-                    }
-                    else
-                    {
-                        var lines = SearchContent(filePath, term.Pattern, comparison);
-                        if (lines.Count > 0)
+                        else
                         {
-                            result.Matches.Add(new TermMatch { Term = term, Lines = lines });
-                            anyMatch = true;
+                            var lines = SearchContent(filePath, term.Pattern, comparison);
+                            hit = lines.Count > 0;
+                            if (hit) result.Matches.Add(new TermMatch { Term = term, Lines = lines });
                         }
+                        groupSat = plan.And ? (groupSat && hit) : (groupSat || hit);
                     }
+                    fileMatches = fileMatches && groupSat;
                 }
 
-                if (anyMatch)
-                    pending.Add(result);
+                bool ok = groupPlans.Count > 0 ? fileMatches : filterOnly;
+                if (!ok) return;
+
+                // One stat per RESULT (cheap) so the UI can sort by size/date.
+                try
+                {
+                    var fi = new FileInfo(filePath);
+                    result.SizeBytes = fi.Length;
+                    result.Modified  = fi.LastWriteTime;
+                }
+                catch { /* unreadable - sorts to the bottom */ }
+                result.Seq = Interlocked.Increment(ref seq) - 1;
+                outQueue.Enqueue(result);
             }
 
-            // Flush any remaining results after the loop
-            if (pending.Count > 0)
-                ResultsBatch?.Invoke(pending);
+            // ---- Producer: walks the tree (or the piped list) into a bounded queue ----
+            using var feed = new BlockingCollection<string>(boundedCapacity: 8192);
+            var producer = Task.Run(() =>
+            {
+                try
+                {
+                    foreach (var f in fileList ?? SafeEnumerateFiles(rootPath))
+                    {
+                        if (ct.IsCancellationRequested) break;
+                        feed.Add(f, ct);   // throws OCE if cancelled while the queue is full
+                    }
+                }
+                catch (OperationCanceledException) { /* graceful stop */ }
+                finally { feed.CompleteAdding(); }
+            });
+
+            // ---- Workers: one per core, capped so a Threadripper doesn't thrash I/O ----
+            int workerCount = Math.Max(2, Math.Min(16, Environment.ProcessorCount));
+            var workers = new Task[workerCount];
+            for (int i = 0; i < workerCount; i++)
+                workers[i] = Task.Run(() =>
+                {
+                    foreach (var filePath in feed.GetConsumingEnumerable())
+                    {
+                        if (ct.IsCancellationRequested) continue;   // drain fast, evaluate nothing
+                        try { EvaluateFile(filePath); }
+                        catch { /* one bad file never kills a worker */ }
+                    }
+                });
+
+            // ---- UI pump: this task flushes batches every ~150ms until the workers finish ----
+            const int UiIntervalMs = 150;
+            void Flush()
+            {
+                if (!outQueue.IsEmpty)
+                {
+                    var batch = new List<SearchResult>();
+                    while (outQueue.TryDequeue(out var r)) batch.Add(r);
+                    if (batch.Count > 0) ResultsBatch?.Invoke(batch);
+                }
+                var cf = currentFile;
+                if (cf.Length > 0) StatusChanged?.Invoke(cf);
+                ProgressChanged?.Invoke(Volatile.Read(ref processed));
+            }
+
+            while (!Task.WaitAll(workers, UiIntervalMs))
+                Flush();
+            try { producer.Wait(); } catch (AggregateException) { /* producer OCE already handled */ }
+            Flush();   // final drain
         }
 
         // ── File enumeration ─────────────────────────────────────
@@ -144,6 +228,60 @@ namespace KillerFind
                 foreach (var d in subdirs)
                     queue.Enqueue(d);
             }
+        }
+
+        // ── Filter evaluation ────────────────────────────────────
+        // Extension/date/size checks - no file content is read here. Date semantics:
+        // "before" = strictly before that day's midnight; "after" = strictly
+        // after that day ends (the chosen day itself is excluded by both).
+        private static bool PassesFilters(string filePath, string fileName, List<SearchFilter> filters)
+        {
+            foreach (var f in filters)
+            {
+                switch (f.FieldIndex)
+                {
+                    case SearchFilter.FieldExt:
+                    {
+                        bool match = ExtensionMatches(fileName, f.Text);
+                        if (f.ConditionIndex == 0 ? !match : match) return false;
+                        break;
+                    }
+                    case SearchFilter.FieldDate:
+                    {
+                        DateTime mod;
+                        try { mod = File.GetLastWriteTime(filePath); }
+                        catch { return false; }
+                        var day = f.Date!.Value.Date;
+                        bool ok = f.ConditionIndex == 0 ? mod < day : mod >= day.AddDays(1);
+                        if (!ok) return false;
+                        break;
+                    }
+                    case SearchFilter.FieldSize:
+                    {
+                        long len;
+                        try { len = new FileInfo(filePath).Length; }
+                        catch { return false; }
+                        bool ok = f.ConditionIndex == 0 ? len > f.SizeBytes : len < f.SizeBytes;
+                        if (!ok) return false;
+                        break;
+                    }
+                }
+            }
+            return true;
+        }
+
+        // Extension filter accepts anything an idiot might type: "log", ".log",
+        // "*.log", or a ; list like "log; tmp". Always case-insensitive.
+        private static bool ExtensionMatches(string fileName, string raw)
+        {
+            string ext = Path.GetExtension(fileName).TrimStart('.');
+            foreach (var part in raw.Split(';'))
+            {
+                var t = part.Trim().TrimStart('*').TrimStart('.').Trim();
+                if (t.Length == 0) continue;
+                if (string.Equals(ext, t, StringComparison.OrdinalIgnoreCase)) return true;
+            }
+            return false;
         }
 
         // ── Content search ───────────────────────────────────────
@@ -173,7 +311,12 @@ namespace KillerFind
                 {
                     lineNum++;
                     if (line.IndexOf(pattern, comparison) >= 0)
+                    {
                         matches.Add(new LineMatch { LineNumber = lineNum, LineText = line.Trim() });
+                        // Enough to prove the hit and fill the UI - a 10k-hit log file
+                        // would otherwise build a skyscraper of a result card.
+                        if (matches.Count >= 100) break;
+                    }
                 }
             }
             catch { /* unreadable file — skip */ }
@@ -190,29 +333,43 @@ namespace KillerFind
                       .ToList();
         }
 
-        private static bool IsExcluded(string filePath, List<string> excludes)
+        // Excludes match two ways: as a whole path segment ("bin", "node_modules")
+        // or as a wildcard against the filename (precompiled regexes).
+        private static bool IsExcluded(string filePath, string fileName,
+                                       List<string> excludeNames, List<Regex> excludeRx)
         {
-            string fileName = Path.GetFileName(filePath);
-            foreach (var exc in excludes)
+            for (int i = 0; i < excludeNames.Count; i++)
             {
-                // Segment match (e.g. "bin", "obj", "node_modules")
-                if (filePath.IndexOf(Path.DirectorySeparatorChar + exc + Path.DirectorySeparatorChar,
+                if (filePath.IndexOf(Path.DirectorySeparatorChar + excludeNames[i] + Path.DirectorySeparatorChar,
                         StringComparison.OrdinalIgnoreCase) >= 0)
                     return true;
-                // Wildcard against filename
-                if (MatchesWildcard(fileName, exc, false))
+                if (excludeRx[i].IsMatch(fileName))
                     return true;
             }
             return false;
         }
 
-        private static bool IsIncluded(string fileName, List<string> includes)
+        // Idiot-proofing for name patterns: no wildcards becomes a contains-match
+        // ("log" -> "*log*"), a bare extension gets its star (".log" -> "*.log").
+        // Patterns that already use * or ? pass through as-is.
+        private static string LoosenPattern(string p)
         {
-            foreach (var inc in includes)
-                if (MatchesWildcard(fileName, inc, false)) return true;
-            return false;
+            if (p.IndexOf('*') >= 0 || p.IndexOf('?') >= 0) return p;
+            if (p.StartsWith(".")) return "*" + p;
+            return "*" + p + "*";
         }
 
+        // Compiled once per pattern; the workers only call IsMatch.
+        private static Regex WildcardRegex(string pattern, bool caseSensitive)
+        {
+            string rx = "^" + Regex.Escape(pattern)
+                            .Replace("\\*", ".*")
+                            .Replace("\\?", ".") + "$";
+            var opts = RegexOptions.Compiled | (caseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase);
+            return new Regex(rx, opts);
+        }
+
+        /// <summary>One-off wildcard test (kept for callers outside the hot loop).</summary>
         public static bool MatchesWildcard(string input, string pattern, bool caseSensitive)
         {
             string regex = "^" + Regex.Escape(pattern)

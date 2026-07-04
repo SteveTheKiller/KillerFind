@@ -14,3 +14,6 @@ publish/
 # OS junk
 Thumbs.db
 .DS_Store
+
+# Working art assets (source .xcf, exports). Published web assets live in find-landing/brand/.
+brand/

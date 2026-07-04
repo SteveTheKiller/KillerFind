@@ -1,0 +1,177 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- ================================================================
+         KillerFind - English (en-US) strings. x:Key values are looked up at
+         runtime; never change them. Other locales layer over this file; any
+         key they omit falls back here. {0}/{1} placeholders are filled by the
+         app - keep them.
+         ================================================================ -->
+
+    <!-- Title bar / flyout -->
+    <sys:String x:Key="Str_TT_Language">Sprache</sys:String>
+    <sys:String x:Key="Str_TT_Theme">Design</sys:String>
+    <sys:String x:Key="Str_Lbl_Theme">Design</sys:String>
+    <sys:String x:Key="Str_Lbl_Accent">Akzent</sys:String>
+
+    <!-- Scope bar -->
+    <sys:String x:Key="Str_Lbl_In">in:</sys:String>
+    <sys:String x:Key="Str_Scope_Empty">(kein Ordner ausgewählt - zum Auswählen klicken)</sys:String>
+    <sys:String x:Key="Str_TT_Scope">Klicken, um den Suchordner zu ändern</sys:String>
+    <sys:String x:Key="Str_Dlg_SelectFolder">Stammordner für die Suche auswählen</sys:String>
+
+    <!-- Search config -->
+    <sys:String x:Key="Str_Lbl_Filters">FILTER</sys:String>
+    <sys:String x:Key="Str_Lbl_Include">einschließen</sys:String>
+    <sys:String x:Key="Str_Lbl_Exclude">ausschließen</sys:String>
+    <sys:String x:Key="Str_TT_Include">Durch Semikolon getrennte Muster, z. B. *.txt;*.log</sys:String>
+    <sys:String x:Key="Str_TT_Exclude">Durch Semikolon getrennte Pfade oder Muster, die übersprungen werden sollen</sys:String>
+    <sys:String x:Key="Str_Chk_CaseSensitive">Groß-/Kleinschreibung beachten</sys:String>
+    <sys:String x:Key="Str_Btn_AddFilter">+ Filter hinzufügen</sys:String>
+    <sys:String x:Key="Str_Lbl_Advanced">Erweitert</sys:String>
+    <sys:String x:Key="Str_Filter_Ext">Dateiendung</sys:String>
+    <sys:String x:Key="Str_Filter_Date">Änderungsdatum</sys:String>
+    <sys:String x:Key="Str_Filter_Size">Größe</sys:String>
+    <sys:String x:Key="Str_Cond_Is">ist</sys:String>
+    <sys:String x:Key="Str_Cond_IsNot">ist nicht</sys:String>
+    <sys:String x:Key="Str_Cond_Before">vor</sys:String>
+    <sys:String x:Key="Str_Cond_After">nach</sys:String>
+    <sys:String x:Key="Str_Cond_Larger">über</sys:String>
+    <sys:String x:Key="Str_Cond_Smaller">unter</sys:String>
+
+    <!-- Pattern help card -->
+    <sys:String x:Key="Str_TT_PatternHelp">Muster-Hilfe</sys:String>
+    <sys:String x:Key="Str_Help_Title">MUSTER</sys:String>
+    <sys:String x:Key="Str_Help_Star">alles, was auf .log endet</sys:String>
+    <sys:String x:Key="Str_Help_Prefix">Namen, die mit report beginnen</sys:String>
+    <sys:String x:Key="Str_Help_Middle">Namen, die 2024 enthalten</sys:String>
+    <sys:String x:Key="Str_Help_Q">? steht für genau ein Zeichen</sys:String>
+    <sys:String x:Key="Str_Help_List">mehrere Muster mit ; trennen</sys:String>
+    <sys:String x:Key="Str_Help_Plain">einfacher Text geht auch - trifft Namen, die ihn enthalten</sys:String>
+    <sys:String x:Key="Str_Help_Exclude">Ausschließen überspringt auch ganze Ordner nach Name</sys:String>
+
+    <!-- Tabs -->
+    <sys:String x:Key="Str_Tab_New">Neue Suche</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">Neuer Suchtab</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">Tab schließen</sys:String>
+
+    <!-- Folder picker -->
+    <sys:String x:Key="Str_Btn_Cancel">Abbrechen</sys:String>
+    <sys:String x:Key="Str_Btn_Select">Auswählen</sys:String>
+    <sys:String x:Key="Str_QA_Home">Home</sys:String>
+    <sys:String x:Key="Str_QA_Desktop">Desktop</sys:String>
+    <sys:String x:Key="Str_QA_Documents">Dokumente</sys:String>
+    <sys:String x:Key="Str_QA_Downloads">Downloads</sys:String>
+    <sys:String x:Key="Str_QA_Pictures">Bilder</sys:String>
+    <sys:String x:Key="Str_TT_Up">Einen Ordner nach oben</sys:String>
+    <sys:String x:Key="Str_Dlg_NoSubfolders">(keine Unterordner - mit Auswählen diesen Ordner verwenden)</sys:String>
+    <sys:String x:Key="Str_Col_Name">Name</sys:String>
+    <sys:String x:Key="Str_Col_Folder">Ort</sys:String>
+    <sys:String x:Key="Str_Sort_Found">wie gefunden</sys:String>
+    <sys:String x:Key="Str_TT_FilterResults">Diese Ergebnisse filtern (Strg+F)</sys:String>
+    <sys:String x:Key="Str_TT_Pipe">In diesen Ergebnissen suchen</sys:String>
+    <sys:String x:Key="Str_Menu_PipeTab">In diesen Ergebnissen suchen</sys:String>
+    <sys:String x:Key="Str_Pipe_Scope">{0} Ergebnisse aus {1}  |  {2}</sys:String>
+    <sys:String x:Key="Str_Status_NoPipe">Noch keine Ergebnisse zum Durchsuchen.</sys:String>
+
+    <!-- Portable install + quit dialog -->
+    <sys:String x:Key="Str_Portable">PORTABEL</sys:String>
+    <sys:String x:Key="Str_Btn_Install">KillerFind installieren...</sys:String>
+    <sys:String x:Key="Str_Btn_DoInstall">Installieren</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallMsg">KillerFind im Benutzerprofil installieren?</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallBullets">- Startmenü-Verknüpfung&#x0A;- Erscheint unter Apps und Features</sys:String>
+    <sys:String x:Key="Str_Chk_Desktop">Desktop-Verknüpfung</sys:String>
+    <sys:String x:Key="Str_Dlg_QuitMsg">KillerFind beenden?</sys:String>
+    <sys:String x:Key="Str_Chk_RememberTabs">Offene Tabs merken</sys:String>
+    <sys:String x:Key="Str_Chk_RememberChoice">Auswahl merken</sys:String>
+    <sys:String x:Key="Str_Btn_Quit">Beenden</sys:String>
+    <sys:String x:Key="Str_Col_Size">Größe</sys:String>
+    <sys:String x:Key="Str_Col_Modified">geändert</sys:String>
+    <sys:String x:Key="Str_Sum_Counts">{0} Ordner, {1} Datei(en)</sys:String>
+    <sys:String x:Key="Str_TT_ViewList">Listenansicht</sys:String>
+    <sys:String x:Key="Str_TT_ViewIcons">Symbolansicht</sys:String>
+    <sys:String x:Key="Str_TT_ViewDetails">Detailansicht</sys:String>
+    <sys:String x:Key="Str_Lbl_SearchTerms">SUCHBEGRIFFE</sys:String>
+    <sys:String x:Key="Str_Btn_AddTerm">+ Begriff hinzufügen</sys:String>
+    <sys:String x:Key="Str_Btn_Clear">LEEREN</sys:String>
+
+    <!-- Search button (code-behind swaps idle/stop; keep the brackets) -->
+    <sys:String x:Key="Str_Btn_Search">SUCHEN</sys:String>
+    <sys:String x:Key="Str_Btn_Stop">STOPP</sys:String>
+
+    <!-- Results -->
+    <sys:String x:Key="Str_Lbl_Results">ERGEBNISSE</sys:String>
+    <sys:String x:Key="Str_Lbl_ResultsCount">ERGEBNISSE  ({0})</sys:String>
+    <sys:String x:Key="Str_Btn_Export">HTML EXPORTIEREN</sys:String>
+    <sys:String x:Key="Str_TT_Result">Klicken zum Aufklappen  |  Doppelklick: im Explorer anzeigen  |  Rechtsklick für mehr</sys:String>
+    <sys:String x:Key="Str_Btn_ExpandAll">ALLE AUFKLAPPEN</sys:String>
+    <sys:String x:Key="Str_Btn_CollapseAll">ALLE ZUKLAPPEN</sys:String>
+    <sys:String x:Key="Str_Menu_OpenFile">Datei öffnen</sys:String>
+    <sys:String x:Key="Str_Menu_OpenWith">Öffnen mit...</sys:String>
+    <sys:String x:Key="Str_Menu_ShowExplorer">Im Explorer anzeigen</sys:String>
+    <sys:String x:Key="Str_Menu_Minimize">Minimieren</sys:String>
+    <sys:String x:Key="Str_Menu_Maximize">Maximieren</sys:String>
+    <sys:String x:Key="Str_Menu_Restore">Wiederherstellen</sys:String>
+    <sys:String x:Key="Str_Menu_Close">Schließen</sys:String>
+
+    <!-- Status messages -->
+    <sys:String x:Key="Str_Status_Ready">Bereit</sys:String>
+    <sys:String x:Key="Str_Status_InvalidRoot">Ungültiger oder fehlender Stammpfad.</sys:String>
+    <sys:String x:Key="Str_Status_NoTerms">Mindestens einen Suchbegriff oder Filter hinzufügen.</sys:String>
+    <sys:String x:Key="Str_Status_Done">Fertig in {0}s  -  {1} Datei(en) gefunden.</sys:String>
+    <sys:String x:Key="Str_Status_Stopped">Gestoppt.</sys:String>
+    <sys:String x:Key="Str_Status_Cleared">Geleert.</sys:String>
+    <sys:String x:Key="Str_Status_NothingExport">Noch nichts zu exportieren.</sys:String>
+    <sys:String x:Key="Str_Status_Exported">Exportiert: {0}</sys:String>
+    <sys:String x:Key="Str_Status_ExportFailed">Export fehlgeschlagen: {0}</sys:String>
+    <sys:String x:Key="Str_Status_Scanned">{0} Dateien durchsucht</sys:String>
+    <sys:String x:Key="Str_Count_Matches">{0} Treffer</sys:String>
+
+    <!-- About overlay -->
+    <sys:String x:Key="Str_About_Tagline">Schnelle Dateisuche für Windows. Ohne Indizierung.</sys:String>
+    <sys:String x:Key="Str_About_Version">VERSION</sys:String>
+    <sys:String x:Key="Str_About_Publisher">HERAUSGEBER</sys:String>
+    <sys:String x:Key="Str_About_Thumbprint">FINGERABDRUCK</sys:String>
+    <sys:String x:Key="Str_About_Sha">SHA-256</sys:String>
+    <sys:String x:Key="Str_About_Footer">GPLv3  |  entwickelt von einem Field-Techniker</sys:String>
+
+    <!-- HTML report -->
+    <sys:String x:Key="Str_Rpt_Meta">Erstellt {0} &#183; {1} Dateien &#183; {2} Treffer</sys:String>
+    <sys:String x:Key="Str_Rpt_Query">Durchsucht: {0} nach {1}.</sys:String>
+    <sys:String x:Key="Str_Rpt_TermName">Dateinamen mit {0}</sys:String>
+    <sys:String x:Key="Str_Rpt_TermContent">Dateiinhalten mit {0}</sys:String>
+    <sys:String x:Key="Str_Rpt_Everything">alles</sys:String>
+    <sys:String x:Key="Str_Rpt_Or">oder</sys:String>
+    <sys:String x:Key="Str_Rpt_Found">gefunden durch</sys:String>
+    <sys:String x:Key="Str_Rpt_More">... +{0} weitere</sys:String>
+    <sys:String x:Key="Str_Rpt_GenBy">Erstellt von {0}</sys:String>
+
+    <!-- Term/group chips + tooltips -->
+    <sys:String x:Key="Str_Mode_Name">Name</sys:String>
+    <sys:String x:Key="Str_Mode_Content">Inhalt</sys:String>
+    <sys:String x:Key="Str_TT_ModeName">Dateiname / Wildcards  (z. B. *.log)</sys:String>
+    <sys:String x:Key="Str_TT_ModeContent">Inhaltssuche  (Text in Dateien)</sys:String>
+    <sys:String x:Key="Str_Group_Any">EINE</sys:String>
+    <sys:String x:Key="Str_Group_All">ALLE</sys:String>
+    <sys:String x:Key="Str_TT_GroupAny">EINE: eine Datei passt, wenn irgendein Begriff dieser Gruppe trifft</sys:String>
+    <sys:String x:Key="Str_TT_GroupAll">ALLE: eine Datei muss jeden Begriff dieser Gruppe treffen</sys:String>
+    <sys:String x:Key="Str_Join_And">UND</sys:String>
+    <sys:String x:Key="Str_Join_Or">ODER</sys:String>
+    <sys:String x:Key="Str_Chk_CloseTabs">Meine offenen Tabs schließen</sys:String>
+
+    <!-- Help card: shortcuts -->
+    <sys:String x:Key="Str_Help_Shortcuts">Kurzbefehle</sys:String>
+    <sys:String x:Key="Str_Ks_Run">Suche starten</sys:String>
+    <sys:String x:Key="Str_Ks_Esc">Popups schließen, Suche stoppen, dann Beenden anbieten</sys:String>
+    <sys:String x:Key="Str_Ks_FilterResults">Ergebnisse filtern</sys:String>
+    <sys:String x:Key="Str_Ks_NewTab">neuer Suchtab</sys:String>
+    <sys:String x:Key="Str_Ks_CloseTab">aktuellen Tab schließen</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">nächster Tab (Shift: voriger)</sys:String>
+    <sys:String x:Key="Str_Ks_JumpTab">zu Tab 1-9 springen (9 = letzter)</sys:String>
+    <sys:String x:Key="Str_Ks_AddTerm">Suchbegriff hinzufügen</sys:String>
+    <sys:String x:Key="Str_Ks_AddFilter">Filter hinzufügen</sys:String>
+    <sys:String x:Key="Str_Ks_Folder">Ordner wählen</sys:String>
+    <sys:String x:Key="Str_Ks_Help">diese Karte anzeigen</sys:String>
+
+</ResourceDictionary>

@@ -1,217 +1,259 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
+<script>/* Apply saved theme + accent before first paint to avoid a reload flash */(function(){try{var d=document.documentElement,t=localStorage.getItem('kfind-theme');if(t){d.setAttribute('data-theme',t);if({dark:1,light:1,hc:1}[t]){var v=localStorage.getItem('kfind-av');if(v){var s=v.split('|');d.style.setProperty('--accent',s[0]);d.style.setProperty('--btn',s[1]);}}}}catch(e){}})();</script>
+<link rel="preload" href="brand/KillerScan.ttf" as="font" type="font/ttf" crossorigin>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KillerFind — Free, open-source file search for Windows</title>
+<meta name="darkreader-lock">
+<title>KillerFind - Free, open-source file search for Windows</title>
+<link rel="canonical" href="https://killerfind.net/">
 <meta name="description" content="One exe. No installer, no agent, no account, no telemetry. Fast file and content search built by a field tech, for field techs. GPLv3.">
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/x-icon" href="brand/kf-icon.ico">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://find.killertools.net/">
+<meta property="og:url" content="https://killerfind.net/">
 <meta property="og:title" content="KillerFind - Free, open-source file search for Windows">
 <meta property="og:description" content="One exe. No installer, no agent, no account, no telemetry. Fast file and content search built by a field tech, for field techs. GPLv3.">
-<meta property="og:image" content="https://find.killertools.net/og-killerfind.png">
+<meta property="og:image" content="https://killerfind.net/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:type" content="image/png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="KillerFind - Free, open-source file search for Windows">
 <meta name="twitter:description" content="One exe. No installer, no agent, no account, no telemetry. Fast file and content search built by a field tech, for field techs. GPLv3.">
-<meta name="twitter:image" content="https://find.killertools.net/og-killerfind.png">
-<script defer src="https://analytics.thekiller.net/script.js" data-website-id="8f6a2876-9457-45d5-96ca-9008ee743944"></script>
+<meta name="twitter:image" content="https://killerfind.net/og-image.png">
+<script defer src="https://koya.thekiller.net/script.js" data-website-id="8f6a2876-9457-45d5-96ca-9008ee743944"></script>
+<link rel="stylesheet" href="kf.css?v=1">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-:root {
-  --primary: #1ea54c;
-  --primary-hover: #36AD6A;
-  --primary-pressed: #0C7A43;
-  --bg: #1c1c1c;
-  --surface: #232323;
-  --card-border: #282828;
-  --table-header: #353535;
-  --text: #ffffff;
-  --muted: #a0a0a0;
+/* ---- Page-specific (landing) ---- */
+.content-inner { max-width: 1100px; margin: 0 auto; padding: 0 28px 50px; }
+
+/* Hero */
+.hero { padding: 46px 0 28px; text-align: center; }
+.hero .wm-logo { height: clamp(54px, 10vw, 104px); margin: 0 auto; filter: drop-shadow(0 4px 7px rgba(0,0,0,0.5)); }
+.hero .tagline { margin: 18px auto 0; max-width: 620px; font-size: 16px; color: var(--text2); }
+
+.hero-blurbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; max-width: 980px; margin: 30px auto 0; text-align: left; }
+.blurb h3 { font-family: 'KillerScan', 'Courier New', monospace; font-size: 15px; font-weight: normal; letter-spacing: .5px; color: var(--accent); margin-bottom: 7px; text-shadow: 0 2px 5px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.5); }
+.blurb p { font-size: 13.5px; color: var(--muted); line-height: 1.55; }
+.blurb-list { list-style: none; }
+.blurb-list li { font-size: 13.5px; color: var(--muted); line-height: 1.5; padding-left: 16px; position: relative; margin-bottom: 5px; }
+.blurb-list li:last-child { margin-bottom: 0; }
+.blurb-list li::before { content: "\203A"; position: absolute; left: 3px; color: var(--accent); font-weight: 700; }
+
+.hero-grid { display: flex; flex-wrap: wrap; gap: 30px 40px; align-items: center; justify-content: center; margin: 34px auto 0; max-width: 980px; text-align: left; }
+
+/* Download CTA (flat) */
+.hero-cta { display: flex; flex-direction: column; align-items: stretch; gap: 14px; flex: 0 1 360px; }
+.cta-row { display: flex; flex-direction: column; gap: 12px; max-width: 360px; }
+.download-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; background: var(--btn); color: var(--btn-text); font-size: 15px; font-weight: 700; padding: 14px 28px; border-radius: 6px; box-shadow: 0 8px 20px rgba(0,0,0,0.35); transition: filter 0.15s, transform 0.1s, box-shadow 0.15s; }
+.download-btn:hover { filter: brightness(1.4); transform: translateY(-1px); box-shadow: 0 12px 28px rgba(0,0,0,0.5); color: var(--btn-text); }
+.download-btn:active { transform: translateY(1px); }
+.download-btn svg { width: 18px; height: 18px; fill: currentColor; }
+.gh-btn { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; border: 1.5px solid var(--accent); color: var(--accent); background: transparent; font-size: 15px; font-weight: 700; padding: 12.5px 24px; border-radius: 6px; transition: background 0.15s, color 0.15s; }
+.gh-btn:hover { background: color-mix(in srgb, var(--text) 16%, transparent); color: var(--accent); }
+.gh-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+/* Features */
+.features { padding: 40px 0 24px; }
+.features h2 { font-family: 'KillerScan', 'Courier New', monospace; font-size: 24px; font-weight: normal; letter-spacing: .5px; color: var(--text); text-align: center; margin-bottom: 26px; }
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 14px; }
+.feature-card { background: var(--modal) url('grain.png') repeat; background-size: 256px 256px; border: 1px solid var(--pane-border); border-top: 2px solid var(--tab-edge); border-radius: 6px; padding: 18px 20px; transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s; }
+.feature-card:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(0,0,0,0.4); border-right-color: var(--dragline); border-bottom-color: var(--dragline); border-left-color: var(--dragline); }
+.feature-card h3 { font-family: 'KillerScan', 'Courier New', monospace; font-size: 15px; font-weight: normal; letter-spacing: .5px; margin-bottom: 8px; color: var(--accent); text-shadow: 0 2px 5px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.5); }
+html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { text-shadow: none; }
+.feature-card p { font-size: 13px; color: var(--muted); line-height: 1.55; }
+.feature-card code { display: inline-block; margin-top: 4px; background: var(--panel); padding: 2px 7px; border-radius: 4px; font-family: Consolas, monospace; font-size: 12px; color: var(--text); white-space: nowrap; }
+
+/* Sidebar (screenshot strip) */
+.sb-thumbs { padding: 12px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1; }
+.sb-thumb { flex-shrink: 0; border: 2px solid transparent; border-radius: 5px; overflow: hidden; cursor: pointer; background: var(--panel); transition: border-color 0.15s, transform 0.12s; position: relative; }
+.sb-thumb:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 50%, var(--border)); }
+.sb-thumb img { display: block; width: 100%; height: auto; }
+.sb-empty { padding: 22px 16px; font-family: Consolas, monospace; font-size: 12px; color: var(--muted); text-align: center; line-height: 1.6; }
+
+@media (max-width: 900px) {
+  .content-inner { padding: 0 16px 42px; }
+  .hero-blurbs { grid-template-columns: 1fr; gap: 22px; }
+  .hero-grid { flex-direction: column; gap: 22px; }
+  .hero-cta, .hero-info { flex: 0 0 auto; min-width: 0; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .sb-thumbs { flex-direction: row; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+  .sb-thumb { flex: 0 0 auto; width: 240px; min-width: 240px; }
 }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.6;
-  min-height: 100vh;
-}
-a { color: var(--primary); text-decoration: none; }
-a:hover { color: var(--primary-hover); }
-.container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
-header { border-bottom: 1px solid var(--card-border); padding: 16px 0; background: var(--surface); }
-.header-inner { display: flex; align-items: center; justify-content: space-between; }
-.logo { display: flex; align-items: center; gap: 10px; }
-.logo-mark { font-family: Consolas, monospace; font-size: 16px; font-weight: bold; color: var(--primary); }
-.logo-text { font-size: 15px; font-weight: 600; }
-.logo-sub { font-size: 12px; color: var(--muted); margin-left: 8px; }
-.header-link { font-size: 13px; color: var(--muted); }
-.header-link:hover { color: var(--primary); }
-.hero { padding: 40px 0 60px; text-align: center; }
-.hero h1 { font-size: 40px; font-weight: 700; margin-bottom: 16px; letter-spacing: -0.5px; }
-.hero h1 span { color: var(--primary); }
-.hero-columns { display: grid; grid-template-columns: 1.3fr 1fr; gap: 48px; align-items: center; }
-.hero-cta { display: flex; flex-direction: column; align-items: center; }
-@media (max-width: 700px) { .hero-columns { grid-template-columns: 1fr; } }
-.terminal { background: #0a0a0a; border: 1px solid #2a2a2a; border-radius: 6px; margin: 0; text-align: left; overflow: hidden; }
-.terminal-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #151515; border-bottom: 1px solid #2a2a2a; }
-.terminal-dots { display: flex; gap: 6px; align-items: center; }
-.terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
-.terminal-dot.green  { background: #28c840; }
-.terminal-dot.yellow { background: #febc2e; }
-.terminal-dot.red    { background: #ff5f57; }
-.terminal-title { font-family: Consolas, monospace; font-size: 11px; color: #555; }
-.terminal-body { padding: 18px 20px; font-family: Consolas, monospace; font-size: 13px; line-height: 1.8; }
-.terminal-body .prompt { color: var(--primary-pressed); font-weight: bold; }
-.terminal-body .cmd { color: var(--text); font-weight: bold; }
-.terminal-body .flag { color: var(--primary); }
-.terminal-body .out { color: var(--muted); }
-.terminal-body .out .label { color: var(--primary); }
-.terminal-body .cursor { display: inline-block; width: 8px; height: 15px; background: var(--primary); vertical-align: text-bottom; animation: blink 1s step-end infinite; }
-@keyframes blink { 50% { opacity: 0; } }
-.download-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--primary); color: #fff; font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: 4px; transition: background 0.15s; }
-.download-btn:hover { background: var(--primary-hover); color: #fff; }
-.download-btn:active { background: var(--primary-pressed); }
-.download-meta { margin-top: 14px; font-size: 13px; color: var(--muted); }
-.download-meta code { background: var(--surface); padding: 2px 6px; border-radius: 3px; font-family: Consolas, monospace; font-size: 12px; }
-.verify-download-box { margin-top: 12px; padding: 0; font-family: Consolas, monospace; font-size: 11px; color: var(--muted); text-align: center; overflow-x: auto; white-space: nowrap; }
-.verify-download-box .hash-label { color: var(--primary); margin-right: 8px; }
-.features { padding: 60px 32px; border-top: 1px solid var(--card-border); }
-.features-inner { max-width: 1400px; margin: 0 auto; }
-.features h2 { font-size: 22px; font-weight: 600; margin-bottom: 32px; text-align: center; }
-.feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-.feature-card { background: var(--surface); border: 1px solid var(--card-border); border-radius: 4px; padding: 20px; }
-.feature-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--primary); }
-.feature-card p { font-size: 13px; color: var(--muted); line-height: 1.5; }
-footer { border-top: 1px solid var(--card-border); padding: 20px 0; text-align: center; }
-footer p { font-size: 13px; color: #838587; }
-footer a { color: var(--primary); text-decoration: none; }
-footer a:hover { color: var(--primary-hover); }
-* { scrollbar-width: thin; scrollbar-color: #1ea54c55 transparent; }
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #1ea54c55; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #1ea54c; }
-.version-badge { display: inline-block; background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 3px; padding: 4px 12px; font-family: Consolas, monospace; font-size: 12px; color: var(--primary); margin-top: 20px; white-space: nowrap; }
-.version-badge .prompt { color: var(--primary-pressed); font-weight: bold; }
-.oss-banner { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 18px; padding: 10px 16px; background: var(--surface); border: 1px solid var(--primary); border-radius: 4px; max-width: 480px; margin-left: auto; margin-right: auto; font-size: 13px; }
-.oss-banner svg { width: 18px; height: 18px; flex-shrink: 0; fill: var(--primary); }
-.oss-banner .oss-text { color: var(--text); }
-.oss-banner .oss-link { color: var(--primary); font-weight: 600; }
-.oss-banner .oss-link:hover { color: var(--primary-hover); text-decoration: underline; }
-.header-gh { display: inline-flex; align-items: center; gap: 6px; }
-.header-gh svg { width: 16px; height: 16px; fill: currentColor; }
-@media (max-width: 600px) {
-  .hero { padding: 48px 0 40px; }
-  .hero h1 { font-size: 28px; }
-  .terminal-body { font-size: 12px; padding: 14px 16px; }
-  .feature-grid { gap: 10px; }
+@media (max-width: 560px) {
+  .hero { padding: 28px 0 22px; }
+  .hero .tagline { font-size: 15px; }
+  .features h2 { font-size: 20px; margin-bottom: 20px; }
 }
 </style>
 </head>
 <body>
-<header>
-<div class="container">
-<div class="header-inner">
-<div class="logo">
-<span class="logo-mark">kf</span>
-<span class="logo-text">KillerFind</span>
-<span class="logo-sub">File Search</span>
-</div>
-<div style="display: flex; align-items: center; gap: 18px;">
-<a href="https://github.com/SteveTheKiller/KillerFind" class="header-link header-gh" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 .5C5.37.5 0 5.87 0 12.5c0 5.29 3.44 9.77 8.2 11.36.6.11.82-.26.82-.58v-2.04c-3.34.72-4.04-1.61-4.04-1.61-.55-1.38-1.34-1.75-1.34-1.75-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.11-3.17 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0112 6.8c1.02 0 2.05.14 3 .4 2.29-1.55 3.3-1.23 3.3-1.23.65 1.65.24 2.87.12 3.17.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.82.58A12 12 0 0024 12.5C24 5.87 18.63.5 12 .5z"/></svg>GitHub</a>
-<a href="https://killertools.net" class="header-link">killertools.net</a>
-</div>
-</div>
-</div>
-</header>
 
-<div class="container">
+<div class="topbar">
+<a href="index.html" class="tb-home" title="KillerFind">
+<img class="tb-icon" src="brand/kf-icon.png" alt="KillerFind" width="44" height="44">
+<img class="wm-logo tb-wm" src="brand/killerfind-logo-dark-blue.svg" alt="KillerFind">
+</a>
+<a class="tb-dl" href="https://github.com/SteveTheKiller/KillerFind/releases/latest/download/KillerFind.exe"><svg viewBox="0 0 24 24"><path d="M11 4h2v7h3l-4 5-4-5h3V4zM5 18h14v2H5z"/></svg><span data-i18n="nav_dl">Download</span></a>
+<span class="tb-spacer"></span>
+<nav class="tb-nav">
+<a href="technical.html" data-i18n="nav_tech">Technical</a>
+<a href="about.html" data-i18n="nav_about">About</a>
+</nav>
+<div class="tgrp" role="group" aria-label="Theme">
+<button class="swatch sw-dark"     data-theme="dark"     title="Dark"></button>
+<button class="swatch sw-light"    data-theme="light"    title="Light"></button>
+<button class="swatch sw-hc"       data-theme="hc"       title="Black"></button>
+<button class="swatch sw-blood"    data-theme="blood"    title="Blood"></button>
+<button class="swatch sw-greed"    data-theme="greed"    title="Greed"></button>
+<button class="swatch sw-cyanotic" data-theme="cyanotic" title="Cyanotic"></button>
+</div>
+<div class="acc-fly accent-switch" id="accentSwitch">
+<button class="acc-toggle" id="accentToggle" aria-haspopup="true" aria-expanded="false" title="Accent color"></button>
+<div class="acc-pop" id="accentPop" hidden role="group" aria-label="Accent color">
+<span class="acc-pop-label" data-i18n="accent_label">accent:</span>
+<button class="acc" data-accent="red"    style="background:#DD504B;color:#DD504B" title="Red"></button>
+<button class="acc" data-accent="orange" style="background:#E8962C;color:#E8962C" title="Orange"></button>
+<button class="acc" data-accent="green"  style="background:#1EA54C;color:#1EA54C" title="Green"></button>
+<button class="acc" data-accent="teal"   style="background:#1FB8A8;color:#1FB8A8" title="Teal"></button>
+<button class="acc" data-accent="blue"   style="background:#50AEE8;color:#50AEE8" title="Blue"></button>
+<button class="acc" data-accent="purple" style="background:#B982E3;color:#B982E3" title="Purple"></button>
+</div>
+</div>
+<div class="lang-switch" role="group" aria-label="Language">
+<button class="lang-toggle" id="langToggle" aria-haspopup="true" aria-expanded="false" title="Language" aria-label="Language">&#127760;</button>
+<div class="lang-menu" id="langMenu" hidden>
+<button class="lang-item" data-lang="en">English</button>
+<button class="lang-item" data-lang="bn">&#2476;&#2494;&#2434;&#2482;&#2494;</button>
+<button class="lang-item" data-lang="de">Deutsch</button>
+<button class="lang-item" data-lang="es">Espanol</button>
+<button class="lang-item" data-lang="fr">Francais</button>
+<button class="lang-item" data-lang="tr">Turkce</button>
+<button class="lang-item" data-lang="zh-cn">&#20013;&#25991; (&#31616;&#20307;)</button>
+<button class="lang-item" data-lang="zh">&#20013;&#25991; (&#32321;&#39636;)</button>
+</div>
+</div>
+</div>
+
+<div class="frame-shadow" aria-hidden="true"></div>
+<div class="shell">
+<div class="content">
+<div class="content-inner">
+
 <section class="hero">
-<h1>Killer<span>Find</span></h1>
-<div class="hero-columns">
-<div class="hero-terminal">
-<div class="terminal">
-<div class="terminal-bar">
-<span class="terminal-title">~/killerfind</span>
-<div class="terminal-dots"><span class="terminal-dot green"></span><span class="terminal-dot yellow"></span><span class="terminal-dot red"></span></div>
+<img class="wm-logo" src="brand/killerfind-logo-dark-blue.svg" alt="KillerFind">
+<p class="tagline" data-i18n="tagline">A fast, portable file search for Windows that finds files by name and searches inside them across an entire folder tree, with no index to build and no background service to wait for.</p>
+<div class="hero-blurbs">
+<div class="blurb"><h3 data-i18n="b1_t">Fully featured</h3><ul class="blurb-list" data-i18n="b1_d">
+<li>Wildcard filename search across the whole tree</li>
+<li>Content search that streams files line by line</li>
+<li>Multicore scanning across every CPU core</li>
+<li>Tabbed searches, each with its own folder and terms</li>
+<li>Filters by extension, date modified, and size</li>
+<li>Search within results to drill down, tab by tab</li>
+<li>Sort and Ctrl+F-filter the results live</li>
+<li>Reveal in Explorer or open the file directly</li>
+<li>Export to a self-contained HTML report or CSV</li>
+<li>Six themes with live accent colors</li>
+</ul></div>
+<div class="blurb"><h3 data-i18n="b2_t">Built from scratch</h3><p data-i18n="b2_d">KillerFind is written in C# and WPF on .NET Framework 4.8, so it runs as one self-contained native .exe with no runtime to install. There is no index and no background agent. It walks the folder tree across all your CPU cores as you search and streams each file one line at a time, so results start appearing the moment you hit search.<br><br>The <a href="technical.html">Technical</a> page has the full breakdown of how the search pipeline works.</p></div>
+<div class="blurb"><h3 data-i18n="b3_t">By a field tech, for field techs</h3><p data-i18n="b3_d">Created during everyday systems administration work at a large MSP, where tracking down the right file, or the right line buried inside a pile of files, was often the slowest part of closing a ticket.</p><p data-i18n="b3_d2">It was built to make that step quick, so you can point it at a folder, find exactly what you need, and get the ticket closed and move on to the next one.</p><br><p data-i18n="b3_d4">Read the story behind it on the <a href="about.html">About</a> page.</p></div>
 </div>
-<div class="terminal-body">
-<span class="prompt">$</span> <span class="cmd">killerfind</span> <span class="flag">C:\Users</span><br>
-<br>
-<span class="out"><span class="label">found</span> [*.log] &mdash; 142 files matched</span><br>
-<span class="out"><span class="label">found</span> [error_code] &mdash; 38 files, 91 line matches</span><br>
-<span class="out"><span class="label">searched</span> 14,203 files in 2.4s</span><br>
-<br>
-<span class="out">No indexing. No agent. No account. No telemetry.</span><br>
-<span class="out">Free. Open. GPLv3. Built by a field tech, for field techs.</span><br>
-<br>
-<span class="prompt">$</span> <span class="cursor"></span>
-</div>
-</div>
-</div>
+<div class="hero-grid">
 <div class="hero-cta">
-<a href="https://github.com/SteveTheKiller/KillerFind/releases/latest/download/KillerFind.exe" class="download-btn">Download for Windows (.exe)</a>
-<div class="download-meta">Windows 10/11 x64 &middot; .NET Framework 4.8</div>
-<div class="version-badge"><span class="prompt">$</span> KillerFind v0.1.1 &middot; released 5/4/2026</div>
-<div class="verify-download-box"><span class="hash-label">SHA256</span>42EBEB669CA823A60940D36EB1FBD0236E746C23B0D67A68981723E3DC90F4CE</div>
-<div class="oss-banner">
-<svg viewBox="0 0 24 24"><path d="M12 .5C5.37.5 0 5.87 0 12.5c0 5.29 3.44 9.77 8.2 11.36.6.11.82-.26.82-.58v-2.04c-3.34.72-4.04-1.61-4.04-1.61-.55-1.38-1.34-1.75-1.34-1.75-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.11-3.17 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0112 6.8c1.02 0 2.05.14 3 .4 2.29-1.55 3.3-1.23 3.3-1.23.65 1.65.24 2.87.12 3.17.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.82.58A12 12 0 0024 12.5C24 5.87 18.63.5 12 .5z"/></svg>
-<span class="oss-text">Open source under GPLv3.</span>
-<a href="https://github.com/SteveTheKiller/KillerFind" class="oss-link" target="_blank" rel="noopener">View on GitHub &rarr;</a>
+<div class="cta-row">
+<a href="https://github.com/SteveTheKiller/KillerFind/releases/latest/download/KillerFind.exe" class="download-btn"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg><span data-i18n="download">Download for Windows</span></a>
+<a href="https://github.com/SteveTheKiller/KillerFind" class="gh-btn" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 .5C5.37.5 0 5.87 0 12.5c0 5.29 3.44 9.77 8.2 11.36.6.11.82-.26.82-.58v-2.04c-3.34.72-4.04-1.61-4.04-1.61-.55-1.38-1.34-1.75-1.34-1.75-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.11-3.17 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0112 6.8c1.02 0 2.05.14 3 .4 2.29-1.55 3.3-1.23 3.3-1.23.65 1.65.24 2.87.12 3.17.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.82.58A12 12 0 0024 12.5C24 5.87 18.63.5 12 .5z"/></svg><span data-i18n="gh_btn">Source on GitHub</span></a>
 </div>
+</div>
+<div class="hero-info">
+<div class="row"><span class="k">version</span>&nbsp;<span class="v">KillerFind v1.0.0</span></div>
+<div class="row"><span class="k">released</span>&nbsp;<span class="v">2026-07-04</span></div>
+<div class="row"><span class="k">platform</span>&nbsp;<span class="v">Windows 10/11 x64</span></div>
+<div class="row"><span class="k">runtime</span>&nbsp;<span class="v">.NET Framework 4.8</span></div>
+<div class="row"><span class="k">sha256</span>&nbsp;<span class="v hash">42EBEB669CA823A60940D36EB1FBD023<br>6E746C23B0D67A68981723E3DC90F4CE</span></div>
+<p class="note" data-i18n="hero_note">Install or run portable. Free, open source, GPLv3.<br>No agent, no account, no subscription.<br>No telemetry is sent and no ads... ever.</p>
 </div>
 </div>
 </section>
-</div>
 
 <section class="features">
-<div class="features-inner">
-<h2>What it does</h2>
+<h2 data-i18n="features_h">What it does</h2>
 <div class="feature-grid">
-<div class="feature-card">
-<h3>Filename Search</h3>
-<p>Wildcard patterns like <code style="background:#1a1a1a;padding:1px 5px;border-radius:2px;font-family:Consolas,monospace;font-size:11px;">*.log</code> or <code style="background:#1a1a1a;padding:1px 5px;border-radius:2px;font-family:Consolas,monospace;font-size:11px;">report_*.xlsx</code> matched against every filename in the tree. Results stream in real time with no pre-indexing.</p>
-</div>
-<div class="feature-card">
-<h3>Content Search</h3>
-<p>Streams through files line by line without loading them into RAM. Shows matched lines with line numbers, and skips binary files automatically.</p>
-</div>
-<div class="feature-card">
-<h3>Multiple Terms</h3>
-<p>Run several filename and content searches in a single pass. Each term is independently tracked with its own match count so you can see which patterns hit.</p>
-</div>
-<div class="feature-card">
-<h3>Include / Exclude Filters</h3>
-<p>Semicolon-separated patterns narrow or limit the search scope by extension or directory segment — e.g. <code style="background:#1a1a1a;padding:1px 5px;border-radius:2px;font-family:Consolas,monospace;font-size:11px;">*.txt;*.log</code> or <code style="background:#1a1a1a;padding:1px 5px;border-radius:2px;font-family:Consolas,monospace;font-size:11px;">node_modules</code>.</p>
-</div>
-<div class="feature-card">
-<h3>Case Sensitive</h3>
-<p>Optional toggle applies to both filename and content searches. Default is case-insensitive so you don't have to think about it.</p>
-</div>
-<div class="feature-card">
-<h3>Explorer Integration</h3>
-<p>Click any result header to reveal the file in Explorer with it selected. Right-click for a context menu to open the file directly in its default app.</p>
-</div>
-<div class="feature-card">
-<h3>HTML Export</h3>
-<p>Export results as a self-contained HTML report with matched lines, line numbers, and search metadata. Opens in any browser, no dependencies.</p>
-</div>
-<div class="feature-card">
-<h3>No Installer Required</h3>
-<p>Single EXE, runs from anywhere. No runtime to install beyond .NET Framework 4.8, which ships with Windows 10 1903+ and Windows 11.</p>
-</div>
-</div>
+<div class="feature-card"><h3 data-i18n="f_fname_t">Filename search</h3><p data-i18n="f_fname_d">Wildcard patterns like <code>*.log</code> or <code>report_*.xlsx</code> matched against every filename in the tree. Results stream in real time with no pre-indexing.</p></div>
+<div class="feature-card"><h3 data-i18n="f_content_t">Content search</h3><p data-i18n="f_content_d">Streams through files line by line without loading them into RAM. Shows matched lines with their line numbers, and skips binary files automatically.</p></div>
+<div class="feature-card"><h3 data-i18n="f_multi_t">Multiple terms</h3><p data-i18n="f_multi_d">Run several filename and content searches in a single pass. Each term is tracked independently with its own match count, so you can see which patterns hit.</p></div>
+<div class="feature-card"><h3 data-i18n="f_filters_t">Include / exclude filters</h3><p data-i18n="f_filters_d">Semicolon-separated patterns narrow or limit the scope by extension or directory segment, for example <code>*.txt;*.log</code> or <code>node_modules</code>.</p></div>
+<div class="feature-card"><h3 data-i18n="f_tabs_t">Tabbed searches</h3><p data-i18n="f_tabs_d">Each tab is its own search with its own folder, terms, filters, and results. Drag tabs to reorder, and optionally restore your open tabs on the next launch.</p></div>
+<div class="feature-card"><h3 data-i18n="f_pipe_t">Search within results</h3><p data-i18n="f_pipe_d">Pipe one search's results into a new tab and search inside just those files. Chain as deep as you like; each pass only touches the survivors of the last.</p></div>
+<div class="feature-card"><h3 data-i18n="f_sortfilter_t">Sort &amp; refine</h3><p data-i18n="f_sortfilter_d">Sort results by name, location, size, or modified date, and press Ctrl+F to filter the list live. Dropdown filters narrow by extension, date, or size.</p></div>
+<div class="feature-card"><h3 data-i18n="f_export_t">HTML &amp; CSV export</h3><p data-i18n="f_export_d">Export results as a self-contained HTML report with matched lines and a built-in theme switcher, or as CSV for spreadsheets. Opens anywhere, no dependencies.</p></div>
+<div class="feature-card"><h3 data-i18n="f_themes_t">Themes &amp; accents</h3><p data-i18n="f_themes_d">Six themes (Dark, Light, Black, Blood, Greed and Cyanotic) with per-theme accent colors, all switchable live.</p></div>
+<div class="feature-card"><h3 data-i18n="f_install_t">Install or run portable</h3><p data-i18n="f_install_d">Drop the .exe anywhere and run it, or use the built-in per-user installer.<br>No admin rights, extra runtimes or dependencies are required.</p></div>
+<div class="feature-card"><h3 data-i18n="f_private_t">Private by design</h3><p data-i18n="f_private_d">Everything runs on your machine. No agent is installed, no account is required, no cloud, and no telemetry is sent anywhere.<br>Nothing about your files leaves the device.</p></div>
+<div class="feature-card"><h3 data-i18n="f_lang_t">Eight languages</h3><p data-i18n="f_lang_d">The interface is localized in eight languages (English, Spanish, German, French, Turkish, Chinese Traditional and Simplified, and Bengali), switchable live from the toolbar.</p></div>
 </div>
 </section>
 
-<footer>
-<div class="container">
-<p><a href="https://thekiller.net">Steve the Killer</a> &middot; &copy; 2026 &middot; <a href="https://github.com/SteveTheKiller/KillerFind" target="_blank" rel="noopener">Source on GitHub</a> &middot; GPLv3</p>
 </div>
+</div>
+
+<aside class="sidebar">
+<div class="sb-thumbs" id="sbThumbs">
+<div class="sb-empty" data-i18n="sb_empty">Screenshots<br>coming soon</div>
+</div>
+</aside>
+</div>
+
+<footer class="statusbar">
+<span class="left"><a href="https://github.com/SteveTheKiller/KillerFind" target="_blank" rel="noopener" data-i18n="footer_src">Source on GitHub</a> &middot; GPLv3 &middot; Part of <a href="https://killertools.net" target="_blank" rel="noopener">killertools.net</a></span>
+<span class="right"><span id="verEgg" title="click me">v1.00</span> &middot; &copy; 2026 <b><a href="https://thekiller.net" target="_blank" rel="noopener">Steve the Killer</a></b></span>
 </footer>
+
+<div class="lightbox" id="lightbox"><img id="lightboxImg" src="" alt="KillerFind screenshot"></div>
+<div class="egg-toast" id="eggToast"></div>
+
+<script src="kf-i18n.js?v=1"></script>
+<script src="kf.js?v=1"></script>
+<script>
+(function () {
+  // Screenshot strip: tries screenshots/01.png .. NN.png, drops any that 404, and shows a
+  // placeholder until at least one loads. Drop real screenshots into screenshots/ to populate it.
+  var MAX = 14;
+  var sbThumbs = document.getElementById('sbThumbs');
+  var empty = sbThumbs.querySelector('.sb-empty');
+  var lightbox = document.getElementById('lightbox');
+  var lightboxImg = document.getElementById('lightboxImg');
+  var loaded = 0;
+
+  function openLightbox(src) { lightboxImg.src = src; lightbox.classList.add('show'); }
+  lightbox.addEventListener('click', function () { lightbox.classList.remove('show'); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') lightbox.classList.remove('show'); });
+
+  for (var i = 1; i <= MAX; i++) {
+    (function (n) {
+      var src = 'screenshots/' + (n < 10 ? '0' + n : '' + n) + '.png';
+      var img = new Image();
+      img.onload = function () {
+        if (empty) { empty.remove(); empty = null; }
+        var b = document.createElement('button');
+        b.className = 'sb-thumb'; b.title = 'Screenshot ' + n; b.dataset.idx = n;
+        b.appendChild(img);
+        b.addEventListener('click', function () { openLightbox(src); });
+        // Insert in numeric order regardless of which image finishes loading first.
+        var next = null, kids = sbThumbs.children;
+        for (var k = 0; k < kids.length; k++) {
+          if (kids[k].dataset && +kids[k].dataset.idx > n) { next = kids[k]; break; }
+        }
+        sbThumbs.insertBefore(b, next);
+        loaded++;
+      };
+      img.alt = 'KillerFind screenshot ' + n;
+      img.src = src;
+    })(i);
+  }
+})();
+</script>
 </body>
 </html>

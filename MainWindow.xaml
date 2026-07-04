@@ -3,285 +3,368 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:KillerFind"
         xmlns:models="clr-namespace:KillerFind.Models"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Title="KillerFind"
         Icon="Resources/kf-icon.ico"
         Height="700" Width="1200" MinHeight="500" MinWidth="800"
-        Background="{StaticResource BackgroundBrush}"
         WindowStyle="None"
-        AllowsTransparency="True"
-        ResizeMode="CanResizeWithGrip"
-        BorderThickness="0"
-        BorderBrush="Transparent"
-        WindowStartupLocation="CenterScreen">
+        Background="{DynamicResource BackgroundBrush}"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        WindowStartupLocation="CenterScreen"
+        PreviewKeyDown="Window_PreviewKeyDown">
 
-    <Grid>
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="36" ResizeBorderThickness="8" CornerRadius="0"
+                            GlassFrameThickness="0" UseAeroCaptionButtons="False"/>
+    </shell:WindowChrome.WindowChrome>
+
+    <Grid x:Name="RootGrid" Opacity="0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="36"/>   <!-- custom titlebar -->
-            <RowDefinition Height="34"/>   <!-- scope bar       -->
-            <RowDefinition Height="28"/>   <!-- run status bar  -->
-            <RowDefinition Height="*"/>    <!-- main content    -->
-            <RowDefinition Height="24"/>   <!-- footer          -->
+            <RowDefinition Height="36"/>   <!-- 0: title bar -->
+            <RowDefinition Height="*"/>    <!-- 1: main content -->
+            <RowDefinition Height="24"/>   <!-- 2: footer -->
         </Grid.RowDefinitions>
 
-        <!-- ══════════════════════════════════════════════════════
-             ROW 0 — CUSTOM TITLE BAR  (drag to move, dbl-click to max)
-        ═══════════════════════════════════════════════════════ -->
-        <Border Grid.Row="0"
-                Background="{StaticResource SurfaceBrush}"
-                BorderBrush="{StaticResource CardBorderBrush}"
-                BorderThickness="0,0,0,1"
-                MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
-            <Grid>
-                <!-- Logo -->
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0">
-                    <TextBlock Text="&gt;_" Foreground="{StaticResource PrimaryBrush}"
-                               FontFamily="{StaticResource MonoFont}"
-                               FontSize="14" FontWeight="Bold" VerticalAlignment="Center"
-                               Margin="0,0,4,0"/>
-                    <TextBlock Text="KillerFind" Foreground="{StaticResource TextBrush}"
-                               FontFamily="{StaticResource MonoFont}"
-                               FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                    <TextBlock Text="file search" Foreground="{StaticResource MutedTextBrush}"
-                               FontFamily="{StaticResource MonoFont}"
-                               FontSize="11" VerticalAlignment="Center" Margin="8,1,0,0"/>
-                </StackPanel>
+        <!-- ══════════ ROW 0 - TITLE BAR ══════════ -->
+        <Grid Grid.Row="0" Background="{DynamicResource BackgroundBrush}">
+            <Border IsHitTestVisible="False">
+                <Border.Background>
+                    <ImageBrush x:Name="TitleGrainBrush" TileMode="Tile" ViewportUnits="Absolute" Viewport="0,0,256,256" Stretch="None"/>
+                </Border.Background>
+                <Border.OpacityMask><SolidColorBrush Color="White" Opacity="{DynamicResource GrainOpacity}"/></Border.OpacityMask>
+            </Border>
 
-                <!-- Window controls -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
-                            VerticalAlignment="Stretch">
-                    <Button x:Name="MinimizeBtn" Content="&#x2015;"
-                            Style="{StaticResource ChromeButton}"
-                            Click="MinimizeBtn_Click"/>
-                    <Button x:Name="MaximizeBtn" Content="&#x25A1;"
-                            Style="{StaticResource ChromeButton}"
-                            Click="MaximizeBtn_Click"/>
-                    <Button x:Name="CloseBtn" Content="&#x2715;"
-                            Style="{StaticResource CloseButton}"
-                            Click="CloseBtn_Click"/>
-                </StackPanel>
-            </Grid>
-        </Border>
+            <!-- App icon + wordmark, exactly like KillerScan: icon in the corner, then the
+                 typewriter wordmark with a blurred dark copy behind the crisp text
+                 (faded by IconShadowOpacity; 0 in light mode = no shadow). -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0">
+                <Image x:Name="TitleIcon" Width="27" Height="27" VerticalAlignment="Center" Margin="0,0,7,0"
+                       RenderOptions.BitmapScalingMode="HighQuality" IsHitTestVisible="False"/>
+                <!-- Clicking the wordmark opens the website (same rule as KillerPDF) -->
+                <Grid VerticalAlignment="Center" shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                      Cursor="Hand" ToolTip="killerfind.net" Background="Transparent" MouseLeftButtonUp="Wordmark_Click">
+                    <TextBlock FontFamily="{DynamicResource WordmarkFont}" FontSize="15" Margin="1,2,0,0" Opacity="{DynamicResource IconShadowOpacity}">
+                        <TextBlock.Effect><BlurEffect Radius="3"/></TextBlock.Effect>
+                        <Run Text="Killer" Foreground="#D8000000"/><Run Text="Find" FontSize="19.5" FontWeight="Bold" Foreground="#D8000000"/>
+                    </TextBlock>
+                    <TextBlock FontFamily="{DynamicResource WordmarkFont}" FontSize="15">
+                        <Run Text="Killer" Foreground="{DynamicResource TextBrush}"/><Run Text="Find" FontSize="19.5" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
+                    </TextBlock>
+                </Grid>
+            </StackPanel>
 
-        <!-- ══════════════════════════════════════════════════════
-             ROW 1 — SCOPE BAR
-        ═══════════════════════════════════════════════════════ -->
-        <Border Grid.Row="1"
-                x:Name="ScopeBar"
-                Background="{StaticResource SinkBrush}"
-                BorderBrush="{StaticResource CardBorderBrush}"
-                BorderThickness="0,0,0,1"
-                Cursor="Hand"
-                ToolTip="Click to change search folder"
-                MouseLeftButtonUp="ScopeBar_Click">
-            <Border.Style>
-                <Style TargetType="Border">
-                    <Style.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </Border.Style>
-            <Grid Margin="16,0,16,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                <Button x:Name="LangButton" Click="LangButton_Click" Style="{StaticResource ChromeButton}" Content="&#xE774;" ToolTip="{DynamicResource Str_TT_Language}">
+                    <Button.ContextMenu>
+                        <ContextMenu x:Name="LangMenu" Placement="Bottom"/>
+                    </Button.ContextMenu>
+                </Button>
+                <Button x:Name="ThemeButton" Click="ThemeButton_Click" Style="{StaticResource ChromeButton}" Content="&#xE790;" ToolTip="{DynamicResource Str_TT_Theme}"/>
+                <Button x:Name="MinimizeBtn" Click="MinimizeBtn_Click" Style="{StaticResource ChromeButton}" Content="&#xE921;"/>
+                <Button x:Name="MaximizeBtn" Click="MaximizeBtn_Click" Style="{StaticResource ChromeButton}" Content="&#xE922;"/>
+                <Button x:Name="CloseBtn"    Click="CloseBtn_Click"    Style="{StaticResource ChromeCloseButton}" Content="&#xE8BB;"/>
+            </StackPanel>
 
-                <TextBlock Grid.Column="0"
-                           Text="in:"
-                           Foreground="{StaticResource DimTextBrush}"
-                           FontFamily="{StaticResource MonoFont}"
-                           FontSize="11"
-                           VerticalAlignment="Center"
-                           Margin="0,0,8,0"/>
+            <!-- Theme + accent flyout -->
+            <!-- StaysOpen so the flyout doesn't take mouse capture: the results list keeps
+                 scrolling under it. Outside clicks close it from code. -->
+            <Popup x:Name="ThemePopup" PlacementTarget="{Binding ElementName=ThemeButton}" Placement="Bottom"
+                   StaysOpen="True" AllowsTransparency="True" HorizontalOffset="-92" VerticalOffset="5">
+                <Border Background="{DynamicResource MenuBackgroundBrush}" BorderBrush="{DynamicResource MenuBorderBrush}"
+                        BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="14">
+                    <Border.Effect><DropShadowEffect Color="Black" BlurRadius="22" ShadowDepth="4" Direction="270" Opacity="0.55"/></Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource Str_Lbl_Theme}" Foreground="{DynamicResource DimTextBrush}" FontFamily="Consolas" FontSize="10" Margin="0,0,0,4"/>
+                        <StackPanel x:Name="ThemeSwatches" Orientation="Horizontal">
+                            <Button Style="{StaticResource ThemeSwatch}" Tag="Dark"     Background="#3a3a3a" Click="ThemeSwatch_Click" ToolTip="Dark"/>
+                            <Button Style="{StaticResource ThemeSwatch}" Tag="Light"    Background="#e8e8e8" Click="ThemeSwatch_Click" ToolTip="Light"/>
+                            <Button Style="{StaticResource ThemeSwatch}" Tag="Black"    Background="#000000" Click="ThemeSwatch_Click" ToolTip="Black"/>
+                            <Button Style="{StaticResource ThemeSwatch}" Tag="Blood"    Background="#4a1f20" Click="ThemeSwatch_Click" ToolTip="Blood"/>
+                            <Button Style="{StaticResource ThemeSwatch}" Tag="Greed"    Background="#0a5234" Click="ThemeSwatch_Click" ToolTip="Greed"/>
+                            <Button Style="{StaticResource ThemeSwatch}" Tag="Cyanotic" Background="#0a4a6e" Click="ThemeSwatch_Click" ToolTip="Cyanotic"/>
+                        </StackPanel>
+                        <TextBlock x:Name="AccentLabel" Text="{DynamicResource Str_Lbl_Accent}" Foreground="{DynamicResource DimTextBrush}" FontFamily="Consolas" FontSize="10" Margin="0,8,0,4"/>
+                        <StackPanel x:Name="AccentSwatches" Orientation="Horizontal">
+                            <Button Style="{StaticResource ThemeSwatch}" Tag="Red"    Background="#DD504B" Click="AccentSwatch_Click" ToolTip="Red"/>
+                            <Button Style="{StaticResource ThemeSwatch}" Tag="Orange" Background="#E8962C" Click="AccentSwatch_Click" ToolTip="Orange"/>
+                            <Button Style="{StaticResource ThemeSwatch}" Tag="Green"  Background="#1ea54c" Click="AccentSwatch_Click" ToolTip="Green"/>
+                            <Button Style="{StaticResource ThemeSwatch}" Tag="Teal"   Background="#1FB8A8" Click="AccentSwatch_Click" ToolTip="Teal"/>
+                            <Button Style="{StaticResource ThemeSwatch}" Tag="Blue"   Background="#50AEE8" Click="AccentSwatch_Click" ToolTip="Blue"/>
+                            <Button Style="{StaticResource ThemeSwatch}" Tag="Purple" Background="#B982E3" Click="AccentSwatch_Click" ToolTip="Purple"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Popup>
+        </Grid>
 
-                <TextBlock x:Name="ScopePathLabel"
-                           Grid.Column="1"
-                           Text="(no folder selected — click to choose)"
-                           Foreground="{StaticResource PrimaryBrush}"
-                           FontFamily="{StaticResource MonoFont}"
-                           FontSize="12"
-                           VerticalAlignment="Center"
-                           TextTrimming="CharacterEllipsis"
-                           ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
-
-                <!-- Hidden TextBox keeps RootPathBox name for code-behind compat -->
-                <TextBox x:Name="RootPathBox" Visibility="Collapsed"/>
-            </Grid>
-        </Border>
-
-        <!-- ══════════════════════════════════════════════════════
-             ROW 2 — RUN STATUS BAR
-        ═══════════════════════════════════════════════════════ -->
-        <Border Grid.Row="2"
-                Background="{StaticResource SinkBrush}"
-                BorderBrush="{StaticResource CardBorderBrush}"
-                BorderThickness="0,0,0,1">
-            <Grid Margin="0,0,16,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>  <!-- green accent bar -->
-                    <ColumnDefinition Width="*"/>     <!-- status text      -->
-                    <ColumnDefinition Width="Auto"/>  <!-- scanned          -->
-                    <ColumnDefinition Width="Auto"/>  <!-- matches          -->
-                </Grid.ColumnDefinitions>
-
-                <!-- Green left accent -->
-                <Border Grid.Column="0"
-                        Width="3"
-                        Background="{StaticResource PrimaryBrush}"
-                        Margin="0,4,12,4"
-                        CornerRadius="2"/>
-
-                <!-- Current file / done message -->
-                <TextBlock x:Name="StatusText"
-                           Grid.Column="1"
-                           Text="Ready"
-                           Foreground="{StaticResource DimTextBrush}"
-                           FontFamily="{StaticResource MonoFont}"
-                           FontSize="11"
-                           VerticalAlignment="Center"
-                           TextTrimming="CharacterEllipsis"/>
-
-                <!-- Scanned counter -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal"
-                            VerticalAlignment="Center" Margin="0,0,20,0">
-                    <TextBlock x:Name="ScannedText"
-                               Foreground="{StaticResource DimTextBrush}"
-                               FontFamily="{StaticResource MonoFont}"
-                               FontSize="11" VerticalAlignment="Center"
-                               Visibility="Collapsed"/>
-                </StackPanel>
-
-                <!-- Match count -->
-                <StackPanel Grid.Column="3" Orientation="Horizontal"
-                            VerticalAlignment="Center">
-                    <TextBlock x:Name="StatsText"
-                               Foreground="{StaticResource PrimaryBrush}"
-                               FontFamily="{StaticResource MonoFont}"
-                               FontSize="11" FontWeight="SemiBold"
-                               VerticalAlignment="Center"/>
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <!-- ══════════════════════════════════════════════════════
-             ROW 3 — MAIN 2-PANEL GRID
-        ═══════════════════════════════════════════════════════ -->
-        <Grid Grid.Row="3">
+        <!-- ══════════ ROW 1 - 2-PANEL GRID ══════════ -->
+        <Grid Grid.Row="1" Panel.ZIndex="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="265" MinWidth="200" MaxWidth="380"/>
-                <ColumnDefinition Width="1"/>
-                <ColumnDefinition Width="*"   MinWidth="220"/>
+                <ColumnDefinition Width="6"/>
+                <ColumnDefinition Width="*" MinWidth="220"/>
             </Grid.ColumnDefinitions>
 
-            <!-- ────────────────────────────────────────────────
-                 COLUMN 0 — SEARCH CONFIG
-            ──────────────────────────────────────────────────── -->
-            <DockPanel Grid.Column="0"
-                       Background="{StaticResource BackgroundBrush}"
-                       LastChildFill="True">
+            <!-- Continuous grain behind the whole row: search config, the 6px gap, and the margins around the results pane -->
+            <Border Grid.ColumnSpan="3" IsHitTestVisible="False" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
 
-                <!-- Action buttons (pinned to bottom) -->
-                <Border DockPanel.Dock="Bottom" Padding="12,8"
-                        BorderBrush="{StaticResource CardBorderBrush}"
-                        BorderThickness="0,1,0,0">
+            <!-- COLUMN 0 - SEARCH CONFIG (textured, flows into the bars above / footer below) -->
+            <Grid Grid.Column="0">
+              <DockPanel Background="Transparent" LastChildFill="True">
+                <Border DockPanel.Dock="Bottom" Padding="12,8">
                     <StackPanel>
-                        <Button x:Name="SearchButton"
-                                Content="SEARCH"
-                                Style="{StaticResource PrimaryButton}"
-                                Height="34"
-                                Click="Search_Click"/>
-                        <Button Content="CLEAR"
-                                Style="{StaticResource SurfaceButton}"
-                                Height="28"
-                                Margin="0,6,0,0"
-                                Click="Clear_Click"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" x:Name="SearchButton" Content="{DynamicResource Str_Btn_Search}" Style="{StaticResource OutlineButton}" Height="32" FontSize="13" Click="Search_Click"/>
+                            <!-- New search: opens a fresh tab -->
+                            <Button Grid.Column="1" Content="+" Width="32" Height="32" Margin="6,0,0,0" Padding="0"
+                                    FontFamily="Consolas" FontSize="15" Style="{StaticResource SurfaceButton}"
+                                    ToolTip="{DynamicResource Str_TT_NewTab}" Click="NewTab_Click"/>
+                        </Grid>
+                        <Button Content="{DynamicResource Str_Btn_Clear}" Style="{StaticResource SurfaceButton}" Height="28" Margin="0,6,0,0" Click="Clear_Click"/>
                     </StackPanel>
                 </Border>
 
-                <!-- Filters (above action buttons) -->
-                <Border DockPanel.Dock="Bottom" Padding="12,8"
-                        BorderBrush="{StaticResource CardBorderBrush}"
-                        BorderThickness="0,1,0,0">
+                <!-- Terms over filters with a draggable divider between them, clamped so
+                     neither section can be crushed against an edge. -->
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" MinHeight="140"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto" MinHeight="80" MaxHeight="430"/>
+                    </Grid.RowDefinitions>
+
+                <!-- Bottom-anchored so any slack in the row sits ABOVE the section: the
+                     collapsed "advanced" line seats flat against the buttons below. -->
+                <Border Grid.Row="2" Padding="12,8,12,2" VerticalAlignment="Bottom">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel>
-                        <TextBlock Text="FILTERS" Style="{StaticResource SectionHeader}"/>
-                        <TextBlock Text="include" Foreground="{StaticResource DimTextBrush}"
-                                   FontFamily="{StaticResource MonoFont}"
-                                   FontSize="10" Margin="0,0,0,3"/>
-                        <TextBox x:Name="IncludePatternsBox"
-                                 Text="*.*"
-                                 ToolTip="Semicolon-separated patterns, e.g. *.txt;*.log"/>
-                        <TextBlock Text="exclude" Foreground="{StaticResource DimTextBrush}"
-                                   FontFamily="{StaticResource MonoFont}"
-                                   FontSize="10" Margin="0,7,0,3"/>
-                        <TextBox x:Name="ExcludePatternsBox"
-                                 Text=""
-                                 ToolTip="Semicolon-separated paths or patterns to skip"/>
-                        <CheckBox x:Name="CaseSensitiveCheck"
-                                  Content="case sensitive"
-                                  Margin="0,9,0,0"/>
+                        <TextBlock Text="{DynamicResource Str_Lbl_Filters}" Style="{StaticResource SectionHeader}"/>
+
+                        <!-- Filter rows: [field v] on top, [condition toggle][value] below. AND-ed with
+                             the terms. The condition is a toggle button with SHORT localized words
+                             (is/not, before/after, over/under) so nothing ever truncates. -->
+                            <ItemsControl x:Name="FiltersList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type models:SearchFilter}">
+                                        <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource CardBorderBrush}"
+                                                BorderThickness="1" CornerRadius="5" Margin="0,0,0,6" Padding="6" Effect="{StaticResource ShadowBar}">
+                                            <Grid>
+                                            <Border IsHitTestVisible="False" CornerRadius="4" Margin="-6"
+                                                    Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                                            <StackPanel>
+                                                <Grid Margin="0,0,0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="4"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <ComboBox Grid.Column="0" SelectedIndex="{Binding FieldIndex, Mode=TwoWay}">
+                                                        <ComboBoxItem Content="{DynamicResource Str_Filter_Ext}"/>
+                                                        <ComboBoxItem Content="{DynamicResource Str_Filter_Date}"/>
+                                                        <ComboBoxItem Content="{DynamicResource Str_Filter_Size}"/>
+                                                    </ComboBox>
+                                                    <Button Grid.Column="2" Content="x" Style="{StaticResource DangerButton}" Width="22" Height="22" Padding="0"
+                                                            Tag="{Binding}" Click="RemoveFilter_Click"/>
+                                                </Grid>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="74"/>
+                                                        <ColumnDefinition Width="6"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Button Grid.Column="0" Style="{StaticResource ModeButton}" Width="74" Height="26"
+                                                            Tag="{Binding}" Click="ToggleFilterCondition_Click">
+                                                        <TextBlock>
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Style.Triggers>
+                                                                        <MultiDataTrigger>
+                                                                            <MultiDataTrigger.Conditions>
+                                                                                <Condition Binding="{Binding FieldIndex}" Value="0"/>
+                                                                                <Condition Binding="{Binding ConditionIndex}" Value="0"/>
+                                                                            </MultiDataTrigger.Conditions>
+                                                                            <Setter Property="Text" Value="{DynamicResource Str_Cond_Is}"/>
+                                                                        </MultiDataTrigger>
+                                                                        <MultiDataTrigger>
+                                                                            <MultiDataTrigger.Conditions>
+                                                                                <Condition Binding="{Binding FieldIndex}" Value="0"/>
+                                                                                <Condition Binding="{Binding ConditionIndex}" Value="1"/>
+                                                                            </MultiDataTrigger.Conditions>
+                                                                            <Setter Property="Text" Value="{DynamicResource Str_Cond_IsNot}"/>
+                                                                        </MultiDataTrigger>
+                                                                        <MultiDataTrigger>
+                                                                            <MultiDataTrigger.Conditions>
+                                                                                <Condition Binding="{Binding FieldIndex}" Value="1"/>
+                                                                                <Condition Binding="{Binding ConditionIndex}" Value="0"/>
+                                                                            </MultiDataTrigger.Conditions>
+                                                                            <Setter Property="Text" Value="{DynamicResource Str_Cond_Before}"/>
+                                                                        </MultiDataTrigger>
+                                                                        <MultiDataTrigger>
+                                                                            <MultiDataTrigger.Conditions>
+                                                                                <Condition Binding="{Binding FieldIndex}" Value="1"/>
+                                                                                <Condition Binding="{Binding ConditionIndex}" Value="1"/>
+                                                                            </MultiDataTrigger.Conditions>
+                                                                            <Setter Property="Text" Value="{DynamicResource Str_Cond_After}"/>
+                                                                        </MultiDataTrigger>
+                                                                        <MultiDataTrigger>
+                                                                            <MultiDataTrigger.Conditions>
+                                                                                <Condition Binding="{Binding FieldIndex}" Value="2"/>
+                                                                                <Condition Binding="{Binding ConditionIndex}" Value="0"/>
+                                                                            </MultiDataTrigger.Conditions>
+                                                                            <Setter Property="Text" Value="{DynamicResource Str_Cond_Larger}"/>
+                                                                        </MultiDataTrigger>
+                                                                        <MultiDataTrigger>
+                                                                            <MultiDataTrigger.Conditions>
+                                                                                <Condition Binding="{Binding FieldIndex}" Value="2"/>
+                                                                                <Condition Binding="{Binding ConditionIndex}" Value="1"/>
+                                                                            </MultiDataTrigger.Conditions>
+                                                                            <Setter Property="Text" Value="{DynamicResource Str_Cond_Smaller}"/>
+                                                                        </MultiDataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                    </Button>
+                                                    <Grid Grid.Column="2">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBox Grid.ColumnSpan="2" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+                                                                 Visibility="{Binding IsExt, Converter={StaticResource BoolToVis}}"/>
+                                                        <DatePicker Grid.ColumnSpan="2" SelectedDate="{Binding Date, Mode=TwoWay}"
+                                                                    Visibility="{Binding IsDate, Converter={StaticResource BoolToVis}}"/>
+                                                        <TextBox Grid.Column="0" Text="{Binding SizeText, UpdateSourceTrigger=PropertyChanged}"
+                                                                 Visibility="{Binding IsSize, Converter={StaticResource BoolToVis}}"/>
+                                                        <ComboBox Grid.Column="1" Width="56" Margin="4,0,0,0" SelectedIndex="{Binding UnitIndex, Mode=TwoWay}"
+                                                                  Visibility="{Binding IsSize, Converter={StaticResource BoolToVis}}">
+                                                            <ComboBoxItem Content="KB"/>
+                                                            <ComboBoxItem Content="MB"/>
+                                                        </ComboBox>
+                                                    </Grid>
+                                                </Grid>
+                                            </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        <Button HorizontalAlignment="Left" Content="{DynamicResource Str_Btn_AddFilter}" Style="{StaticResource SurfaceButton}"
+                                Padding="8,3" FontSize="10" Margin="0,2,0,0" Click="AddFilter_Click"/>
+
+                        <!-- "advanced" accordion: include/exclude/case collapse out of the way -->
+                        <Border Margin="0,10,0,0" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="0,1,0,0" Padding="0,7,0,2">
+                          <StackPanel>
+                            <Border Background="Transparent" Cursor="Hand" MouseLeftButtonUp="AdvancedToggle_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock x:Name="AdvancedChevron" Text="&#xE76C;" FontFamily="Segoe MDL2 Assets" FontSize="9"
+                                               Foreground="{DynamicResource DimTextBrush}" VerticalAlignment="Center" Margin="0,1,7,0"/>
+                                    <TextBlock Text="{DynamicResource Str_Lbl_Advanced}" Foreground="{DynamicResource DimTextBrush}"
+                                               FontFamily="{DynamicResource MonoFont}" FontSize="10" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                            <StackPanel x:Name="AdvancedPanel" Visibility="Collapsed">
+                        <Grid Margin="0,9,0,3">
+                            <TextBlock Text="{DynamicResource Str_Lbl_Include}" Foreground="{DynamicResource DimTextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="10" VerticalAlignment="Center"/>
+                            <!-- Pattern cheat-sheet card, like KillerPDF's keyboard shortcuts overlay -->
+                            <Button HorizontalAlignment="Right" Width="16" Height="16" Padding="0" Cursor="Hand"
+                                    ToolTip="{DynamicResource Str_TT_PatternHelp}" Click="PatternHelp_Click">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="hb" Background="Transparent" BorderBrush="{DynamicResource InputBorderBrush}" BorderThickness="1" CornerRadius="8">
+                                            <TextBlock x:Name="ht" Text="?" Foreground="{DynamicResource DimTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Consolas" FontSize="10"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="hb" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                                <Setter TargetName="ht" Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+                        <TextBox x:Name="IncludePatternsBox" Text="*.*" ToolTip="{DynamicResource Str_TT_Include}"/>
+                        <TextBlock Text="{DynamicResource Str_Lbl_Exclude}" Foreground="{DynamicResource DimTextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="10" Margin="0,7,0,3"/>
+                        <TextBox x:Name="ExcludePatternsBox" Text="" ToolTip="{DynamicResource Str_TT_Exclude}"/>
+                        <CheckBox x:Name="CaseSensitiveCheck" Content="{DynamicResource Str_Chk_CaseSensitive}" Foreground="{DynamicResource MutedTextBrush}" Margin="0,9,0,0"/>
+                            </StackPanel>
+                          </StackPanel>
+                        </Border>
                     </StackPanel>
+                    </ScrollViewer>
                 </Border>
 
-                <!-- Search terms — fills remaining space -->
-                <Border Padding="12,8,12,0">
+                <!-- Draggable divider between terms and filters -->
+                <GridSplitter Grid.Row="1" Height="7" HorizontalAlignment="Stretch" Background="Transparent"
+                              ResizeBehavior="PreviousAndNext" ResizeDirection="Rows"
+                              Cursor="SizeNS" ShowsPreview="False" Focusable="False">
+                    <GridSplitter.Template>
+                        <ControlTemplate TargetType="GridSplitter">
+                            <Border Background="Transparent">
+                                <Border x:Name="line" Height="1" VerticalAlignment="Center"
+                                        Background="{DynamicResource CardBorderBrush}" Margin="12,0"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="line" Property="Background" Value="{DynamicResource PrimaryBrush}"/></Trigger>
+                                <Trigger Property="IsDragging" Value="True"><Setter TargetName="line" Property="Background" Value="{DynamicResource PrimaryBrush}"/></Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </GridSplitter.Template>
+                </GridSplitter>
+
+                <Border Grid.Row="0" Padding="12,8,12,10">
                     <DockPanel LastChildFill="True">
-                        <TextBlock DockPanel.Dock="Top"
-                                   Text="SEARCH TERMS"
-                                   Style="{StaticResource SectionHeader}"/>
-                        <Button DockPanel.Dock="Bottom"
-                                Content="+ add term"
-                                Style="{StaticResource SurfaceButton}"
-                                Margin="0,6,0,0"
-                                Height="26"
-                                Click="AddTerm_Click"/>
-                        <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                      HorizontalScrollBarVisibility="Disabled">
+                        <TextBlock DockPanel.Dock="Top" Text="{DynamicResource Str_Lbl_SearchTerms}" Style="{StaticResource SectionHeader}"/>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <ItemsControl x:Name="TermsList">
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate DataType="{x:Type models:SearchTerm}">
-                                        <Border Background="{StaticResource SurfaceBrush}"
-                                                BorderBrush="{StaticResource CardBorderBrush}"
-                                                BorderThickness="1"
-                                                CornerRadius="4"
-                                                Margin="0,0,0,5"
-                                                Padding="5">
+                                    <DataTemplate DataType="{x:Type models:TermGroup}">
+                                        <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource CardBorderBrush}"
+                                                BorderThickness="1" CornerRadius="5" Margin="0,0,0,8" Padding="6" Effect="{StaticResource ShadowBar}">
                                             <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="26"/>
-                                                    <ColumnDefinition Width="5"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="5"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="4"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <!-- Mode toggle [F]/[C] -->
-                                                <Button Grid.Column="0"
-                                                        Content="{Binding ModeLabel, Mode=OneWay}"
-                                                        Style="{StaticResource ModeButton}"
-                                                        ToolTip="{Binding ModeTooltip}"
-                                                        Tag="{Binding}"
-                                                        Click="ToggleMode_Click"/>
-                                                <!-- Pattern -->
-                                                <TextBox Grid.Column="2"
-                                                         Text="{Binding Pattern, UpdateSourceTrigger=PropertyChanged}"
-                                                         ToolTip="{Binding ModeTooltip}"/>
-                                                <!-- Match count badge -->
-                                                <TextBlock Grid.Column="4"
-                                                           Text="{Binding MatchBadge}"
-                                                           Foreground="{StaticResource PrimaryBrush}"
-                                                           FontFamily="{StaticResource MonoFont}"
-                                                           FontSize="10"
-                                                           VerticalAlignment="Center"/>
-                                                <!-- Remove -->
-                                                <Button Grid.Column="6"
-                                                        Content="x"
-                                                        Style="{StaticResource DangerButton}"
-                                                        Width="22" Height="22" Padding="0"
-                                                        Tag="{Binding}"
-                                                        Click="RemoveTerm_Click"/>
+                                            <Border IsHitTestVisible="False" CornerRadius="4" Margin="-6"
+                                                    Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                                            <StackPanel>
+                                                <!-- Group header: ANY/ALL combiner toggle + remove-group -->
+                                                <Grid Margin="0,0,0,5">
+                                                    <Button HorizontalAlignment="Left" Content="{Binding ModeLabel, Mode=OneWay}" Style="{StaticResource ModeButton}"
+                                                            Width="44" Height="20" FontSize="10" ToolTip="{Binding ModeTooltip}" Tag="{Binding}" Click="ToggleGroupMode_Click"/>
+                                                </Grid>
+                                                <ItemsControl ItemsSource="{Binding Terms}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate DataType="{x:Type models:SearchTerm}">
+                                                            <Grid Margin="0,0,0,4">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="62"/>
+                                                                    <ColumnDefinition Width="6"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="5"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                    <ColumnDefinition Width="4"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <Button Grid.Column="0" Content="{Binding ModeName, Mode=OneWay}" Style="{StaticResource ModeButton}"
+                                                                        ToolTip="{Binding ModeTooltip}" Tag="{Binding}" Click="ToggleMode_Click"/>
+                                                                <TextBox Grid.Column="2" Text="{Binding Pattern, UpdateSourceTrigger=PropertyChanged}" ToolTip="{Binding ModeTooltip}"/>
+                                                                <TextBlock Grid.Column="4" Text="{Binding MatchBadge}" Foreground="{DynamicResource PrimaryBrush}"
+                                                                           FontFamily="{DynamicResource MonoFont}" FontSize="10" VerticalAlignment="Center"/>
+                                                                <Button Grid.Column="6" Content="x" Style="{StaticResource DangerButton}" Width="22" Height="22" Padding="0"
+                                                                        Tag="{Binding}" Click="RemoveTerm_Click"/>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <Button HorizontalAlignment="Left" Content="{DynamicResource Str_Btn_AddTerm}" Style="{StaticResource SurfaceButton}"
+                                                        Padding="8,3" FontSize="10" Margin="0,2,0,0" Tag="{Binding}" Click="AddTerm_Click"/>
+                                            </StackPanel>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -290,195 +373,672 @@
                         </ScrollViewer>
                     </DockPanel>
                 </Border>
-            </DockPanel>
+                </Grid>
+              </DockPanel>
+            </Grid>
 
-            <!-- Divider -->
-            <Border Grid.Column="1" Background="{StaticResource CardBorderBrush}"/>
+            <!-- COLUMN 2 - TAB STRIP + RESULTS. One tab = one whole search (folder, terms,
+                 filters, results). Tab visuals mirror KillerPDF: active tab takes the pane
+                 background with a 3px accent stripe on top and a soft shadow. -->
+            <Grid Grid.Column="2">
+              <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="*"/>
+              </Grid.RowDefinitions>
 
-            <!-- ────────────────────────────────────────────────
-                 COLUMN 2 — RESULTS
-            ──────────────────────────────────────────────────── -->
-            <DockPanel Grid.Column="2" Background="{StaticResource BackgroundBrush}">
+              <!-- Tab band: hidden until there are 2+ tabs (like KillerPDF). Opaque + its own
+                   grain so the strip reads as one textured band with the tabs sitting on it. -->
+              <Border Grid.Row="0" x:Name="TabBar" Margin="0,6,8,0" Background="{DynamicResource BackgroundBrush}" Visibility="Collapsed">
+               <Grid>
+                <Border IsHitTestVisible="False" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                <!-- KillerPDF's tab-strip fade: shadow rising from the pane below, so the band
+                     darkens toward the bottom and the tabs read as sitting in front of it.
+                     The horizontal OpacityMask cross-fades the shadow out at both ends so it
+                     dissolves toward the corners instead of cutting off in a straight line. -->
+                <Border IsHitTestVisible="False">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#00000000" Offset="0"/>
+                            <GradientStop Color="#00000000" Offset="0.45"/>
+                            <GradientStop Color="#59000000" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Border.OpacityMask>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#00FFFFFF" Offset="0"/>
+                            <GradientStop Color="#FFFFFFFF" Offset="0.06"/>
+                            <GradientStop Color="#FFFFFFFF" Offset="0.94"/>
+                            <GradientStop Color="#00FFFFFF" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.OpacityMask>
+                </Border>
+                <DockPanel LastChildFill="False">
+                <ScrollViewer DockPanel.Dock="Left" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Hidden">
+                    <ItemsControl x:Name="TabStrip">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:SearchTab}">
+                                <Border x:Name="tabBd" CornerRadius="4,4,0,0" Margin="0,3,1,0" Padding="12,4,5,5"
+                                        MinWidth="120" MaxWidth="220"
+                                        Cursor="Hand" Background="{DynamicResource BackgroundBrush}"
+                                        BorderThickness="0,0,1,0" BorderBrush="{DynamicResource CardBorderBrush}"
+                                        MouseDown="Tab_MouseDown"
+                                        PreviewMouseLeftButtonDown="Tab_DragDown"
+                                        PreviewMouseMove="Tab_DragMove"
+                                        PreviewMouseLeftButtonUp="Tab_DragUp">
+                                    <Border.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="{DynamicResource Str_Menu_PipeTab}"
+                                                      Tag="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      Click="PipeTab_Click"/>
+                                        </ContextMenu>
+                                    </Border.ContextMenu>
+                                    <Grid>
+                                        <Border IsHitTestVisible="False" CornerRadius="4,4,0,0" Margin="-12,-4,-5,-5"
+                                                Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                                        <DockPanel LastChildFill="True">
+                                            <Button DockPanel.Dock="Right" Content="x" Style="{StaticResource DangerButton}" Width="18" Height="18" Margin="6,0,0,0"
+                                                    ToolTip="{DynamicResource Str_TT_CloseTab}" Tag="{Binding}" Click="CloseTab_Click"/>
+                                            <TextBlock x:Name="tabLbl" Text="{Binding Title}" FontFamily="Consolas" FontSize="11"
+                                                       Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </DockPanel>
+                                    </Grid>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                        <Setter TargetName="tabBd" Property="Background" Value="{DynamicResource PaneBrush}"/>
+                                        <Setter TargetName="tabBd" Property="BorderThickness" Value="0,3,0,0"/>
+                                        <!-- Top padding gives back the 3px the accent stripe takes,
+                                             so the title doesn't drop when a tab activates. -->
+                                        <Setter TargetName="tabBd" Property="Padding" Value="12,1,5,5"/>
+                                        <Setter TargetName="tabBd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                        <Setter TargetName="tabBd" Property="Effect">
+                                            <Setter.Value><DropShadowEffect Color="Black" BlurRadius="9" ShadowDepth="0" Opacity="0.45"/></Setter.Value>
+                                        </Setter>
+                                        <Setter TargetName="tabLbl" Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                        <!-- Bold Consolas at 11px is nearly indistinguishable in Display mode;
+                                             the half-point bump makes the active weight actually read as bold. -->
+                                        <Setter TargetName="tabLbl" Property="FontWeight" Value="Bold"/>
+                                        <Setter TargetName="tabLbl" Property="FontSize" Value="11.5"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                </DockPanel>
+               </Grid>
+              </Border>
 
-                <Border DockPanel.Dock="Top"
-                        Background="{StaticResource SurfaceBrush}"
-                        BorderBrush="{StaticResource CardBorderBrush}"
-                        BorderThickness="0,0,0,1"
-                        Padding="12,7">
+              <!-- Tab-switch crossfade ghost: SwitchToTab snapshots the outgoing pane into
+                   this Image (same slot + margin, ZIndex above the pane) and fades it out
+                   over the incoming tab's live content - no dip to the dark background. -->
+              <Image x:Name="TabFadeGhost" Grid.Row="1" Margin="0,0,8,2" Stretch="Fill"
+                     Panel.ZIndex="40" IsHitTestVisible="False" Visibility="Collapsed"/>
+
+              <!-- RESULTS: distinct recessed surface, bordered + shadowed like KillerPDF.
+                   The tab's location and run-status lines live INSIDE the pane now - each tab
+                   is its own search, so the old full-width bars were wasted space. -->
+              <Border x:Name="ResultsPane" Grid.Row="1" Margin="0,0,8,2" Background="{DynamicResource PaneBrush}"
+                    BorderBrush="{DynamicResource PaneBorderBrush}" BorderThickness="1" CornerRadius="6" Effect="{StaticResource PaneShadow}">
+              <Grid>
+                <!-- Same treatment as KillerPDF's document pane: the whole content pane is grain-wrapped. -->
+                <Border IsHitTestVisible="False" CornerRadius="5" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+              <DockPanel>
+                <!-- Location row: the tab's folder on the left (click to change), tab-level
+                     actions on the right: pipe, export, close tab. -->
+                <Grid DockPanel.Dock="Top">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" x:Name="ScopeBar" CornerRadius="5,0,0,0" Padding="12,7,8,5"
+                            Cursor="Hand" ToolTip="{DynamicResource Str_TT_Scope}" MouseLeftButtonUp="ScopeBar_Click">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource RowHoverBrush}"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{DynamicResource Str_Lbl_In}" Foreground="{DynamicResource MutedTextBrush}"
+                                       FontFamily="{DynamicResource MonoFont}" FontSize="11" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock x:Name="ScopePathLabel" Grid.Column="1" Text="{DynamicResource Str_Scope_Empty}"
+                                       Foreground="{DynamicResource PrimaryBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="12"
+                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                       ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+                            <TextBox x:Name="RootPathBox" Visibility="Collapsed"/>
+                        </Grid>
+                    </Border>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,4,8,2">
+                        <!-- Pipe: search WITHIN these results in a new tab -->
+                        <Button Content="&#xE71C;" Width="26" Height="24" Padding="0" Margin="0,0,6,0"
+                                FontFamily="Segoe MDL2 Assets" FontSize="11" Style="{StaticResource SurfaceButton}"
+                                ToolTip="{DynamicResource Str_TT_Pipe}" Click="PipeButton_Click"/>
+                        <!-- Export split: CSV for spreadsheets, HTML for the styled report -->
+                        <Button Content="CSV" Style="{StaticResource SurfaceButton}"
+                                Padding="8,3" FontSize="10" VerticalAlignment="Center" Margin="0,0,6,0" Click="ExportCsv_Click"/>
+                        <Button Content="HTML" Style="{StaticResource SurfaceButton}"
+                                Padding="8,3" FontSize="10" VerticalAlignment="Center" Click="Export_Click"/>
+                        <!-- Close THIS tab, tucked in the corner -->
+                        <Button Content="x" Style="{StaticResource DangerButton}" Width="24" Height="24" Margin="6,0,0,0" FontSize="12"
+                                ToolTip="{DynamicResource Str_TT_CloseTab}" Click="CloseActiveTab_Click"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Run status row: what this tab's search is doing right now -->
+                <Border DockPanel.Dock="Top" Padding="12,2,12,5">
                     <Grid>
-                        <TextBlock x:Name="ResultsHeader"
-                                   Text="RESULTS"
-                                   Style="{StaticResource SectionHeader}"
-                                   Margin="0" VerticalAlignment="Center"/>
-                        <Button Content="EXPORT HTML"
-                                Style="{StaticResource SurfaceButton}"
-                                HorizontalAlignment="Right"
-                                Padding="8,3" FontSize="10"
-                                VerticalAlignment="Center"
-                                Click="Export_Click"/>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Width="3" Background="{DynamicResource PrimaryBrush}" Margin="0,1,10,1" CornerRadius="2"/>
+                        <TextBlock x:Name="StatusText" Grid.Column="1" Text="{DynamicResource Str_Status_Ready}" Foreground="{DynamicResource MutedTextBrush}"
+                                   FontFamily="{DynamicResource MonoFont}" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                     </Grid>
                 </Border>
 
-                <ListBox x:Name="ResultsList"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         Padding="8,6"
-                         Focusable="False"
-                         FocusVisualStyle="{x:Null}"
-                         SelectionMode="Single"
-                         VirtualizingPanel.IsVirtualizing="True"
-                         VirtualizingPanel.VirtualizationMode="Recycling"
-                         ScrollViewer.CanContentScroll="True"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                         ScrollViewer.VerticalScrollBarVisibility="Auto">
+                <Border DockPanel.Dock="Top" Background="Transparent" BorderBrush="{DynamicResource PaneBorderBrush}"
+                        BorderThickness="0,0,0,1" Padding="12,7">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <TextBlock x:Name="ResultsHeader" Text="{DynamicResource Str_Lbl_Results}" Style="{StaticResource SectionHeader}" Margin="0" VerticalAlignment="Center"/>
+                            <!-- What this tab searched for, so old tabs stay self-explanatory -->
+                            <TextBlock x:Name="QueryText" Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource MonoFont}"
+                                       FontSize="11" VerticalAlignment="Center" Margin="14,0,10,0" TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <!-- Sort like the HTML report: field + direction -->
+                            <ComboBox x:Name="SortCombo" Width="130" Height="24" FontSize="11" VerticalAlignment="Center"
+                                      Margin="0,0,4,0" SelectionChanged="SortCombo_Changed">
+                                <ComboBoxItem Content="{DynamicResource Str_Sort_Found}"/>
+                                <ComboBoxItem Content="{DynamicResource Str_Col_Name}"/>
+                                <ComboBoxItem Content="{DynamicResource Str_Col_Folder}"/>
+                                <ComboBoxItem Content="{DynamicResource Str_Col_Size}"/>
+                                <ComboBoxItem Content="{DynamicResource Str_Col_Modified}"/>
+                            </ComboBox>
+                            <Button x:Name="SortDirButton" Content="&#xE70E;" Width="24" Height="24" Padding="0" Margin="0,0,10,0"
+                                    FontFamily="Segoe MDL2 Assets" FontSize="10" Style="{StaticResource SurfaceButton}"
+                                    VerticalAlignment="Center" Click="SortDir_Click"/>
+                            <!-- Expand/collapse all: one glyph button, no words to shift width -->
+                            <Button x:Name="ExpandAllButton" Style="{StaticResource SurfaceButton}"
+                                    Width="26" Height="24" Padding="0" VerticalAlignment="Center"
+                                    ToolTip="{DynamicResource Str_Btn_ExpandAll}" Click="ExpandAll_Click">
+                                <TextBlock x:Name="ExpandAllGlyph" Text="&#xE740;" FontFamily="Segoe MDL2 Assets" FontSize="11"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- The list area sits on the in-between tone (MenuBackgroundBrush - between
+                     the bar and pane tiers, like KillerPDF's annotation bars), grain-wrapped. -->
+                <Border Background="{DynamicResource MenuBackgroundBrush}" CornerRadius="0,0,5,5">
+                <Grid>
+                <Border IsHitTestVisible="False" CornerRadius="0,0,5,5"
+                        Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                <ListBox x:Name="ResultsList" Background="Transparent" BorderThickness="0" Padding="8,4,8,0" Focusable="False"
+                         FocusVisualStyle="{x:Null}" SelectionMode="Single"
+                         VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                         VirtualizingPanel.ScrollUnit="Pixel"
+                         ScrollViewer.CanContentScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem">
-                            <Setter Property="Padding"                   Value="0"/>
-                            <Setter Property="Margin"                    Value="0"/>
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Margin" Value="0"/>
                             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                             <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="ListBoxItem">
-                                        <ContentPresenter/>
-                                    </ControlTemplate>
-                                </Setter.Value>
+                                <Setter.Value><ControlTemplate TargetType="ListBoxItem"><ContentPresenter/></ControlTemplate></Setter.Value>
                             </Setter>
                         </Style>
                     </ListBox.ItemContainerStyle>
                     <ListBox.ItemTemplate>
-                            <DataTemplate DataType="{x:Type models:SearchResult}">
-                                <Border Style="{StaticResource Card}"
-                                        BorderThickness="1,1,1,1"
-                                        Padding="0"
-                                        Margin="0,0,0,6">
-                                    <!-- File header -->
-                                    <StackPanel>
-                                        <Border BorderBrush="{StaticResource PrimaryPressedBrush}"
-                                                BorderThickness="2,0,0,0"
-                                                CornerRadius="3,3,0,0"
-                                                Padding="10,6"
-                                                Cursor="Hand"
-                                                Tag="{Binding FilePath}"
-                                                ToolTip="Click to reveal in Explorer  |  Right-click for more"
-                                                MouseLeftButtonUp="ResultHeader_Click">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="Background" Value="{StaticResource TableHeaderBrush}"/>
-                                                    <Style.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="{StaticResource RowHoverBrush}"/>
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                                <Border.ContextMenu>
-                                                    <ContextMenu Tag="{Binding FilePath}">
-                                                        <MenuItem Header="Open file"
-                                                                  Tag="{Binding PlacementTarget.Tag,
-                                                                        RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                                  Click="OpenFile_Click"/>
-                                                        <MenuItem Header="Show in Explorer"
-                                                                  Tag="{Binding PlacementTarget.Tag,
-                                                                        RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                                  Click="ShowInExplorer_Click"/>
-                                                    </ContextMenu>
-                                                </Border.ContextMenu>
-                                            <Grid>
-                                                <StackPanel>
-                                                    <TextBlock Text="{Binding FileName}"
-                                                               Foreground="{StaticResource TextBrush}"
-                                                               FontFamily="{StaticResource MonoFont}"
-                                                               FontSize="12" FontWeight="SemiBold"/>
-                                                    <TextBlock Text="{Binding Directory}"
-                                                               Foreground="{StaticResource DimTextBrush}"
-                                                               FontFamily="{StaticResource MonoFont}"
-                                                               FontSize="10"
-                                                               TextWrapping="Wrap"/>
+                        <DataTemplate DataType="{x:Type models:SearchResult}">
+                            <Border Style="{StaticResource Card}" BorderThickness="1" Padding="0" Margin="2,0,4,8" Effect="{StaticResource ShadowBar}">
+                                <StackPanel>
+                                    <Border BorderBrush="{DynamicResource PrimaryPressedBrush}" BorderThickness="2,0,0,0" CornerRadius="3,3,0,0"
+                                            Padding="10,6" Cursor="Hand" Tag="{Binding FilePath}"
+                                            ToolTip="{DynamicResource Str_TT_Result}" MouseLeftButtonUp="ResultHeader_Click"
+                                            PreviewMouseLeftButtonDown="ResultHeader_MouseDown">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="{DynamicResource TableHeaderBrush}"/>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource RowHoverBrush}"/></Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Border.ContextMenu>
+                                            <ContextMenu Tag="{Binding FilePath}">
+                                                <MenuItem Header="{DynamicResource Str_Menu_OpenFile}" Tag="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}" Click="OpenFile_Click"/>
+                                                <MenuItem Header="{DynamicResource Str_Menu_OpenWith}" Tag="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}" Click="OpenWith_Click"/>
+                                                <MenuItem Header="{DynamicResource Str_Menu_ShowExplorer}" Tag="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}" Click="ShowInExplorer_Click"/>
+                                            </ContextMenu>
+                                        </Border.ContextMenu>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <!-- Real shell icon for the file type -->
+                                            <Image Grid.Column="0" Source="{Binding Icon}" Width="18" Height="18" VerticalAlignment="Center"
+                                                   Margin="0,0,9,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding FileName}" Foreground="{DynamicResource TextBrush}"
+                                                       FontFamily="{DynamicResource MonoFont}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                            <!-- Size / modified columns so the sort keys are visible -->
+                                            <TextBlock Grid.Column="2" Text="{Binding SizeLabel}" Foreground="{DynamicResource MutedTextBrush}"
+                                                       FontFamily="{DynamicResource MonoFont}" FontSize="11" VerticalAlignment="Center"
+                                                       TextAlignment="Right" MinWidth="62" Margin="10,0,0,0"/>
+                                            <TextBlock Grid.Column="3" Text="{Binding ModifiedLabel}" Foreground="{DynamicResource MutedTextBrush}"
+                                                       FontFamily="{DynamicResource MonoFont}" FontSize="11" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                            <TextBlock Grid.Column="4" Text="{Binding CountBadge}" Foreground="{DynamicResource MutedTextBrush}"
+                                                       FontFamily="{DynamicResource MonoFont}" FontSize="10" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                            <!-- Inline row actions: open file / show in Explorer -->
+                                            <Button Grid.Column="5" Content="&#xE8E5;" Style="{StaticResource GrungeCalendarNavButton}"
+                                                    Width="28" Height="24" FontSize="14" Margin="8,0,0,0"
+                                                    ToolTip="{DynamicResource Str_Menu_OpenFile}" Tag="{Binding FilePath}" Click="OpenFile_Click"/>
+                                            <Button Grid.Column="6" Content="&#xE838;" Style="{StaticResource GrungeCalendarNavButton}"
+                                                    Width="28" Height="24" FontSize="14" Margin="2,0,0,0"
+                                                    ToolTip="{DynamicResource Str_Menu_ShowExplorer}" Tag="{Binding FilePath}" Click="ShowInExplorer_Click"/>
+                                        </Grid>
+                                    </Border>
+                                    <!-- Collapsed by default: folder + content matches only show once expanded. -->
+                                    <StackPanel Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}">
+                                    <!-- DirectoryWrapped = break opportunities after each backslash, so
+                                         long paths wrap cleanly at separators instead of mid-name -->
+                                    <TextBlock Text="{Binding DirectoryWrapped}" Foreground="{DynamicResource DimTextBrush}" FontFamily="{DynamicResource MonoFont}"
+                                               FontSize="10" TextWrapping="Wrap" Margin="10,6,10,0"/>
+                                    <!-- Only content matches get detail rows; filename hits carry no
+                                         useful detail (the header's query line says what was searched). -->
+                                    <ItemsControl ItemsSource="{Binding ContentMatches}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type models:TermMatch}">
+                                                <StackPanel Margin="10,6,10,4">
+                                                    <TextBlock Foreground="{DynamicResource PrimaryPressedBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="10" Margin="0,0,0,3">
+                                                        <Run Text="["/><Run Text="{Binding Term.ModeLabel, Mode=OneWay}"/><Run Text="]  "/><Run Text="{Binding Term.Pattern}" Foreground="{DynamicResource MutedTextBrush}"/>
+                                                    </TextBlock>
+                                                    <ItemsControl ItemsSource="{Binding Lines}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate DataType="{x:Type models:LineMatch}">
+                                                                <Grid Margin="0,1">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="42"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Grid.Column="0" Text="{Binding LineNumber}" Foreground="{DynamicResource DimTextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="10" HorizontalAlignment="Right" Margin="0,0,8,0"/>
+                                                                    <TextBlock Grid.Column="1" Text="{Binding LineText}" Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="11" TextWrapping="Wrap"/>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
                                                 </StackPanel>
-                                                <Border Background="{StaticResource PrimaryPressedBrush}"
-                                                        HorizontalAlignment="Right"
-                                                        VerticalAlignment="Top"
-                                                        CornerRadius="3"
-                                                        Padding="6,2">
-                                                    <TextBlock Text="{Binding TotalMatchCount}"
-                                                               Foreground="{StaticResource PrimaryBrush}"
-                                                               FontFamily="{StaticResource MonoFont}"
-                                                               FontSize="10"/>
-                                                </Border>
-                                            </Grid>
-                                        </Border>
-
-                                        <!-- Per-term match groups -->
-                                        <ItemsControl ItemsSource="{Binding Matches}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate DataType="{x:Type models:TermMatch}">
-                                                    <StackPanel Margin="10,6,10,4">
-                                                        <TextBlock Foreground="{StaticResource PrimaryPressedBrush}"
-                                                                   FontFamily="{StaticResource MonoFont}"
-                                                                   FontSize="10" Margin="0,0,0,3">
-                                                            <Run Text="["/><Run Text="{Binding Term.ModeLabel, Mode=OneWay}"/><Run Text="]  "/><Run Text="{Binding Term.Pattern}" Foreground="{StaticResource MutedTextBrush}"/>
-                                                        </TextBlock>
-                                                        <ItemsControl ItemsSource="{Binding Lines}">
-                                                            <ItemsControl.ItemTemplate>
-                                                                <DataTemplate DataType="{x:Type models:LineMatch}">
-                                                                    <Grid Margin="0,1">
-                                                                        <Grid.ColumnDefinitions>
-                                                                            <ColumnDefinition Width="42"/>
-                                                                            <ColumnDefinition Width="*"/>
-                                                                        </Grid.ColumnDefinitions>
-                                                                        <TextBlock Grid.Column="0"
-                                                                                   Text="{Binding LineNumber}"
-                                                                                   Foreground="{StaticResource DimTextBrush}"
-                                                                                   FontFamily="{StaticResource MonoFont}"
-                                                                                   FontSize="10"
-                                                                                   HorizontalAlignment="Right"
-                                                                                   Margin="0,0,8,0"/>
-                                                                        <TextBlock Grid.Column="1"
-                                                                                   Text="{Binding LineText}"
-                                                                                   Foreground="{StaticResource MutedTextBrush}"
-                                                                                   FontFamily="{StaticResource MonoFont}"
-                                                                                   FontSize="11"
-                                                                                   TextWrapping="Wrap"/>
-                                                                    </Grid>
-                                                                </DataTemplate>
-                                                            </ItemsControl.ItemTemplate>
-                                                        </ItemsControl>
-                                                    </StackPanel>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
                                     </StackPanel>
-                                </Border>
-                            </DataTemplate>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-            </DockPanel>
+                </Grid>
+                </Border>
+              </DockPanel>
 
+              <!-- Quick-filter bar (Ctrl+F): drops down from the results pane's top edge and
+                   behaves like KillerPDF's annotation bars - grain-wrapped, slideable along
+                   the top via the 6-dot grip, position persisted. Esc or the x closes it. -->
+              <Border x:Name="ResultFilterBar" Visibility="Collapsed" Panel.ZIndex="20"
+                      HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,192,0"
+                      Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource PaneBorderBrush}"
+                      BorderThickness="1,0,1,1" CornerRadius="0,0,5,5" Padding="10,7" Effect="{StaticResource ShadowBar}">
+                  <Grid>
+                      <Border IsHitTestVisible="False" CornerRadius="0,0,4,4" Margin="-10,-7"
+                              Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                      <StackPanel Orientation="Horizontal">
+                          <Canvas Width="10" Height="16" VerticalAlignment="Center" Margin="0,0,9,0"
+                                  Background="Transparent" Cursor="Hand" ToolTip="{DynamicResource Str_TT_FilterResults}"
+                                  MouseLeftButtonDown="FilterGrip_MouseDown" MouseMove="FilterGrip_MouseMove"
+                                  MouseLeftButtonUp="FilterGrip_MouseUp">
+                              <Rectangle Canvas.Left="0" Canvas.Top="2"  Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+                              <Rectangle Canvas.Left="5" Canvas.Top="2"  Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+                              <Rectangle Canvas.Left="0" Canvas.Top="7"  Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+                              <Rectangle Canvas.Left="5" Canvas.Top="7"  Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+                              <Rectangle Canvas.Left="0" Canvas.Top="12" Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+                              <Rectangle Canvas.Left="5" Canvas.Top="12" Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+                          </Canvas>
+                          <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="14"
+                                     Foreground="{DynamicResource DimTextBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                          <TextBox x:Name="ResultFilterBox" Width="280" Height="28" FontSize="13" VerticalContentAlignment="Center"
+                                   ToolTip="{DynamicResource Str_TT_FilterResults}" TextChanged="ResultFilterBox_TextChanged"/>
+                          <Button Content="x" Style="{StaticResource DangerButton}" Width="24" Height="24" Margin="7,0,0,0" FontSize="12"
+                                  Click="ResultFilterClose_Click"/>
+                      </StackPanel>
+                  </Grid>
+              </Border>
+              </Grid>
+              </Border>
+            </Grid>
         </Grid>
 
-        <!-- ══════════════════════════════════════════════════════
-             ROW 4 — FOOTER
-        ═══════════════════════════════════════════════════════ -->
-        <Border Grid.Row="4"
-                Background="{StaticResource SurfaceBrush}"
-                BorderBrush="{StaticResource CardBorderBrush}"
-                BorderThickness="0,1,0,0">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
-                        VerticalAlignment="Center" Margin="0,0,16,0">
-                <TextBlock x:Name="VersionLabel" Text="v0.1.1"
-                           Foreground="#444444" FontFamily="{StaticResource MonoFont}"
-                           FontSize="10" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                <TextBlock FontSize="10" VerticalAlignment="Center"
-                           FontFamily="{StaticResource MonoFont}">
-                    <Run Text="&#x00A9; 2026 " Foreground="#444444"/>
-                    <Hyperlink NavigateUri="https://thekiller.net"
-                               RequestNavigate="Hyperlink_RequestNavigate"
-                               Foreground="#444444" TextDecorations="None">
+        <!-- ══════════ ROW 2 - FOOTER (blends with the sidebar/panes, no divider line) ══════════ -->
+        <Border Grid.Row="2" Background="{DynamicResource BackgroundBrush}">
+          <Grid>
+            <Border IsHitTestVisible="False" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+            <!-- Live counters for the ACTIVE tab's search (moved here from the run status bar) -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,0,0">
+                <TextBlock x:Name="ScannedText" Foreground="{DynamicResource TextFooter}" FontFamily="{DynamicResource MonoFont}"
+                           FontSize="11" VerticalAlignment="Center" Margin="0,0,14,0" Visibility="Collapsed"/>
+                <TextBlock x:Name="StatsText" Foreground="{DynamicResource PrimaryBrush}" FontFamily="{DynamicResource MonoFont}"
+                           FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            </StackPanel>
+            <!-- Portable mode indicator (hidden when installed), same as KillerScan -->
+            <StackPanel x:Name="PortableBadge" Orientation="Horizontal" HorizontalAlignment="Center"
+                        VerticalAlignment="Center" Visibility="Collapsed">
+                <TextBlock Text="{DynamicResource Str_Portable}" Foreground="{DynamicResource TextFooter}"
+                           FontFamily="Consolas" FontSize="9" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <Button x:Name="InstallBtn" Content="{DynamicResource Str_Btn_Install}" Click="Install_Click"
+                        Style="{StaticResource OutlineButton}" FontFamily="Segoe UI" FontSize="10" Padding="8,1"
+                        VerticalAlignment="Center"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,16,0">
+                <TextBlock x:Name="VersionLabel" Text="v0.99" Foreground="{DynamicResource TextFooter}" FontFamily="{DynamicResource MonoFont}" FontSize="11" VerticalAlignment="Center" Margin="0,0,12,0"
+                           Cursor="Hand" ToolTip="About" MouseLeftButtonUp="VersionLabel_Click"/>
+                <TextBlock FontSize="11" VerticalAlignment="Center" FontFamily="{DynamicResource MonoFont}" Margin="0,0,14,0">
+                    <Run Text="&#x00A9; 2026 " Foreground="{DynamicResource TextFooter}"/>
+                    <Hyperlink NavigateUri="https://thekiller.net" RequestNavigate="Hyperlink_RequestNavigate" Foreground="{DynamicResource TextFooter}" TextDecorations="None">
                         <Run Text="Steve the Killer"/>
                     </Hyperlink>
                 </TextBlock>
             </StackPanel>
+            <!-- Bottom-right resize grip: dotted triangle at the content corner, forwards a
+                 HTBOTTOMRIGHT resize to Windows on drag (same as KillerPDF/KillerScan). -->
+            <Canvas x:Name="ResizeGripDots" Width="13" Height="13"
+                    HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,4,4"
+                    Background="Transparent" Cursor="SizeNWSE"
+                    MouseLeftButtonDown="ResizeGrip_MouseDown">
+                <Rectangle Canvas.Left="10" Canvas.Top="2"  Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+                <Rectangle Canvas.Left="6"  Canvas.Top="6"  Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+                <Rectangle Canvas.Left="10" Canvas.Top="6"  Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+                <Rectangle Canvas.Left="2"  Canvas.Top="10" Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+                <Rectangle Canvas.Left="6"  Canvas.Top="10" Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+                <Rectangle Canvas.Left="10" Canvas.Top="10" Width="2" Height="2" Fill="{DynamicResource DimTextBrush}"/>
+            </Canvas>
+          </Grid>
         </Border>
+
+        <!-- ══════════ ABOUT OVERLAY (dim backdrop + centered card) ══════════ -->
+        <Grid x:Name="AboutOverlay" Grid.RowSpan="3" Panel.ZIndex="9000" Visibility="Collapsed"
+              Background="#88000000" MouseLeftButtonDown="AboutOverlay_Click">
+            <!-- Fixed width: the info box never dictates the card size, and hashes never wrap. -->
+            <!-- Card structure copied from KillerScan (the rules for every About card):
+                 width hugs the SHA-256 line, the drop shadow lives on a SEPARATE border so
+                 the card text never renders through a bitmap effect (stays ClearType-crisp),
+                 and the whole surface is grain-wrapped. -->
+            <Grid Width="468" VerticalAlignment="Center" MouseLeftButtonDown="AboutCard_Click">
+                <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" IsHitTestVisible="False">
+                    <Border.Effect><DropShadowEffect Color="Black" BlurRadius="26" ShadowDepth="5" Direction="270" Opacity="0.6"/></Border.Effect>
+                </Border>
+                <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource CardBorderBrush}"
+                        BorderThickness="1" CornerRadius="6">
+                    <Grid>
+                        <Border IsHitTestVisible="False" CornerRadius="6"
+                                Opacity="{DynamicResource GrainOpacity}" Background="{DynamicResource GrainTileBrush}"/>
+
+                        <!-- Close X: glyph reddens on hover (foreground via style setter so the trigger wins) -->
+                        <Button Content="&#x2715;" Click="AboutClose_Click" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                Width="28" Height="26" Margin="0,6,6,0" Panel.ZIndex="2" FontSize="11"
+                                Background="Transparent" BorderThickness="0" Cursor="Hand">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="Transparent">
+                                                    <ContentPresenter x:Name="cp" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Foreground" Value="#E04444"/>
+                                                        <Setter TargetName="cp" Property="Effect">
+                                                            <Setter.Value><DropShadowEffect Color="#000000" BlurRadius="4" ShadowDepth="1" Direction="270" Opacity="0.5"/></Setter.Value>
+                                                        </Setter>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <StackPanel Margin="24,22,24,18">
+                            <!-- Header: icon left, wordmark (links to the site) + tagline right -->
+                            <Grid Margin="0,0,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Image x:Name="AboutIcon" Grid.Column="0" Width="58" Height="58" Margin="0,0,15,0" VerticalAlignment="Center"
+                                       RenderOptions.BitmapScalingMode="HighQuality">
+                                    <Image.Effect><DropShadowEffect Color="Black" BlurRadius="12" ShadowDepth="3" Direction="270" Opacity="0.55"/></Image.Effect>
+                                </Image>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <Grid Margin="0,0,0,4" HorizontalAlignment="Left" Cursor="Hand" ToolTip="killerfind.net"
+                                          Background="Transparent" MouseLeftButtonUp="Wordmark_Click">
+                                        <TextBlock FontFamily="{DynamicResource WordmarkFont}" Margin="1,2,0,0" IsHitTestVisible="False"
+                                                   Opacity="{DynamicResource IconShadowOpacity}"><TextBlock.Effect><BlurEffect Radius="2"/></TextBlock.Effect><Run Text="Killer" FontSize="22" Foreground="#C0000000"/><Run Text="Find" FontSize="28.6" FontWeight="Bold" Foreground="#C0000000"/></TextBlock>
+                                        <TextBlock FontFamily="{DynamicResource WordmarkFont}"><Run Text="Killer" FontSize="22" Foreground="{DynamicResource TextBrush}"/><Run Text="Find" FontSize="28.6" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/></TextBlock>
+                                    </Grid>
+                                    <TextBlock Text="{DynamicResource Str_About_Tagline}" FontSize="12" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Info panel - matte, lifted above the grainy card; hashes never wrap -->
+                            <Grid>
+                                <Border Background="{DynamicResource BackgroundBrush}" CornerRadius="4" IsHitTestVisible="False">
+                                    <Border.Effect><DropShadowEffect Color="Black" BlurRadius="14" ShadowDepth="2" Direction="270" Opacity="0.5"/></Border.Effect>
+                                </Border>
+                                <StackPanel Margin="14,12">
+                                    <TextBlock Text="{DynamicResource Str_About_Version}" Foreground="{DynamicResource DimTextBrush}" FontFamily="Consolas" FontSize="10"/>
+                                    <TextBlock x:Name="AboutVersionBlock" Foreground="{DynamicResource PrimaryBrush}" FontFamily="Consolas" FontSize="12"
+                                               Cursor="Hand" MouseLeftButtonUp="AboutVersion_Click" Margin="0,1,0,8"/>
+                                    <TextBlock Text="{DynamicResource Str_About_Publisher}" Foreground="{DynamicResource DimTextBrush}" FontFamily="Consolas" FontSize="10"/>
+                                    <TextBlock x:Name="AboutPublisherBlock" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" FontSize="12" Margin="0,1,0,8"/>
+                                    <TextBlock Text="{DynamicResource Str_About_Thumbprint}" Foreground="{DynamicResource DimTextBrush}" FontFamily="Consolas" FontSize="10"/>
+                                    <TextBlock x:Name="AboutThumbprintBlock" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" FontSize="11" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="0,1,0,8"/>
+                                    <TextBlock Text="{DynamicResource Str_About_Sha}" Foreground="{DynamicResource DimTextBrush}" FontFamily="Consolas" FontSize="10"/>
+                                    <TextBlock x:Name="AboutSha256Block" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" FontSize="11" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="0,1,0,0"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <Button x:Name="AboutUpdateButton" Visibility="Collapsed" Margin="0,14,0,0" HorizontalAlignment="Left" Cursor="Hand" Click="AboutUpdateButton_Click">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="ub" Background="Transparent" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="1" CornerRadius="4" Padding="12,6">
+                                            <ContentPresenter/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ub" Property="Background" Value="{DynamicResource PrimaryBrush}"/></Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <TextBlock x:Name="AboutUpdateText" Foreground="{DynamicResource PrimaryBrush}" FontSize="12"/>
+                            </Button>
+
+                            <!-- Footer: copyright with the name linking to thekiller.net; the website
+                                 link lives on the wordmark above. -->
+                            <TextBlock Margin="0,14,0,0" FontSize="11" FontFamily="Consolas" Foreground="{DynamicResource MutedTextBrush}">
+                                <Run Text="&#x00A9; 2026 "/><Hyperlink NavigateUri="https://thekiller.net" RequestNavigate="AboutLink_Navigate" Foreground="{DynamicResource MutedTextBrush}" TextDecorations="None">Steve the Killer</Hyperlink><Run Text="  &#x00B7;  GPLv3"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- ══════════ PATTERN HELP OVERLAY (dim backdrop + centered cheat-sheet card) ══════════ -->
+        <Grid x:Name="PatternHelpOverlay" Grid.RowSpan="3" Panel.ZIndex="9000" Visibility="Collapsed"
+              Background="#88000000" MouseLeftButtonDown="PatternHelpOverlay_Click">
+            <Border Width="440" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource CardBorderBrush}"
+                    BorderThickness="1" CornerRadius="8" MouseLeftButtonDown="PatternHelpCard_Click">
+                <Border.Effect><DropShadowEffect Color="Black" BlurRadius="30" ShadowDepth="6" Direction="270" Opacity="0.6"/></Border.Effect>
+                <Grid>
+                <!-- One dark surface with grain across the whole card - no inner box. -->
+                <Border IsHitTestVisible="False" CornerRadius="7" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                <StackPanel Margin="24,20">
+                    <Grid Margin="0,0,0,12">
+                        <TextBlock Text="{DynamicResource Str_Help_Title}" Style="{StaticResource SectionHeader}" FontSize="13" Margin="0" VerticalAlignment="Center"/>
+                        <!-- Foreground lives in a Style setter so the hover/press triggers can win
+                             (a local value would beat them - that's why hover never turned red). -->
+                        <Button Content="&#xE8BB;" Click="PatternHelpClose_Click" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                Width="30" Height="26" FontSize="10" FontFamily="Segoe MDL2 Assets"
+                                Background="Transparent" BorderThickness="0" Cursor="Hand">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Foreground" Value="{DynamicResource ChromeTextBrush}"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="bg" Background="Transparent" CornerRadius="3">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Foreground" Value="{DynamicResource DangerRed}"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsPressed" Value="True">
+                                                        <Setter Property="Foreground" Value="{DynamicResource DangerRed}"/>
+                                                        <Setter TargetName="bg" Property="Background" Value="#33C42B1C"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </Grid>
+
+                    <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="118"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.Resources>
+                                <Style x:Key="HelpPat" TargetType="TextBlock">
+                                    <Setter Property="FontFamily" Value="Consolas"/>
+                                    <Setter Property="FontSize" Value="12"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                    <Setter Property="Margin" Value="0,0,10,7"/>
+                                    <Setter Property="VerticalAlignment" Value="Top"/>
+                                </Style>
+                                <Style x:Key="HelpDesc" TargetType="TextBlock">
+                                    <Setter Property="FontSize" Value="11"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+                                    <Setter Property="TextWrapping" Value="Wrap"/>
+                                    <Setter Property="Margin" Value="0,1,0,7"/>
+                                </Style>
+                            </Grid.Resources>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource HelpPat}" Text="*.log"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource HelpDesc}" Text="{DynamicResource Str_Help_Star}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource HelpPat}" Text="report*"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource HelpDesc}" Text="{DynamicResource Str_Help_Prefix}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource HelpPat}" Text="*2024*"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource HelpDesc}" Text="{DynamicResource Str_Help_Middle}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource HelpPat}" Text="log?.txt"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource HelpDesc}" Text="{DynamicResource Str_Help_Q}"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource HelpPat}" Text="*.txt;*.log"/>
+                            <TextBlock Grid.Row="4" Grid.Column="1" Style="{StaticResource HelpDesc}" Text="{DynamicResource Str_Help_List}"/>
+                            <TextBlock Grid.Row="5" Grid.Column="0" Style="{StaticResource HelpPat}" Text="log"/>
+                            <TextBlock Grid.Row="5" Grid.Column="1" Style="{StaticResource HelpDesc}" Text="{DynamicResource Str_Help_Plain}"/>
+                            <TextBlock Grid.Row="6" Grid.Column="0" Style="{StaticResource HelpPat}" Text="bin;obj"/>
+                            <TextBlock Grid.Row="6" Grid.Column="1" Style="{StaticResource HelpDesc}" Text="{DynamicResource Str_Help_Exclude}"/>
+                    </Grid>
+
+                    <!-- SHORTCUTS: full keyboard map (F1 opens this card) -->
+                    <TextBlock Text="{DynamicResource Str_Help_Shortcuts}" Style="{StaticResource SectionHeader}" FontSize="13" Margin="0,16,0,12"/>
+                    <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="118"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.Resources>
+                                <Style x:Key="KsKey" TargetType="TextBlock">
+                                    <Setter Property="FontFamily" Value="Consolas"/>
+                                    <Setter Property="FontSize" Value="12"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                    <Setter Property="Margin" Value="0,0,10,7"/>
+                                    <Setter Property="VerticalAlignment" Value="Top"/>
+                                </Style>
+                                <Style x:Key="KsDesc" TargetType="TextBlock">
+                                    <Setter Property="FontSize" Value="11"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+                                    <Setter Property="TextWrapping" Value="Wrap"/>
+                                    <Setter Property="Margin" Value="0,1,0,7"/>
+                                </Style>
+                            </Grid.Resources>
+                            <TextBlock Grid.Row="0"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Enter"/>
+                            <TextBlock Grid.Row="0"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_Run}"/>
+                            <TextBlock Grid.Row="1"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Esc"/>
+                            <TextBlock Grid.Row="1"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_Esc}"/>
+                            <TextBlock Grid.Row="2"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+F"/>
+                            <TextBlock Grid.Row="2"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_FilterResults}"/>
+                            <TextBlock Grid.Row="3"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+T"/>
+                            <TextBlock Grid.Row="3"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_NewTab}"/>
+                            <TextBlock Grid.Row="4"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+W"/>
+                            <TextBlock Grid.Row="4"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_CloseTab}"/>
+                            <TextBlock Grid.Row="5"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+Tab"/>
+                            <TextBlock Grid.Row="5"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_NextTab}"/>
+                            <TextBlock Grid.Row="6"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+1-9"/>
+                            <TextBlock Grid.Row="6"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_JumpTab}"/>
+                            <TextBlock Grid.Row="7"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+N"/>
+                            <TextBlock Grid.Row="7"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_AddTerm}"/>
+                            <TextBlock Grid.Row="8"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+Shift+N"/>
+                            <TextBlock Grid.Row="8"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_AddFilter}"/>
+                            <TextBlock Grid.Row="9"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+O"/>
+                            <TextBlock Grid.Row="9"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_Folder}"/>
+                            <TextBlock Grid.Row="10" Grid.Column="0" Style="{StaticResource KsKey}"  Text="F1"/>
+                            <TextBlock Grid.Row="10" Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_Help}"/>
+                    </Grid>
+                </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
 
     </Grid>
 </Window>
