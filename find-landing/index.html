@@ -2,7 +2,10 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<script>/* Apply saved theme + accent before first paint to avoid a reload flash */(function(){try{var d=document.documentElement,t=localStorage.getItem('kfind-theme');if(t){d.setAttribute('data-theme',t);if({dark:1,light:1,hc:1}[t]){var v=localStorage.getItem('kfind-av');if(v){var s=v.split('|');d.style.setProperty('--accent',s[0]);d.style.setProperty('--btn',s[1]);}}}}catch(e){}})();</script>
+<script>/* Apply saved theme + accent before first paint to avoid a reload flash, and paint the
+theme's background on the very first frame (the browser's default white shows otherwise). */
+(function(){var d=document.documentElement,t=null;try{t=localStorage.getItem('kfind-theme');if(t){d.setAttribute('data-theme',t);if({dark:1,light:1,hc:1}[t]){var v=localStorage.getItem('kfind-av');if(v){var s=v.split('|');d.style.setProperty('--accent',s[0]);d.style.setProperty('--btn',s[1]);}}}}catch(e){}
+var bg={dark:'#333333',light:'#b8b8b8',hc:'#0d0d0d',blood:'#4a1f20',greed:'#0a5234',cyanotic:'#0a4a6e'};d.style.backgroundColor=bg[t]||bg.dark;})();</script>
 <link rel="preload" href="brand/KillerScan.ttf" as="font" type="font/ttf" crossorigin>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="darkreader-lock">
@@ -23,15 +26,18 @@
 <meta name="twitter:description" content="One exe. No installer, no agent, no account, no telemetry. Fast file and content search built by a field tech, for field techs. GPLv3.">
 <meta name="twitter:image" content="https://killerfind.net/og-image.png">
 <script defer src="https://koya.thekiller.net/script.js" data-website-id="8f6a2876-9457-45d5-96ca-9008ee743944"></script>
-<link rel="stylesheet" href="kf.css?v=1">
+<link rel="stylesheet" href="kf.css?v=5">
 <style>
 /* ---- Page-specific (landing) ---- */
 .content-inner { max-width: 1100px; margin: 0 auto; padding: 0 28px 50px; }
 
 /* Hero */
-.hero { padding: 46px 0 28px; text-align: center; }
+.hero { padding: 12px 0 28px; text-align: center; }
 .hero .wm-logo { height: clamp(54px, 10vw, 104px); margin: 0 auto; filter: drop-shadow(0 4px 7px rgba(0,0,0,0.5)); }
-.hero .tagline { margin: 18px auto 0; max-width: 620px; font-size: 16px; color: var(--text2); }
+.hero .hero-lockup { display: flex; align-items: center; justify-content: center; gap: clamp(10px, 2vw, 22px); flex-wrap: wrap; }
+.hero .hero-lockup .wm-logo { margin: 0; }
+.hero .hero-icon { height: clamp(120px, 24vw, 230px); width: auto; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5)); }
+.hero .tagline { margin: 10px auto 0; max-width: 620px; font-size: 16px; color: var(--text2); }
 
 .hero-blurbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; max-width: 980px; margin: 30px auto 0; text-align: left; }
 .blurb h3 { font-family: 'KillerScan', 'Courier New', monospace; font-size: 15px; font-weight: normal; letter-spacing: .5px; color: var(--accent); margin-bottom: 7px; text-shadow: 0 2px 5px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.5); }
@@ -47,7 +53,7 @@
 .hero-cta { display: flex; flex-direction: column; align-items: stretch; gap: 14px; flex: 0 1 360px; }
 .cta-row { display: flex; flex-direction: column; gap: 12px; max-width: 360px; }
 .download-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; background: var(--btn); color: var(--btn-text); font-size: 15px; font-weight: 700; padding: 14px 28px; border-radius: 6px; box-shadow: 0 8px 20px rgba(0,0,0,0.35); transition: filter 0.15s, transform 0.1s, box-shadow 0.15s; }
-.download-btn:hover { filter: brightness(1.4); transform: translateY(-1px); box-shadow: 0 12px 28px rgba(0,0,0,0.5); color: var(--btn-text); }
+.download-btn:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 12px 28px rgba(0,0,0,0.5); color: var(--btn-text); }
 .download-btn:active { transform: translateY(1px); }
 .download-btn svg { width: 18px; height: 18px; fill: currentColor; }
 .gh-btn { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; border: 1.5px solid var(--accent); color: var(--accent); background: transparent; font-size: 15px; font-weight: 700; padding: 12.5px 24px; border-radius: 6px; transition: background 0.15s, color 0.15s; }
@@ -59,14 +65,22 @@
 .features h2 { font-family: 'KillerScan', 'Courier New', monospace; font-size: 24px; font-weight: normal; letter-spacing: .5px; color: var(--text); text-align: center; margin-bottom: 26px; }
 .feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 14px; }
 .feature-card { background: var(--modal) url('grain.png') repeat; background-size: 256px 256px; border: 1px solid var(--pane-border); border-top: 2px solid var(--tab-edge); border-radius: 6px; padding: 18px 20px; transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s; }
-.feature-card:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(0,0,0,0.4); border-right-color: var(--dragline); border-bottom-color: var(--dragline); border-left-color: var(--dragline); }
+.feature-card:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(0,0,0,0.4); border-right-color: var(--dragline); border-bottom-color: var(--dragline); border-left-color: var(--dragline); border-top-color: var(--accent); }
 .feature-card h3 { font-family: 'KillerScan', 'Courier New', monospace; font-size: 15px; font-weight: normal; letter-spacing: .5px; margin-bottom: 8px; color: var(--accent); text-shadow: 0 2px 5px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.5); }
 html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { text-shadow: none; }
 .feature-card p { font-size: 13px; color: var(--muted); line-height: 1.55; }
 .feature-card code { display: inline-block; margin-top: 4px; background: var(--panel); padding: 2px 7px; border-radius: 4px; font-family: Consolas, monospace; font-size: 12px; color: var(--text); white-space: nowrap; }
 
 /* Sidebar (screenshot strip) */
-.sb-thumbs { padding: 12px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1; }
+.sb-thumbs { padding: 4px 12px 0; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1; }
+/* Grain fade overlays pinned to the sidebar top/bottom (not a mask on the scroller, so the
+   scrollbar is never faded). Inset 8px from the right to clear the scrollbar. JS toggles .on:
+   top only once scrolled down, bottom only while more shots remain below. */
+.sb-fade { position: absolute; left: 0; right: 8px; height: 40px; pointer-events: none; z-index: 2; opacity: 0; transition: opacity 0.12s ease;
+  background: var(--sidebar) url('grain.png?v=2') repeat fixed; background-size: 256px 256px; }
+.sb-fade-top { top: 0; -webkit-mask-image: linear-gradient(to bottom, #000, transparent); mask-image: linear-gradient(to bottom, #000, transparent); }
+.sb-fade-bottom { bottom: 0; -webkit-mask-image: linear-gradient(to top, #000, transparent); mask-image: linear-gradient(to top, #000, transparent); }
+.sb-fade.on { opacity: 1; }
 .sb-thumb { flex-shrink: 0; border: 2px solid transparent; border-radius: 5px; overflow: hidden; cursor: pointer; background: var(--panel); transition: border-color 0.15s, transform 0.12s; position: relative; }
 .sb-thumb:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 50%, var(--border)); }
 .sb-thumb img { display: block; width: 100%; height: auto; }
@@ -78,7 +92,7 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
   .hero-grid { flex-direction: column; gap: 22px; }
   .hero-cta, .hero-info { flex: 0 0 auto; min-width: 0; }
   .feature-grid { grid-template-columns: 1fr; }
-  .sb-thumbs { flex-direction: row; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+  .sb-thumbs { flex-direction: row; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; -webkit-mask-image: none; mask-image: none; }
   .sb-thumb { flex: 0 0 auto; width: 240px; min-width: 240px; }
 }
 @media (max-width: 560px) {
@@ -136,13 +150,16 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
 </div>
 </div>
 
-<div class="frame-shadow" aria-hidden="true"></div>
 <div class="shell">
 <div class="content">
+<div class="content-scroll">
 <div class="content-inner">
 
 <section class="hero">
+<div class="hero-lockup">
+<img class="hero-icon" src="brand/kf-icon.png" alt="" aria-hidden="true" width="230" height="230">
 <img class="wm-logo" src="brand/killerfind-logo-dark-blue.svg" alt="KillerFind">
+</div>
 <p class="tagline" data-i18n="tagline">A fast, portable file search for Windows that finds files by name and searches inside them across an entire folder tree, with no index to build and no background service to wait for.</p>
 <div class="hero-blurbs">
 <div class="blurb"><h3 data-i18n="b1_t">Fully featured</h3><ul class="blurb-list" data-i18n="b1_d">
@@ -172,7 +189,7 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
 <div class="row"><span class="k">released</span>&nbsp;<span class="v">2026-07-04</span></div>
 <div class="row"><span class="k">platform</span>&nbsp;<span class="v">Windows 10/11 x64</span></div>
 <div class="row"><span class="k">runtime</span>&nbsp;<span class="v">.NET Framework 4.8</span></div>
-<div class="row"><span class="k">sha256</span>&nbsp;<span class="v hash">D8D3672511B9EC9E605A42725BE6CB6C<br>63CC75D038CD2E375D76B02F8E96201B</span></div>
+<div class="row"><span class="k">sha256</span>&nbsp;<span class="v hash">5933025539C56EF1B8D5382F2BA38218<br>2B96484FACD0F625AEB938A61A3617DA</span></div>
 <p class="note" data-i18n="hero_note">Install or run portable. Free, open source, GPLv3.<br>No agent, no account, no subscription.<br>No telemetry is sent and no ads... ever.</p>
 </div>
 </div>
@@ -198,24 +215,27 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
 
 </div>
 </div>
+</div>
 
 <aside class="sidebar">
 <div class="sb-thumbs" id="sbThumbs">
 <div class="sb-empty" data-i18n="sb_empty">Screenshots<br>coming soon</div>
 </div>
+<div class="sb-fade sb-fade-top" aria-hidden="true"></div>
+<div class="sb-fade sb-fade-bottom" aria-hidden="true"></div>
 </aside>
 </div>
 
 <footer class="statusbar">
 <span class="left"><a href="https://github.com/SteveTheKiller/KillerFind" target="_blank" rel="noopener" data-i18n="footer_src">Source on GitHub</a> &middot; GPLv3 &middot; Part of <a href="https://killertools.net" target="_blank" rel="noopener">killertools.net</a></span>
-<span class="right"><span id="verEgg" title="click me">v1.00</span> &middot; &copy; 2026 <b><a href="https://thekiller.net" target="_blank" rel="noopener">Steve the Killer</a></b></span>
+<span class="right"><span id="verEgg" title="click me">v1.0.0</span> &middot; &copy; 2026 <b><a href="https://thekiller.net" target="_blank" rel="noopener">Steve the Killer</a></b></span>
 </footer>
 
 <div class="lightbox" id="lightbox"><img id="lightboxImg" src="" alt="KillerFind screenshot"></div>
 <div class="egg-toast" id="eggToast"></div>
 
 <script src="kf-i18n.js?v=1"></script>
-<script src="kf.js?v=1"></script>
+<script src="kf.js?v=2"></script>
 <script>
 (function () {
   // Screenshot strip: tries screenshots/01.png .. NN.png, drops any that 404, and shows a
@@ -248,11 +268,26 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
         }
         sbThumbs.insertBefore(b, next);
         loaded++;
+        updateFade();
       };
       img.alt = 'KillerFind screenshot ' + n;
       img.src = src;
     })(i);
   }
+
+  // Fade the bottom of the strip while it overflows and isn't scrolled to the last shot,
+  // matching the app sidebar (no fade once the last screenshot is in view).
+  var fadeTop = document.querySelector('.sb-fade-top');
+  var fadeBottom = document.querySelector('.sb-fade-bottom');
+  function updateFade() {
+    var scrolledDown = sbThumbs.scrollTop > 2;
+    var more = sbThumbs.scrollHeight - sbThumbs.clientHeight - sbThumbs.scrollTop > 2;
+    if (fadeTop) fadeTop.classList.toggle('on', scrolledDown);
+    if (fadeBottom) fadeBottom.classList.toggle('on', more);
+  }
+  sbThumbs.addEventListener('scroll', updateFade, { passive: true });
+  window.addEventListener('resize', updateFade);
+  updateFade();
 })();
 </script>
 </body>

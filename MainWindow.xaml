@@ -46,23 +46,25 @@
                 <!-- Clicking the wordmark opens the website (same rule as KillerPDF) -->
                 <Grid VerticalAlignment="Center" shell:WindowChrome.IsHitTestVisibleInChrome="True"
                       Cursor="Hand" ToolTip="killerfind.net" Background="Transparent" MouseLeftButtonUp="Wordmark_Click">
-                    <TextBlock FontFamily="{DynamicResource WordmarkFont}" FontSize="15" Margin="1,2,0,0" Opacity="{DynamicResource IconShadowOpacity}">
+                    <!-- Main-titlebar wordmark is 18/23.4 (KillerScan standard); dialogs use 15/19.5. -->
+                    <TextBlock FontFamily="{DynamicResource WordmarkFont}" FontSize="18" Margin="1,2,0,0" Opacity="{DynamicResource IconShadowOpacity}">
                         <TextBlock.Effect><BlurEffect Radius="3"/></TextBlock.Effect>
-                        <Run Text="Killer" Foreground="#D8000000"/><Run Text="Find" FontSize="19.5" FontWeight="Bold" Foreground="#D8000000"/>
+                        <Run Text="Killer" Foreground="#D8000000"/><Run Text="Find" FontSize="23.4" FontWeight="Bold" Foreground="#D8000000"/>
                     </TextBlock>
-                    <TextBlock FontFamily="{DynamicResource WordmarkFont}" FontSize="15">
-                        <Run Text="Killer" Foreground="{DynamicResource TextBrush}"/><Run Text="Find" FontSize="19.5" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
+                    <TextBlock FontFamily="{DynamicResource WordmarkFont}" FontSize="18">
+                        <Run Text="Killer" Foreground="{DynamicResource TextBrush}"/><Run Text="Find" FontSize="23.4" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
                     </TextBlock>
                 </Grid>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                <Button x:Name="LangButton" Click="LangButton_Click" Style="{StaticResource ChromeButton}" Content="&#xE774;" ToolTip="{DynamicResource Str_TT_Language}">
+                <!-- Language/theme glyphs read better a notch larger than the window buttons -->
+                <Button x:Name="LangButton" Click="LangButton_Click" Style="{StaticResource ChromeButton}" FontSize="13" Content="&#xE774;" ToolTip="{DynamicResource Str_TT_Language}">
                     <Button.ContextMenu>
                         <ContextMenu x:Name="LangMenu" Placement="Bottom"/>
                     </Button.ContextMenu>
                 </Button>
-                <Button x:Name="ThemeButton" Click="ThemeButton_Click" Style="{StaticResource ChromeButton}" Content="&#xE790;" ToolTip="{DynamicResource Str_TT_Theme}"/>
+                <Button x:Name="ThemeButton" Click="ThemeButton_Click" Style="{StaticResource ChromeButton}" FontSize="13" Content="&#xE790;" ToolTip="{DynamicResource Str_TT_Theme}"/>
                 <Button x:Name="MinimizeBtn" Click="MinimizeBtn_Click" Style="{StaticResource ChromeButton}" Content="&#xE921;"/>
                 <Button x:Name="MaximizeBtn" Click="MaximizeBtn_Click" Style="{StaticResource ChromeButton}" Content="&#xE922;"/>
                 <Button x:Name="CloseBtn"    Click="CloseBtn_Click"    Style="{StaticResource ChromeCloseButton}" Content="&#xE8BB;"/>

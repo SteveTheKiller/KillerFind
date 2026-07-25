@@ -38,7 +38,8 @@ namespace KillerFind
 
             var ver = Assembly.GetExecutingAssembly()
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "1.0.0";
-            VersionLabel.Text = DemoMode ? "v1.0.0" : $"v{ver}";   // demo shows the release version
+            // Demo used to fake "v1.0.0" pre-release; versions are real now, so always show the truth.
+            VersionLabel.Text = $"v{ver}";
 
             // Titlebar + About icons: kf-icon.ico is multi-size, so pick the frame nearest
             // each display size (a raw Image Source=.ico can grab the 16px frame and

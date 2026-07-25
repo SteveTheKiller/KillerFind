@@ -2,7 +2,10 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<script>/* Apply saved theme + accent before first paint to avoid a reload flash */(function(){try{var d=document.documentElement,t=localStorage.getItem('kfind-theme');if(t){d.setAttribute('data-theme',t);if({dark:1,light:1,hc:1}[t]){var v=localStorage.getItem('kfind-av');if(v){var s=v.split('|');d.style.setProperty('--accent',s[0]);d.style.setProperty('--btn',s[1]);}}}}catch(e){}})();</script>
+<script>/* Apply saved theme + accent before first paint to avoid a reload flash, and paint the
+theme's background on the very first frame (the browser's default white shows otherwise). */
+(function(){var d=document.documentElement,t=null;try{t=localStorage.getItem('kfind-theme');if(t){d.setAttribute('data-theme',t);if({dark:1,light:1,hc:1}[t]){var v=localStorage.getItem('kfind-av');if(v){var s=v.split('|');d.style.setProperty('--accent',s[0]);d.style.setProperty('--btn',s[1]);}}}}catch(e){}
+var bg={dark:'#333333',light:'#b8b8b8',hc:'#0d0d0d',blood:'#4a1f20',greed:'#0a5234',cyanotic:'#0a4a6e'};d.style.backgroundColor=bg[t]||bg.dark;})();</script>
 <link rel="preload" href="brand/KillerScan.ttf" as="font" type="font/ttf" crossorigin>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="darkreader-lock">
@@ -11,7 +14,7 @@
 <meta name="description" content="About KillerFind and its maker, Steve the Killer, a field tech who got tired of waiting on Windows search to find a file.">
 <link rel="icon" type="image/x-icon" href="brand/kf-icon.ico">
 <script defer src="https://koya.thekiller.net/script.js" data-website-id="8f6a2876-9457-45d5-96ca-9008ee743944"></script>
-<link rel="stylesheet" href="kf.css?v=1">
+<link rel="stylesheet" href="kf.css?v=4">
 <style>
 .page-hero { text-align: center; padding: 44px 16px 8px; }
 .page-hero .wm-logo { height: clamp(46px, 8vw, 76px); width: auto; margin: 0 auto 8px; display: block; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.55)); }
@@ -86,9 +89,9 @@ html[data-theme="light"] .also-wm.light { display: block; }
 </div>
 </div>
 
-<div class="frame-shadow" aria-hidden="true"></div>
 <div class="shell">
 <div class="content">
+<div class="content-scroll">
 <div class="content-inner">
 
 <section class="page-hero">
@@ -147,9 +150,18 @@ html[data-theme="light"] .also-wm.light { display: block; }
 <span class="also-tag" data-i18n="ak_4">Open-source network scanner for Windows</span>
 </span>
 </a>
+<a class="also-card" href="https://killernotes.net" target="_blank" rel="noopener">
+<img class="also-icon" src="brand/kn-icon.png" alt="KillerNotes" width="46" height="46">
+<span class="also-body">
+<img class="also-wm dark" src="brand/killernotes-wordmark-dark.png" alt="KillerNotes">
+<img class="also-wm light" src="brand/killernotes-wordmark-light.png" alt="KillerNotes">
+<span class="also-tag" data-i18n="ak_kn">Open-source encrypted notepad for Windows</span>
+</span>
+</a>
 </div>
 </div>
 
+</div>
 </div>
 </div>
 <aside class="sidebar">
@@ -164,16 +176,16 @@ html[data-theme="light"] .also-wm.light { display: block; }
 </div>
 <footer class="statusbar">
 <span class="left"><a href="https://github.com/SteveTheKiller/KillerFind" target="_blank" rel="noopener">Source on GitHub</a> &middot; GPLv3 &middot; Part of <a href="https://killertools.net" target="_blank" rel="noopener">killertools.net</a></span>
-<span class="right"><span id="verEgg" title="click me">v1.00</span> &middot; &copy; 2026 <b><a href="https://thekiller.net" target="_blank" rel="noopener">Steve the Killer</a></b></span>
+<span class="right"><span id="verEgg" title="click me">v1.0.0</span> &middot; &copy; 2026 <b><a href="https://thekiller.net" target="_blank" rel="noopener">Steve the Killer</a></b></span>
 </footer>
 <div class="egg-toast" id="eggToast"></div>
 <script src="kf-i18n.js?v=1"></script>
-<script src="kf.js?v=1"></script>
+<script src="kf.js?v=2"></script>
 <script>
 (function(){
   var links=[].slice.call(document.querySelectorAll('.outline a'));
   var secs=links.map(function(a){return document.querySelector(a.getAttribute('href'));}).filter(Boolean);
-  var sc=document.querySelector('.content');
+  var sc=document.querySelector('.content-scroll');
   function onScroll(){ var y=(sc?sc.scrollTop:window.scrollY)+100, cur=secs[0]; secs.forEach(function(s){ if(s&&s.offsetTop<=y) cur=s; });
     links.forEach(function(a){ a.classList.toggle('on', cur && a.getAttribute('href')==='#'+cur.id); }); }
   (sc||window).addEventListener('scroll',onScroll,{passive:true}); onScroll();
