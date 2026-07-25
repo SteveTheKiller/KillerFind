@@ -1,10 +1,9 @@
 <p align="center">
-  <img src="docs/wordmark.png" width="640" alt="KillerFind - Free File Search">
+  <a href="https://killerfind.net"><img src="docs/wordmark.png" width="640" alt="KillerFind - Free File Search"></a>
 </p>
 
 Fast file search for Windows. Search by filename wildcard or file content across any directory. Streams results in real time with no indexing required.
 #### Open-source, GPLv3, run portable or local user install.
-#### Landing page is at [KillerFind.net](https://KillerFind.net)
 ##### Part of [KillerTools.net](https://KillerTools.net).
 
 ## Features
