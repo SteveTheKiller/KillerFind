@@ -66,7 +66,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// causes the generated <see cref="VisualLineText"/> elements to be unnecessarily split
 		/// at the position where you signalled interest.
 		/// </remarks>
-		public abstract VisualLineElement ConstructElement(int offset);
+		// Nullable: returning null is how a generator says "not mine", which every implementation
+		// in this tree does on at least one path.
+		public abstract VisualLineElement? ConstructElement(int offset);
 	}
 
 	internal interface IBuiltinElementGenerator

@@ -94,7 +94,9 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// <summary>
 		/// Gets/Sets the text used to display the collapsed version of the folding section.
 		/// </summary>
-		public string Title {
+		// Nullable: a folding with no title falls back to "..." at render time, and NewFolding.Name
+		// is itself optional.
+		public string? Title {
 			get => title;
 			set {
 				if (title != value) {

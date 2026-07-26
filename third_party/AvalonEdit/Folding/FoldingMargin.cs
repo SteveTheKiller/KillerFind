@@ -308,6 +308,13 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// </summary>
 		private void CalculateFoldLinesForFoldingsActiveAtStart(List<TextLine> allTextLines, Pen[] colors, Pen[] endMarker)
 		{
+			// A margin with no manager has nothing to draw. Previously this threw rather than
+			// returning, which only stayed invisible because the render path is never reached
+			// before one is assigned.
+			if (FoldingManager == null) {
+				return;
+			}
+
 			int viewStartOffset = TextView.VisualLines[0].FirstDocumentLine.Offset;
 			int viewEndOffset = TextView.VisualLines.Last().LastDocumentLine.EndOffset;
 			System.Collections.ObjectModel.ReadOnlyCollection<FoldingSection> foldings = FoldingManager.GetFoldingsContaining(viewStartOffset);

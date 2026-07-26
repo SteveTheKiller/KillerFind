@@ -130,7 +130,9 @@ namespace ICSharpCode.AvalonEdit.Folding
 				bool foundOverlappingFolding;
 				do {
 					foundOverlappingFolding = false;
-					foreach (FoldingSection fs in FoldingManager.GetFoldingsContaining(foldedUntil)) {
+					// The field, not the property: ConstructElement returned early when it is null,
+					// and the compiler can follow that on the field.
+					foreach (FoldingSection fs in foldingManager.GetFoldingsContaining(foldedUntil)) {
 						if (fs.IsFolded && fs.EndOffset > foldedUntil) {
 							foldedUntil = fs.EndOffset;
 							foundOverlappingFolding = true;
@@ -138,7 +140,9 @@ namespace ICSharpCode.AvalonEdit.Folding
 					}
 				} while (foundOverlappingFolding);
 
-				string title = foldingSection.Title;
+				// Title is optional. The empty case already falls through to "..." below, and net48's
+				// string.IsNullOrEmpty carries no NotNullWhen annotation for the compiler to follow.
+				string title = foldingSection.Title ?? string.Empty;
 				if (string.IsNullOrEmpty(title)) {
 					title = "...";
 				}
