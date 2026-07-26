@@ -459,14 +459,16 @@ namespace ICSharpCode.AvalonEdit.Editing
 					if (fullLine) {
 						DocumentLine currentLine = textArea.Document.GetLineByNumber(textArea.Caret.Line);
 						if (textArea.ReadOnlySectionProvider.CanInsert(currentLine.Offset)) {
-							textArea.Document.Insert(currentLine.Offset, text);
+							// Inside "if (!string.IsNullOrEmpty(text))"; net48's IsNullOrEmpty carries
+							// no NotNullWhen annotation for the compiler to follow.
+							textArea.Document.Insert(currentLine.Offset, text!);
 						}
 					} else if (rectangular && textArea.Selection.IsEmpty && textArea.Selection is not RectangleSelection) {
-						if (!RectangleSelection.PerformRectangularPaste(textArea, textArea.Caret.Position, text, false)) {
-							textArea.ReplaceSelectionWithText(text);
+						if (!RectangleSelection.PerformRectangularPaste(textArea, textArea.Caret.Position, text!, false)) {
+							textArea.ReplaceSelectionWithText(text!);
 						}
 					} else {
-						textArea.ReplaceSelectionWithText(text);
+						textArea.ReplaceSelectionWithText(text!);
 					}
 				}
 				textArea.Caret.BringCaretToView();

@@ -45,7 +45,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// Gets/sets the text view for which line numbers are displayed.
 		/// </summary>
 		/// <remarks>Adding a margin to <see cref="TextArea.LeftMargins"/> will automatically set this property to the text area's TextView.</remarks>
-		public TextView TextView {
+		// Nullable: a margin is detached by setting this to null, which DetachFromTextView does.
+		public TextView? TextView {
 			get => (TextView)GetValue(TextViewProperty); set => SetValue(TextViewProperty, value);
 		}
 

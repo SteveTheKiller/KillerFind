@@ -185,7 +185,9 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		/// <param name="groupDescriptor">An object that is stored with the undo group.
 		/// If this is not a top-level undo group, the parameter is ignored.</param>
-		public void StartUndoGroup(object groupDescriptor)
+		// Nullable: the descriptor is an optional tag used to decide whether two groups may be
+		// combined, and the parameterless overload above passes none at all.
+		public void StartUndoGroup(object? groupDescriptor)
 		{
 			if (undoGroupDepth == 0) {
 				actionCountInUndoGroup = 0;
@@ -204,7 +206,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		/// <param name="groupDescriptor">An object that is stored with the undo group.
 		/// If this is not a top-level undo group, the parameter is ignored.</param>
-		public void StartContinuedUndoGroup(object groupDescriptor = null)
+		public void StartContinuedUndoGroup(object? groupDescriptor = null)
 		{
 			if (undoGroupDepth == 0) {
 				actionCountInUndoGroup = (allowContinue && undostack.Count > 0) ? 1 : 0;

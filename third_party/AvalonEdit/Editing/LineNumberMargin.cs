@@ -201,7 +201,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 					selectionStart = new AnchorSegment(Document!, currentSeg.Offset, currentSeg.Length);
 					if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift) {
 						if (textArea.Selection is SimpleSelection simpleSelection) {
-							selectionStart = new AnchorSegment(Document, simpleSelection.SurroundingSegment);
+							selectionStart = new AnchorSegment(Document!, simpleSelection.SurroundingSegment!);
 						}
 					}
 					textArea.Selection = Selection.Create(textArea, selectionStart);
@@ -244,7 +244,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 				textArea!.Caret.Offset = currentSeg.Offset;
 				textArea.Selection = Selection.Create(textArea, currentSeg.Offset, selectionStart.Offset + selectionStart.Length);
 			} else {
-				textArea.Caret.Offset = currentSeg.Offset + currentSeg.Length;
+				textArea!.Caret.Offset = currentSeg.Offset + currentSeg.Length;
 				textArea.Selection = Selection.Create(textArea, selectionStart.Offset, currentSeg.Offset + currentSeg.Length);
 			}
 		}

@@ -146,8 +146,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 		public void UpdateCompositionWindow()
 		{
 			if (currentContext != IntPtr.Zero) {
-				ImeNativeWrapper.SetCompositionFont(hwndSource, currentContext, textArea);
-				ImeNativeWrapper.SetCompositionWindow(hwndSource, currentContext, textArea);
+				// currentContext is only non-zero while an hwndSource is attached.
+				ImeNativeWrapper.SetCompositionFont(hwndSource!, currentContext, textArea);
+				ImeNativeWrapper.SetCompositionWindow(hwndSource!, currentContext, textArea);
 			}
 		}
 	}

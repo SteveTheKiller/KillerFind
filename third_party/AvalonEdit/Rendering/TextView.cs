@@ -689,7 +689,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Causes the text editor to redraw all lines overlapping with the specified segment.
 		/// Does nothing if segment is null.
 		/// </summary>
-		public void Redraw(ISegment segment, DispatcherPriority redrawPriority = DispatcherPriority.Normal)
+		// Nullable, as the summary above already states and the body already checks.
+		public void Redraw(ISegment? segment, DispatcherPriority redrawPriority = DispatcherPriority.Normal)
 		{
 			if (segment != null) {
 				Redraw(segment.Offset, segment.Length, redrawPriority);

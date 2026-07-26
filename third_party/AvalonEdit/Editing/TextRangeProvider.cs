@@ -155,7 +155,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		public object GetAttributeValue(int attribute)
 		{
 			Log("{0}.GetAttributeValue({1})", ID, attribute);
-			return null;
+			return null!;
 		}
 
 		public double[] GetBoundingRectangles()
