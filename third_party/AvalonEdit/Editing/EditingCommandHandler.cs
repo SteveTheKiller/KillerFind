@@ -449,7 +449,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 					return;
 				}
 
-				string text = GetTextToPaste(pastingEventArgs, textArea);
+				string? text = GetTextToPaste(pastingEventArgs, textArea);
 
 				if (!string.IsNullOrEmpty(text)) {
 					dataObject = pastingEventArgs.DataObject;

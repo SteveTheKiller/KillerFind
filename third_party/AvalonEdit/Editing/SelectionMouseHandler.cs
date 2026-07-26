@@ -219,7 +219,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 							return;
 						}
 
-						string text = EditingCommandHandler.GetTextToPaste(pastingEventArgs, textArea);
+						string? text = EditingCommandHandler.GetTextToPaste(pastingEventArgs, textArea);
 						if (text == null) {
 							return;
 						}

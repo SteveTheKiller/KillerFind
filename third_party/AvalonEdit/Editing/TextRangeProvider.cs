@@ -181,6 +181,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			return [];
 		}
 
+		// Nullable: the automation peer's Provider is itself optional.
 		public IRawElementProviderSimple? GetEnclosingElement()
 		{
 			Log("{0}.GetEnclosingElement()", ID);

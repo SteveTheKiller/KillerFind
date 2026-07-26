@@ -91,7 +91,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		private void ExecuteUndo(object sender, ExecutedRoutedEventArgs e)
 		{
-			UndoStack undoStack = GetUndoStack();
+			UndoStack? undoStack = GetUndoStack();
 			if (undoStack != null) {
 				if (undoStack.CanUndo) {
 					undoStack.Undo();
@@ -103,7 +103,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		private void CanExecuteUndo(object sender, CanExecuteRoutedEventArgs e)
 		{
-			UndoStack undoStack = GetUndoStack();
+			UndoStack? undoStack = GetUndoStack();
 			if (undoStack != null) {
 				e.Handled = true;
 				e.CanExecute = undoStack.CanUndo;
@@ -112,7 +112,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		private void ExecuteRedo(object sender, ExecutedRoutedEventArgs e)
 		{
-			UndoStack undoStack = GetUndoStack();
+			UndoStack? undoStack = GetUndoStack();
 			if (undoStack != null) {
 				if (undoStack.CanRedo) {
 					undoStack.Redo();
@@ -124,7 +124,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		private void CanExecuteRedo(object sender, CanExecuteRoutedEventArgs e)
 		{
-			UndoStack undoStack = GetUndoStack();
+			UndoStack? undoStack = GetUndoStack();
 			if (undoStack != null) {
 				e.Handled = true;
 				e.CanExecute = undoStack.CanRedo;

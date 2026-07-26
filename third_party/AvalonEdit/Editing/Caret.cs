@@ -516,7 +516,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// Gets/Sets the color of the caret.
 		/// </summary>
 		public Brush CaretBrush {
-			get => caretAdorner.CaretBrush; set => caretAdorner.CaretBrush = value;
+			get => caretAdorner.CaretBrush!; set => caretAdorner.CaretBrush = value;
 		}
 	}
 }

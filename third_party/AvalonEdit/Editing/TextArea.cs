@@ -109,7 +109,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// This property does not return currently active stacked input handlers. Setting this property detached all stacked input handlers.
 		/// </summary>
 		/// <remarks><inheritdoc cref="ITextAreaInputHandler"/></remarks>
-		public ITextAreaInputHandler ActiveInputHandler {
+		public ITextAreaInputHandler? ActiveInputHandler {
 			get => activeInputHandler;
 			set {
 				if (value != null && value.TextArea != this) {

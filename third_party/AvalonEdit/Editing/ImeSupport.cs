@@ -116,7 +116,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 				hwndSource.AddHook(WndProc);
 				// UpdateCompositionWindow() will be called by the caret becoming visible
 
-				ITfThreadMgr threadMgr = ImeNativeWrapper.GetTextFrameworkThreadManager();
+				ITfThreadMgr? threadMgr = ImeNativeWrapper.GetTextFrameworkThreadManager();
 				// Even though the docs says passing null is invalid, this seems to help
 				// activating the IME on the default input context that is shared with WPF
 				threadMgr?.SetFocus(IntPtr.Zero);

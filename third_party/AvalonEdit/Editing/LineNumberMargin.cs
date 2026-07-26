@@ -198,7 +198,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 				textArea.Caret.Offset = currentSeg.Offset + currentSeg.Length;
 				if (CaptureMouse()) {
 					selecting = true;
-					selectionStart = new AnchorSegment(Document, currentSeg.Offset, currentSeg.Length);
+					selectionStart = new AnchorSegment(Document!, currentSeg.Offset, currentSeg.Length);
 					if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift) {
 						if (textArea.Selection is SimpleSelection simpleSelection) {
 							selectionStart = new AnchorSegment(Document, simpleSelection.SurroundingSegment);
@@ -241,7 +241,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		{
 			// selectionStart is set when the drag begins and only cleared when it ends.
 			if (currentSeg.Offset < selectionStart!.Offset) {
-				textArea.Caret.Offset = currentSeg.Offset;
+				textArea!.Caret.Offset = currentSeg.Offset;
 				textArea.Selection = Selection.Create(textArea, currentSeg.Offset, selectionStart.Offset + selectionStart.Length);
 			} else {
 				textArea.Caret.Offset = currentSeg.Offset + currentSeg.Length;
