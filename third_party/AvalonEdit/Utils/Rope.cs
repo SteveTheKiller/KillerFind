@@ -451,7 +451,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 
 		// cached pointer to 'last used node', used to speed up accesses by index that are close together
 		[NonSerialized]
-		private volatile ImmutableStack<RopeCacheEntry> lastUsedNodeStack;
+		// Cleared whenever the rope is modified, so null means "no cached position", not "unset".
+		private volatile ImmutableStack<RopeCacheEntry>? lastUsedNodeStack;
 
 		internal void OnChanged()
 		{

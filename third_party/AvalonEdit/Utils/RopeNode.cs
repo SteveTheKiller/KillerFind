@@ -37,7 +37,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		internal static readonly RopeNode<T> emptyRopeNode = new() { isShared = true, contents = new T[RopeNode<T>.NodeSize] };
 
 		// Fields for pointers to sub-nodes. Only non-null for concat nodes (height>=1)
-		internal RopeNode<T> left, right;
+		// Structurally nullable: a leaf node has no children, and CombineIfPossible drops both
+		// when it merges two leaves into one. The internal-node paths below say so with ! plus
+		// the invariant that makes it safe.
+		internal RopeNode<T>? left, right;
 		internal volatile bool isShared; // specifies whether this node is shared between multiple ropes
 										 // the total length of all text in this subtree
 		internal int length;
@@ -45,7 +48,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 		internal byte height;
 
 		// The character data. Only non-null for leaf nodes (height=0) that aren't function nodes.
-		internal T[] contents;
+		// The mirror of left/right: only leaf nodes carry contents, internal nodes carry children.
+		internal T[]? contents;
 
 		internal int Balance => right.height - left.height;
 
@@ -563,8 +567,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 
 	internal sealed class FunctionNode<T> : RopeNode<T>
 	{
-		private Func<Rope<T>> initializer;
-		private RopeNode<T> cachedResults;
+		// Both are null at different points in this node's life: the initializer is dropped once
+		// it has run, and the cache is empty until then.
+		private Func<Rope<T>>? initializer;
+		private RopeNode<T>? cachedResults;
 
 		public FunctionNode(int length, Func<Rope<T>> initializer)
 		{

@@ -29,7 +29,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 	public sealed class RopeTextReader : TextReader
 	{
 		private readonly Stack<RopeNode<char>> stack = new();
-		private RopeNode<char> currentNode;
+		// Null once the reader has walked off the end of the rope.
+		private RopeNode<char>? currentNode;
 		private int indexInsideNode;
 
 		/// <summary>
