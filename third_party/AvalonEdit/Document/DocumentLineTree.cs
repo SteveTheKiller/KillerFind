@@ -123,7 +123,8 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// build a tree from a list of nodes
 		/// </summary>
-		private LineNode BuildTree(LineNode[] nodes, int start, int end, int subtreeHeight)
+		// Nullable: an empty range builds no subtree, which is how the recursion bottoms out.
+		private LineNode? BuildTree(LineNode[] nodes, int start, int end, int subtreeHeight)
 		{
 			Debug.Assert(start <= end);
 			if (start == end) {
@@ -244,7 +245,8 @@ namespace ICSharpCode.AvalonEdit.Document
 		#endregion
 
 		#region LineCount
-		public int LineCount => root.nodeTotalCount;
+		// The tree is never empty: the constructor seeds it with one empty line.
+		public int LineCount => root!.nodeTotalCount;
 		#endregion
 
 		#region CheckProperties
@@ -285,7 +287,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		4. Both children of every red node are black. (So every red node must have a black parent.)
 		5. Every simple path from a node to a descendant leaf contains the same number of black nodes. (Not counting the leaf node.)
 		 */
-		private void CheckNodeProperties(LineNode node, LineNode parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
+		private void CheckNodeProperties(LineNode? node, LineNode? parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
 		{
 			if (node == null) {
 				return;
@@ -319,7 +321,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			return b.ToString();
 		}
 
-		private static void AppendTreeToString(LineNode node, StringBuilder b, int indent)
+		private static void AppendTreeToString(LineNode? node, StringBuilder b, int indent)
 		{
 			if (node.color == RED) {
 				b.Append("RED   ");
@@ -397,12 +399,13 @@ namespace ICSharpCode.AvalonEdit.Document
 
 		private void FixTreeOnInsert(LineNode node)
 		{
-			Debug.Assert(node != null);
+			// The null assert is gone: the parameter type says it, and keeping it made every use
+			// below read as possibly-null.
 			Debug.Assert(node.color == RED);
 			Debug.Assert(node.left == null || node.left.color == BLACK);
 			Debug.Assert(node.right == null || node.right.color == BLACK);
 
-			LineNode parentNode = node.parent;
+			LineNode? parentNode = node.parent;
 			if (parentNode == null) {
 				// we inserted in the root -> the node must be black
 				// since this is a root node, making the node black increments the number of black nodes
@@ -486,8 +489,8 @@ namespace ICSharpCode.AvalonEdit.Document
 
 			// now either removedNode.left or removedNode.right is null
 			// get the remaining child
-			LineNode parentNode = removedNode.parent;
-			LineNode childNode = removedNode.left ?? removedNode.right;
+			LineNode? parentNode = removedNode.parent;
+			LineNode? childNode = removedNode.left ?? removedNode.right;
 			ReplaceNode(removedNode, childNode);
 			if (parentNode != null) {
 				UpdateAfterChildrenChange(parentNode);
@@ -502,7 +505,9 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		private void FixTreeOnDelete(LineNode node, LineNode parentNode)
+		// Both nullable: node is the child that replaced a deleted black node and may be the null
+		// leaf, parentNode is null when the tree just lost its root.
+		private void FixTreeOnDelete(LineNode? node, LineNode? parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
 			if (parentNode == null) {
@@ -633,26 +638,29 @@ namespace ICSharpCode.AvalonEdit.Document
 			UpdateAfterRotateRight(p);
 		}
 
+		// Both overloads: a node being fixed up always has a sibling, or the black-height property
+		// was already violated before this was called.
 		private static LineNode Sibling(LineNode node)
 		{
-			if (node == node.parent.left) {
-				return node.parent.right;
+			if (node == node.parent!.left) {
+				return node.parent.right!;
 			} else {
-				return node.parent.left;
+				return node.parent.left!;
 			}
 		}
 
-		private static LineNode Sibling(LineNode node, LineNode parentNode)
+		private static LineNode Sibling(LineNode? node, LineNode parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
 			if (node == parentNode.left) {
-				return parentNode.right;
+				return parentNode.right!;
 			} else {
-				return parentNode.left;
+				return parentNode.left!;
 			}
 		}
 
-		private static bool GetColor(LineNode node)
+		// Nullable by design: a missing child counts as black, which is why this exists.
+		private static bool GetColor(LineNode? node)
 		{
 			return node != null && node.color;
 		}
