@@ -23,7 +23,11 @@
 
               <!-- Tab band: hidden until there are 2+ tabs (like KillerPDF). Opaque + its own
                    grain so the strip reads as one textured band with the tabs sitting on it. -->
-              <Border Grid.Row="0" x:Name="TabBar" Margin="0,6,8,0" Background="{DynamicResource BackgroundBrush}" Visibility="Collapsed">
+              <!-- ZIndex 20 so the strip draws ABOVE the pane. Without it the pane wins on
+                   declaration order alone, and the 1px the pane is pulled up by (its -1 top
+                   margin) lands its border ON TOP of the strip instead of behind it - which is
+                   exactly the hairline that kept showing under the active tab. -->
+              <Border Grid.Row="0" x:Name="TabBar" Panel.ZIndex="20" Margin="0,6,8,0" Background="{DynamicResource BackgroundBrush}" Visibility="Collapsed">
                <Grid>
                 <Border IsHitTestVisible="False" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
                 <!-- KillerPDF's tab-strip fade: shadow rising from the pane below, so the band
@@ -52,7 +56,10 @@
                      content at infinite width, which would let the tabs size to their own
                      content and defeat the UniformGrid below. Disabled constrains them to the
                      bar's actual width, which is the point. -->
-                <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled">
+                <!-- FocusVisualStyle nulled: a ScrollViewer is focusable, and once focus lands
+                     here WPF draws its stock dotted rectangle around the whole strip. -->
+                <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled"
+                              FocusVisualStyle="{x:Null}">
                     <ItemsControl x:Name="TabStrip">
                         <ItemsControl.ItemsPanel>
                             <!-- Tabs share the bar equally and fill it, browser-style, instead of
@@ -64,7 +71,15 @@
                                 <!-- No MaxWidth: it would cap each cell and put the dead space
                                      back. The MinWidth floor is low so a lot of open tabs still
                                      divide the bar rather than overflowing it. -->
-                                <Border x:Name="tabBd" CornerRadius="4,4,0,0" Margin="0,3,1,0" Padding="12,4,5,5"
+                                <!-- CornerRadius matches the pane's 6, not the 4 it used to be:
+                                     the rightmost tab sits directly above the pane's top-right
+                                     corner, and a 4px curve stacked on a 6px one reads as a
+                                     mistake rather than as two rounded things. -->
+                                <!-- No right MARGIN: the 1px right BorderThickness below already
+                                     separates one tab from the next, and the margin only served
+                                     to stop the last tab reaching the strip's right edge - which
+                                     is the pane's edge, so it left a 1px step under the corner. -->
+                                <Border x:Name="tabBd" CornerRadius="6,6,0,0" Margin="0,3,0,0" Padding="12,4,5,5"
                                         MinWidth="60"
                                         Cursor="Hand" Background="{DynamicResource BackgroundBrush}"
                                         BorderThickness="0,0,1,0" BorderBrush="{DynamicResource CardBorderBrush}"
@@ -80,10 +95,15 @@
                                         </ContextMenu>
                                     </Border.ContextMenu>
                                     <Grid>
-                                        <Border IsHitTestVisible="False" CornerRadius="4,4,0,0" Margin="-12,-4,-5,-5"
+                                        <!-- Grain follows the tab's radius, or the texture squares
+                                             off the corner the border just rounded. -->
+                                        <Border IsHitTestVisible="False" CornerRadius="6,6,0,0" Margin="-12,-4,-5,-5"
                                                 Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
                                         <DockPanel LastChildFill="True">
+                                            <!-- Nulled here rather than on the shared DangerButton style,
+                                                 which the term and filter x's also use. -->
                                             <Button DockPanel.Dock="Right" Content="x" Style="{StaticResource DangerButton}" Width="18" Height="18" Margin="6,0,0,0"
+                                                    FocusVisualStyle="{x:Null}"
                                                     ToolTip="{DynamicResource Str_TT_CloseTab}" Tag="{Binding}" Click="CloseTab_Click"/>
                                             <TextBlock x:Name="tabLbl" Text="{Binding Title}" FontFamily="Consolas" FontSize="11"
                                                        Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center"
@@ -92,16 +112,17 @@
                                     </Grid>
                                 </Border>
                                 <DataTemplate.Triggers>
+                                    <!-- Last tab drops its right border: that 1px is a divider
+                                         BETWEEN tabs, and on the strip's right edge it reads as a
+                                         stray rule instead. Declared BEFORE the IsActive trigger
+                                         so the active tab's accent-stripe thickness still wins
+                                         when the last tab is also the active one. -->
+                                    <DataTrigger Binding="{Binding IsLast}" Value="True">
+                                        <Setter TargetName="tabBd" Property="BorderThickness" Value="0"/>
+                                    </DataTrigger>
                                     <DataTrigger Binding="{Binding IsActive}" Value="True">
                                         <Setter TargetName="tabBd" Property="Background" Value="{DynamicResource PaneBrush}"/>
                                         <Setter TargetName="tabBd" Property="BorderThickness" Value="0,3,0,0"/>
-                                        <!-- The active tab drops 1px into the pane below and rides
-                                             above it, so the pane's top border stops at the tab
-                                             instead of drawing a seam across it. Inactive tabs keep
-                                             the border under them - that contrast is what makes the
-                                             active one read as joined to the pane. -->
-                                        <Setter TargetName="tabBd" Property="Margin" Value="0,3,1,-1"/>
-                                        <Setter TargetName="tabBd" Property="Panel.ZIndex" Value="5"/>
                                         <!-- Top padding gives back the 3px the accent stripe takes,
                                              so the title doesn't drop when a tab activates. -->
                                         <Setter TargetName="tabBd" Property="Padding" Value="12,1,5,5"/>
@@ -137,7 +158,13 @@
                    and a DropShadowEffect draws outside the element's bounds without taking any
                    layout space. Any gap here is real padding, not room for the shadow, and it
                    just lifts the pane off the footer. -->
-              <Border x:Name="ResultsPane" Grid.Row="1" Margin="0,0,8,0" Background="{DynamicResource PaneBrush}"
+              <!-- -1 top: the pane's own top border tucks UNDER the tab strip band, which is
+                   opaque, so the active tab and the pane read as one surface instead of being
+                   divided by a hairline. The overlap has to live here rather than on the tab -
+                   the strip is inside a ScrollViewer, which clips anything a tab overhangs.
+                   With one tab the strip is collapsed and the -1 just eats 1px of the 6px gap.
+                   ApplySearchPanel (SearchPanel.cs) reassigns this margin and repeats the -1. -->
+              <Border x:Name="ResultsPane" Grid.Row="1" Margin="0,-1,8,0" Background="{DynamicResource PaneBrush}"
                     BorderBrush="{DynamicResource PaneBorderBrush}" BorderThickness="1" CornerRadius="6" Effect="{StaticResource PaneShadow}">
               <Grid>
                 <!-- Same treatment as KillerPDF's document pane: the whole content pane is grain-wrapped. -->
@@ -255,11 +282,37 @@
                         <Button x:Name="PipeBtn" Content="&#xE71C;" Width="26" Height="24" Padding="0" Margin="0,0,6,0"
                                 FontFamily="Segoe MDL2 Assets" FontSize="11" Style="{StaticResource SurfaceButton}"
                                 ToolTip="{DynamicResource Str_TT_Pipe}" Click="PipeButton_Click"/>
-                        <!-- Export split: CSV for spreadsheets, HTML for the styled report -->
-                        <Button Content="CSV" Style="{StaticResource SurfaceButton}"
-                                Padding="8,3" FontSize="10" VerticalAlignment="Center" Margin="0,0,6,0" Click="ExportCsv_Click"/>
-                        <Button Content="HTML" Style="{StaticResource SurfaceButton}"
-                                Padding="8,3" FontSize="10" VerticalAlignment="Center" Click="Export_Click"/>
+                        <!-- Export: ONE icon, the format picked from a flyout. Two text buttons
+                             (CSV + HTML) took enough of this row to crush the location path
+                             beside them; a 26px icon sits with the rest of the toolbar. -->
+                        <Button x:Name="ExportBtn" Content="&#xE72D;" Width="26" Height="24" Padding="0"
+                                FontFamily="Segoe MDL2 Assets" FontSize="11" Style="{StaticResource SurfaceButton}"
+                                ToolTip="{DynamicResource Str_Btn_Export}" Click="ExportButton_Click"/>
+                        <!-- StaysOpen="False" so an outside click dismisses it - what a two-item
+                             format picker should do. The theme flyout deliberately keeps capture
+                             instead so the results list scrolls under it; this one has no reason
+                             to. A Popup takes no layout space, so it can sit in the row itself.
+                             Shadow on its own border, per the family standard: text must never
+                             render through a bitmap effect or it loses ClearType. -->
+                        <Popup x:Name="ExportPopup" PlacementTarget="{Binding ElementName=ExportBtn}" Placement="Bottom"
+                               StaysOpen="False" AllowsTransparency="True" HorizontalOffset="-14" VerticalOffset="-2">
+                            <Grid Margin="14">
+                                <Border Background="{DynamicResource MenuBackgroundBrush}" CornerRadius="6" IsHitTestVisible="False">
+                                    <Border.Effect><DropShadowEffect Color="Black" BlurRadius="22" ShadowDepth="4" Direction="270" Opacity="0.55"/></Border.Effect>
+                                </Border>
+                                <Border Background="{DynamicResource MenuBackgroundBrush}" BorderBrush="{DynamicResource MenuBorderBrush}"
+                                        BorderThickness="1" CornerRadius="6" Padding="6">
+                                    <StackPanel MinWidth="64">
+                                        <!-- Format names, not prose - deliberately unlocalized,
+                                             the same way the old two buttons were. -->
+                                        <Button Content="CSV" Style="{StaticResource SurfaceButton}"
+                                                Padding="10,3" FontSize="10" Margin="0,0,0,4" Click="ExportCsv_Click"/>
+                                        <Button Content="HTML" Style="{StaticResource SurfaceButton}"
+                                                Padding="10,3" FontSize="10" Click="Export_Click"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Popup>
                         <!-- No close button here. Every tab carries its own x in the strip, and
                              with a single tab the strip is hidden and there is nothing to close
                              to - you close the window. Ctrl+W still works either way. -->
@@ -321,11 +374,58 @@
                     </Grid>
                 </Border>
 
+                <!-- PER-PANE STATUS BAR: the short, fixed per-TAB facts only - how many files
+                     this tab scanned, how many it matched, and what it searched for. Each tab
+                     is its own search, so these belong to the pane and not to one shared window
+                     footer that cannot report two panes at once.
+                     The live commentary line (StatusText, "Opening C:\...") deliberately does
+                     NOT live here: it is the one item with unbounded length, and it gets the
+                     full window width down in the footer instead. Splitting them that way is
+                     the whole point of having two bars - the alternative is what this row was
+                     a moment ago, all four items back on one line, colliding again.
+                     COLUMNS, not a horizontal StackPanel: a StackPanel measures its children at
+                     INFINITE width in its orientation, so TextTrimming never engages and text
+                     just overruns whatever is beside it. QueryText takes the * column.
+                     24px row and mono 11.5 status type is the family footer standard. No
+                     background: it sits on the pane surface like the location row up top, so
+                     while it is showing the pane's own CornerRadius 6 supplies the bottom
+                     rounding and the list border below goes square. -->
+                <!-- Collapsed whenever all three fields are empty, which is the whole time you
+                     are just browsing a folder - a scanned count and a match count belong to a
+                     search, and the query label is blank. An empty 24px strip under the listing
+                     is dead space. UpdatePaneStatusBar (MainWindow.xaml.cs) toggles this and
+                     hands the pane's bottom rounding back to the list surface below. -->
+                <Border x:Name="PaneStatusBar" DockPanel.Dock="Bottom" Height="24" Padding="8,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="ScannedText" Grid.Column="0" Foreground="{DynamicResource TextFooter}"
+                                   FontFamily="{DynamicResource MonoFont}" FontSize="11.5" VerticalAlignment="Center"
+                                   Margin="0,0,14,0" Visibility="Collapsed"/>
+                        <TextBlock x:Name="StatsText" Grid.Column="1" Foreground="{DynamicResource PrimaryBrush}"
+                                   FontFamily="{DynamicResource MonoFont}" FontSize="11.5" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" Margin="0,0,14,0"/>
+                        <!-- What this tab searched for, so an old search tab stays self-explanatory.
+                             Empty while browsing, and a collapsed-width TextBlock costs nothing. -->
+                        <TextBlock x:Name="QueryText" Grid.Column="2" Foreground="{DynamicResource MutedTextBrush}"
+                                   FontFamily="{DynamicResource MonoFont}" FontSize="11" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <TextBlock x:Name="ResultsHeader" Visibility="Collapsed"/>
+                    </Grid>
+                </Border>
+
                 <!-- The list area sits on the in-between tone (MenuBackgroundBrush - between
-                     the bar and pane tiers, like KillerPDF's annotation bars), grain-wrapped. -->
-                <Border Background="{DynamicResource MenuBackgroundBrush}" CornerRadius="0,0,5,5">
+                     the bar and pane tiers, like KillerPDF's annotation bars), grain-wrapped.
+                     CornerRadius is driven from code (UpdatePaneStatusBar): square while the
+                     status bar is showing, because the bar owns the pane's bottom edge then -
+                     and rounded back to 5 the moment the bar collapses, or the list would sit
+                     square-cornered inside the pane's own radius 6. -->
+                <Border x:Name="ResultsSurface" Background="{DynamicResource MenuBackgroundBrush}" CornerRadius="0">
                 <Grid>
-                <Border IsHitTestVisible="False" CornerRadius="0,0,5,5"
+                <Border x:Name="ResultsSurfaceGrain" IsHitTestVisible="False" CornerRadius="0"
                         Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
                 <ListBox x:Name="ResultsList" Background="Transparent" BorderThickness="0" Padding="8,4,8,0" Focusable="False"
                          FocusVisualStyle="{x:Null}" SelectionMode="Extended"

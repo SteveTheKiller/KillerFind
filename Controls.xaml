@@ -588,14 +588,24 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ContextMenu">
-                    <Border Margin="6" CornerRadius="6" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
-                        <Border.Effect><DropShadowEffect Color="Black" BlurRadius="22" ShadowDepth="4" Direction="270" Opacity="0.55"/></Border.Effect>
-                        <Grid>
-                            <Border IsHitTestVisible="False" CornerRadius="5" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
-                            <StackPanel IsItemsHost="True" Margin="{TemplateBinding Padding}" KeyboardNavigation.DirectionalNavigation="Cycle"/>
-                        </Grid>
-                    </Border>
+                    <!-- The shadow lives on its OWN border behind the content, never on the one
+                         the menu text renders inside: a DropShadowEffect rasterizes its whole
+                         subtree through a bitmap pass, so the text loses ClearType. Same split
+                         as KillerPDF's ContextMenu and the family About card. The Margin moved
+                         from the border to this Grid so the shadow still has room to render
+                         inside the popup rather than being clipped at its edge. -->
+                    <Grid Margin="6">
+                        <Border CornerRadius="6" Background="{TemplateBinding Background}" IsHitTestVisible="False">
+                            <Border.Effect><DropShadowEffect Color="Black" BlurRadius="22" ShadowDepth="4" Direction="270" Opacity="0.55"/></Border.Effect>
+                        </Border>
+                        <Border CornerRadius="6" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
+                            <Grid>
+                                <Border IsHitTestVisible="False" CornerRadius="5" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                                <StackPanel IsItemsHost="True" Margin="{TemplateBinding Padding}" KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                            </Grid>
+                        </Border>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -735,7 +745,8 @@
         </Setter>
     </Style>
 
-    <!-- Close button: only the glyph reddens on hover (no red block), matching KillerPDF. -->
+    <!-- Main-window close button: the WHOLE button fills danger red with a white glyph on
+         hover, like KillerPDF's. The dialog close X's keep the glyph-only treatment. -->
     <Style x:Key="ChromeCloseButton" TargetType="Button" BasedOn="{StaticResource ChromeButton}">
         <Setter Property="Foreground" Value="{DynamicResource ChromeTextBrush}"/>
         <Setter Property="Template">
@@ -744,7 +755,8 @@
                     <Border x:Name="Bd" Background="Transparent"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Foreground" Value="{DynamicResource DangerRed}"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource DangerRed}"/>
+                            <Setter Property="Foreground" Value="White"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

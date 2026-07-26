@@ -84,7 +84,7 @@ namespace KillerFind
             // collection that is still being filled (BrowseWatcher.cs).
             StartWatching(folder);
 
-            ResultsHeader.Text = string.Format(Loc("Str_Lbl_ResultsCount"), tab.Results.Count);
+            Pane.ResultsHeader.Text = string.Format(Loc("Str_Lbl_ResultsCount"), tab.Results.Count);
             SetTabStatusKey(tab, "Str_Status_Listed", entries.Count.ToString("N0"));
             UpdateTabBar();
 

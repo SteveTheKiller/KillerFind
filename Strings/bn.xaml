@@ -109,7 +109,7 @@
     <!-- Results -->
     <sys:String x:Key="Str_Lbl_Results">ফলাফল</sys:String>
     <sys:String x:Key="Str_Lbl_ResultsCount">ফলাফল  ({0})</sys:String>
-    <sys:String x:Key="Str_Btn_Export">HTML রপ্তানি করুন</sys:String>
+    <sys:String x:Key="Str_Btn_Export">ফলাফল রপ্তানি করুন</sys:String>
     <sys:String x:Key="Str_TT_Result">প্রসারিত করতে ক্লিক করুন  |  Explorer-এ দেখাতে ডাবল-ক্লিক করুন  |  আরও অপশনের জন্য ডান-ক্লিক করুন</sys:String>
     <sys:String x:Key="Str_Btn_ExpandAll">সব প্রসারিত করুন</sys:String>
     <sys:String x:Key="Str_Btn_CollapseAll">সব সংকুচিত করুন</sys:String>

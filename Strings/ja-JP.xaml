@@ -127,7 +127,7 @@
     <!-- Results -->
     <sys:String x:Key="Str_Lbl_Results">結果</sys:String>
     <sys:String x:Key="Str_Lbl_ResultsCount">結果  ({0})</sys:String>
-    <sys:String x:Key="Str_Btn_Export">HTML で書き出し</sys:String>
+    <sys:String x:Key="Str_Btn_Export">結果を書き出し</sys:String>
     <sys:String x:Key="Str_TT_Result">クリックで展開  |  ダブルクリックでエクスプローラーに表示  |  右クリックでその他</sys:String>
     <sys:String x:Key="Str_Btn_ExpandAll">すべて展開</sys:String>
     <sys:String x:Key="Str_Btn_CollapseAll">すべて折りたたむ</sys:String>

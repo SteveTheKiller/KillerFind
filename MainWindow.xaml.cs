@@ -368,11 +368,13 @@ namespace KillerFind
             ApplySort(tab);   // strips the view sort for the run - see ApplySort
             if (tab == _active)
             {
-                ScannedText.Text       = string.Empty;
-                ScannedText.Visibility = Visibility.Visible;
-                StatsText.Text         = string.Empty;
-                QueryText.Text         = tab.QueryLabel;
-                ResultsHeader.Text     = Loc("Str_Lbl_Results");
+                Pane.ScannedText.Text       = string.Empty;
+                Pane.ScannedText.Visibility = Visibility.Visible;
+                Pane.StatsText.Text         = string.Empty;
+                Pane.QueryText.Text         = tab.QueryLabel;
+                Pane.ResultsHeader.Text     = Loc("Str_Lbl_Results");
+                ApplyStatusTone(tab.StatusKey);   // amber for the duration of the run
+                UpdatePaneStatusBar();
                 SearchButton.Content   = Loc("Str_Btn_Stop");
                 SetExpandAllLabel(false);
             }
@@ -409,9 +411,15 @@ namespace KillerFind
                 ApplySort(tab);   // the run's deferred sort lands here, in one pass
                 if (tab == _active)
                 {
-                    SearchButton.Content   = Loc("Str_Btn_Search");
-                    ScannedText.Visibility = Visibility.Collapsed;
-                    ResultsHeader.Text     = string.Format(Loc("Str_Lbl_ResultsCount"), tab.Results.Count);
+                    SearchButton.Content        = Loc("Str_Btn_Search");
+                    Pane.ScannedText.Visibility = Visibility.Collapsed;
+                    Pane.ResultsHeader.Text     = string.Format(Loc("Str_Lbl_ResultsCount"), tab.Results.Count);
+                    // Done/Stopped were written while IsSearching was still true (they are set
+                    // in the try, this runs in the finally), so the light is still amber from
+                    // the run. Re-apply the tone now that the flag is down or it never goes
+                    // back to green.
+                    ApplyStatusTone(tab.StatusKey);
+                    UpdatePaneStatusBar();
                 }
             }
         }
@@ -424,10 +432,11 @@ namespace KillerFind
             tab.ScannedLabel = string.Empty;
             tab.StatsLabel   = string.Empty;
             tab.QueryLabel   = string.Empty;
-            ScannedText.Visibility = Visibility.Collapsed;
-            StatsText.Text         = string.Empty;
-            QueryText.Text         = string.Empty;
-            ResultsHeader.Text     = Loc("Str_Lbl_Results");
+            Pane.ScannedText.Visibility = Visibility.Collapsed;
+            Pane.StatsText.Text         = string.Empty;
+            Pane.QueryText.Text         = string.Empty;
+            Pane.ResultsHeader.Text     = Loc("Str_Lbl_Results");
+            UpdatePaneStatusBar();
             SetTabStatusKey(tab, "Str_Status_Cleared");
         }
 
@@ -770,7 +779,126 @@ namespace KillerFind
             tab.StatusKey     = null;   // transient text - not re-renderable on language switch
             tab.StatusArgs    = null;
             tab.StatusMessage = msg;
-            if (tab == _active) { StatusText.Text = msg; ApplyStatusTone(null); }
+            if (tab == _active) { SetFooterStatus(msg); ApplyStatusTone(null); }
+        }
+
+        // ── Footer status line: HEAD elision ─────────────────────────────────
+        // The live line is usually a path, and a path is only useful from the RIGHT: the file
+        // name and extension are the part being read. WPF's TextTrimming only ellipsizes the
+        // TAIL, which throws away exactly that. So the TextBlock carries no TextTrimming and
+        // this walks the string in from the FRONT instead - "...\lodash.sortby\README.md" -
+        // dropping the long folder names and keeping the file name.
+        //
+        // The width budget is StatusText's own ActualWidth, which IS its star column: with the
+        // portable badge shown, that column stops at the badge; once the app is installed the
+        // badge collapses, its Auto column goes to zero width, and the line simply gets that
+        // space and runs on toward the version text. No special case needed for either.
+        //
+        // Every caller goes through here rather than touching StatusText.Text, or the stored
+        // full string and what is on screen drift apart on the next resize.
+        private string _statusFull = string.Empty;
+
+        private void SetFooterStatus(string msg)
+        {
+            _statusFull = msg ?? string.Empty;
+            ElideFooterStatus();
+        }
+
+        // Ellipsis built from its codepoint, never typed literally: these sources are BOM-less
+        // UTF-8 and the family keeps them 0 non-ASCII bytes (the encoding trap that made
+        // KillerPDF's release.ps1 PS7-only).
+        private static readonly string Ellipsis = ((char)0x2026).ToString();
+
+        private void ElideFooterStatus()
+        {
+            // Nothing pushed yet - leave the XAML's Str_Status_Ready alone rather than
+            // blanking it on the first layout pass.
+            if (_statusFull.Length == 0) return;
+
+            // The star column runs UNDER the centered portable badge, so ActualWidth alone is
+            // not the real budget - that is what let the line reach the Install button. While
+            // the badge is showing, clamp at its left edge with a 12px gap. Once the app is
+            // installed the badge is collapsed, the clamp drops, and the line is free to run on
+            // toward the version text.
+            double avail = StatusText.ActualWidth;
+            if (PortableBadge.IsVisible && PortableBadge.ActualWidth > 0)
+            {
+                double badgeLeft = PortableBadge
+                    .TransformToVisual(StatusText).Transform(new Point(0, 0)).X;
+                avail = Math.Min(avail, badgeLeft - 12);
+            }
+
+            if (avail <= 0)                          { StatusText.Text = _statusFull; return; }
+            if (MeasureStatus(_statusFull) <= avail) { StatusText.Text = _statusFull; return; }
+
+            // Longest SUFFIX that still fits behind a leading ellipsis. Binary search rather
+            // than a character-at-a-time walk - this runs on every engine progress callback.
+            int lo = 0, hi = _statusFull.Length;
+            while (lo < hi)
+            {
+                int mid = (lo + hi) / 2;   // drop `mid` characters off the front
+                if (MeasureStatus(Ellipsis + _statusFull.Substring(mid)) <= avail) hi = mid;
+                else lo = mid + 1;
+            }
+            StatusText.Text = Ellipsis + _statusFull.Substring(Math.Min(lo, _statusFull.Length));
+        }
+
+        private void StatusText_SizeChanged(object sender, SizeChangedEventArgs e) => ElideFooterStatus();
+
+        // The pane's status bar earns its 24px only when it has something to say. Browsing a
+        // folder leaves all three of its fields empty - the scanned and match counts belong to
+        // a search and the query label is blank - so the row is dead space under the listing.
+        // Collapse it then, and hand the pane's bottom rounding back to the list surface, which
+        // is square only because the bar normally covers that edge.
+        //
+        // Called from every place that writes those three fields; cheap enough to sit on the
+        // progress callback.
+        private void UpdatePaneStatusBar()
+        {
+            bool any = Pane.ScannedText.Visibility == Visibility.Visible
+                    || !string.IsNullOrEmpty(Pane.StatsText.Text)
+                    || !string.IsNullOrEmpty(Pane.QueryText.Text);
+
+            Pane.PaneStatusBar.Visibility = any ? Visibility.Visible : Visibility.Collapsed;
+
+            var radius = any ? new CornerRadius(0) : new CornerRadius(0, 0, 5, 5);
+            Pane.ResultsSurface.CornerRadius      = radius;
+            Pane.ResultsSurfaceGrain.CornerRadius = radius;
+        }
+
+        // The badge appearing or going away changes how much room the line has, and it does NOT
+        // resize StatusText to say so - the star column is the same width either way, the badge
+        // just stops sitting on top of it. Dispatched so the badge has been arranged and has a
+        // real ActualWidth by the time the clamp reads it.
+        private void PortableBadge_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+            => Dispatcher.BeginInvoke(new Action(ElideFooterStatus),
+                                      System.Windows.Threading.DispatcherPriority.Loaded);
+
+        // Measured with a real off-tree TextBlock, NOT FormattedText. FormattedText measures in
+        // TextFormattingMode.Ideal and offers no way to ask for Display; this window is
+        // Display (see the Window's TextOptions), which snaps every glyph advance to a whole
+        // pixel and so lays out WIDER than Ideal predicts. Measuring in the wrong mode
+        // under-reports by a few percent, which is enough for a long path to run into the
+        // Install button anyway - which is exactly what it did.
+        //
+        // Off-tree so measuring never touches the live layout pass; the font properties and the
+        // formatting mode are copied each call because both ride DynamicResources that a theme
+        // or locale switch can change underneath us.
+        private TextBlock? _statusMeasure;
+
+        private double MeasureStatus(string s)
+        {
+            _statusMeasure ??= new TextBlock();
+            _statusMeasure.FontFamily  = StatusText.FontFamily;
+            _statusMeasure.FontSize    = StatusText.FontSize;
+            _statusMeasure.FontStyle   = StatusText.FontStyle;
+            _statusMeasure.FontWeight  = StatusText.FontWeight;
+            _statusMeasure.FontStretch = StatusText.FontStretch;
+            System.Windows.Media.TextOptions.SetTextFormattingMode(
+                _statusMeasure, System.Windows.Media.TextOptions.GetTextFormattingMode(StatusText));
+            _statusMeasure.Text = s;
+            _statusMeasure.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            return _statusMeasure.DesiredSize.Width;
         }
 
         // The footer indicator light. Green normal, amber for something that did not happen but
@@ -795,7 +923,12 @@ namespace KillerFind
             // A real traffic light: three fixed colors. This used to fall back to PrimaryBrush,
             // which meant "fine" rendered as whatever accent was picked - blue, red, whatever -
             // so the dot carried no information at all unless something had gone wrong.
+            //
+            // A run in flight holds it amber for the whole search, so the light reads as
+            // "working" rather than "fine" while it is still going. An error KEY still wins over
+            // that: something failing mid-run must not be downgraded to merely busy.
             string brush = key != null && System.Array.IndexOf(ErrorKeys, key) >= 0 ? "DangerRed"
+                         : _active?.IsSearching == true                             ? "WarnBrush"
                          : key != null && System.Array.IndexOf(WarnKeys,  key) >= 0 ? "WarnBrush"
                          : "OkBrush";
 
@@ -809,7 +942,7 @@ namespace KillerFind
             tab.StatusKey     = key;
             tab.StatusArgs    = args;
             tab.StatusMessage = args.Length > 0 ? string.Format(Loc(key), args) : Loc(key);
-            if (tab == _active) { StatusText.Text = tab.StatusMessage; ApplyStatusTone(key); }
+            if (tab == _active) { SetFooterStatus(tab.StatusMessage); ApplyStatusTone(key); }
         }
 
         // All engine callbacks land at Background priority so queued result churn sits
@@ -833,7 +966,7 @@ namespace KillerFind
                 }
                 int c = tab.Results.Count;
                 tab.StatsLabel = c > 0 ? string.Format(Loc("Str_Count_Matches"), c.ToString("N0")) : string.Empty;
-                if (tab == _active) StatsText.Text = tab.StatsLabel;
+                if (tab == _active) { Pane.StatsText.Text = tab.StatsLabel; UpdatePaneStatusBar(); }
             }, System.Windows.Threading.DispatcherPriority.Background);
         }
 
@@ -846,7 +979,7 @@ namespace KillerFind
             {
                 tab.ScannedCount = processed;
                 tab.ScannedLabel = string.Format(Loc("Str_Status_Scanned"), processed.ToString("N0"));
-                if (tab == _active) ScannedText.Text = tab.ScannedLabel;
+                if (tab == _active) { Pane.ScannedText.Text = tab.ScannedLabel; UpdatePaneStatusBar(); }
             }, System.Windows.Threading.DispatcherPriority.Background);
 
         private void SetStatus(string msg) => SetTabStatus(_active, msg);

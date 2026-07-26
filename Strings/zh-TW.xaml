@@ -109,7 +109,7 @@
     <!-- Results -->
     <sys:String x:Key="Str_Lbl_Results">搜尋結果</sys:String>
     <sys:String x:Key="Str_Lbl_ResultsCount">搜尋結果  ({0})</sys:String>
-    <sys:String x:Key="Str_Btn_Export">匯出 HTML</sys:String>
+    <sys:String x:Key="Str_Btn_Export">匯出結果</sys:String>
     <sys:String x:Key="Str_TT_Result">按一下展開  |  連按兩下在檔案總管中顯示  |  按右鍵以取得更多選項</sys:String>
     <sys:String x:Key="Str_Btn_ExpandAll">全部展開</sys:String>
     <sys:String x:Key="Str_Btn_CollapseAll">全部摺疊</sys:String>

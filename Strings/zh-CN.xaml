@@ -109,7 +109,7 @@
     <!-- Results -->
     <sys:String x:Key="Str_Lbl_Results">结果</sys:String>
     <sys:String x:Key="Str_Lbl_ResultsCount">结果  ({0})</sys:String>
-    <sys:String x:Key="Str_Btn_Export">导出 HTML</sys:String>
+    <sys:String x:Key="Str_Btn_Export">导出结果</sys:String>
     <sys:String x:Key="Str_TT_Result">点击展开  |  双击在 Explorer 中显示  |  右键查看更多</sys:String>
     <sys:String x:Key="Str_Btn_ExpandAll">全部展开</sys:String>
     <sys:String x:Key="Str_Btn_CollapseAll">全部折叠</sys:String>

@@ -52,6 +52,7 @@ namespace KillerFind
         // ── Pipe + export ────────────────────────────────────────
         private void PipeButton_Click(object s, RoutedEventArgs e)         => Owner.PipeButton_Click(s, e);
         private void PipeTab_Click(object s, RoutedEventArgs e)            => Owner.PipeTab_Click(s, e);
+        private void ExportButton_Click(object s, RoutedEventArgs e)       => Owner.ExportButton_Click(s, e);
         private void Export_Click(object s, RoutedEventArgs e)             => Owner.Export_Click(s, e);
         private void ExportCsv_Click(object s, RoutedEventArgs e)          => Owner.ExportCsv_Click(s, e);
 

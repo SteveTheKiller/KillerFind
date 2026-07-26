@@ -109,7 +109,7 @@
     <!-- Results -->
     <sys:String x:Key="Str_Lbl_Results">SONUÇLAR</sys:String>
     <sys:String x:Key="Str_Lbl_ResultsCount">SONUÇLAR  ({0})</sys:String>
-    <sys:String x:Key="Str_Btn_Export">HTML DIŞA AKTAR</sys:String>
+    <sys:String x:Key="Str_Btn_Export">Sonuçları dışa aktar</sys:String>
     <sys:String x:Key="Str_TT_Result">Genişletmek için tıklayın  |  Explorer'da göstermek için çift tıklayın  |  Daha fazlası için sağ tıklayın</sys:String>
     <sys:String x:Key="Str_Btn_ExpandAll">TÜMÜNÜ AÇ</sys:String>
     <sys:String x:Key="Str_Btn_CollapseAll">TÜMÜNÜ KAPAT</sys:String>

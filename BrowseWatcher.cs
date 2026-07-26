@@ -212,7 +212,7 @@ namespace KillerFind
             }
 
             if (changed)
-                ResultsHeader.Text = string.Format(Loc("Str_Lbl_ResultsCount"), tab.Results.Count);
+                Pane.ResultsHeader.Text = string.Format(Loc("Str_Lbl_ResultsCount"), tab.Results.Count);
         }
 
         private static bool IsHidden(string path)

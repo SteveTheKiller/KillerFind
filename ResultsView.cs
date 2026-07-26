@@ -46,7 +46,12 @@ namespace KillerFind
 
         // Room for the art plus two wrapped lines of filename. The width floor keeps small
         // icon sizes from squeezing names down to three characters and an ellipsis.
-        public double TileWidth  => Math.Max(104, _tileSize + 44);
+        //
+        // The +16 is the horizontal gap between tiles: at 96px art that is a 112px cell, so
+        // icons sit 16px apart. It used to be +44, which spread the grid out with far more air
+        // between columns than Explorer uses. Longer names trim sooner as a result - that is
+        // the trade, and the tooltip still carries the full path.
+        public double TileWidth  => Math.Max(96, _tileSize + 16);
         public double TileHeight => _tileSize + 52;
 
         // Details view's "location" column. Zero while browsing, where it repeats the folder you

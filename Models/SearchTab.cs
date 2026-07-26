@@ -84,6 +84,16 @@ namespace KillerFind.Models
             set { _isActive = value; Notify(); }
         }
 
+        // Rightmost tab in the strip. The tab's 1px right border is a divider BETWEEN tabs,
+        // so the last one has to drop it - there it lands on the strip's edge and reads as a
+        // stray rule. UpdateTabBar sets this on every add, close and drag-reorder.
+        private bool _isLast;
+        public bool IsLast
+        {
+            get => _isLast;
+            set { _isLast = value; Notify(); }
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
         private void Notify([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));

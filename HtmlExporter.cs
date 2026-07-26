@@ -90,8 +90,12 @@ namespace KillerFind
             sb.AppendLine(".themesw button:hover{transform:scale(1.15)}.themesw button.active{border-color:var(--text)}");
             sb.AppendLine(".meta{color:var(--muted);font-size:13px;margin:0 0 6px}.meta b{color:var(--text)}");
             sb.AppendLine(".query{color:var(--muted);font-size:14px;margin:0 0 18px}.query b{color:var(--accent);font-weight:600}");
-            sb.AppendLine($".tablewrap{{overflow-x:auto;border:1px solid var(--border);border-radius:8px;background:var(--pane) url('{AssetBase}killerfind-grain.png');box-shadow:0 10px 30px rgba(0,0,0,.45)}}");
-            sb.AppendLine("table{border-collapse:collapse;width:100%;min-width:860px}");
+            // Grain goes on a ::before overlay at the app's GrainOpacity, NOT straight into
+            // the background shorthand - a CSS background-image has no opacity of its own, so
+            // the tile was compositing at FULL strength and burying the table in noise.
+            sb.AppendLine(".tablewrap{position:relative;overflow-x:auto;border:1px solid var(--border);border-radius:8px;background:var(--pane);box-shadow:0 10px 30px rgba(0,0,0,.45)}");
+            sb.AppendLine($".tablewrap::before{{content:'';position:absolute;inset:0;background:url('{AssetBase}killerfind-grain.png');opacity:.24;pointer-events:none;z-index:0}}");
+            sb.AppendLine("table{position:relative;z-index:1;border-collapse:collapse;width:100%;min-width:860px}");
             sb.AppendLine("th{background:var(--surface);color:var(--muted);text-align:left;padding:10px 14px;font-size:12px;font-weight:600;font-family:Consolas,monospace;letter-spacing:.3px;position:sticky;top:0;white-space:nowrap;cursor:pointer;user-select:none}");
             sb.AppendLine("th:hover{color:var(--text)}th .arrow{display:inline-block;width:10px;font-size:10px;opacity:.7}");
             sb.AppendLine("td{border-top:1px solid var(--border);padding:7px 14px;font-size:13px;vertical-align:top}");

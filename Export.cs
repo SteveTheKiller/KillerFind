@@ -10,8 +10,19 @@ namespace KillerFind
 {
     public partial class MainWindow
     {
+        // The toolbar's export icon: one button, the format chosen from a flyout, so the
+        // location row is not carrying two text buttons. Same Popup + Anim.FadeIn pattern as
+        // the theme flyout (ThemeFlyout.cs), so every flyout in the app opens the same way.
+        internal void ExportButton_Click(object sender, RoutedEventArgs e)
+        {
+            var p = Pane.ExportPopup;
+            p.IsOpen = !p.IsOpen;
+            if (p.IsOpen && p.Child is UIElement child) Anim.FadeIn(child);
+        }
+
         internal void ExportCsv_Click(object sender, RoutedEventArgs e)
         {
+            Pane.ExportPopup.IsOpen = false;   // before the empty-results early return
             var tab = _active;
             if (tab.Results.Count == 0)
             {
@@ -52,6 +63,7 @@ namespace KillerFind
 
         internal void Export_Click(object sender, RoutedEventArgs e)
         {
+            Pane.ExportPopup.IsOpen = false;   // before the empty-results early return
             var tab = _active;
             if (tab.Results.Count == 0)
             {

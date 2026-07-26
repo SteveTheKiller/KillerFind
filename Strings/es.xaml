@@ -109,7 +109,7 @@
     <!-- Results -->
     <sys:String x:Key="Str_Lbl_Results">RESULTADOS</sys:String>
     <sys:String x:Key="Str_Lbl_ResultsCount">RESULTADOS  ({0})</sys:String>
-    <sys:String x:Key="Str_Btn_Export">EXPORTAR HTML</sys:String>
+    <sys:String x:Key="Str_Btn_Export">Exportar resultados</sys:String>
     <sys:String x:Key="Str_TT_Result">Clic para expandir  |  Doble clic para mostrar en Explorer  |  Clic derecho para más opciones</sys:String>
     <sys:String x:Key="Str_Btn_ExpandAll">EXPANDIR TODO</sys:String>
     <sys:String x:Key="Str_Btn_CollapseAll">CONTRAER TODO</sys:String>

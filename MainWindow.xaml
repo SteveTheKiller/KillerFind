@@ -688,56 +688,67 @@
 
         <!-- ══════════ ROW 2 - FOOTER (blends with the sidebar/panes, no divider line) ══════════ -->
         <Border Grid.Row="2" Background="{DynamicResource BackgroundBrush}">
+          <!-- Two columns: the status area takes what is left, the version block sizes to its
+               content on the right. The portable badge is deliberately NOT a column - it stays
+               a CENTERED overlay spanning both, which is where it has always sat. Giving it its
+               own column pinned it against the version text instead.
+               Because it overlays, column 0 runs underneath it and cannot bound the status line
+               on its own - ElideFooterStatus (MainWindow.xaml.cs) clamps the line at the badge's
+               left edge while the badge is showing, and drops the clamp once the app is
+               installed and the badge is gone, so the line then runs on toward the version text.
+               The short per-TAB facts (scanned / matches / query) are NOT here - they live in
+               each pane's own status bar (FilePane.xaml). This bar carries the one item that
+               needs real width. -->
           <Grid>
-            <Border IsHitTestVisible="False" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
-            <!-- Live counters for the ACTIVE tab's search (moved here from the run status bar) -->
-            <!-- 8px inset, not the family's usual 16: the status line is the leftmost thing in
-                 the window now that it carries the listing commentary, and 16 left it floating. -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.ColumnSpan="2" IsHitTestVisible="False" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+            <Grid Grid.Column="0" VerticalAlignment="Center" Margin="16,0,12,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
                 <!-- App-wide zoom level (AppScale.cs). Leftmost in the status area at the same
                      16px inset, ChromeTextBrush, mono 11.5 - the exact slot and treatment
                      KillerScan gives its footer StatusText (MainWindow.xaml row 3). Hidden at
-                     100%; a collapsed element takes no width or margin, so the counters sit
-                     exactly where they did before. -->
-                <TextBlock x:Name="AppScaleLabel" Visibility="Collapsed" Foreground="{DynamicResource ChromeTextBrush}"
+                     100%; a collapsed element takes no width or margin. -->
+                <TextBlock x:Name="AppScaleLabel" Grid.Column="0" Visibility="Collapsed" Foreground="{DynamicResource ChromeTextBrush}"
                            FontFamily="{DynamicResource MonoFont}" FontSize="11.5" VerticalAlignment="Center"
                            Margin="0,0,14,0" ToolTip="{DynamicResource Str_TT_AppSize}"/>
-                <!-- 11.5 status / 10 corner type is the family footer standard (see KillerScan
-                     MainWindow.xaml row 3); the landing sites use the same 11.5px in .statusbar. -->
-                <TextBlock x:Name="ScannedText" Foreground="{DynamicResource TextFooter}" FontFamily="{DynamicResource MonoFont}"
-                           FontSize="11.5" VerticalAlignment="Center" Margin="0,0,14,0" Visibility="Collapsed"/>
-                <TextBlock x:Name="StatsText" Foreground="{DynamicResource PrimaryBrush}" FontFamily="{DynamicResource MonoFont}"
-                           FontSize="11.5" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,14,0"/>
-                <!-- The running commentary, moved down out of the results pane: "Ready",
-                     "Opening C:\...", "164 item(s)", "Cannot open X". It used to sit above the
-                     listing alongside a RESULTS (n) header that said the same thing, which made
-                     sense when a tab was a search report and stopped making sense once a tab
-                     became a folder. Keeps its accent tick so it still reads as the live line.
-                     ResultsHeader rides along collapsed - six places still write a count into
-                     it and this is the count they were writing. -->
                 <!-- Traffic light: OkBrush / WarnBrush / DangerRed, set by ApplyStatusTone. The
                      resting state is green, not the accent - see MainWindow.xaml.cs. -->
-                <Border x:Name="StatusDot" Width="3" Background="{DynamicResource OkBrush}" Margin="0,3,7,3" CornerRadius="2"/>
-                <TextBlock x:Name="StatusText" Text="{DynamicResource Str_Status_Ready}" Foreground="{DynamicResource TextFooter}"
+                <Border x:Name="StatusDot" Grid.Column="1" Width="3" Background="{DynamicResource OkBrush}" Margin="0,3,7,3" CornerRadius="2"/>
+                <!-- The running commentary: "Ready", "Opening C:\...", "164 item(s)", "Cannot
+                     open X". No MaxWidth - the * column IS the bound, so the line uses whatever
+                     the window gives it: it stops at the portable badge while that is showing,
+                     and once the app is installed the badge collapses to zero width and the
+                     line simply runs on toward the version text.
+                     NO TextTrimming: that ellipsizes the TAIL, which on a path throws away the
+                     file name - the only part worth reading. ElideFooterStatus
+                     (MainWindow.xaml.cs) trims from the FRONT instead, and SizeChanged
+                     re-runs it so a window resize re-cuts the path.
+                     11.5 status / 10 corner type is the family footer standard. -->
+                <TextBlock x:Name="StatusText" Grid.Column="2" Text="{DynamicResource Str_Status_Ready}" Foreground="{DynamicResource TextFooter}"
                            FontFamily="{DynamicResource MonoFont}" FontSize="11.5" VerticalAlignment="Center"
-                           TextTrimming="CharacterEllipsis" MaxWidth="520"/>
-                <!-- What this tab searched for, so an old search tab stays self-explanatory.
-                     Empty while browsing, and a collapsed-width TextBlock costs nothing. -->
-                <TextBlock x:Name="QueryText" Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource MonoFont}"
-                           FontSize="11" VerticalAlignment="Center" Margin="14,0,0,0"
-                           TextTrimming="CharacterEllipsis" MaxWidth="360"/>
-                <TextBlock x:Name="ResultsHeader" Visibility="Collapsed"/>
-            </StackPanel>
-            <!-- Portable mode indicator (hidden when installed), same as KillerScan -->
-            <StackPanel x:Name="PortableBadge" Orientation="Horizontal" HorizontalAlignment="Center"
-                        VerticalAlignment="Center" Visibility="Collapsed">
+                           SizeChanged="StatusText_SizeChanged"/>
+            </Grid>
+            <!-- Portable mode indicator (hidden when installed), same as KillerScan. Centered
+                 across the whole footer, NOT parked in a column - a column pins it next to the
+                 version text. IsVisibleChanged re-runs the status elision, because the line's
+                 usable width changes the moment this appears or goes away. -->
+            <StackPanel x:Name="PortableBadge" Grid.ColumnSpan="2" Orientation="Horizontal"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"
+                        IsVisibleChanged="PortableBadge_IsVisibleChanged">
                 <TextBlock Text="{DynamicResource Str_Portable}" Foreground="{DynamicResource TextFooter}"
                            FontFamily="Consolas" FontSize="9" VerticalAlignment="Center" Margin="0,0,8,0"/>
                 <Button x:Name="InstallBtn" Content="{DynamicResource Str_Btn_Install}" Click="Install_Click"
                         Style="{StaticResource OutlineButton}" FontFamily="Segoe UI" FontSize="10" Padding="8,1"
                         VerticalAlignment="Center"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,16,0">
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
                 <TextBlock x:Name="VersionLabel" Text="v0.99" Foreground="{DynamicResource TextFooter}" FontFamily="{DynamicResource MonoFont}" FontSize="10" VerticalAlignment="Center" Margin="0,0,12,0"
                            Cursor="Hand" ToolTip="About" MouseLeftButtonUp="VersionLabel_Click"/>
                 <!-- 14px trailing margin keeps the copyright clear of the corner grip (family standard) -->
@@ -750,7 +761,7 @@
             </StackPanel>
             <!-- Bottom-right resize grip: dotted triangle at the content corner, forwards a
                  HTBOTTOMRIGHT resize to Windows on drag (same as KillerPDF/KillerScan). -->
-            <Canvas x:Name="ResizeGripDots" Width="13" Height="13"
+            <Canvas x:Name="ResizeGripDots" Grid.ColumnSpan="2" Width="13" Height="13"
                     HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,4,4"
                     Background="Transparent" Cursor="SizeNWSE"
                     MouseLeftButtonDown="ResizeGrip_MouseDown">

@@ -109,7 +109,7 @@
     <!-- Results -->
     <sys:String x:Key="Str_Lbl_Results">ERGEBNISSE</sys:String>
     <sys:String x:Key="Str_Lbl_ResultsCount">ERGEBNISSE  ({0})</sys:String>
-    <sys:String x:Key="Str_Btn_Export">HTML EXPORTIEREN</sys:String>
+    <sys:String x:Key="Str_Btn_Export">Ergebnisse exportieren</sys:String>
     <sys:String x:Key="Str_TT_Result">Klicken zum Aufklappen  |  Doppelklick: im Explorer anzeigen  |  Rechtsklick für mehr</sys:String>
     <sys:String x:Key="Str_Btn_ExpandAll">ALLE AUFKLAPPEN</sys:String>
     <sys:String x:Key="Str_Btn_CollapseAll">ALLE ZUKLAPPEN</sys:String>

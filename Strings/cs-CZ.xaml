@@ -127,7 +127,7 @@
     <!-- Results -->
     <sys:String x:Key="Str_Lbl_Results">VÝSLEDKY</sys:String>
     <sys:String x:Key="Str_Lbl_ResultsCount">VÝSLEDKY  ({0})</sys:String>
-    <sys:String x:Key="Str_Btn_Export">EXPORT HTML</sys:String>
+    <sys:String x:Key="Str_Btn_Export">Exportovat výsledky</sys:String>
     <sys:String x:Key="Str_TT_Result">Kliknutím rozbalíte  |  Dvojklikem zobrazíte v Průzkumníku  |  Pravým tlačítkem další volby</sys:String>
     <sys:String x:Key="Str_Btn_ExpandAll">ROZBALIT VŠE</sys:String>
     <sys:String x:Key="Str_Btn_CollapseAll">SBALIT VŠE</sys:String>

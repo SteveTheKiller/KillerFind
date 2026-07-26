@@ -127,14 +127,15 @@ namespace KillerFind
             }
 
             // Push the active tab's re-rendered lines into the visible controls.
-            StatusText.Text  = _active.StatusMessage;
-            QueryText.Text   = _active.QueryLabel;
-            StatsText.Text   = _active.StatsLabel;
-            ScannedText.Text = _active.ScannedLabel;
+            SetFooterStatus(_active.StatusMessage);          // window footer - the live line
+            Pane.QueryText.Text   = _active.QueryLabel;
+            Pane.StatsText.Text   = _active.StatsLabel;
+            Pane.ScannedText.Text = _active.ScannedLabel;
+            UpdatePaneStatusBar();
             if (!_active.IsSearching)
             {
                 int c = _active.Results.Count;
-                ResultsHeader.Text = c > 0 ? string.Format(Loc("Str_Lbl_ResultsCount"), c) : Loc("Str_Lbl_Results");
+                Pane.ResultsHeader.Text = c > 0 ? string.Format(Loc("Str_Lbl_ResultsCount"), c) : Loc("Str_Lbl_Results");
             }
             if (_active.PipeFiles != null)
                 Pane.ScopePathLabel.Text = _active.PipeLabel;

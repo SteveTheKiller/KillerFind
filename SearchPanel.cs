@@ -57,7 +57,10 @@ namespace KillerFind
             // right margin goes with it, or the two would still add up to a visible trench -
             // that margin exists to hold the pane off the WINDOW edge, and while the panel is
             // open there is no window edge there to hold it off.
-            Pane.ResultsPane.Margin    = new Thickness(0, 0, _searchOpen ? 0 : 8, 0);
+            // -1 top, matching the XAML: the pane's top border stays tucked under the tab strip
+            // so the active tab and the pane read as one surface. Losing it here would put the
+            // seam back the moment the search panel opened.
+            Pane.ResultsPane.Margin    = new Thickness(0, -1, _searchOpen ? 0 : 8, 0);
             Pane.TabFadeGhost.Margin   = Pane.ResultsPane.Margin;
 
             // The tab strip has to travel with the pane it sits on. It was left behind here, so

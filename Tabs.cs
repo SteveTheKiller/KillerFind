@@ -35,19 +35,30 @@ namespace KillerFind
         }
 
         // The tab bar only exists once there are 2+ tabs (like KillerPDF). While it is
-        // visible the pane keeps a slight top rounding EXCEPT under the selected tab:
-        // when the ACTIVE tab is the first one it sits flush on the pane's top-left
-        // corner, so that corner squares off browser-style. Re-run on tab switch and
-        // after a drag-reorder, since either can change which tab owns the corner.
+        // visible, each top corner squares off ONLY when the tab sitting on it is the active
+        // one - first tab owns the top-left, last tab owns the top-right (the tabs fill the
+        // strip edge to edge, so those two always reach the pane's corners). The active tab
+        // is painted in PaneBrush, so it and the pane have to read as one surface: the strip
+        // covers just the 1px the pane is pulled up by (its -1 top margin), and a 6px radius
+        // under it leaves ~5px of curve - plus the border stroke along it - showing as a
+        // rounded step and a tab-shaped outline. An inactive tab is window-colored, so it is
+        // a different surface anyway and the pane keeps its rounding under it. One tab
+        // collapses the strip and the pane takes its fully rounded top back. Re-run on tab
+        // switch and after a drag-reorder, since either can change which tab owns a corner.
         private void UpdateTabBar()
         {
             bool show = _tabs.Count > 1;
             Pane.TabBar.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
 
+            // Which tab is rightmost drives its divider (see SearchTab.IsLast).
+            for (int i = 0; i < _tabs.Count; i++)
+                _tabs[i].IsLast = i == _tabs.Count - 1;
+
             if (show)
             {
                 bool firstActive = _tabs.Count > 0 && _tabs[0] == _active;
-                Pane.ResultsPane.CornerRadius = new CornerRadius(firstActive ? 0 : 6, 6, 6, 6);
+                bool lastActive  = _tabs.Count > 0 && _tabs[_tabs.Count - 1] == _active;
+                Pane.ResultsPane.CornerRadius = new CornerRadius(firstActive ? 0 : 6, lastActive ? 0 : 6, 6, 6);
                 Pane.ScopeBar.CornerRadius    = new CornerRadius(firstActive ? 0 : 5, 0, 0, 0);
             }
             else
@@ -83,8 +94,11 @@ namespace KillerFind
             ExcludePatternsBox.Text      = t.ExcludePatterns;
             CaseSensitiveCheck.IsChecked = t.CaseSensitive;
 
-            StatusText.Text        = t.StatusMessage;
-            QueryText.Text         = t.QueryLabel;
+            SetFooterStatus(t.StatusMessage);           // window footer - the live line
+            // The light belongs to whichever tab is showing: switching from a running tab to an
+            // idle one has to drop it back off amber, and vice versa.
+            ApplyStatusTone(t.StatusKey);
+            Pane.QueryText.Text    = t.QueryLabel;
             SetExpandAllLabel(t.Results.Count > 0 && t.Results.All(r => r.IsExpanded));
             _syncingSort = true;
             Pane.SortCombo.SelectedIndex = t.SortIndex;
@@ -93,12 +107,13 @@ namespace KillerFind
             Pane.ResultFilterBox.Text     = t.FilterText;
             Pane.ResultFilterBar.Visibility = t.FilterText.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
             ApplyFilter(t);
-            ScannedText.Text       = t.ScannedLabel;
-            ScannedText.Visibility = t.IsSearching ? Visibility.Visible : Visibility.Collapsed;
-            StatsText.Text         = t.StatsLabel;
+            Pane.ScannedText.Text       = t.ScannedLabel;
+            Pane.ScannedText.Visibility = t.IsSearching ? Visibility.Visible : Visibility.Collapsed;
+            Pane.StatsText.Text         = t.StatsLabel;
+            UpdatePaneStatusBar();      // the incoming tab may have nothing to report
             UpdateLocationColumn();   // ViewOptions.cs - a browsing tab hides the folder column
             SearchButton.Content   = t.IsSearching ? Loc("Str_Btn_Stop") : Loc("Str_Btn_Search");
-            ResultsHeader.Text     = t.Results.Count > 0
+            Pane.ResultsHeader.Text = t.Results.Count > 0
                 ? string.Format(Loc("Str_Lbl_ResultsCount"), t.Results.Count)
                 : Loc("Str_Lbl_Results");
             UpdateNavButtons();   // Browse.cs - back/forward/up belong to the incoming tab
