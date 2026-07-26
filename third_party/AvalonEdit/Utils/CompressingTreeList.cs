@@ -44,7 +44,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		#region Node definition
 		private sealed class Node
 		{
-			internal Node left, right, parent;
+			// All three are structurally nullable: a leaf has no children and the root has no
+			// parent. The algorithms below rely on invariants the compiler cannot see, so where a
+			// node is known to exist the site says so with ! and a reason rather than a guard.
+			internal Node? left, right, parent;
 			internal bool color;
 			internal int count, totalCount;
 			internal T value;
@@ -81,7 +84,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 			/// <summary>
 			/// Gets the inorder predecessor of the node.
 			/// </summary>
-			internal Node Predecessor {
+			// Null at the ends of the list: the first node has no predecessor, the last none after it.
+			internal Node? Predecessor {
 				get {
 					if (left != null) {
 						return left.RightMost;
@@ -101,7 +105,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			/// <summary>
 			/// Gets the inorder successor of the node.
 			/// </summary>
-			internal Node Successor {
+			internal Node? Successor {
 				get {
 					if (right != null) {
 						return right.LeftMost;
@@ -127,7 +131,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 
 		#region Fields and Constructor
 		private readonly Func<T, T, bool> comparisonFunc;
-		private Node root;
+		// Null for an empty list, which is also what Clear() puts it back to.
+		private Node? root;
 
 		/// <summary>
 		/// Creates a new CompressingTreeList instance.
@@ -436,7 +441,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 				return;
 			}
 
-			Node prevNode = null;
+			Node? prevNode = null;
 			for (Node n = root.LeftMost; n != null; n = n.Successor) {
 				n.value = converter(n.value);
 				if (prevNode != null && comparisonFunc(prevNode.value, n.value)) {
@@ -684,8 +689,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 
 			// now either removedNode.left or removedNode.right is null
 			// get the remaining child
-			Node parentNode = removedNode.parent;
-			Node childNode = removedNode.left ?? removedNode.right;
+			Node? parentNode = removedNode.parent;
+			Node? childNode = removedNode.left ?? removedNode.right;
 			ReplaceNode(removedNode, childNode);
 			if (parentNode != null) {
 				UpdateAugmentedData(parentNode);
@@ -700,7 +705,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 			}
 		}
 
-		private void FixTreeOnDelete(Node node, Node parentNode)
+		// Both nullable, and deliberately so: node is the child that replaced a deleted black
+		// node and may be the null leaf, parentNode is null when the tree just lost its root.
+		private void FixTreeOnDelete(Node? node, Node? parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
 			if (parentNode == null) {
@@ -773,7 +780,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 			}
 		}
 
-		private void ReplaceNode(Node replacedNode, Node newNode)
+		// newNode is null when the replaced node simply goes away, which is the delete path.
+		private void ReplaceNode(Node replacedNode, Node? newNode)
 		{
 			if (replacedNode.parent == null) {
 				Debug.Assert(replacedNode == root);
@@ -842,7 +850,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			}
 		}
 
-		private static Node Sibling(Node node, Node parentNode)
+		private static Node Sibling(Node? node, Node parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
 			if (node == parentNode.left) {
@@ -905,7 +913,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		4. Both children of every red node are black. (So every red node must have a black parent.)
 		5. Every simple path from a node to a descendant leaf contains the same number of black nodes. (Not counting the leaf node.)
 		 */
-		private void CheckNodeProperties(Node node, Node parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
+		private void CheckNodeProperties(Node? node, Node? parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
 		{
 			if (node == null) {
 				return;
