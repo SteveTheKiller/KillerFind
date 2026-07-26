@@ -122,7 +122,7 @@ namespace KillerFind
 
         private void InitResultsView()
         {
-            _listTemplate ??= ResultsList.ItemTemplate;
+            _listTemplate ??= Pane.ResultsList.ItemTemplate;
 
             if (int.TryParse(Services.ThemeManager.GetSetting("ResultsView"), out int v) && v >= 0 && v <= 2)
                 _viewMode = v;
@@ -134,9 +134,9 @@ namespace KillerFind
             ApplyResultsView();
         }
 
-        private void ViewList_Click(object sender, RoutedEventArgs e)    => SetResultsView(0);
-        private void ViewIcons_Click(object sender, RoutedEventArgs e)   => SetResultsView(1);
-        private void ViewDetails_Click(object sender, RoutedEventArgs e) => SetResultsView(2);
+        internal void ViewList_Click(object sender, RoutedEventArgs e)    => SetResultsView(0);
+        internal void ViewIcons_Click(object sender, RoutedEventArgs e)   => SetResultsView(1);
+        internal void ViewDetails_Click(object sender, RoutedEventArgs e) => SetResultsView(2);
 
         private void SetResultsView(int mode)
         {
@@ -150,12 +150,12 @@ namespace KillerFind
         // as the folder picker's ApplyView, which is where the pattern comes from.
         private void ApplyResultsView()
         {
-            ResultsList.ItemsPanel = (ItemsPanelTemplate)ResultsList.FindResource(
+            Pane.ResultsList.ItemsPanel = (ItemsPanelTemplate)Pane.ResultsList.FindResource(
                 _viewMode == 1 ? "PanelWrap" : "PanelStack");
 
-            ResultsList.ItemTemplate =
-                _viewMode == 1 ? (DataTemplate)ResultsList.FindResource("TileTemplate") :
-                _viewMode == 2 ? (DataTemplate)ResultsList.FindResource("DetailsRowTemplate")
+            Pane.ResultsList.ItemTemplate =
+                _viewMode == 1 ? (DataTemplate)Pane.ResultsList.FindResource("TileTemplate") :
+                _viewMode == 2 ? (DataTemplate)Pane.ResultsList.FindResource("DetailsRowTemplate")
                                : _listTemplate;
 
             // Column headers belong to details view; expand/collapse-all only means anything for
@@ -164,12 +164,12 @@ namespace KillerFind
             // Hidden, not Collapsed: the button sits in the header's right-hand strip, and a
             // collapsed element gives up its width, so every other control in that strip slid
             // sideways each time the view changed. Hidden keeps the slot.
-            DetailsHeader.Visibility   = _viewMode == 2 ? Visibility.Visible : Visibility.Collapsed;
-            ExpandAllButton.Visibility = _viewMode == 0 ? Visibility.Visible : Visibility.Hidden;
+            Pane.DetailsHeader.Visibility   = _viewMode == 2 ? Visibility.Visible : Visibility.Collapsed;
+            Pane.ExpandAllButton.Visibility = _viewMode == 0 ? Visibility.Visible : Visibility.Hidden;
 
-            ViewListBtn.Tag    = _viewMode == 0 ? "on" : null;
-            ViewIconsBtn.Tag   = _viewMode == 1 ? "on" : null;
-            ViewDetailsBtn.Tag = _viewMode == 2 ? "on" : null;
+            Pane.ViewListBtn.Tag    = _viewMode == 0 ? "on" : null;
+            Pane.ViewIconsBtn.Tag   = _viewMode == 1 ? "on" : null;
+            Pane.ViewDetailsBtn.Tag = _viewMode == 2 ? "on" : null;
 
             UpdateColumnArrows();
         }
@@ -177,10 +177,10 @@ namespace KillerFind
         // ── Sortable column headers (details view) ───────────────
         // These drive the same SortIndex / SortAsc the combo does, so the two controls are always
         // showing the same thing and ApplySort stays the single place sorting happens.
-        private void ColName_Click(object sender, RoutedEventArgs e)     => SetColumnSort(1);
-        private void ColFolder_Click(object sender, RoutedEventArgs e)   => SetColumnSort(2);
-        private void ColSize_Click(object sender, RoutedEventArgs e)     => SetColumnSort(3);
-        private void ColModified_Click(object sender, RoutedEventArgs e) => SetColumnSort(4);
+        internal void ColName_Click(object sender, RoutedEventArgs e)     => SetColumnSort(1);
+        internal void ColFolder_Click(object sender, RoutedEventArgs e)   => SetColumnSort(2);
+        internal void ColSize_Click(object sender, RoutedEventArgs e)     => SetColumnSort(3);
+        internal void ColModified_Click(object sender, RoutedEventArgs e) => SetColumnSort(4);
 
         private void SetColumnSort(int index)
         {
@@ -199,7 +199,7 @@ namespace KillerFind
             }
 
             _syncingSort = true;
-            SortCombo.SelectedIndex = _active.SortIndex;
+            Pane.SortCombo.SelectedIndex = _active.SortIndex;
             _syncingSort = false;
 
             ApplySort(_active);
@@ -214,10 +214,10 @@ namespace KillerFind
         {
             if (_active == null) return;
             string a = _active.SortAsc ? ArrowUp : ArrowDown;
-            ColNameArrow.Text   = _active.SortIndex == 1 ? a : string.Empty;
-            ColFolderArrow.Text = _active.SortIndex == 2 ? a : string.Empty;
-            ColSizeArrow.Text   = _active.SortIndex == 3 ? a : string.Empty;
-            ColModArrow.Text    = _active.SortIndex == 4 ? a : string.Empty;
+            Pane.ColNameArrow.Text   = _active.SortIndex == 1 ? a : string.Empty;
+            Pane.ColFolderArrow.Text = _active.SortIndex == 2 ? a : string.Empty;
+            Pane.ColSizeArrow.Text   = _active.SortIndex == 3 ? a : string.Empty;
+            Pane.ColModArrow.Text    = _active.SortIndex == 4 ? a : string.Empty;
         }
 
         // ── Icon sizing (Ctrl+wheel over the results pane) ───────
@@ -225,7 +225,7 @@ namespace KillerFind
         // title-bar wordmark with no modifier (AppScale.cs), so the two never meet. Steps are
         // discrete because the shell only has a few real icon sizes to give - sliding smoothly
         // between them would just be resampling the same bitmap.
-        private void ResultsList_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        internal void ResultsList_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
         {
             if (_viewMode != 1) return;   // only the tile grid has a size to change
             if ((System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Control) == 0) return;

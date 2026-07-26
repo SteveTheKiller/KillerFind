@@ -233,4 +233,25 @@
     <sys:String x:Key="Str_Ks_ExportCsv">結果を CSV で書き出し</sys:String>
     <sys:String x:Key="Str_Ks_Hint">ショートカットはウィンドウ内のどこでも使えます。開いているドロップダウン、日付入力、結果フィルターでは Enter がそれぞれの動作に使われます。</sys:String>
 
+    <!-- ショートカットカード: カテゴリ見出し、リスト / キーボード切り替え、ヒント -->
+    <sys:String x:Key="Str_Ks_About">バージョン情報を表示</sys:String>
+    <sys:String x:Key="Str_Ks_CatSearch">検索</sys:String>
+    <sys:String x:Key="Str_Ks_CatNav">ナビゲーション</sys:String>
+    <sys:String x:Key="Str_Ks_CatTabs">タブ</sys:String>
+    <sys:String x:Key="Str_Ks_CatView">表示</sys:String>
+    <sys:String x:Key="Str_Ks_CatFile">ファイル</sys:String>
+    <sys:String x:Key="Str_Ks_CatEdit">編集</sys:String>
+    <sys:String x:Key="Str_Ks_CatHelp">ヘルプ</sys:String>
+    <sys:String x:Key="Str_Ks_ViewList">リスト</sys:String>
+    <sys:String x:Key="Str_Ks_ViewKeyboard">キーボード</sys:String>
+    <sys:String x:Key="Str_Ks_HoldHint">Ctrl、Shift、Alt を押している間、そのレイヤーを表示します</sys:String>
+
+    <!-- エクスプローラー準拠のショートカット -->
+    <sys:String x:Key="Str_Ks_BackForward">戻る / 進む</sys:String>
+    <sys:String x:Key="Str_Ks_Back">戻る</sys:String>
+    <sys:String x:Key="Str_Ks_Up">一つ上のフォルダーへ</sys:String>
+    <sys:String x:Key="Str_Ks_Refresh">更新 - フォルダーを再表示、または検索を再実行</sys:String>
+    <sys:String x:Key="Str_Ks_SelectAll">すべての結果を選択</sys:String>
+    <sys:String x:Key="Str_Ks_FocusSearch">検索ボックスにカーソルを移動</sys:String>
+
 </ResourceDictionary>

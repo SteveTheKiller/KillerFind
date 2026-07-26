@@ -23,7 +23,7 @@ namespace KillerFind
     {
         private SearchResult? _menuSeed;
 
-        private void ResultsList_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        internal void ResultsList_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             var item = ItemUnder(e.OriginalSource as System.Windows.DependencyObject);
             _menuSeed = item?.DataContext as SearchResult;
@@ -31,10 +31,10 @@ namespace KillerFind
             // Right-clicking outside the selection moves the selection there first, so the menu
             // always acts on what you are pointing at. Right-clicking inside it leaves the
             // selection alone, so a multi-file command still sees all of them.
-            if (_menuSeed != null && !ResultsList.SelectedItems.OfType<SearchResult>().Contains(_menuSeed))
+            if (_menuSeed != null && !Pane.ResultsList.SelectedItems.OfType<SearchResult>().Contains(_menuSeed))
             {
-                ResultsList.SelectedItems.Clear();
-                ResultsList.SelectedItems.Add(_menuSeed);
+                Pane.ResultsList.SelectedItems.Clear();
+                Pane.ResultsList.SelectedItems.Add(_menuSeed);
             }
         }
 
@@ -42,7 +42,7 @@ namespace KillerFind
         // .DirectlyOver at this instant is the element the menu is opening for, which covers the
         // cases the press handler cannot see - a menu raised from the keyboard, or a press that
         // landed on something the visual walk did not resolve to a container.
-        private void ResultsList_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        internal void ResultsList_ContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
             var seed = ItemUnder(Mouse.DirectlyOver as System.Windows.DependencyObject)?.DataContext as SearchResult
                     ?? ItemUnder(e.OriginalSource as System.Windows.DependencyObject)?.DataContext as SearchResult;
@@ -51,10 +51,10 @@ namespace KillerFind
 
             // Same rule as the press handler: pointing outside the selection moves it here,
             // pointing inside it leaves a multi-file selection intact.
-            if (_menuSeed != null && !ResultsList.SelectedItems.OfType<SearchResult>().Contains(_menuSeed))
+            if (_menuSeed != null && !Pane.ResultsList.SelectedItems.OfType<SearchResult>().Contains(_menuSeed))
             {
-                ResultsList.SelectedItems.Clear();
-                ResultsList.SelectedItems.Add(_menuSeed);
+                Pane.ResultsList.SelectedItems.Clear();
+                Pane.ResultsList.SelectedItems.Add(_menuSeed);
             }
 
             // One item covers both directions, so its header has to be decided per opening.
@@ -62,7 +62,7 @@ namespace KillerFind
             // Found by Tag rather than x:Name: the menu is declared inside ListBox.Resources, and
             // XAML does not generate fields for elements inside a resource, so an x:Name there
             // compiles to nothing the code-behind can see. Cached after the first lookup.
-            _favMenuItem ??= ResultsList.ContextMenu?.Items.OfType<MenuItem>()
+            _favMenuItem ??= Pane.ResultsList.ContextMenu?.Items.OfType<MenuItem>()
                                         .FirstOrDefault(m => (m.Tag as string) == "fav");
 
             if (_favMenuItem != null)
@@ -75,7 +75,7 @@ namespace KillerFind
 
         // Favourites are folders, so this acts on the seed itself when it is one and on the
         // parent when it is a file - which is what MenuFolder already means (Bookmarks.cs).
-        private void MenuFavorite_Click(object sender, RoutedEventArgs e)
+        internal void MenuFavorite_Click(object sender, RoutedEventArgs e)
         {
             string? folder = MenuFolder();
             if (folder == null) return;
@@ -107,7 +107,7 @@ namespace KillerFind
         }
 
         // ── Open ─────────────────────────────────────────────────
-        private void MenuOpen_Click(object sender, RoutedEventArgs e)
+        internal void MenuOpen_Click(object sender, RoutedEventArgs e)
         {
             string? p = MenuFile();
             if (!Exists(p)) return;
@@ -122,7 +122,7 @@ namespace KillerFind
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(p!) { UseShellExecute = true });
         }
 
-        private void MenuOpenWith_Click(object sender, RoutedEventArgs e)
+        internal void MenuOpenWith_Click(object sender, RoutedEventArgs e)
         {
             // OpenAs_RunDLL takes the rest of the command line as the path - no quotes, even
             // when the path has spaces in it. Genuinely file-only: there is no "open a folder
@@ -132,7 +132,7 @@ namespace KillerFind
             System.Diagnostics.Process.Start("rundll32.exe", $"shell32.dll,OpenAs_RunDLL {p}");
         }
 
-        private void MenuOpenAdmin_Click(object sender, RoutedEventArgs e)
+        internal void MenuOpenAdmin_Click(object sender, RoutedEventArgs e)
         {
             string? p = MenuFile();
             if (p == null || !File.Exists(p)) { SetTabStatusKey(_active, "Str_Status_FileOnly"); return; }
@@ -153,7 +153,7 @@ namespace KillerFind
 
         // /select works for a folder too - it opens the parent with the folder highlighted,
         // which is what "show me where this is" means for either kind.
-        private void MenuShowInExplorer_Click(object sender, RoutedEventArgs e)
+        internal void MenuShowInExplorer_Click(object sender, RoutedEventArgs e)
         {
             string? p = MenuFile();
             if (Exists(p)) System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{p}\"");
@@ -166,7 +166,7 @@ namespace KillerFind
         // straight out of the Click handler, while the WPF ContextMenu was still dismissing and
         // still holding mouse capture - which is exactly the state the shell cannot open a dialog
         // or track a popup in, so both silently did nothing.
-        private void MenuProperties_Click(object sender, RoutedEventArgs e)
+        internal void MenuProperties_Click(object sender, RoutedEventArgs e)
         {
             string? p = MenuFile();
             if (!Exists(p)) return;
@@ -188,7 +188,7 @@ namespace KillerFind
         // ── Copy ─────────────────────────────────────────────────
         // All of these act on the whole selection, one entry per line, because pasting twelve
         // paths into a ticket is the actual use.
-        private void MenuCopyPath_Click(object sender, RoutedEventArgs e)
+        internal void MenuCopyPath_Click(object sender, RoutedEventArgs e)
         {
             var files = MenuFiles();
             if (files.Count == 0) return;
@@ -196,7 +196,7 @@ namespace KillerFind
                            "Str_Status_Copied", files.Count.ToString("N0"));
         }
 
-        private void MenuCopyName_Click(object sender, RoutedEventArgs e)
+        internal void MenuCopyName_Click(object sender, RoutedEventArgs e)
         {
             var names = MenuFiles().Select(Path.GetFileName).ToList();
             if (names.Count == 0) return;
@@ -204,7 +204,7 @@ namespace KillerFind
                            "Str_Status_Copied", names.Count.ToString("N0"));
         }
 
-        private void MenuCopyFolder_Click(object sender, RoutedEventArgs e)
+        internal void MenuCopyFolder_Click(object sender, RoutedEventArgs e)
         {
             // Distinct: several results from one folder should not paste that folder five times.
             var folders = MenuFiles()
@@ -218,9 +218,9 @@ namespace KillerFind
         }
 
         // Content hits only. A filename match has no lines behind it, so this is empty for one.
-        private void MenuCopyLines_Click(object sender, RoutedEventArgs e)
+        internal void MenuCopyLines_Click(object sender, RoutedEventArgs e)
         {
-            var results = ResultsList.SelectedItems.OfType<SearchResult>().ToList();
+            var results = Pane.ResultsList.SelectedItems.OfType<SearchResult>().ToList();
             if (results.Count == 0 && _menuSeed != null) results.Add(_menuSeed);
 
             var sb = new StringBuilder();
@@ -248,7 +248,7 @@ namespace KillerFind
         // Puts the files themselves on the clipboard, so Ctrl+V in Explorer pastes real copies.
         // CF_HDROP plus the Preferred DropEffect blob: without that blob Explorer picks its own
         // idea of copy versus move, and a move would take the original away.
-        private void MenuCopyFile_Click(object sender, RoutedEventArgs e)
+        internal void MenuCopyFile_Click(object sender, RoutedEventArgs e)
         {
             // Folders included: CF_HDROP carries either, and Explorer pastes a folder copy
             // exactly as happily as a file copy.
@@ -274,7 +274,7 @@ namespace KillerFind
 
         // ── Hash ─────────────────────────────────────────────────
         // Off the UI thread: this reads the whole file, and results can be gigabytes.
-        private async void MenuCopyHash_Click(object sender, RoutedEventArgs e)
+        internal async void MenuCopyHash_Click(object sender, RoutedEventArgs e)
         {
             string? p = MenuFile();
             if (p == null || !File.Exists(p)) { SetTabStatusKey(_active, "Str_Status_FileOnly"); return; }
@@ -308,7 +308,7 @@ namespace KillerFind
             return Directory.Exists(parent) ? parent : null;
         }
 
-        private void MenuSearchHere_Click(object sender, RoutedEventArgs e)
+        internal void MenuSearchHere_Click(object sender, RoutedEventArgs e)
         {
             string? folder = MenuFolder();
             if (folder == null) return;
@@ -319,7 +319,7 @@ namespace KillerFind
         // Appends the folder NAME rather than its full path, because that is what the exclude
         // syntax matches on: a bare name kills that folder anywhere in the tree, which is the
         // point of excluding bin or node_modules (SearchEngine.IsExcluded).
-        private void MenuExcludeFolder_Click(object sender, RoutedEventArgs e)
+        internal void MenuExcludeFolder_Click(object sender, RoutedEventArgs e)
         {
             string? folder = MenuFolder();
             if (string.IsNullOrEmpty(folder)) return;
@@ -342,7 +342,7 @@ namespace KillerFind
         }
 
         // ── The real Windows menu ────────────────────────────────
-        private void MenuShell_Click(object sender, RoutedEventArgs e)
+        internal void MenuShell_Click(object sender, RoutedEventArgs e)
         {
             var files = MenuFiles().Where(Exists).ToArray();
             if (files.Length == 0) return;

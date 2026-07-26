@@ -145,7 +145,7 @@ namespace KillerFind
         // ── The star in the location bar ─────────────────────────
         // Browser convention: it reflects and toggles wherever you currently are. Filled when
         // this folder is saved, outline when not.
-        private void FavouriteStar_Click(object sender, RoutedEventArgs e)
+        internal void FavouriteStar_Click(object sender, RoutedEventArgs e)
         {
             string? here = _active.CurrentFolder;
             if (string.IsNullOrEmpty(here)) return;
@@ -163,8 +163,8 @@ namespace KillerFind
             bool on = _active != null && _active.IsBrowsing && IsBookmarked(_active.CurrentFolder);
 
             // E735 filled, E734 outline.
-            FavouriteStarBtn.Content = ((char)(on ? 0xE735 : 0xE734)).ToString();
-            FavouriteStarBtn.Tag     = on ? "on" : null;
+            Pane.FavouriteStarBtn.Content = ((char)(on ? 0xE735 : 0xE734)).ToString();
+            Pane.FavouriteStarBtn.Tag     = on ? "on" : null;
         }
 
         // ── The slide-up ─────────────────────────────────────────

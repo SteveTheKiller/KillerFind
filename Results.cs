@@ -20,7 +20,7 @@ namespace KillerFind
         // and left drag-out with nothing to drag. Ctrl and Shift now suppress the expand toggle
         // instead, so a modifier-click is pure selection - otherwise building a selection would
         // expand every card you touched on the way.
-        private void ResultHeader_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        internal void ResultHeader_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             bool extending = (System.Windows.Input.Keyboard.Modifiers &
                               (System.Windows.Input.ModifierKeys.Control |
@@ -40,7 +40,7 @@ namespace KillerFind
         // While showing search results it still reveals in Explorer instead, because "open the
         // folder this hit is buried in" is what you want from a result and Show in Explorer is
         // the command that does it. Both live on the context menu either way.
-        private void ResultHeader_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        internal void ResultHeader_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (e.ClickCount != 2) return;
             e.Handled = true;
@@ -53,7 +53,7 @@ namespace KillerFind
                 System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{path}\"");
         }
 
-        private void ExpandAll_Click(object sender, RoutedEventArgs e)
+        internal void ExpandAll_Click(object sender, RoutedEventArgs e)
         {
             bool expand = _active.Results.Any(r => !r.IsExpanded);
             foreach (var r in _active.Results) r.IsExpanded = expand;
@@ -64,8 +64,8 @@ namespace KillerFind
         // the source ASCII). The localized wording lives in the tooltip.
         private void SetExpandAllLabel(bool showCollapse)
         {
-            ExpandAllGlyph.Text     = ((char)(showCollapse ? 0xE73F : 0xE740)).ToString();
-            ExpandAllButton.ToolTip = Loc(showCollapse ? "Str_Btn_CollapseAll" : "Str_Btn_ExpandAll");
+            Pane.ExpandAllGlyph.Text     = ((char)(showCollapse ? 0xE73F : 0xE740)).ToString();
+            Pane.ExpandAllButton.ToolTip = Loc(showCollapse ? "Str_Btn_CollapseAll" : "Str_Btn_ExpandAll");
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -73,14 +73,14 @@ namespace KillerFind
         // ═══════════════════════════════════════════════════════════
         private bool _syncingSort;   // true while a tab switch programs the combo
 
-        private void SortCombo_Changed(object sender, SelectionChangedEventArgs e)
+        internal void SortCombo_Changed(object sender, SelectionChangedEventArgs e)
         {
-            if (_syncingSort || _active == null || SortCombo.SelectedIndex < 0) return;
-            _active.SortIndex = SortCombo.SelectedIndex;
+            if (_syncingSort || _active == null || Pane.SortCombo.SelectedIndex < 0) return;
+            _active.SortIndex = Pane.SortCombo.SelectedIndex;
             ApplySort(_active);
         }
 
-        private void SortDir_Click(object sender, RoutedEventArgs e)
+        internal void SortDir_Click(object sender, RoutedEventArgs e)
         {
             _active.SortAsc = !_active.SortAsc;
             ApplySort(_active);
@@ -109,7 +109,7 @@ namespace KillerFind
             // The details-view column arrows show the same state, so they follow along.
             if (t == _active)
             {
-                SortDirButton.Content = ((char)(t.SortAsc ? 0xE70E : 0xE70D)).ToString();
+                Pane.SortDirButton.Content = ((char)(t.SortAsc ? 0xE70E : 0xE70D)).ToString();
                 UpdateColumnArrows();   // ResultsView.cs
             }
 
@@ -148,33 +148,33 @@ namespace KillerFind
             if (double.TryParse(Services.ThemeManager.GetSetting("FilterBarFrac"),
                     System.Globalization.NumberStyles.Float,
                     System.Globalization.CultureInfo.InvariantCulture, out double frac) &&
-                ResultsPane.ActualWidth > 0)
+                Pane.ResultsPane.ActualWidth > 0)
             {
-                double right = Math.Max(2, Math.Min(frac * ResultsPane.ActualWidth,
-                                                    ResultsPane.ActualWidth - 80));
-                ResultFilterBar.Margin = new Thickness(0, 0, right, 0);
+                double right = Math.Max(2, Math.Min(frac * Pane.ResultsPane.ActualWidth,
+                                                    Pane.ResultsPane.ActualWidth - 80));
+                Pane.ResultFilterBar.Margin = new Thickness(0, 0, right, 0);
             }
-            ResultFilterBar.Visibility = Visibility.Visible;
+            Pane.ResultFilterBar.Visibility = Visibility.Visible;
             var tt = new System.Windows.Media.TranslateTransform();
-            ResultFilterBar.RenderTransform = tt;
+            Pane.ResultFilterBar.RenderTransform = tt;
             var ease = new System.Windows.Media.Animation.QuadraticEase
                 { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
             tt.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty,
                 new System.Windows.Media.Animation.DoubleAnimation(-14, 0, TimeSpan.FromMilliseconds(140)) { EasingFunction = ease });
-            ResultFilterBar.BeginAnimation(OpacityProperty,
+            Pane.ResultFilterBar.BeginAnimation(OpacityProperty,
                 new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(140)));
-            ResultFilterBox.Focus();
-            ResultFilterBox.SelectAll();
+            Pane.ResultFilterBox.Focus();
+            Pane.ResultFilterBox.SelectAll();
         }
 
         // Debounced like KillerPDF's search bar: re-filtering a huge result list on
         // every keystroke stutters, so wait for a 250ms pause in typing.
         private System.Windows.Threading.DispatcherTimer? _filterDebounce;
 
-        private void ResultFilterBox_TextChanged(object sender, TextChangedEventArgs e)
+        internal void ResultFilterBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_active == null) return;
-            _active.FilterText = ResultFilterBox.Text;
+            _active.FilterText = Pane.ResultFilterBox.Text;
 
             if (_filterDebounce is null)
             {
@@ -186,10 +186,10 @@ namespace KillerFind
             _filterDebounce.Start();
         }
 
-        private void ResultFilterClose_Click(object sender, RoutedEventArgs e)
+        internal void ResultFilterClose_Click(object sender, RoutedEventArgs e)
         {
-            ResultFilterBox.Text = string.Empty;   // TextChanged clears the view filter
-            ResultFilterBar.Visibility = Visibility.Collapsed;
+            Pane.ResultFilterBox.Text = string.Empty;   // TextChanged clears the view filter
+            Pane.ResultFilterBar.Visibility = Visibility.Collapsed;
         }
 
         // Filters the collection VIEW by name or path - the underlying results are untouched.
@@ -210,41 +210,41 @@ namespace KillerFind
         private double _filterBarGrabX;
         private double _filterBarStartRight;
 
-        private void FilterGrip_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        internal void FilterGrip_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             _filterBarDrag       = true;
-            _filterBarGrabX      = e.GetPosition(ResultsPane).X;
-            _filterBarStartRight = ResultFilterBar.Margin.Right;
+            _filterBarGrabX      = e.GetPosition(Pane.ResultsPane).X;
+            _filterBarStartRight = Pane.ResultFilterBar.Margin.Right;
             ((UIElement)sender).CaptureMouse();
             e.Handled = true;
         }
 
-        private void FilterGrip_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        internal void FilterGrip_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
             if (!_filterBarDrag) return;
-            double dx = e.GetPosition(ResultsPane).X - _filterBarGrabX;
-            double maxRight = Math.Max(2, ResultsPane.ActualWidth - ResultFilterBar.ActualWidth - 2);
+            double dx = e.GetPosition(Pane.ResultsPane).X - _filterBarGrabX;
+            double maxRight = Math.Max(2, Pane.ResultsPane.ActualWidth - Pane.ResultFilterBar.ActualWidth - 2);
             double right = Math.Min(maxRight, Math.Max(2, _filterBarStartRight - dx));
-            ResultFilterBar.Margin = new Thickness(0, 0, right, 0);
+            Pane.ResultFilterBar.Margin = new Thickness(0, 0, right, 0);
         }
 
-        private void FilterGrip_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        internal void FilterGrip_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (!_filterBarDrag) return;
             _filterBarDrag = false;
             ((UIElement)sender).ReleaseMouseCapture();
-            if (ResultsPane.ActualWidth > 0)
+            if (Pane.ResultsPane.ActualWidth > 0)
                 Services.ThemeManager.SetSetting("FilterBarFrac",
-                    (ResultFilterBar.Margin.Right / ResultsPane.ActualWidth)
+                    (Pane.ResultFilterBar.Margin.Right / Pane.ResultsPane.ActualWidth)
                         .ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
 
         // ═══════════════════════════════════════════════════════════
         //  PIPE - search within a search's results, in a new tab
         // ═══════════════════════════════════════════════════════════
-        private void PipeButton_Click(object sender, RoutedEventArgs e) => PipeIntoNewTab(_active);
+        internal void PipeButton_Click(object sender, RoutedEventArgs e) => PipeIntoNewTab(_active);
 
-        private void PipeTab_Click(object sender, RoutedEventArgs e)
+        internal void PipeTab_Click(object sender, RoutedEventArgs e)
         {
             if (sender is MenuItem mi && mi.Tag is SearchTab t) PipeIntoNewTab(t);
         }
@@ -286,7 +286,7 @@ namespace KillerFind
         // ═══════════════════════════════════════════════════════════
         //  ROW ACTIONS (context menu + the inline row buttons)
         // ═══════════════════════════════════════════════════════════
-        private void OpenFile_Click(object sender, RoutedEventArgs e)
+        internal void OpenFile_Click(object sender, RoutedEventArgs e)
         {
             // FrameworkElement, not MenuItem: the inline row buttons share this handler.
             if (sender is FrameworkElement fe && fe.Tag is string path && System.IO.File.Exists(path))
@@ -301,7 +301,7 @@ namespace KillerFind
                 System.Diagnostics.Process.Start("rundll32.exe", $"shell32.dll,OpenAs_RunDLL {path}");
         }
 
-        private void ShowInExplorer_Click(object sender, RoutedEventArgs e)
+        internal void ShowInExplorer_Click(object sender, RoutedEventArgs e)
         {
             if (sender is FrameworkElement fe && fe.Tag is string path && System.IO.File.Exists(path))
                 System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{path}\"");

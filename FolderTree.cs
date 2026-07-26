@@ -278,8 +278,8 @@ namespace KillerFind
         {
             string? p = TreeMenuPath();
             if (p == null) return;
-            RootPathBox.Text    = p;
-            ScopePathLabel.Text = p;
+            Pane.RootPathBox.Text    = p;
+            Pane.ScopePathLabel.Text = p;
             _active.RootPath    = p;
             if (!_searchOpen) ToggleSearchPanel();   // SearchPanel.cs - nothing to type into otherwise
         }

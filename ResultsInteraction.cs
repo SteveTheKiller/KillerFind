@@ -27,9 +27,9 @@ namespace KillerFind
         private SearchResult? _dragSeed;     // the item that was pressed
         private bool        _marqueeAdditive;
 
-        private void ResultsList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        internal void ResultsList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            _pressAt   = e.GetPosition(ResultsList);
+            _pressAt   = e.GetPosition(Pane.ResultsList);
             _marqueeOn = false;
             _dragArmed = false;
             _dragSeed  = null;
@@ -46,18 +46,18 @@ namespace KillerFind
 
             // Empty space: rubber band. Ctrl means add to what is already selected.
             _marqueeAdditive = (Keyboard.Modifiers & ModifierKeys.Control) != 0;
-            if (!_marqueeAdditive) ResultsList.SelectedItems.Clear();
+            if (!_marqueeAdditive) Pane.ResultsList.SelectedItems.Clear();
 
             _marqueeOn = true;
-            MarqueeRect.Visibility = Visibility.Visible;
+            Pane.MarqueeRect.Visibility = Visibility.Visible;
             PlaceMarquee(_pressAt, _pressAt);
-            ResultsList.CaptureMouse();
+            Pane.ResultsList.CaptureMouse();
         }
 
-        private void ResultsList_PreviewMouseMove(object sender, MouseEventArgs e)
+        internal void ResultsList_PreviewMouseMove(object sender, MouseEventArgs e)
         {
             if (e.LeftButton != MouseButtonState.Pressed) return;
-            var now = e.GetPosition(ResultsList);
+            var now = e.GetPosition(Pane.ResultsList);
 
             if (_marqueeOn)
             {
@@ -77,23 +77,23 @@ namespace KillerFind
             StartFileDrag();
         }
 
-        private void ResultsList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        internal void ResultsList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             _dragArmed = false;
             if (!_marqueeOn) return;
 
             _marqueeOn = false;
-            MarqueeRect.Visibility = Visibility.Collapsed;
-            ResultsList.ReleaseMouseCapture();
+            Pane.MarqueeRect.Visibility = Visibility.Collapsed;
+            Pane.ResultsList.ReleaseMouseCapture();
         }
 
         private void PlaceMarquee(Point a, Point b)
         {
             var r = new Rect(a, b);
-            Canvas.SetLeft(MarqueeRect, r.X);
-            Canvas.SetTop(MarqueeRect, r.Y);
-            MarqueeRect.Width  = r.Width;
-            MarqueeRect.Height = r.Height;
+            Canvas.SetLeft(Pane.MarqueeRect, r.X);
+            Canvas.SetTop(Pane.MarqueeRect, r.Y);
+            Pane.MarqueeRect.Width  = r.Width;
+            Pane.MarqueeRect.Height = r.Height;
         }
 
         // Only realized containers are considered, which is exactly right rather than a shortcut:
@@ -109,7 +109,7 @@ namespace KillerFind
                 Rect bounds;
                 try
                 {
-                    bounds = child.TransformToAncestor(ResultsList)
+                    bounds = child.TransformToAncestor(Pane.ResultsList)
                                   .TransformBounds(new Rect(child.RenderSize));
                 }
                 catch { continue; }   // mid-recycle, no transform yet
@@ -125,7 +125,7 @@ namespace KillerFind
         // for every index: the list can hold six figures and almost none of them are realized.
         private Panel? ItemsHost()
         {
-            var presenter = FindDescendant<ItemsPresenter>(ResultsList);
+            var presenter = FindDescendant<ItemsPresenter>(Pane.ResultsList);
             if (presenter == null) return null;
             if (VisualTreeHelper.GetChildrenCount(presenter) == 0) return null;
             return VisualTreeHelper.GetChild(presenter, 0) as Panel;
@@ -166,7 +166,7 @@ namespace KillerFind
         /// </summary>
         private List<string> FilesForCommand(SearchResult? seed)
         {
-            var selected = ResultsList.SelectedItems.OfType<SearchResult>().ToList();
+            var selected = Pane.ResultsList.SelectedItems.OfType<SearchResult>().ToList();
 
             if (seed != null && !selected.Contains(seed))
                 return new List<string> { seed.FilePath };
@@ -184,7 +184,7 @@ namespace KillerFind
             data.SetData(DataFormats.FileDrop, paths);          // what Explorer and mail clients read
             data.SetData(DataFormats.UnicodeText, string.Join(Environment.NewLine, paths));
 
-            try { DragDrop.DoDragDrop(ResultsList, data, DragDropEffects.Copy); }
+            try { DragDrop.DoDragDrop(Pane.ResultsList, data, DragDropEffects.Copy); }
             catch { /* a drop target that misbehaves is not ours to fix */ }
         }
 
@@ -221,8 +221,8 @@ namespace KillerFind
             _active.PipeArgs  = null;
             _active.RootPath  = folder;
 
-            RootPathBox.Text    = folder;
-            ScopePathLabel.Text = folder;
+            Pane.RootPathBox.Text    = folder;
+            Pane.ScopePathLabel.Text = folder;
             SetTabStatus(_active, folder);
         }
 

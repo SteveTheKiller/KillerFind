@@ -137,9 +137,9 @@ namespace KillerFind
                 ResultsHeader.Text = c > 0 ? string.Format(Loc("Str_Lbl_ResultsCount"), c) : Loc("Str_Lbl_Results");
             }
             if (_active.PipeFiles != null)
-                ScopePathLabel.Text = _active.PipeLabel;
-            else if (string.IsNullOrWhiteSpace(RootPathBox.Text))
-                ScopePathLabel.Text = Loc("Str_Scope_Empty");
+                Pane.ScopePathLabel.Text = _active.PipeLabel;
+            else if (string.IsNullOrWhiteSpace(Pane.RootPathBox.Text))
+                Pane.ScopePathLabel.Text = Loc("Str_Scope_Empty");
         }
     }
 }

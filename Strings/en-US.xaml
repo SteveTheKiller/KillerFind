@@ -244,4 +244,25 @@
     <sys:String x:Key="Str_Ks_ExportCsv">export the results as CSV</sys:String>
     <sys:String x:Key="Str_Ks_Hint">Shortcuts work anywhere in the window. Open dropdowns, the date box, and the results filter keep Enter for themselves.</sys:String>
 
+    <!-- Shortcuts card: category headings, the LIST / KEYBOARD toggle, and the keyboard's hint -->
+    <sys:String x:Key="Str_Ks_About">show the about card</sys:String>
+    <sys:String x:Key="Str_Ks_CatSearch">SEARCH</sys:String>
+    <sys:String x:Key="Str_Ks_CatNav">NAVIGATION</sys:String>
+    <sys:String x:Key="Str_Ks_CatTabs">TABS</sys:String>
+    <sys:String x:Key="Str_Ks_CatView">VIEW</sys:String>
+    <sys:String x:Key="Str_Ks_CatFile">FILE</sys:String>
+    <sys:String x:Key="Str_Ks_CatEdit">EDITING</sys:String>
+    <sys:String x:Key="Str_Ks_CatHelp">HELP</sys:String>
+    <sys:String x:Key="Str_Ks_ViewList">LIST</sys:String>
+    <sys:String x:Key="Str_Ks_ViewKeyboard">KEYBOARD</sys:String>
+    <sys:String x:Key="Str_Ks_HoldHint">hold Ctrl, Shift or Alt to preview that layer</sys:String>
+
+    <!-- Explorer-convention bindings -->
+    <sys:String x:Key="Str_Ks_BackForward">go back / forward</sys:String>
+    <sys:String x:Key="Str_Ks_Back">go back</sys:String>
+    <sys:String x:Key="Str_Ks_Up">go up one folder</sys:String>
+    <sys:String x:Key="Str_Ks_Refresh">refresh - re-list the folder, or re-run the search</sys:String>
+    <sys:String x:Key="Str_Ks_SelectAll">select every result</sys:String>
+    <sys:String x:Key="Str_Ks_FocusSearch">put the caret in the search box</sys:String>
+
 </ResourceDictionary>

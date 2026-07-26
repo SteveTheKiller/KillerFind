@@ -42,25 +42,25 @@ namespace KillerFind
         private void UpdateTabBar()
         {
             bool show = _tabs.Count > 1;
-            TabBar.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+            Pane.TabBar.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
 
             if (show)
             {
                 bool firstActive = _tabs.Count > 0 && _tabs[0] == _active;
-                ResultsPane.CornerRadius = new CornerRadius(firstActive ? 0 : 6, 6, 6, 6);
-                ScopeBar.CornerRadius    = new CornerRadius(firstActive ? 0 : 5, 0, 0, 0);
+                Pane.ResultsPane.CornerRadius = new CornerRadius(firstActive ? 0 : 6, 6, 6, 6);
+                Pane.ScopeBar.CornerRadius    = new CornerRadius(firstActive ? 0 : 5, 0, 0, 0);
             }
             else
             {
-                ResultsPane.CornerRadius = new CornerRadius(6);
-                ScopeBar.CornerRadius    = new CornerRadius(5, 0, 0, 0);
+                Pane.ResultsPane.CornerRadius = new CornerRadius(6);
+                Pane.ScopeBar.CornerRadius    = new CornerRadius(5, 0, 0, 0);
             }
         }
 
         // Save the left panel's editable fields into the outgoing tab.
         private void CaptureTab(SearchTab t)
         {
-            t.RootPath        = RootPathBox.Text;
+            t.RootPath        = Pane.RootPathBox.Text;
             t.IncludePatterns = IncludePatternsBox.Text;
             t.ExcludePatterns = ExcludePatternsBox.Text;
             t.CaseSensitive   = CaseSensitiveCheck.IsChecked == true;
@@ -74,10 +74,10 @@ namespace KillerFind
 
             TermsList.ItemsSource   = t.Groups;
             FiltersList.ItemsSource = t.Filters;
-            ResultsList.ItemsSource = t.Results;
+            Pane.ResultsList.ItemsSource = t.Results;
 
-            RootPathBox.Text             = t.RootPath;
-            ScopePathLabel.Text          = t.PipeFiles != null ? t.PipeLabel
+            Pane.RootPathBox.Text             = t.RootPath;
+            Pane.ScopePathLabel.Text          = t.PipeFiles != null ? t.PipeLabel
                 : string.IsNullOrEmpty(t.RootPath) ? Loc("Str_Scope_Empty") : t.RootPath;
             IncludePatternsBox.Text      = t.IncludePatterns;
             ExcludePatternsBox.Text      = t.ExcludePatterns;
@@ -87,11 +87,11 @@ namespace KillerFind
             QueryText.Text         = t.QueryLabel;
             SetExpandAllLabel(t.Results.Count > 0 && t.Results.All(r => r.IsExpanded));
             _syncingSort = true;
-            SortCombo.SelectedIndex = t.SortIndex;
+            Pane.SortCombo.SelectedIndex = t.SortIndex;
             _syncingSort = false;
             ApplySort(t);
-            ResultFilterBox.Text     = t.FilterText;
-            ResultFilterBar.Visibility = t.FilterText.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+            Pane.ResultFilterBox.Text     = t.FilterText;
+            Pane.ResultFilterBar.Visibility = t.FilterText.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
             ApplyFilter(t);
             ScannedText.Text       = t.ScannedLabel;
             ScannedText.Visibility = t.IsSearching ? Visibility.Visible : Visibility.Collapsed;
@@ -127,16 +127,16 @@ namespace KillerFind
 
         private System.Windows.Media.ImageSource? SnapshotPane()
         {
-            if (ResultsPane.ActualWidth < 1 || ResultsPane.ActualHeight < 1) return null;
+            if (Pane.ResultsPane.ActualWidth < 1 || Pane.ResultsPane.ActualHeight < 1) return null;
             try
             {
                 var dpi = System.Windows.Media.VisualTreeHelper.GetDpi(this);
                 var rtb = new System.Windows.Media.Imaging.RenderTargetBitmap(
-                    (int)Math.Ceiling(ResultsPane.ActualWidth  * dpi.DpiScaleX),
-                    (int)Math.Ceiling(ResultsPane.ActualHeight * dpi.DpiScaleY),
+                    (int)Math.Ceiling(Pane.ResultsPane.ActualWidth  * dpi.DpiScaleX),
+                    (int)Math.Ceiling(Pane.ResultsPane.ActualHeight * dpi.DpiScaleY),
                     dpi.PixelsPerInchX, dpi.PixelsPerInchY,
                     System.Windows.Media.PixelFormats.Pbgra32);
-                rtb.Render(ResultsPane);
+                rtb.Render(Pane.ResultsPane);
                 rtb.Freeze();
                 return rtb;
             }
@@ -146,10 +146,10 @@ namespace KillerFind
         private void RunPaneCrossfade(System.Windows.Media.ImageSource? snap)
         {
             if (snap == null) return;
-            TabFadeGhost.BeginAnimation(OpacityProperty, null);
-            TabFadeGhost.Source     = snap;
-            TabFadeGhost.Opacity    = 1;
-            TabFadeGhost.Visibility = Visibility.Visible;
+            Pane.TabFadeGhost.BeginAnimation(OpacityProperty, null);
+            Pane.TabFadeGhost.Source     = snap;
+            Pane.TabFadeGhost.Opacity    = 1;
+            Pane.TabFadeGhost.Visibility = Visibility.Visible;
             var fade = new System.Windows.Media.Animation.DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(140))
             {
                 EasingFunction = new System.Windows.Media.Animation.QuadraticEase
@@ -157,11 +157,11 @@ namespace KillerFind
             };
             fade.Completed += (_, _) =>
             {
-                TabFadeGhost.BeginAnimation(OpacityProperty, null);
-                TabFadeGhost.Visibility = Visibility.Collapsed;
-                TabFadeGhost.Source     = null;
+                Pane.TabFadeGhost.BeginAnimation(OpacityProperty, null);
+                Pane.TabFadeGhost.Visibility = Visibility.Collapsed;
+                Pane.TabFadeGhost.Source     = null;
             };
-            TabFadeGhost.BeginAnimation(OpacityProperty, fade);
+            Pane.TabFadeGhost.BeginAnimation(OpacityProperty, fade);
         }
 
         private void NewTab_Click(object sender, RoutedEventArgs e)
@@ -174,7 +174,7 @@ namespace KillerFind
             _ = NavigateTo(HomeFolder);   // Browse.cs
         }
 
-        private void Tab_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        internal void Tab_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             // Left-click switching happens on mouse-UP (Tab_DragUp) so a press can
             // begin a drag without switching first - the KillerPDF tab physics.
@@ -182,7 +182,7 @@ namespace KillerFind
             if (e.ChangedButton == System.Windows.Input.MouseButton.Middle) { CloseTab(t); e.Handled = true; }
         }
 
-        private void CloseTab_Click(object sender, RoutedEventArgs e)
+        internal void CloseTab_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.Tag is SearchTab t) CloseTab(t);
         }
@@ -261,7 +261,7 @@ namespace KillerFind
         private bool   _tabDragging;
 
         private FrameworkElement? TabContainer(SearchTab t)
-            => TabStrip.ItemContainerGenerator.ContainerFromItem(t) as FrameworkElement;
+            => Pane.TabStrip.ItemContainerGenerator.ContainerFromItem(t) as FrameworkElement;
 
         private static bool InsideButton(object src)
         {
@@ -305,25 +305,25 @@ namespace KillerFind
             tt.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty, anim);
         }
 
-        private void Tab_DragDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        internal void Tab_DragDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (sender is not FrameworkElement bd || bd.DataContext is not SearchTab t) return;
             if (InsideButton(e.OriginalSource)) return;   // the close x handles its own click
             _tabDragTab   = t;
-            _tabDragStart = e.GetPosition(TabStrip);
+            _tabDragStart = e.GetPosition(Pane.TabStrip);
             _tabGrabDX    = e.GetPosition(bd).X;
             _tabDragging  = false;
             bd.CaptureMouse();
             e.Handled = true;
         }
 
-        private void Tab_DragMove(object sender, System.Windows.Input.MouseEventArgs e)
+        internal void Tab_DragMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
             if (sender is not FrameworkElement bd || !bd.IsMouseCaptured || _tabDragTab is null) return;
             var cont = TabContainer(_tabDragTab);
             if (cont == null) return;
 
-            double x = e.GetPosition(TabStrip).X;
+            double x = e.GetPosition(Pane.TabStrip).X;
             if (!_tabDragging && Math.Abs(x - _tabDragStart.X) < SystemParameters.MinimumHorizontalDragDistance) return;
             _tabDragging = true;
             Panel.SetZIndex(cont, 3);   // grabbed tab rides above its neighbors
@@ -333,7 +333,7 @@ namespace KillerFind
             double rawLeft = x - _tabGrabDX;
             double leftEdge  = rawLeft;
             double rightEdge = rawLeft + cont.ActualWidth;
-            double maxLeft = Math.Max(0, TabStrip.ActualWidth - slide);
+            double maxLeft = Math.Max(0, Pane.TabStrip.ActualWidth - slide);
             double renderLeft = Math.Min(Math.Max(0, rawLeft), maxLeft);
 
             // Swap when the ADVANCING edge crosses a neighbor's layout-slot midpoint
@@ -352,14 +352,14 @@ namespace KillerFind
                 swapped = true;
             }
 
-            if (swapped) TabStrip.UpdateLayout();
+            if (swapped) Pane.TabStrip.UpdateLayout();
             var dragged = TabContainer(_tabDragTab);
             if (dragged == null) return;
             var slot = System.Windows.Controls.Primitives.LayoutInformation.GetLayoutSlot(dragged);
             SetTabOffsetX(dragged, renderLeft - slot.X);
         }
 
-        private void Tab_DragUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        internal void Tab_DragUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (sender is not FrameworkElement bd || !bd.IsMouseCaptured) return;
             bd.ReleaseMouseCapture();

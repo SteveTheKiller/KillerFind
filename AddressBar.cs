@@ -29,7 +29,7 @@ namespace KillerFind
         }
 
         // ── Entering edit mode ───────────────────────────────────
-        private void ScopeBar_Click(object sender, MouseButtonEventArgs e) => BeginEditAddress();
+        internal void ScopeBar_Click(object sender, MouseButtonEventArgs e) => BeginEditAddress();
 
         internal void BeginEditAddress()
         {
@@ -37,27 +37,27 @@ namespace KillerFind
             // files, not a path - so the row stays a label there.
             if (_active.PipeFiles != null) return;
 
-            AddressBox.Text = _active.CurrentFolder ?? _active.RootPath ?? string.Empty;
-            AddressBox.Visibility   = Visibility.Visible;
-            ScopePathLabel.Visibility = Visibility.Collapsed;
+            Pane.AddressBox.Text = _active.CurrentFolder ?? _active.RootPath ?? string.Empty;
+            Pane.AddressBox.Visibility   = Visibility.Visible;
+            Pane.ScopePathLabel.Visibility = Visibility.Collapsed;
 
             // Focus has to wait for the box to actually be visible, or Focus() lands on a
             // collapsed element and silently does nothing.
             Dispatcher.InvokeAsync(() =>
             {
-                AddressBox.Focus();
-                AddressBox.SelectAll();
+                Pane.AddressBox.Focus();
+                Pane.AddressBox.SelectAll();
             }, System.Windows.Threading.DispatcherPriority.Input);
         }
 
         private void EndEditAddress()
         {
-            AddressBox.Visibility     = Visibility.Collapsed;
-            ScopePathLabel.Visibility = Visibility.Visible;
+            Pane.AddressBox.Visibility     = Visibility.Collapsed;
+            Pane.ScopePathLabel.Visibility = Visibility.Visible;
         }
 
         // ── Committing ───────────────────────────────────────────
-        private void AddressBox_KeyDown(object sender, KeyEventArgs e)
+        internal void AddressBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
@@ -69,7 +69,7 @@ namespace KillerFind
             if (e.Key != Key.Enter) return;
             e.Handled = true;
 
-            string typed = (AddressBox.Text ?? string.Empty).Trim().Trim('"');
+            string typed = (Pane.AddressBox.Text ?? string.Empty).Trim().Trim('"');
             EndEditAddress();
             if (typed.Length == 0) return;
 
@@ -91,7 +91,7 @@ namespace KillerFind
 
         // Clicking away is a cancel, not a commit: an accidental click elsewhere should never
         // navigate somewhere half-typed.
-        private void AddressBox_LostFocus(object sender, RoutedEventArgs e) => EndEditAddress();
+        internal void AddressBox_LostFocus(object sender, RoutedEventArgs e) => EndEditAddress();
 
         private async System.Threading.Tasks.Task NavigateToAndSelect(string folder, string file)
         {
@@ -100,9 +100,9 @@ namespace KillerFind
             var hit = _active.Results.FirstOrDefaultPath(file);
             if (hit == null) return;
 
-            ResultsList.SelectedItems.Clear();
-            ResultsList.SelectedItems.Add(hit);
-            ResultsList.ScrollIntoView(hit);
+            Pane.ResultsList.SelectedItems.Clear();
+            Pane.ResultsList.SelectedItems.Add(hit);
+            Pane.ResultsList.ScrollIntoView(hit);
         }
     }
 

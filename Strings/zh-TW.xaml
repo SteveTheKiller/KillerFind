@@ -235,4 +235,25 @@
     <sys:String x:Key="Str_Status_Excluded">正在排除 {0} - 重新搜尋後生效</sys:String>
     <sys:String x:Key="Str_Status_AlreadyExcluded">{0} 已被排除</sys:String>
 
+    <!-- 快速鍵卡片：分類標題、清單 / 鍵盤切換與提示 -->
+    <sys:String x:Key="Str_Ks_About">顯示關於卡片</sys:String>
+    <sys:String x:Key="Str_Ks_CatSearch">搜尋</sys:String>
+    <sys:String x:Key="Str_Ks_CatNav">導覽</sys:String>
+    <sys:String x:Key="Str_Ks_CatTabs">分頁</sys:String>
+    <sys:String x:Key="Str_Ks_CatView">檢視</sys:String>
+    <sys:String x:Key="Str_Ks_CatFile">檔案</sys:String>
+    <sys:String x:Key="Str_Ks_CatEdit">編輯</sys:String>
+    <sys:String x:Key="Str_Ks_CatHelp">說明</sys:String>
+    <sys:String x:Key="Str_Ks_ViewList">清單</sys:String>
+    <sys:String x:Key="Str_Ks_ViewKeyboard">鍵盤</sys:String>
+    <sys:String x:Key="Str_Ks_HoldHint">按住 Ctrl、Shift 或 Alt 可預覽該層</sys:String>
+
+    <!-- 檔案總管慣用快速鍵 -->
+    <sys:String x:Key="Str_Ks_BackForward">上一頁 / 下一頁</sys:String>
+    <sys:String x:Key="Str_Ks_Back">上一頁</sys:String>
+    <sys:String x:Key="Str_Ks_Up">上一層資料夾</sys:String>
+    <sys:String x:Key="Str_Ks_Refresh">重新整理 - 重新列出資料夾，或重新執行搜尋</sys:String>
+    <sys:String x:Key="Str_Ks_SelectAll">選取所有結果</sys:String>
+    <sys:String x:Key="Str_Ks_FocusSearch">將游標移到搜尋框</sys:String>
+
 </ResourceDictionary>

@@ -235,4 +235,25 @@
     <sys:String x:Key="Str_Status_Excluded">{0} wird ausgeschlossen - Suche erneut ausführen</sys:String>
     <sys:String x:Key="Str_Status_AlreadyExcluded">{0} ist bereits ausgeschlossen</sys:String>
 
+    <!-- Tastenkuerzel-Karte: Kategorien, der LISTE / TASTATUR-Umschalter und der Hinweis -->
+    <sys:String x:Key="Str_Ks_About">Info-Karte anzeigen</sys:String>
+    <sys:String x:Key="Str_Ks_CatSearch">SUCHE</sys:String>
+    <sys:String x:Key="Str_Ks_CatNav">NAVIGATION</sys:String>
+    <sys:String x:Key="Str_Ks_CatTabs">TABS</sys:String>
+    <sys:String x:Key="Str_Ks_CatView">ANSICHT</sys:String>
+    <sys:String x:Key="Str_Ks_CatFile">DATEI</sys:String>
+    <sys:String x:Key="Str_Ks_CatEdit">BEARBEITEN</sys:String>
+    <sys:String x:Key="Str_Ks_CatHelp">HILFE</sys:String>
+    <sys:String x:Key="Str_Ks_ViewList">LISTE</sys:String>
+    <sys:String x:Key="Str_Ks_ViewKeyboard">TASTATUR</sys:String>
+    <sys:String x:Key="Str_Ks_HoldHint">Strg, Umschalt oder Alt halten, um diese Ebene anzuzeigen</sys:String>
+
+    <!-- Explorer-Konventionen -->
+    <sys:String x:Key="Str_Ks_BackForward">zurück / vorwärts</sys:String>
+    <sys:String x:Key="Str_Ks_Back">zurück</sys:String>
+    <sys:String x:Key="Str_Ks_Up">einen Ordner nach oben</sys:String>
+    <sys:String x:Key="Str_Ks_Refresh">aktualisieren - Ordner neu auflisten oder Suche erneut ausführen</sys:String>
+    <sys:String x:Key="Str_Ks_SelectAll">alle Ergebnisse auswählen</sys:String>
+    <sys:String x:Key="Str_Ks_FocusSearch">Cursor in das Suchfeld setzen</sys:String>
+
 </ResourceDictionary>

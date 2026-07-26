@@ -28,6 +28,8 @@
     <SolidColorBrush x:Key="CardBorderBrush"     Color="#b0b0b0" po:Freeze="True"/>
     <SolidColorBrush x:Key="TreeLineBrush"       Color="#c2c2c2" po:Freeze="True"/>
     <SolidColorBrush x:Key="WarnBrush"           Color="#a86a00" po:Freeze="True"/>
+    <!-- Status dot "all fine" - see Dark.xaml. Darkened to stay readable on a light footer. -->
+    <SolidColorBrush x:Key="OkBrush"             Color="#1a7f37" po:Freeze="True"/>
     <SolidColorBrush x:Key="PaneBorderBrush"     Color="#b0b0b0" po:Freeze="True"/>
 
     <SolidColorBrush x:Key="TextBrush"           Color="#1a1a1a" po:Freeze="True"/>
@@ -64,5 +66,15 @@
     <SolidColorBrush x:Key="TypeCamera"     Color="#9A6800" po:Freeze="True"/>
     <SolidColorBrush x:Key="TypeSmarttv"    Color="#864A86" po:Freeze="True"/>
     <SolidColorBrush x:Key="TypeMedia"      Color="#256A9C" po:Freeze="True"/>
+
+    <!-- Shortcut categories - see Dark.xaml. Darkened for a light background: the neon set the
+         dark themes use is unreadable as text on white. -->
+    <SolidColorBrush x:Key="KsCatFile"      Color="#009e99" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatNav"       Color="#6a11cc" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatView"      Color="#a316b5" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatSearch"    Color="#0077b3" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatEdit"      Color="#d1105a" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatTabs"      Color="#a67c00" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatHelp"      Color="#128c07" po:Freeze="True"/>
 
 </ResourceDictionary>

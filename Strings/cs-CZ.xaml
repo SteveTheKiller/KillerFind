@@ -233,4 +233,25 @@
     <sys:String x:Key="Str_Ks_ExportCsv">exportovat výsledky do CSV</sys:String>
     <sys:String x:Key="Str_Ks_Hint">Zkratky fungují kdekoli v okně. Otevřené rozbalovací seznamy, pole s datem a filtr výsledků si Enter ponechávají pro sebe.</sys:String>
 
+    <!-- Karta zkratek: nadpisy kategorii, prepinac SEZNAM / KLAVESNICE a napoveda -->
+    <sys:String x:Key="Str_Ks_About">zobrazit kartu O aplikaci</sys:String>
+    <sys:String x:Key="Str_Ks_CatSearch">HLEDÁNÍ</sys:String>
+    <sys:String x:Key="Str_Ks_CatNav">NAVIGACE</sys:String>
+    <sys:String x:Key="Str_Ks_CatTabs">PANELY</sys:String>
+    <sys:String x:Key="Str_Ks_CatView">ZOBRAZENÍ</sys:String>
+    <sys:String x:Key="Str_Ks_CatFile">SOUBOR</sys:String>
+    <sys:String x:Key="Str_Ks_CatEdit">ÚPRAVY</sys:String>
+    <sys:String x:Key="Str_Ks_CatHelp">NÁPOVĚDA</sys:String>
+    <sys:String x:Key="Str_Ks_ViewList">SEZNAM</sys:String>
+    <sys:String x:Key="Str_Ks_ViewKeyboard">KLÁVESNICE</sys:String>
+    <sys:String x:Key="Str_Ks_HoldHint">podržte Ctrl, Shift nebo Alt pro náhled této vrstvy</sys:String>
+
+    <!-- Zkratky podle Pruzkumnika -->
+    <sys:String x:Key="Str_Ks_BackForward">zpět / vpřed</sys:String>
+    <sys:String x:Key="Str_Ks_Back">zpět</sys:String>
+    <sys:String x:Key="Str_Ks_Up">o složku výš</sys:String>
+    <sys:String x:Key="Str_Ks_Refresh">obnovit - znovu vypsat složku nebo znovu spustit hledání</sys:String>
+    <sys:String x:Key="Str_Ks_SelectAll">vybrat všechny výsledky</sys:String>
+    <sys:String x:Key="Str_Ks_FocusSearch">umístit kurzor do pole hledání</sys:String>
+
 </ResourceDictionary>

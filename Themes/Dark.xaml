@@ -39,6 +39,10 @@
     <SolidColorBrush x:Key="CardBorderBrush"     Color="#2e2e2e" po:Freeze="True"/>
     <SolidColorBrush x:Key="TreeLineBrush"       Color="#3d3d3d" po:Freeze="True"/>
     <SolidColorBrush x:Key="WarnBrush"           Color="#d9a218" po:Freeze="True"/>
+    <!-- The status dot's "all fine" green. A real traffic light needs three fixed colors; using
+         the accent here meant "fine" was whatever accent you had picked (MainWindow.xaml.cs
+         ApplyStatusTone). Muted on purpose - it sits in the footer permanently. -->
+    <SolidColorBrush x:Key="OkBrush"             Color="#3fb950" po:Freeze="True"/>
     <SolidColorBrush x:Key="PaneBorderBrush"     Color="#3f3f3f" po:Freeze="True"/>
 
     <!-- Text -->
@@ -78,5 +82,16 @@
     <SolidColorBrush x:Key="TypeCamera"     Color="#F0C060" po:Freeze="True"/>
     <SolidColorBrush x:Key="TypeSmarttv"    Color="#E0A0E0" po:Freeze="True"/>
     <SolidColorBrush x:Key="TypeMedia"      Color="#70C0E0" po:Freeze="True"/>
+
+    <!-- Shortcut categories. One color per group, shared by the list headings and the keyboard
+         map's keycap borders (KeyboardMapOverlay.cs), so a key's color tells you what it does
+         before you read the caption. -->
+    <SolidColorBrush x:Key="KsCatFile"      Color="#00fff9" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatNav"       Color="#8c1eff" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatView"      Color="#f222ff" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatSearch"    Color="#00b3ff" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatEdit"      Color="#ff2975" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatTabs"      Color="#ffd319" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatHelp"      Color="#39ff14" po:Freeze="True"/>
 
 </ResourceDictionary>

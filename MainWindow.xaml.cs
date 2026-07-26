@@ -55,7 +55,7 @@ namespace KillerFind
             }
             catch { /* icon missing - wordmark alone is fine */ }
 
-            TabStrip.ItemsSource = _tabs;
+            Pane.TabStrip.ItemsSource = _tabs;
             if (DemoMode || !TryRestoreTabs()) ActivateTab(CreateTab());   // Session.cs / Tabs.cs
 
             // Restore the saved app-wide accessibility size (AppScale.cs). After the tabs so
@@ -144,13 +144,13 @@ namespace KillerFind
 
         private void OpenFolderPicker()
         {
-            var dlg = new FolderPickerDialog(RootPathBox.Text) { Owner = this };
+            var dlg = new FolderPickerDialog(Pane.RootPathBox.Text) { Owner = this };
             if (dlg.ShowDialog() != true) return;
             string? picked = dlg.SelectedPath;
             if (picked is null || picked.Length == 0) return;
 
-            RootPathBox.Text    = picked;
-            ScopePathLabel.Text = picked;
+            Pane.RootPathBox.Text    = picked;
+            Pane.ScopePathLabel.Text = picked;
             _active.RootPath    = picked;
             _active.Title       = ToTabTitle(picked);
             // Picking a folder is the escape hatch from a piped scope.
@@ -308,6 +308,10 @@ namespace KillerFind
         // ═══════════════════════════════════════════════════════════
         private void Shortcuts_Click(object sender, RoutedEventArgs e)
         {
+            // Restores whichever view you last had open, and builds it on first use
+            // (KeyboardMapOverlay.cs / ShortcutsOverlay.cs).
+            ApplyPersistedShortcutView();
+
             ShortcutsOverlay.Visibility = Visibility.Visible;
             Anim.FadeIn(ShortcutsOverlay);
         }
@@ -459,6 +463,11 @@ namespace KillerFind
                 $"{Loc(f.ConditionIndex == 0 ? "Str_Cond_Larger" : "Str_Cond_Smaller")} {f.SizeText.Trim()} {(f.UnitIndex == SearchFilter.UnitMb ? "MB" : "KB")}",
         };
 
+        // Releasing a modifier drops the keyboard preview back a layer. Nothing else listens for
+        // key-up; this exists purely so the board follows the hand (KeyboardMapOverlay.cs).
+        private void Window_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+            => KbSyncLayerFromModifiers();
+
         // Global keys: Enter runs the search, Esc closes the filter bar or stops a
         // running search, Ctrl+F opens the results quick-filter.
         private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -467,6 +476,12 @@ namespace KillerFind
             bool ctrl  = (mods & System.Windows.Input.ModifierKeys.Control) != 0;
             bool shift = (mods & System.Windows.Input.ModifierKeys.Shift)   != 0;
             bool alt   = (mods & System.Windows.Input.ModifierKeys.Alt)     != 0;
+
+            // Holding a modifier previews that layer on the visual keyboard, so a chord can be
+            // found by pressing Ctrl rather than by reading. No-op unless the board is showing
+            // (KeyboardMapOverlay.cs), and deliberately BEFORE the handling below so it still
+            // runs for chords that go on to be swallowed.
+            KbSyncLayerFromModifiers();
 
             // Alt+1-0 jumps to a saved location. Alt chords arrive as Key.System with the real
             // key parked in SystemKey, so they have to be unwrapped before anything can match -
@@ -493,6 +508,38 @@ namespace KillerFind
                     e.Handled = true;
                     return;
                 }
+
+                // Alt+Left / Right / Up: Explorer's navigation chords. These had no binding at
+                // all - Back, Forward and Up were reachable only by clicking the toolbar, which
+                // is the first thing a hand trained on Explorer reaches for and misses.
+                if (real == System.Windows.Input.Key.Left)
+                {
+                    NavBack_Click(this, new RoutedEventArgs());      // Browse.cs
+                    e.Handled = true;
+                    return;
+                }
+                if (real == System.Windows.Input.Key.Right)
+                {
+                    NavForward_Click(this, new RoutedEventArgs());   // Browse.cs
+                    e.Handled = true;
+                    return;
+                }
+                if (real == System.Windows.Input.Key.Up)
+                {
+                    NavUp_Click(this, new RoutedEventArgs());        // Browse.cs
+                    e.Handled = true;
+                    return;
+                }
+            }
+
+            // Backspace goes Back, the way it always has in Explorer. Guarded on text input, or
+            // it would eat the character you were deleting in the address bar or a term box.
+            if (!ctrl && !alt && e.Key == System.Windows.Input.Key.Back
+                && e.OriginalSource is not TextBox && e.OriginalSource is not ComboBox)
+            {
+                NavBack_Click(this, new RoutedEventArgs());   // Browse.cs
+                e.Handled = true;
+                return;
             }
 
             if (ctrl && !shift && e.Key == System.Windows.Input.Key.B)
@@ -525,13 +572,52 @@ namespace KillerFind
             }
             else if (e.Key == System.Windows.Input.Key.F5)
             {
-                Search_Click(this, new RoutedEventArgs());
+                // Explorer's Refresh, and it resolves itself: F5 refreshes whatever the tab is
+                // showing. A browsed folder re-lists off disk, a search tab re-runs its search -
+                // which is what F5 already did, so nothing was taken away. Enter still runs a
+                // search from the panel.
+                if (_active != null && _active.IsBrowsing && !string.IsNullOrEmpty(_active.CurrentFolder))
+                    _ = NavigateTo(_active.CurrentFolder!, record: false);   // Browse.cs
+                else
+                    Search_Click(this, new RoutedEventArgs());
                 e.Handled = true;
             }
-            else if (ctrl && e.Key == System.Windows.Input.Key.E)
+            else if (e.Key == System.Windows.Input.Key.F4 && !ctrl && !shift && !alt)
             {
-                if (shift) ExportCsv_Click(this, new RoutedEventArgs());   // Export.cs
-                else       Export_Click(this, new RoutedEventArgs());
+                // Explorer's address-bar key, alongside Ctrl+L and Alt+D.
+                BeginEditAddress();   // AddressBar.cs
+                e.Handled = true;
+            }
+            else if (e.Key == System.Windows.Input.Key.F9)
+            {
+                Export_Click(this, new RoutedEventArgs());      // Export.cs - HTML
+                e.Handled = true;
+            }
+            else if (e.Key == System.Windows.Input.Key.F8)
+            {
+                ExportCsv_Click(this, new RoutedEventArgs());   // Export.cs - CSV
+                e.Handled = true;
+            }
+            else if (ctrl && !shift && e.Key == System.Windows.Input.Key.A
+                     && e.OriginalSource is not TextBox)
+            {
+                // Select every row. Skipped inside a text box, where Ctrl+A has to keep meaning
+                // "select this text".
+                Pane.ResultsList.SelectAll();
+                e.Handled = true;
+            }
+            else if (e.Key == System.Windows.Input.Key.F12)
+            {
+                // F12: the About card, same as KillerPDF. It was previously reachable only by
+                // clicking the version in the footer, which nobody finds by accident.
+                ShowAboutOverlay();   // About.cs
+                e.Handled = true;
+            }
+            else if (ctrl && !shift && e.Key == System.Windows.Input.Key.E)
+            {
+                // Explorer's Ctrl+E puts the caret in the search box, so this does too. Export
+                // moved off it to F9 / F8 (single keys, which is the family preference anyway).
+                FocusSearchTerms();   // SearchPanel.cs
                 e.Handled = true;
             }
             else if (ctrl && (e.Key == System.Windows.Input.Key.Right || e.Key == System.Windows.Input.Key.Left)
@@ -605,7 +691,7 @@ namespace KillerFind
                 if (e.OriginalSource is ComboBoxItem ||
                     (e.OriginalSource is ComboBox cb && cb.IsDropDownOpen) ||
                     e.OriginalSource is System.Windows.Controls.Primitives.DatePickerTextBox ||
-                    ReferenceEquals(e.OriginalSource, ResultFilterBox))
+                    ReferenceEquals(e.OriginalSource, Pane.ResultFilterBox))
                     return;
 
                 Search_Click(this, new RoutedEventArgs());
@@ -616,7 +702,7 @@ namespace KillerFind
                 // Smart Esc, in order: close the filter bar > close an open overlay >
                 // stop a running search > offer to quit (with remember-my-choice).
                 e.Handled = true;
-                if (ResultFilterBar.Visibility == Visibility.Visible)
+                if (Pane.ResultFilterBar.Visibility == Visibility.Visible)
                     ResultFilterClose_Click(this, new RoutedEventArgs());
                 else if (PatternHelpOverlay.Visibility == Visibility.Visible)
                     PatternHelpClose_Click(this, new RoutedEventArgs());
@@ -661,9 +747,12 @@ namespace KillerFind
 
         private void ApplyStatusTone(string? key)
         {
+            // A real traffic light: three fixed colors. This used to fall back to PrimaryBrush,
+            // which meant "fine" rendered as whatever accent was picked - blue, red, whatever -
+            // so the dot carried no information at all unless something had gone wrong.
             string brush = key != null && System.Array.IndexOf(ErrorKeys, key) >= 0 ? "DangerRed"
                          : key != null && System.Array.IndexOf(WarnKeys,  key) >= 0 ? "WarnBrush"
-                         : "PrimaryBrush";
+                         : "OkBrush";
 
             StatusDot.SetResourceReference(System.Windows.Controls.Border.BackgroundProperty, brush);
         }

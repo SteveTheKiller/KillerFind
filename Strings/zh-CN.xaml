@@ -235,4 +235,25 @@
     <sys:String x:Key="Str_Status_Excluded">正在排除 {0} - 重新搜索后生效</sys:String>
     <sys:String x:Key="Str_Status_AlreadyExcluded">{0} 已被排除</sys:String>
 
+    <!-- 快捷键卡片：分类标题、列表 / 键盘切换和提示 -->
+    <sys:String x:Key="Str_Ks_About">显示关于卡片</sys:String>
+    <sys:String x:Key="Str_Ks_CatSearch">搜索</sys:String>
+    <sys:String x:Key="Str_Ks_CatNav">导航</sys:String>
+    <sys:String x:Key="Str_Ks_CatTabs">标签页</sys:String>
+    <sys:String x:Key="Str_Ks_CatView">视图</sys:String>
+    <sys:String x:Key="Str_Ks_CatFile">文件</sys:String>
+    <sys:String x:Key="Str_Ks_CatEdit">编辑</sys:String>
+    <sys:String x:Key="Str_Ks_CatHelp">帮助</sys:String>
+    <sys:String x:Key="Str_Ks_ViewList">列表</sys:String>
+    <sys:String x:Key="Str_Ks_ViewKeyboard">键盘</sys:String>
+    <sys:String x:Key="Str_Ks_HoldHint">按住 Ctrl、Shift 或 Alt 可预览该层</sys:String>
+
+    <!-- 资源管理器惯用快捷键 -->
+    <sys:String x:Key="Str_Ks_BackForward">后退 / 前进</sys:String>
+    <sys:String x:Key="Str_Ks_Back">后退</sys:String>
+    <sys:String x:Key="Str_Ks_Up">向上一级文件夹</sys:String>
+    <sys:String x:Key="Str_Ks_Refresh">刷新 - 重新列出文件夹，或重新运行搜索</sys:String>
+    <sys:String x:Key="Str_Ks_SelectAll">选择全部结果</sys:String>
+    <sys:String x:Key="Str_Ks_FocusSearch">将光标置于搜索框</sys:String>
+
 </ResourceDictionary>

@@ -28,6 +28,8 @@
     <SolidColorBrush x:Key="CardBorderBrush"     Color="#2a2a2a" po:Freeze="True"/>
     <SolidColorBrush x:Key="TreeLineBrush"       Color="#383838" po:Freeze="True"/>
     <SolidColorBrush x:Key="WarnBrush"           Color="#e0b020" po:Freeze="True"/>
+    <!-- Status dot "all fine" - see Dark.xaml. Brighter here to hold up on true black. -->
+    <SolidColorBrush x:Key="OkBrush"             Color="#4ad463" po:Freeze="True"/>
     <SolidColorBrush x:Key="PaneBorderBrush"     Color="#1c1c1c" po:Freeze="True"/>
     <!-- DWM window frame: pane borders are intentionally near-black here, so the
          frame uses the card border tone (the search-terms box outline) instead. -->
@@ -67,5 +69,15 @@
     <SolidColorBrush x:Key="TypeCamera"     Color="#F0C060" po:Freeze="True"/>
     <SolidColorBrush x:Key="TypeSmarttv"    Color="#E0A0E0" po:Freeze="True"/>
     <SolidColorBrush x:Key="TypeMedia"      Color="#70C0E0" po:Freeze="True"/>
+
+    <!-- Shortcut categories - see Dark.xaml. Nav is lifted a shade here: pure #8c1eff on a
+         true-black panel is too dark to read as a keycap border. -->
+    <SolidColorBrush x:Key="KsCatFile"      Color="#00fff9" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatNav"       Color="#a64dff" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatView"      Color="#f222ff" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatSearch"    Color="#00b3ff" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatEdit"      Color="#ff2975" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatTabs"      Color="#ffd319" po:Freeze="True"/>
+    <SolidColorBrush x:Key="KsCatHelp"      Color="#39ff14" po:Freeze="True"/>
 
 </ResourceDictionary>

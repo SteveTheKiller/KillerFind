@@ -26,9 +26,9 @@ namespace KillerFind
         {
             // E7B3 is the "hidden" eye, E890 the open one, so the glyph says what you are
             // currently looking at rather than what the click would do.
-            ShowHiddenBtn.Content = ((char)(ShowHidden ? 0xE890 : 0xE7B3)).ToString();
-            ShowHiddenBtn.Tag     = ShowHidden ? "on" : null;
-            FoldersTopBtn.Tag     = FoldersOnTop ? "on" : null;
+            Pane.ShowHiddenBtn.Content = ((char)(ShowHidden ? 0xE890 : 0xE7B3)).ToString();
+            Pane.ShowHiddenBtn.Tag     = ShowHidden ? "on" : null;
+            Pane.FoldersTopBtn.Tag     = FoldersOnTop ? "on" : null;
         }
 
         /// <summary>
@@ -36,12 +36,47 @@ namespace KillerFind
         /// Called wherever a tab's browsing state can change (Browse.cs, Tabs.cs).
         /// </summary>
         internal void UpdateLocationColumn()
-            => ResultsViewState.Current.LocationWidth =
-                   _active != null && _active.IsBrowsing
-                       ? new System.Windows.GridLength(0)
-                       : ResultsViewState.SearchLocationWidth;
+        {
+            bool browsing = _active != null && _active.IsBrowsing;
 
-        private void ShowHidden_Click(object sender, RoutedEventArgs e)
+            ResultsViewState.Current.LocationWidth =
+                browsing ? new System.Windows.GridLength(0) : ResultsViewState.SearchLocationWidth;
+
+            UpdateBrowseChrome(browsing);
+        }
+
+        /// <summary>
+        /// The toolbar bits that only mean something over search results. Browsing hides them
+        /// rather than leaving controls on screen that do nothing useful where you are standing.
+        /// </summary>
+        private void UpdateBrowseChrome(bool browsing)
+        {
+            // Pipe opens a NEW TAB scoped to the listed files. Over a folder listing the funnel
+            // reads as "filter these rows", so the tab it opens comes as a surprise; over search
+            // results, which is what it was built for, it reads correctly.
+            Pane.PipeBtn.Visibility = browsing ? Visibility.Collapsed : Visibility.Visible;
+
+            // "as found" is the ENGINE'S discovery order, which only exists because a search
+            // streams hits in as it walks. A folder is enumerated in one pass, so there is no
+            // discovery order to show - the entry goes away and name takes over.
+            Pane.SortFoundItem.Visibility = browsing ? Visibility.Collapsed : Visibility.Visible;
+
+            if (browsing && _active != null && _active.SortIndex == 0)
+            {
+                _active.SortIndex = 1;               // name
+
+                // Programmed, not user-driven: suppress SortCombo_Changed and sort by hand, so
+                // this works the same whether it runs during a tab switch or a navigation.
+                bool wasSyncing = _syncingSort;      // Results.cs
+                _syncingSort = true;
+                Pane.SortCombo.SelectedIndex = 1;
+                _syncingSort = wasSyncing;
+
+                ApplySort(_active);                  // Results.cs
+            }
+        }
+
+        internal void ShowHidden_Click(object sender, RoutedEventArgs e)
         {
             ShowHidden = !ShowHidden;
             Services.ThemeManager.SetSetting("ShowHidden", ShowHidden ? "1" : "0");
@@ -56,7 +91,7 @@ namespace KillerFind
                 _ = NavigateTo(_active.CurrentFolder!, record: false);   // Browse.cs
         }
 
-        private void FoldersTop_Click(object sender, RoutedEventArgs e)
+        internal void FoldersTop_Click(object sender, RoutedEventArgs e)
         {
             FoldersOnTop = !FoldersOnTop;
             Services.ThemeManager.SetSetting("FoldersOnTop", FoldersOnTop ? "1" : "0");

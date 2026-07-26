@@ -57,13 +57,24 @@ namespace KillerFind
             // right margin goes with it, or the two would still add up to a visible trench -
             // that margin exists to hold the pane off the WINDOW edge, and while the panel is
             // open there is no window edge there to hold it off.
-            ResultsPane.Margin    = new Thickness(0, 0, _searchOpen ? 0 : 8, 0);
-            TabFadeGhost.Margin   = ResultsPane.Margin;
+            Pane.ResultsPane.Margin    = new Thickness(0, 0, _searchOpen ? 0 : 8, 0);
+            Pane.TabFadeGhost.Margin   = Pane.ResultsPane.Margin;
 
             // Right-hand panel, so its contents stay pinned to the RIGHT edge during the tween.
             SlideColumn(SearchCol, SearchPanel, _searchOpen,
                         SearchPanelWidth, minOpen: 200, maxOpen: 380,
                         freezeAlign: HorizontalAlignment.Right, animate: animate);
+        }
+
+        /// <summary>
+        /// Explorer's Ctrl+E: put the caret in the search box. Opens the panel first if it is
+        /// shut - and stops there, because ToggleSearchPanel already focuses on the way open and
+        /// focusing twice would fight the slide.
+        /// </summary>
+        internal void FocusSearchTerms()
+        {
+            if (!_searchOpen) { ToggleSearchPanel(); return; }
+            FocusFirstTerm();
         }
 
         // The first term box in the first group, if the panel has one built yet.

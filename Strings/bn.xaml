@@ -235,4 +235,25 @@
     <sys:String x:Key="Str_Status_Excluded">{0} বাদ দেওয়া হচ্ছে - প্রয়োগ করতে আবার সার্চ করুন</sys:String>
     <sys:String x:Key="Str_Status_AlreadyExcluded">{0} ইতিমধ্যেই বাদ দেওয়া আছে</sys:String>
 
+    <!-- শর্টকাট কার্ড: বিভাগের শিরোনাম, তালিকা / কীবোর্ড টগল এবং ইঙ্গিত -->
+    <sys:String x:Key="Str_Ks_About">অ্যাবাউট কার্ড দেখান</sys:String>
+    <sys:String x:Key="Str_Ks_CatSearch">অনুসন্ধান</sys:String>
+    <sys:String x:Key="Str_Ks_CatNav">নেভিগেশন</sys:String>
+    <sys:String x:Key="Str_Ks_CatTabs">ট্যাব</sys:String>
+    <sys:String x:Key="Str_Ks_CatView">ভিউ</sys:String>
+    <sys:String x:Key="Str_Ks_CatFile">ফাইল</sys:String>
+    <sys:String x:Key="Str_Ks_CatEdit">সম্পাদনা</sys:String>
+    <sys:String x:Key="Str_Ks_CatHelp">সহায়তা</sys:String>
+    <sys:String x:Key="Str_Ks_ViewList">তালিকা</sys:String>
+    <sys:String x:Key="Str_Ks_ViewKeyboard">কীবোর্ড</sys:String>
+    <sys:String x:Key="Str_Ks_HoldHint">সেই স্তরটি দেখতে Ctrl, Shift বা Alt চেপে ধরে রাখুন</sys:String>
+
+    <!-- এক্সপ্লোরার-প্রচলিত শর্টকাট -->
+    <sys:String x:Key="Str_Ks_BackForward">পিছনে / সামনে</sys:String>
+    <sys:String x:Key="Str_Ks_Back">পিছনে</sys:String>
+    <sys:String x:Key="Str_Ks_Up">এক ফোল্ডার উপরে</sys:String>
+    <sys:String x:Key="Str_Ks_Refresh">রিফ্রেশ - ফোল্ডার আবার তালিকাভুক্ত করুন বা সার্চ আবার চালান</sys:String>
+    <sys:String x:Key="Str_Ks_SelectAll">সব ফলাফল নির্বাচন করুন</sys:String>
+    <sys:String x:Key="Str_Ks_FocusSearch">কার্সার সার্চ বাক্সে রাখুন</sys:String>
+
 </ResourceDictionary>

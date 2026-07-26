@@ -10,7 +10,7 @@ namespace KillerFind
 {
     public partial class MainWindow
     {
-        private void ExportCsv_Click(object sender, RoutedEventArgs e)
+        internal void ExportCsv_Click(object sender, RoutedEventArgs e)
         {
             var tab = _active;
             if (tab.Results.Count == 0)
@@ -50,7 +50,7 @@ namespace KillerFind
 
         private static string Csv(string s) => $"\"{s.Replace("\"", "\"\"")}\"";
 
-        private void Export_Click(object sender, RoutedEventArgs e)
+        internal void Export_Click(object sender, RoutedEventArgs e)
         {
             var tab = _active;
             if (tab.Results.Count == 0)
@@ -71,7 +71,7 @@ namespace KillerFind
                 try
                 {
                     new HtmlExporter().Export(dlg.FileName, tab.Results,
-                        [.. tab.Groups.SelectMany(g => g.Terms)], RootPathBox.Text);
+                        [.. tab.Groups.SelectMany(g => g.Terms)], Pane.RootPathBox.Text);
                     SetTabStatusKey(tab, "Str_Status_Exported", dlg.FileName);
                     System.Diagnostics.Process.Start(dlg.FileName);
                 }

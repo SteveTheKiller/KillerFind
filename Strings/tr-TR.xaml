@@ -235,4 +235,25 @@
     <sys:String x:Key="Str_Status_Excluded">{0} hariç tutuluyor - uygulamak için yeniden arayın</sys:String>
     <sys:String x:Key="Str_Status_AlreadyExcluded">{0} zaten hariç tutuluyor</sys:String>
 
+    <!-- Kisayol karti: kategoriler, LISTE / KLAVYE degistirici ve ipucu -->
+    <sys:String x:Key="Str_Ks_About">hakkında kartını göster</sys:String>
+    <sys:String x:Key="Str_Ks_CatSearch">ARAMA</sys:String>
+    <sys:String x:Key="Str_Ks_CatNav">GEZİNME</sys:String>
+    <sys:String x:Key="Str_Ks_CatTabs">SEKMELER</sys:String>
+    <sys:String x:Key="Str_Ks_CatView">GÖRÜNÜM</sys:String>
+    <sys:String x:Key="Str_Ks_CatFile">DOSYA</sys:String>
+    <sys:String x:Key="Str_Ks_CatEdit">DÜZENLEME</sys:String>
+    <sys:String x:Key="Str_Ks_CatHelp">YARDIM</sys:String>
+    <sys:String x:Key="Str_Ks_ViewList">LİSTE</sys:String>
+    <sys:String x:Key="Str_Ks_ViewKeyboard">KLAVYE</sys:String>
+    <sys:String x:Key="Str_Ks_HoldHint">bu katmanı önizlemek için Ctrl, Shift veya Alt tuşunu basılı tutun</sys:String>
+
+    <!-- Gezgin kisayol gelenekleri -->
+    <sys:String x:Key="Str_Ks_BackForward">geri / ileri</sys:String>
+    <sys:String x:Key="Str_Ks_Back">geri</sys:String>
+    <sys:String x:Key="Str_Ks_Up">bir klasör yukarı</sys:String>
+    <sys:String x:Key="Str_Ks_Refresh">yenile - klasörü yeniden listele veya aramayı yeniden çalıştır</sys:String>
+    <sys:String x:Key="Str_Ks_SelectAll">tüm sonuçları seç</sys:String>
+    <sys:String x:Key="Str_Ks_FocusSearch">imleci arama kutusuna getir</sys:String>
+
 </ResourceDictionary>

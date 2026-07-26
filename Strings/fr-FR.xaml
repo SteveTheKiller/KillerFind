@@ -235,4 +235,25 @@
     <sys:String x:Key="Str_Status_Excluded">Exclusion de {0} - relancez la recherche pour l'appliquer</sys:String>
     <sys:String x:Key="Str_Status_AlreadyExcluded">{0} est déjà exclu</sys:String>
 
+    <!-- Carte des raccourcis : categories, le bouton LISTE / CLAVIER et l'astuce -->
+    <sys:String x:Key="Str_Ks_About">afficher la carte À propos</sys:String>
+    <sys:String x:Key="Str_Ks_CatSearch">RECHERCHE</sys:String>
+    <sys:String x:Key="Str_Ks_CatNav">NAVIGATION</sys:String>
+    <sys:String x:Key="Str_Ks_CatTabs">ONGLETS</sys:String>
+    <sys:String x:Key="Str_Ks_CatView">AFFICHAGE</sys:String>
+    <sys:String x:Key="Str_Ks_CatFile">FICHIER</sys:String>
+    <sys:String x:Key="Str_Ks_CatEdit">ÉDITION</sys:String>
+    <sys:String x:Key="Str_Ks_CatHelp">AIDE</sys:String>
+    <sys:String x:Key="Str_Ks_ViewList">LISTE</sys:String>
+    <sys:String x:Key="Str_Ks_ViewKeyboard">CLAVIER</sys:String>
+    <sys:String x:Key="Str_Ks_HoldHint">maintenez Ctrl, Maj ou Alt pour afficher cette couche</sys:String>
+
+    <!-- Conventions de l'Explorateur -->
+    <sys:String x:Key="Str_Ks_BackForward">précédent / suivant</sys:String>
+    <sys:String x:Key="Str_Ks_Back">précédent</sys:String>
+    <sys:String x:Key="Str_Ks_Up">remonter d'un dossier</sys:String>
+    <sys:String x:Key="Str_Ks_Refresh">actualiser - relister le dossier ou relancer la recherche</sys:String>
+    <sys:String x:Key="Str_Ks_SelectAll">sélectionner tous les résultats</sys:String>
+    <sys:String x:Key="Str_Ks_FocusSearch">placer le curseur dans le champ de recherche</sys:String>
+
 </ResourceDictionary>

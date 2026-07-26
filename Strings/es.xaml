@@ -235,4 +235,25 @@
     <sys:String x:Key="Str_Status_Excluded">Excluyendo {0} - vuelve a buscar para aplicarlo</sys:String>
     <sys:String x:Key="Str_Status_AlreadyExcluded">{0} ya está excluido</sys:String>
 
+    <!-- Tarjeta de atajos: encabezados de categoria, el conmutador LISTA / TECLADO y la pista -->
+    <sys:String x:Key="Str_Ks_About">mostrar la tarjeta Acerca de</sys:String>
+    <sys:String x:Key="Str_Ks_CatSearch">BÚSQUEDA</sys:String>
+    <sys:String x:Key="Str_Ks_CatNav">NAVEGACIÓN</sys:String>
+    <sys:String x:Key="Str_Ks_CatTabs">PESTAÑAS</sys:String>
+    <sys:String x:Key="Str_Ks_CatView">VISTA</sys:String>
+    <sys:String x:Key="Str_Ks_CatFile">ARCHIVO</sys:String>
+    <sys:String x:Key="Str_Ks_CatEdit">EDICIÓN</sys:String>
+    <sys:String x:Key="Str_Ks_CatHelp">AYUDA</sys:String>
+    <sys:String x:Key="Str_Ks_ViewList">LISTA</sys:String>
+    <sys:String x:Key="Str_Ks_ViewKeyboard">TECLADO</sys:String>
+    <sys:String x:Key="Str_Ks_HoldHint">mantén pulsado Ctrl, Mayús o Alt para ver esa capa</sys:String>
+
+    <!-- Atajos de convencion del Explorador -->
+    <sys:String x:Key="Str_Ks_BackForward">atrás / adelante</sys:String>
+    <sys:String x:Key="Str_Ks_Back">atrás</sys:String>
+    <sys:String x:Key="Str_Ks_Up">subir una carpeta</sys:String>
+    <sys:String x:Key="Str_Ks_Refresh">actualizar - volver a listar la carpeta o repetir la búsqueda</sys:String>
+    <sys:String x:Key="Str_Ks_SelectAll">seleccionar todos los resultados</sys:String>
+    <sys:String x:Key="Str_Ks_FocusSearch">poner el cursor en el cuadro de búsqueda</sys:String>
+
 </ResourceDictionary>

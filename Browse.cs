@@ -63,8 +63,8 @@ namespace KillerFind
             _listCts = new CancellationTokenSource();
             var ct = _listCts.Token;
 
-            RootPathBox.Text    = folder;
-            ScopePathLabel.Text = folder;
+            Pane.RootPathBox.Text    = folder;
+            Pane.ScopePathLabel.Text = folder;
             UpdateNavButtons();
             SetTabStatusKey(tab, "Str_Status_Listing", folder);
 
@@ -166,7 +166,7 @@ namespace KillerFind
         }
 
         // ── History ──────────────────────────────────────────────
-        private async void NavBack_Click(object sender, RoutedEventArgs e)
+        internal async void NavBack_Click(object sender, RoutedEventArgs e)
         {
             var t = _active;
             if (t.HistoryIndex <= 0) return;
@@ -174,7 +174,7 @@ namespace KillerFind
             await NavigateTo(t.History[t.HistoryIndex], record: false);
         }
 
-        private async void NavForward_Click(object sender, RoutedEventArgs e)
+        internal async void NavForward_Click(object sender, RoutedEventArgs e)
         {
             var t = _active;
             if (t.HistoryIndex >= t.History.Count - 1) return;
@@ -182,7 +182,7 @@ namespace KillerFind
             await NavigateTo(t.History[t.HistoryIndex], record: false);
         }
 
-        private async void NavUp_Click(object sender, RoutedEventArgs e)
+        internal async void NavUp_Click(object sender, RoutedEventArgs e)
         {
             string? parent = ParentOf(_active.CurrentFolder);
             if (parent != null) await NavigateTo(parent);
@@ -203,9 +203,9 @@ namespace KillerFind
         private void UpdateNavButtons()
         {
             var t = _active;
-            NavBackBtn.IsEnabled    = t.HistoryIndex > 0;
-            NavForwardBtn.IsEnabled = t.HistoryIndex < t.History.Count - 1;
-            NavUpBtn.IsEnabled      = ParentOf(t.CurrentFolder) != null;
+            Pane.NavBackBtn.IsEnabled    = t.HistoryIndex > 0;
+            Pane.NavForwardBtn.IsEnabled = t.HistoryIndex < t.History.Count - 1;
+            Pane.NavUpBtn.IsEnabled      = ParentOf(t.CurrentFolder) != null;
         }
 
         /// <summary>Enter a folder, or open a file. What a double-click means in browse mode.</summary>
