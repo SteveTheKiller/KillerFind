@@ -32,7 +32,8 @@ namespace ICSharpCode.AvalonEdit.Document
 	//		internal readonly DocumentLine documentLine;
 	public partial class DocumentLine
 	{
-		internal DocumentLine left, right, parent;
+		// Structurally nullable: a leaf has no children, the root has no parent.
+		internal DocumentLine? left, right, parent;
 		internal bool color;
 		// optimization note: I tried packing color and isDeleted into a single byte field, but that
 		// actually increased the memory requirements. The JIT packs two bools and a byte (delimiterSize)

@@ -49,7 +49,8 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// <see cref="TextSegment"/>
 	public sealed class TextSegmentCollection<T> : ICollection<T>, ISegmentTree, IWeakEventListener where T : TextSegment
 	{
-		private TextSegment root;
+		// Null for an empty collection.
+		private TextSegment? root;
 		private readonly bool isConnectedToDocument;
 
 		#region Constructor

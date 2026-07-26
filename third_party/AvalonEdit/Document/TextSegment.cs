@@ -52,7 +52,8 @@ namespace ICSharpCode.AvalonEdit.Document
 	public class TextSegment : ISegment
 	{
 		internal ISegmentTree ownerTree;
-		internal TextSegment left, right, parent;
+		// Structurally nullable: a leaf has no children, the root has no parent.
+		internal TextSegment? left, right, parent;
 
 		/// <summary>
 		/// The color of the segment in the red/black tree.

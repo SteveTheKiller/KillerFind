@@ -27,7 +27,10 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// </summary>
 	internal sealed class TextAnchorNode : WeakReference
 	{
-		internal TextAnchorNode left, right, parent;
+		// Structurally nullable, the same as every other red-black tree in this tree: a leaf has
+		// no children and the root has no parent. Sites that know a node exists say so with ! and
+		// the invariant that makes it safe.
+		internal TextAnchorNode? left, right, parent;
 		internal bool color;
 		internal int length;
 		internal int totalLength; // totalLength = length + left.totalLength + right.totalLength

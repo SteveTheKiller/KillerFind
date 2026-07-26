@@ -35,7 +35,7 @@ namespace ICSharpCode.AvalonEdit.Document
 	{
 		#region Constructor
 		private readonly TextDocument document;
-		private LineNode root;
+		private LineNode? root;
 
 		public DocumentLineTree(TextDocument document)
 		{
