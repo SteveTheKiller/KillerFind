@@ -74,6 +74,17 @@ dotnet_diagnostic.IDE0010.severity = none
 # every layer regardless of what you pass. That is upstream behavior and not ours to change.
 dotnet_diagnostic.IDE0060.severity = none
 
+# IDE0051, unused private member. Two sites, both false in context. HighlightingManager's
+# LoadHighlighting is called from the #else branch and so exists only for release builds, which
+# is why upstream hung a CA1811 SuppressMessage on it; deleting it would break the release
+# configuration while Debug stayed green. ImeNativeWrapper's GCS_COMPSTR names a real IMM32
+# flag and is worth keeping beside its siblings as documentation.
+dotnet_diagnostic.IDE0051.severity = none
+
+# IDE0072, populate switch expression. Both sites already have a "_ =>" arm; the rule wants
+# every UnicodeCategory and every enum member spelled out beside it.
+dotnet_diagnostic.IDE0072.severity = none
+
 # IDE0130 wants the namespace to match the folder. The folder is third_party\AvalonEdit and the
 # namespace is ICSharpCode.AvalonEdit; satisfying it would mean renaming the namespace of every
 # file, breaking every using in the tree and changing the API of the code we vendored. This is
