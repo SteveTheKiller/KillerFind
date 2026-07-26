@@ -23,10 +23,10 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// <summary>
 	/// Describes a change to a TextDocument.
 	/// </summary>
-	sealed class DocumentChangeOperation : IUndoableOperationWithContext
+	internal sealed class DocumentChangeOperation : IUndoableOperationWithContext
 	{
-		TextDocument document;
-		DocumentChangeEventArgs change;
+		private readonly TextDocument document;
+		private readonly DocumentChangeEventArgs change;
 
 		public DocumentChangeOperation(TextDocument document, DocumentChangeEventArgs change)
 		{
@@ -55,7 +55,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		public void Undo()
 		{
 			OffsetChangeMap map = change.OffsetChangeMapOrNull;
-			document.Replace(change.Offset, change.InsertionLength, change.RemovedText, map != null ? map.Invert() : null);
+			document.Replace(change.Offset, change.InsertionLength, change.RemovedText, map?.Invert());
 		}
 
 		public void Redo()

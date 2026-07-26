@@ -24,13 +24,13 @@ namespace ICSharpCode.AvalonEdit.Utils
 	/// <summary>
 	/// Maintains a list of delayed events to raise.
 	/// </summary>
-	sealed class DelayedEvents
+	internal sealed class DelayedEvents
 	{
-		struct EventCall
+		private readonly struct EventCall
 		{
-			EventHandler handler;
-			object sender;
-			EventArgs e;
+			private readonly EventHandler handler;
+			private readonly object sender;
+			private readonly EventArgs e;
 
 			public EventCall(EventHandler handler, object sender, EventArgs e)
 			{
@@ -39,13 +39,13 @@ namespace ICSharpCode.AvalonEdit.Utils
 				this.e = e;
 			}
 
-			public void Call()
+			public readonly void Call()
 			{
 				handler(sender, e);
 			}
 		}
 
-		Queue<EventCall> eventCalls = new Queue<EventCall>();
+		private readonly Queue<EventCall> eventCalls = new();
 
 		public void DelayedRaise(EventHandler handler, object sender, EventArgs e)
 		{
@@ -56,8 +56,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 
 		public void RaiseEvents()
 		{
-			while (eventCalls.Count > 0)
+			while (eventCalls.Count > 0) {
 				eventCalls.Dequeue().Call();
+			}
 		}
 	}
 }

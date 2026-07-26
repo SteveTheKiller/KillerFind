@@ -23,19 +23,19 @@ using System.Text;
 
 namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 {
-	sealed class IndentationSettings
+	internal sealed class IndentationSettings
 	{
 		public string IndentString = "\t";
 		/// <summary>Leave empty lines empty.</summary>
 		public bool LeaveEmptyLines = true;
 	}
 
-	sealed class IndentationReformatter
+	internal sealed class IndentationReformatter
 	{
 		/// <summary>
 		/// An indentation block. Tracks the state of the indentation.
 		/// </summary>
-		struct Block
+		private struct Block
 		{
 			/// <summary>
 			/// The indentation outside of the block.
@@ -105,7 +105,7 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 				LastWord = "";
 			}
 
-			public override string ToString()
+			public override readonly string ToString()
 			{
 				return string.Format(
 					CultureInfo.InvariantCulture,
@@ -116,19 +116,19 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 
 		// Init() assigns both and Reformat calls Init first, but Step is public and reachable
 		// without it, so they start valid rather than null! and a stray Step cannot throw.
-		StringBuilder wordBuilder = new StringBuilder();
-		Stack<Block> blocks = new Stack<Block>(); // blocks contains all blocks outside of the current
-		Block block;  // block is the current block
+		private StringBuilder wordBuilder = new();
+		private Stack<Block> blocks = new(); // blocks contains all blocks outside of the current
+		private Block block;  // block is the current block
 
-		bool inString;
-		bool inChar;
-		bool verbatim;
-		bool escape;
+		private bool inString;
+		private bool inChar;
+		private bool verbatim;
+		private bool escape;
 
-		bool lineComment;
-		bool blockComment;
+		private bool lineComment;
+		private bool blockComment;
 
-		char lastRealChar; // last non-comment char
+		private char lastRealChar; // last non-comment char
 
 		public void Reformat(IDocumentAccessor doc, IndentationSettings set)
 		{
@@ -143,15 +143,16 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 		{
 			wordBuilder = new StringBuilder();
 			blocks = new Stack<Block>();
-			block = new Block();
-			block.InnerIndent = "";
-			block.OuterIndent = "";
-			block.Bracket = '{';
-			block.Continuation = false;
-			block.LastWord = "";
-			block.OneLineBlock = 0;
-			block.PreviousOneLineBlock = 0;
-			block.StartLine = 0;
+			block = new Block {
+				InnerIndent = "",
+				OuterIndent = "",
+				Bracket = '{',
+				Continuation = false,
+				LastWord = "",
+				OneLineBlock = 0,
+				PreviousOneLineBlock = 0,
+				StartLine = 0
+			};
 
 			inString = false;
 			inChar = false;
@@ -167,35 +168,47 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 		public void Step(IDocumentAccessor doc, IndentationSettings set)
 		{
 			string line = doc.Text;
-			if (set.LeaveEmptyLines && line.Length == 0) return; // leave empty lines empty
+			if (set.LeaveEmptyLines && line.Length == 0) {
+				return; // leave empty lines empty
+			}
+
 			line = line.TrimStart();
 
-			StringBuilder indent = new StringBuilder();
+			StringBuilder indent = new();
 			if (line.Length == 0) {
 				// Special treatment for empty lines:
-				if (blockComment || (inString && verbatim))
+				if (blockComment || (inString && verbatim)) {
 					return;
+				}
+
 				indent.Append(block.InnerIndent);
 				indent.Append(Repeat(set.IndentString, block.OneLineBlock));
-				if (block.Continuation)
+				if (block.Continuation) {
 					indent.Append(set.IndentString);
-				if (doc.Text != indent.ToString())
+				}
+
+				if (doc.Text != indent.ToString()) {
 					doc.Text = indent.ToString();
+				}
+
 				return;
 			}
 
-			if (TrimEnd(doc))
+			if (TrimEnd(doc)) {
 				line = doc.Text.TrimStart();
+			}
 
 			Block oldBlock = block;
 			bool startInComment = blockComment;
-			bool startInString = (inString && verbatim);
+			bool startInString = inString && verbatim;
 
 			#region Parse char by char
 			lineComment = false;
 			inChar = false;
 			escape = false;
-			if (!verbatim) inString = false;
+			if (!verbatim) {
+				inString = false;
+			}
 
 			lastRealChar = '\n';
 
@@ -203,14 +216,17 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 			char c = ' ';
 			char nextchar = line[0];
 			for (int i = 0; i < line.Length; i++) {
-				if (lineComment) break; // cancel parsing current line
+				if (lineComment) {
+					break; // cancel parsing current line
+				}
 
 				lastchar = c;
 				c = nextchar;
-				if (i + 1 < line.Length)
+				if (i + 1 < line.Length) {
 					nextchar = line[i + 1];
-				else
+				} else {
 					nextchar = '\n';
+				}
 
 				if (escape) {
 					escape = false;
@@ -220,18 +236,25 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 				#region Check for comment/string chars
 				switch (c) {
 					case '/':
-						if (blockComment && lastchar == '*')
+						if (blockComment && lastchar == '*') {
 							blockComment = false;
+						}
+
 						if (!inString && !inChar) {
-							if (!blockComment && nextchar == '/')
+							if (!blockComment && nextchar == '/') {
 								lineComment = true;
-							if (!lineComment && nextchar == '*')
+							}
+
+							if (!lineComment && nextchar == '*') {
 								blockComment = true;
+							}
 						}
 						break;
 					case '#':
-						if (!(inChar || blockComment || inString))
+						if (!(inChar || blockComment || inString)) {
 							lineComment = true;
+						}
+
 						break;
 					case '"':
 						if (!(inChar || lineComment || blockComment)) {
@@ -254,29 +277,36 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 						}
 						break;
 					case '\\':
-						if ((inString && !verbatim) || inChar)
+						if ((inString && !verbatim) || inChar) {
 							escape = true; // skip next character
+						}
+
 						break;
 				}
 				#endregion
 
 				if (lineComment || blockComment || inString || inChar) {
-					if (wordBuilder.Length > 0)
+					if (wordBuilder.Length > 0) {
 						block.LastWord = wordBuilder.ToString();
+					}
+
 					wordBuilder.Length = 0;
 					continue;
 				}
 
 				if (!Char.IsWhiteSpace(c) && c != '[' && c != '/') {
-					if (block.Bracket == '{')
+					if (block.Bracket == '{') {
 						block.Continuation = true;
+					}
 				}
 
 				if (Char.IsLetterOrDigit(c)) {
 					wordBuilder.Append(c);
 				} else {
-					if (wordBuilder.Length > 0)
+					if (wordBuilder.Length > 0) {
 						block.LastWord = wordBuilder.ToString();
+					}
+
 					wordBuilder.Length = 0;
 				}
 
@@ -307,10 +337,16 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 						break;
 					case '}':
 						while (block.Bracket != '{') {
-							if (blocks.Count == 0) break;
+							if (blocks.Count == 0) {
+								break;
+							}
+
 							block = blocks.Pop();
 						}
-						if (blocks.Count == 0) break;
+						if (blocks.Count == 0) {
+							break;
+						}
+
 						block = blocks.Pop();
 						block.Continuation = false;
 						block.ResetOneLineBlock();
@@ -318,27 +354,38 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 					case '(':
 					case '[':
 						blocks.Push(block);
-						if (block.StartLine == doc.LineNumber)
+						if (block.StartLine == doc.LineNumber) {
 							block.InnerIndent = block.OuterIndent;
-						else
+						} else {
 							block.StartLine = doc.LineNumber;
+						}
+
 						block.Indent(Repeat(set.IndentString, oldBlock.OneLineBlock) +
 									 (oldBlock.Continuation ? set.IndentString : "") +
 									 (i == line.Length - 1 ? set.IndentString : new String(' ', i + 1)));
 						block.Bracket = c;
 						break;
 					case ')':
-						if (blocks.Count == 0) break;
+						if (blocks.Count == 0) {
+							break;
+						}
+
 						if (block.Bracket == '(') {
 							block = blocks.Pop();
-							if (IsSingleStatementKeyword(block.LastWord))
+							if (IsSingleStatementKeyword(block.LastWord)) {
 								block.Continuation = false;
+							}
 						}
 						break;
 					case ']':
-						if (blocks.Count == 0) break;
-						if (block.Bracket == '[')
+						if (blocks.Count == 0) {
+							break;
+						}
+
+						if (block.Bracket == '[') {
 							block = blocks.Pop();
+						}
+
 						break;
 					case ';':
 					case ',':
@@ -363,14 +410,23 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 			}
 			#endregion
 
-			if (wordBuilder.Length > 0)
+			if (wordBuilder.Length > 0) {
 				block.LastWord = wordBuilder.ToString();
+			}
+
 			wordBuilder.Length = 0;
 
-			if (startInString) return;
-			if (startInComment && line[0] != '*') return;
-			if (doc.Text.StartsWith("//\t", StringComparison.Ordinal) || doc.Text == "//")
+			if (startInString) {
 				return;
+			}
+
+			if (startInComment && line[0] != '*') {
+				return;
+			}
+
+			if (doc.Text.StartsWith("//\t", StringComparison.Ordinal) || doc.Text == "//") {
+				return;
+			}
 
 			if (line[0] == '}') {
 				indent.Append(oldBlock.OuterIndent);
@@ -389,8 +445,9 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 			if (line[0] == ':') {
 				oldBlock.Continuation = true;
 			} else if (lastRealChar == ':' && indent.Length >= set.IndentString.Length) {
-				if (block.LastWord == "case" || line.StartsWith("case ", StringComparison.Ordinal) || line.StartsWith(block.LastWord + ":", StringComparison.Ordinal))
+				if (block.LastWord == "case" || line.StartsWith("case ", StringComparison.Ordinal) || line.StartsWith(block.LastWord + ":", StringComparison.Ordinal)) {
 					indent.Remove(indent.Length - set.IndentString.Length, set.IndentString.Length);
+				}
 			} else if (lastRealChar == ')') {
 				if (IsSingleStatementKeyword(block.LastWord)) {
 					block.OneLineBlock++;
@@ -412,13 +469,15 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 					indent.Length = 0;
 					line = doc.Text; // get untrimmed line
 					for (int i = 0; i < line.Length; ++i) {
-						if (!Char.IsWhiteSpace(line[i]))
+						if (!Char.IsWhiteSpace(line[i])) {
 							break;
+						}
+
 						indent.Append(line[i]);
 					}
 					// /* */ multiline comments have an extra space - do not count it
 					// for the block's indentation.
-					if (startInComment && indent.Length > 0 && indent[indent.Length - 1] == ' ') {
+					if (startInComment && indent.Length > 0 && indent[^1] == ' ') {
 						indent.Length -= 1;
 					}
 					block.InnerIndent = indent.ToString();
@@ -427,15 +486,18 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 			}
 
 			if (line[0] != '{') {
-				if (line[0] != ')' && oldBlock.Continuation && oldBlock.Bracket == '{')
+				if (line[0] != ')' && oldBlock.Continuation && oldBlock.Bracket == '{') {
 					indent.Append(set.IndentString);
+				}
+
 				indent.Append(Repeat(set.IndentString, oldBlock.OneLineBlock));
 			}
 
 			// this is only for blockcomment lines starting with *,
 			// all others keep their old indentation
-			if (startInComment)
+			if (startInComment) {
 				indent.Append(' ');
+			}
 
 			if (indent.Length != (doc.Text.Length - line.Length) ||
 				!doc.Text.StartsWith(indent.ToString(), StringComparison.Ordinal) ||
@@ -444,42 +506,43 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 			}
 		}
 
-		static string Repeat(string text, int count)
+		private static string Repeat(string text, int count)
 		{
-			if (count == 0)
+			if (count == 0) {
 				return string.Empty;
-			if (count == 1)
+			}
+
+			if (count == 1) {
 				return text;
-			StringBuilder b = new StringBuilder(text.Length * count);
-			for (int i = 0; i < count; i++)
+			}
+
+			StringBuilder b = new(text.Length * count);
+			for (int i = 0; i < count; i++) {
 				b.Append(text);
+			}
+
 			return b.ToString();
 		}
 
-		static bool IsSingleStatementKeyword(string keyword)
+		private static bool IsSingleStatementKeyword(string keyword)
 		{
-			switch (keyword) {
-				case "if":
-				case "for":
-				case "while":
-				case "do":
-				case "foreach":
-				case "using":
-				case "lock":
-					return true;
-				default:
-					return false;
-			}
+			return keyword switch {
+				"if" or "for" or "while" or "do" or "foreach" or "using" or "lock" => true,
+				_ => false,
+			};
 		}
 
-		static bool TrimEnd(IDocumentAccessor doc)
+		private static bool TrimEnd(IDocumentAccessor doc)
 		{
 			string line = doc.Text;
-			if (!Char.IsWhiteSpace(line[line.Length - 1])) return false;
+			if (!Char.IsWhiteSpace(line[^1])) {
+				return false;
+			}
 
 			// one space after an empty comment is allowed
-			if (line.EndsWith("// ", StringComparison.Ordinal) || line.EndsWith("* ", StringComparison.Ordinal))
+			if (line.EndsWith("// ", StringComparison.Ordinal) || line.EndsWith("* ", StringComparison.Ordinal)) {
 				return false;
+			}
 
 			doc.Text = line.TrimEnd();
 			return true;

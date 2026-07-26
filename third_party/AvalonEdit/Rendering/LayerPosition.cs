@@ -70,7 +70,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		Above
 	}
 
-	sealed class LayerPosition : IComparable<LayerPosition>
+	internal sealed class LayerPosition : IComparable<LayerPosition>
 	{
 		internal static readonly DependencyProperty LayerPositionProperty =
 			DependencyProperty.RegisterAttached("LayerPosition", typeof(LayerPosition), typeof(LayerPosition));
@@ -97,10 +97,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public int CompareTo(LayerPosition other)
 		{
 			int r = this.KnownLayer.CompareTo(other.KnownLayer);
-			if (r != 0)
+			if (r != 0) {
 				return r;
-			else
+			} else {
 				return this.Position.CompareTo(other.Position);
+			}
 		}
 	}
 }

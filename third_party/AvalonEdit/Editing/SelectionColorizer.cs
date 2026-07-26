@@ -22,22 +22,21 @@ using ICSharpCode.AvalonEdit.Rendering;
 
 namespace ICSharpCode.AvalonEdit.Editing
 {
-	sealed class SelectionColorizer : ColorizingTransformer
+	internal sealed class SelectionColorizer : ColorizingTransformer
 	{
-		TextArea textArea;
+		private readonly TextArea textArea;
 
 		public SelectionColorizer(TextArea textArea)
 		{
-			if (textArea == null)
-				throw new ArgumentNullException("textArea");
-			this.textArea = textArea;
+			this.textArea = textArea ?? throw new ArgumentNullException("textArea");
 		}
 
 		protected override void Colorize(ITextRunConstructionContext context)
 		{
 			// if SelectionForeground is null, keep the existing foreground color
-			if (textArea.SelectionForeground == null)
+			if (textArea.SelectionForeground == null) {
 				return;
+			}
 
 			int lineStartOffset = context.VisualLine.FirstDocumentLine.Offset;
 			int lineEndOffset = context.VisualLine.LastDocumentLine.Offset + context.VisualLine.LastDocumentLine.TotalLength;
@@ -45,21 +44,27 @@ namespace ICSharpCode.AvalonEdit.Editing
 			foreach (SelectionSegment segment in textArea.Selection.Segments) {
 				int segmentStart = segment.StartOffset;
 				int segmentEnd = segment.EndOffset;
-				if (segmentEnd <= lineStartOffset)
+				if (segmentEnd <= lineStartOffset) {
 					continue;
-				if (segmentStart >= lineEndOffset)
+				}
+
+				if (segmentStart >= lineEndOffset) {
 					continue;
+				}
+
 				int startColumn;
-				if (segmentStart < lineStartOffset)
+				if (segmentStart < lineStartOffset) {
 					startColumn = 0;
-				else
+				} else {
 					startColumn = context.VisualLine.ValidateVisualColumn(segment.StartOffset, segment.StartVisualColumn, textArea.Selection.EnableVirtualSpace);
+				}
 
 				int endColumn;
-				if (segmentEnd > lineEndOffset)
+				if (segmentEnd > lineEndOffset) {
 					endColumn = textArea.Selection.EnableVirtualSpace ? int.MaxValue : context.VisualLine.VisualLengthWithEndOfLineMarker;
-				else
+				} else {
 					endColumn = context.VisualLine.ValidateVisualColumn(segment.EndOffset, segment.EndVisualColumn, textArea.Selection.EnableVirtualSpace);
+				}
 
 				ChangeVisualElements(
 					startColumn, endColumn,

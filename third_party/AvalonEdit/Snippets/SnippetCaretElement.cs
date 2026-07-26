@@ -30,7 +30,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 	public class SnippetCaretElement : SnippetElement
 	{
 		[OptionalField]
-		bool setCaretOnlyIfTextIsSelected;
+		private readonly bool setCaretOnlyIfTextIsSelected;
 
 		/// <summary>
 		/// Creates a new SnippetCaretElement.
@@ -54,8 +54,9 @@ namespace ICSharpCode.AvalonEdit.Snippets
 		/// <inheritdoc/>
 		public override void Insert(InsertionContext context)
 		{
-			if (!setCaretOnlyIfTextIsSelected || !string.IsNullOrEmpty(context.SelectedText))
+			if (!setCaretOnlyIfTextIsSelected || !string.IsNullOrEmpty(context.SelectedText)) {
 				SetCaret(context);
+			}
 		}
 
 		internal static void SetCaret(InsertionContext context)
@@ -64,7 +65,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 			pos.MovementType = AnchorMovementType.BeforeInsertion;
 			pos.SurviveDeletion = true;
 			context.Deactivated += (sender, e) => {
-				if (e.Reason == DeactivateReason.ReturnPressed || e.Reason == DeactivateReason.NoActiveElements) {
+				if (e.Reason is DeactivateReason.ReturnPressed or DeactivateReason.NoActiveElements) {
 					context.TextArea.Caret.Offset = pos.Offset;
 				}
 			};

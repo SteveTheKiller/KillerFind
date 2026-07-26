@@ -31,8 +31,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public static Rope<char> Create(string text)
 		{
-			if (text == null)
+			if (text == null) {
 				throw new ArgumentNullException("text");
+			}
+
 			return new Rope<char>(InitFromString(text));
 		}
 
@@ -46,14 +48,18 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </remarks>
 		public static string ToString(this Rope<char> rope, int startIndex, int length)
 		{
-			if (rope == null)
+			if (rope == null) {
 				throw new ArgumentNullException("rope");
+			}
 #if DEBUG
-			if (length < 0)
+			if (length < 0) {
 				throw new ArgumentOutOfRangeException("length", length, "Value must be >= 0");
+			}
 #endif
-			if (length == 0)
+			if (length == 0) {
 				return string.Empty;
+			}
+
 			char[] buffer = new char[length];
 			rope.CopyTo(startIndex, buffer, 0, length);
 			return new string(buffer);
@@ -69,10 +75,14 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </remarks>
 		public static void WriteTo(this Rope<char> rope, TextWriter output, int startIndex, int length)
 		{
-			if (rope == null)
+			if (rope == null) {
 				throw new ArgumentNullException("rope");
-			if (output == null)
+			}
+
+			if (output == null) {
 				throw new ArgumentNullException("output");
+			}
+
 			rope.VerifyRange(startIndex, length);
 			rope.root.WriteTo(startIndex, output, length);
 		}
@@ -95,8 +105,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <exception cref="ArgumentOutOfRangeException">index or length is outside the valid range.</exception>
 		public static void InsertText(this Rope<char> rope, int index, string text)
 		{
-			if (rope == null)
+			if (rope == null) {
 				throw new ArgumentNullException("rope");
+			}
+
 			rope.InsertRange(index, text.ToCharArray(), 0, text.Length);
 			/*if (index < 0 || index > rope.Length) {
 				throw new ArgumentOutOfRangeException("index", index, "0 <= index <= " + rope.Length.ToString(CultureInfo.InvariantCulture));
@@ -119,7 +131,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			return node;
 		}
 
-		static void FillNode(RopeNode<char> node, string text, int start)
+		private static void FillNode(RopeNode<char> node, string text, int start)
 		{
 			if (node.contents != null) {
 				text.CopyTo(start, node.contents, 0, node.length);
@@ -163,22 +175,27 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <returns>The first index where any character was found; or -1 if no occurrence was found.</returns>
 		public static int IndexOfAny(this Rope<char> rope, char[] anyOf, int startIndex, int length)
 		{
-			if (rope == null)
+			if (rope == null) {
 				throw new ArgumentNullException("rope");
-			if (anyOf == null)
+			}
+
+			if (anyOf == null) {
 				throw new ArgumentNullException("anyOf");
+			}
+
 			rope.VerifyRange(startIndex, length);
 
 			while (length > 0) {
-				var entry = rope.FindNodeUsingCache(startIndex).PeekOrDefault();
+				Rope<char>.RopeCacheEntry entry = rope.FindNodeUsingCache(startIndex).PeekOrDefault();
 				char[] contents = entry.node.contents;
 				int startWithinNode = startIndex - entry.nodeStartIndex;
 				int nodeLength = Math.Min(entry.node.length, startWithinNode + length);
 				for (int i = startIndex - entry.nodeStartIndex; i < nodeLength; i++) {
 					char element = contents[i];
 					foreach (char needle in anyOf) {
-						if (element == needle)
+						if (element == needle) {
 							return entry.nodeStartIndex + i;
+						}
 					}
 				}
 				length -= nodeLength - startWithinNode;
@@ -192,16 +209,21 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public static int IndexOf(this Rope<char> rope, string searchText, int startIndex, int length, StringComparison comparisonType)
 		{
-			if (rope == null)
+			if (rope == null) {
 				throw new ArgumentNullException("rope");
-			if (searchText == null)
+			}
+
+			if (searchText == null) {
 				throw new ArgumentNullException("searchText");
+			}
+
 			rope.VerifyRange(startIndex, length);
 			int pos = rope.ToString(startIndex, length).IndexOf(searchText, comparisonType);
-			if (pos < 0)
+			if (pos < 0) {
 				return -1;
-			else
+			} else {
 				return pos + startIndex;
+			}
 		}
 
 		/// <summary>
@@ -209,16 +231,21 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public static int LastIndexOf(this Rope<char> rope, string searchText, int startIndex, int length, StringComparison comparisonType)
 		{
-			if (rope == null)
+			if (rope == null) {
 				throw new ArgumentNullException("rope");
-			if (searchText == null)
+			}
+
+			if (searchText == null) {
 				throw new ArgumentNullException("searchText");
+			}
+
 			rope.VerifyRange(startIndex, length);
 			int pos = rope.ToString(startIndex, length).LastIndexOf(searchText, comparisonType);
-			if (pos < 0)
+			if (pos < 0) {
 				return -1;
-			else
+			} else {
 				return pos + startIndex;
+			}
 		}
 	}
 }

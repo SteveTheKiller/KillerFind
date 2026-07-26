@@ -28,25 +28,25 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 	/// </summary>
 	public class RichTextColorizer : DocumentColorizingTransformer
 	{
-		readonly RichTextModel richTextModel;
+		private readonly RichTextModel richTextModel;
 
 		/// <summary>
 		/// Creates a new RichTextColorizer instance.
 		/// </summary>
 		public RichTextColorizer(RichTextModel richTextModel)
 		{
-			if (richTextModel == null)
-				throw new ArgumentNullException("richTextModel");
-			this.richTextModel = richTextModel;
+			this.richTextModel = richTextModel ?? throw new ArgumentNullException("richTextModel");
 		}
 
 		/// <inheritdoc/>
 		protected override void ColorizeLine(DocumentLine line)
 		{
-			var sections = richTextModel.GetHighlightedSections(line.Offset, line.Length);
+			System.Collections.Generic.IEnumerable<HighlightedSection> sections = richTextModel.GetHighlightedSections(line.Offset, line.Length);
 			foreach (HighlightedSection section in sections) {
-				if (HighlightingColorizer.IsEmptyColor(section.Color))
+				if (HighlightingColorizer.IsEmptyColor(section.Color)) {
 					continue;
+				}
+
 				ChangeLinePart(section.Offset, section.Offset + section.Length,
 							   visualLineElement => HighlightingColorizer.ApplyColorToElement(visualLineElement, section.Color, CurrentContext));
 			}

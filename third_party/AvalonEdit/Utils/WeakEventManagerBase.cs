@@ -59,16 +59,20 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <inheritdoc/>
 		protected sealed override void StartListening(object source)
 		{
-			if (source == null)
+			if (source == null) {
 				throw new ArgumentNullException("source");
+			}
+
 			StartListening((TEventSource)source);
 		}
 
 		/// <inheritdoc/>
 		protected sealed override void StopListening(object source)
 		{
-			if (source == null)
+			if (source == null) {
 				throw new ArgumentNullException("source");
+			}
+
 			StopListening((TEventSource)source);
 		}
 

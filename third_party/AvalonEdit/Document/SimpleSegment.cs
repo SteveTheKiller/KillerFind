@@ -28,9 +28,9 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// Represents a simple segment (Offset,Length pair) that is not automatically updated
 	/// on document changes.
 	/// </summary>
-	struct SimpleSegment : IEquatable<SimpleSegment>, ISegment
+	internal readonly struct SimpleSegment : IEquatable<SimpleSegment>, ISegment
 	{
-		public static readonly SimpleSegment Invalid = new SimpleSegment(-1, -1);
+		public static readonly SimpleSegment Invalid = new(-1, -1);
 
 		/// <summary>
 		/// Gets the overlapping portion of the segments.
@@ -40,27 +40,20 @@ namespace ICSharpCode.AvalonEdit.Document
 		{
 			int start = Math.Max(segment1.Offset, segment2.Offset);
 			int end = Math.Min(segment1.EndOffset, segment2.EndOffset);
-			if (end < start)
+			if (end < start) {
 				return SimpleSegment.Invalid;
-			else
+			} else {
 				return new SimpleSegment(start, end - start);
+			}
 		}
 
 		public readonly int Offset, Length;
 
-		int ISegment.Offset {
-			get { return Offset; }
-		}
+		readonly int ISegment.Offset => Offset;
 
-		int ISegment.Length {
-			get { return Length; }
-		}
+		readonly int ISegment.Length => Length;
 
-		public int EndOffset {
-			get {
-				return Offset + Length;
-			}
-		}
+		public readonly int EndOffset => Offset + Length;
 
 		public SimpleSegment(int offset, int length)
 		{
@@ -75,10 +68,10 @@ namespace ICSharpCode.AvalonEdit.Document
 			this.Length = segment.Length;
 		}
 
-		public override int GetHashCode()
+		public override readonly int GetHashCode()
 		{
 			unchecked {
-				return Offset + 10301 * Length;
+				return Offset + (10301 * Length);
 			}
 		}
 
@@ -87,7 +80,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			return (obj is SimpleSegment) && Equals((SimpleSegment)obj);
 		}
 
-		public bool Equals(SimpleSegment other)
+		public readonly bool Equals(SimpleSegment other)
 		{
 			return this.Offset == other.Offset && this.Length == other.Length;
 		}
@@ -103,7 +96,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		}
 
 		/// <inheritdoc/>
-		public override string ToString()
+		public override readonly string ToString()
 		{
 			return "[Offset=" + Offset.ToString(CultureInfo.InvariantCulture) + ", Length=" + Length.ToString(CultureInfo.InvariantCulture) + "]";
 		}
@@ -122,28 +115,20 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// <seealso cref="TextSegment"/>
 	public sealed class AnchorSegment : ISegment
 	{
-		readonly TextAnchor start, end;
+		private readonly TextAnchor start, end;
 
 		/// <inheritdoc/>
-		public int Offset {
-			get { return start.Offset; }
-		}
+		public int Offset => start.Offset;
 
 		/// <inheritdoc/>
-		public int Length {
-			get {
+		public int Length =>
 				// Math.Max takes care of the fact that end.Offset might move before start.Offset.
-				return Math.Max(0, end.Offset - start.Offset);
-			}
-		}
+				Math.Max(0, end.Offset - start.Offset);
 
 		/// <inheritdoc/>
-		public int EndOffset {
-			get {
+		public int EndOffset =>
 				// Math.Max takes care of the fact that end.Offset might move before start.Offset.
-				return Math.Max(start.Offset, end.Offset);
-			}
-		}
+				Math.Max(start.Offset, end.Offset);
 
 		/// <summary>
 		/// Creates a new AnchorSegment using the specified anchors.
@@ -151,14 +136,22 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public AnchorSegment(TextAnchor start, TextAnchor end)
 		{
-			if (start == null)
+			if (start == null) {
 				throw new ArgumentNullException("start");
-			if (end == null)
+			}
+
+			if (end == null) {
 				throw new ArgumentNullException("end");
-			if (!start.SurviveDeletion)
+			}
+
+			if (!start.SurviveDeletion) {
 				throw new ArgumentException("Anchors for AnchorSegment must use SurviveDeletion", "start");
-			if (!end.SurviveDeletion)
+			}
+
+			if (!end.SurviveDeletion) {
 				throw new ArgumentException("Anchors for AnchorSegment must use SurviveDeletion", "end");
+			}
+
 			this.start = start;
 			this.end = end;
 		}
@@ -176,8 +169,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public AnchorSegment(TextDocument document, int offset, int length)
 		{
-			if (document == null)
+			if (document == null) {
 				throw new ArgumentNullException("document");
+			}
+
 			this.start = document.CreateAnchor(offset);
 			this.start.SurviveDeletion = true;
 			this.start.MovementType = AnchorMovementType.AfterInsertion;

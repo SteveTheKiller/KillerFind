@@ -31,7 +31,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 	/// <summary>
 	/// A text writer that supports creating spans of highlighted text.
 	/// </summary>
-	abstract class RichTextWriter : TextWriter
+	internal abstract class RichTextWriter : TextWriter
 	{
 		/// <summary>
 		/// Gets called by the RichTextWriter base class when a BeginSpan() method
@@ -56,7 +56,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			// If we just call Write(richText.Text.Substring(...)) below, then the C# compiler invokes
 			// the non-virtual Write(RichText) method due to RichText's implicit conversion from string.
 			// That leads to an immediate, unconditional StackOverflowException!
-			foreach (var section in richText.GetHighlightedSections(offset, length)) {
+			foreach (HighlightedSection section in richText.GetHighlightedSections(offset, length)) {
 				BeginSpan(section.Color);
 				((TextWriter)this).Write(richText.Text.Substring(section.Offset, section.Length));
 				EndSpan();

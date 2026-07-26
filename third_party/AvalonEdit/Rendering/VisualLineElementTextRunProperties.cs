@@ -34,17 +34,17 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// </summary>
 	public class VisualLineElementTextRunProperties : TextRunProperties, ICloneable
 	{
-		Brush backgroundBrush;
-		BaselineAlignment baselineAlignment;
-		CultureInfo cultureInfo;
-		double fontHintingEmSize;
-		double fontRenderingEmSize;
-		Brush foregroundBrush;
-		Typeface typeface;
-		TextDecorationCollection textDecorations;
-		TextEffectCollection textEffects;
-		TextRunTypographyProperties typographyProperties;
-		NumberSubstitution numberSubstitution;
+		private Brush backgroundBrush;
+		private BaselineAlignment baselineAlignment;
+		private CultureInfo cultureInfo;
+		private double fontHintingEmSize;
+		private double fontRenderingEmSize;
+		private Brush foregroundBrush;
+		private Typeface typeface;
+		private TextDecorationCollection textDecorations;
+		private TextEffectCollection textEffects;
+		private TextRunTypographyProperties typographyProperties;
+		private NumberSubstitution numberSubstitution;
 
 		/// <summary>
 		/// Creates a new VisualLineElementTextRunProperties instance that copies its values
@@ -54,8 +54,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public VisualLineElementTextRunProperties(TextRunProperties textRunProperties)
 		{
-			if (textRunProperties == null)
+			if (textRunProperties == null) {
 				throw new ArgumentNullException("textRunProperties");
+			}
+
 			backgroundBrush = textRunProperties.BackgroundBrush;
 			baselineAlignment = textRunProperties.BaselineAlignment;
 			cultureInfo = textRunProperties.CultureInfo;
@@ -89,9 +91,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		}
 
 		/// <inheritdoc/>
-		public override Brush BackgroundBrush {
-			get { return backgroundBrush; }
-		}
+		public override Brush BackgroundBrush => backgroundBrush;
 
 		/// <summary>
 		/// Sets the <see cref="BackgroundBrush"/>.
@@ -103,9 +103,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		}
 
 		/// <inheritdoc/>
-		public override BaselineAlignment BaselineAlignment {
-			get { return baselineAlignment; }
-		}
+		public override BaselineAlignment BaselineAlignment => baselineAlignment;
 
 		/// <summary>
 		/// Sets the <see cref="BaselineAlignment"/>.
@@ -116,24 +114,18 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		}
 
 		/// <inheritdoc/>
-		public override CultureInfo CultureInfo {
-			get { return cultureInfo; }
-		}
+		public override CultureInfo CultureInfo => cultureInfo;
 
 		/// <summary>
 		/// Sets the <see cref="CultureInfo"/>.
 		/// </summary>
 		public void SetCultureInfo(CultureInfo value)
 		{
-			if (value == null)
-				throw new ArgumentNullException("value");
-			cultureInfo = value;
+			cultureInfo = value ?? throw new ArgumentNullException("value");
 		}
 
 		/// <inheritdoc/>
-		public override double FontHintingEmSize {
-			get { return fontHintingEmSize; }
-		}
+		public override double FontHintingEmSize => fontHintingEmSize;
 
 		/// <summary>
 		/// Sets the <see cref="FontHintingEmSize"/>.
@@ -144,9 +136,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		}
 
 		/// <inheritdoc/>
-		public override double FontRenderingEmSize {
-			get { return fontRenderingEmSize; }
-		}
+		public override double FontRenderingEmSize => fontRenderingEmSize;
 
 		/// <summary>
 		/// Sets the <see cref="FontRenderingEmSize"/>.
@@ -157,9 +147,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		}
 
 		/// <inheritdoc/>
-		public override Brush ForegroundBrush {
-			get { return foregroundBrush; }
-		}
+		public override Brush ForegroundBrush => foregroundBrush;
 
 		/// <summary>
 		/// Sets the <see cref="ForegroundBrush"/>.
@@ -171,18 +159,14 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		}
 
 		/// <inheritdoc/>
-		public override Typeface Typeface {
-			get { return typeface; }
-		}
+		public override Typeface Typeface => typeface;
 
 		/// <summary>
 		/// Sets the <see cref="Typeface"/>.
 		/// </summary>
 		public void SetTypeface(Typeface value)
 		{
-			if (value == null)
-				throw new ArgumentNullException("value");
-			typeface = value;
+			typeface = value ?? throw new ArgumentNullException("value");
 		}
 
 		/// <summary>
@@ -192,9 +176,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// collection instance is only used for this <see cref="TextRunProperties"/> instance and it is safe
 		/// to add <see cref="TextDecoration"/>s.
 		/// </summary>
-		public override TextDecorationCollection TextDecorations {
-			get { return textDecorations; }
-		}
+		public override TextDecorationCollection TextDecorations => textDecorations;
 
 		/// <summary>
 		/// Sets the <see cref="TextDecorations"/>.
@@ -202,10 +184,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public void SetTextDecorations(TextDecorationCollection value)
 		{
 			ExtensionMethods.CheckIsFrozen(value);
-			if (textDecorations == null)
+			if (textDecorations == null) {
 				textDecorations = value;
-			else
-				textDecorations = new TextDecorationCollection(textDecorations.Union(value));
+			} else {
+				textDecorations = [.. textDecorations.Union(value)];
+			}
 		}
 
 		/// <summary>
@@ -215,9 +198,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// collection instance is only used for this <see cref="TextRunProperties"/> instance and it is safe
 		/// to add <see cref="TextEffect"/>s.
 		/// </summary>
-		public override TextEffectCollection TextEffects {
-			get { return textEffects; }
-		}
+		public override TextEffectCollection TextEffects => textEffects;
 
 		/// <summary>
 		/// Sets the <see cref="TextEffects"/>.
@@ -231,9 +212,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Gets the typography properties for the text run.
 		/// </summary>
-		public override TextRunTypographyProperties TypographyProperties {
-			get { return typographyProperties; }
-		}
+		public override TextRunTypographyProperties TypographyProperties => typographyProperties;
 
 		/// <summary>
 		/// Sets the <see cref="TypographyProperties"/>.
@@ -246,9 +225,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Gets the number substitution settings for the text run.
 		/// </summary>
-		public override NumberSubstitution NumberSubstitution {
-			get { return numberSubstitution; }
-		}
+		public override NumberSubstitution NumberSubstitution => numberSubstitution;
 
 		/// <summary>
 		/// Sets the <see cref="NumberSubstitution"/>.

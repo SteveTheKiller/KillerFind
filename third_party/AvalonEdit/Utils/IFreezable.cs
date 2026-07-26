@@ -23,7 +23,7 @@ using System.Linq;
 
 namespace ICSharpCode.AvalonEdit.Utils
 {
-	interface IFreezable
+	internal interface IFreezable
 	{
 		/// <summary>
 		/// Gets if this instance is frozen. Frozen instances are immutable and thus thread-safe.
@@ -36,27 +36,31 @@ namespace ICSharpCode.AvalonEdit.Utils
 		void Freeze();
 	}
 
-	static class FreezableHelper
+	internal static class FreezableHelper
 	{
 		public static void ThrowIfFrozen(IFreezable freezable)
 		{
-			if (freezable.IsFrozen)
+			if (freezable.IsFrozen) {
 				throw new InvalidOperationException("Cannot mutate frozen " + freezable.GetType().Name);
+			}
 		}
 
 		public static IList<T> FreezeListAndElements<T>(IList<T> list)
 		{
 			if (list != null) {
-				foreach (T item in list)
+				foreach (T item in list) {
 					Freeze(item);
+				}
 			}
 			return FreezeList(list);
 		}
 
 		public static IList<T> FreezeList<T>(IList<T> list)
 		{
-			if (list == null || list.Count == 0)
+			if (list == null || list.Count == 0) {
 				return Empty<T>.Array;
+			}
+
 			if (list.IsReadOnly) {
 				// If the list is already read-only, return it directly.
 				// This is important, otherwise we might undo the effects of interning.
@@ -69,8 +73,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		public static void Freeze(object item)
 		{
 			IFreezable f = item as IFreezable;
-			if (f != null)
-				f.Freeze();
+			f?.Freeze();
 		}
 
 		public static T FreezeAndReturn<T>(T item) where T : IFreezable
@@ -94,16 +97,14 @@ namespace ICSharpCode.AvalonEdit.Utils
 	}
 
 	[Serializable]
-	abstract class AbstractFreezable : IFreezable
+	internal abstract class AbstractFreezable : IFreezable
 	{
-		bool isFrozen;
+		private bool isFrozen;
 
 		/// <summary>
 		/// Gets if this instance is frozen. Frozen instances are immutable and thus thread-safe.
 		/// </summary>
-		public bool IsFrozen {
-			get { return isFrozen; }
-		}
+		public bool IsFrozen => isFrozen;
 
 		/// <summary>
 		/// Freezes this instance.

@@ -37,10 +37,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "ImmutableStack is immutable")]
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes")]
-		public static readonly ImmutableStack<T> Empty = new ImmutableStack<T>();
+		public static readonly ImmutableStack<T> Empty = new();
 
-		readonly T value;
-		readonly ImmutableStack<T> next;
+		private readonly T value;
+		private readonly ImmutableStack<T> next;
 
 		private ImmutableStack()
 		{
@@ -67,8 +67,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <exception cref="InvalidOperationException">The stack is empty.</exception>
 		public T Peek()
 		{
-			if (IsEmpty)
+			if (IsEmpty) {
 				throw new InvalidOperationException("Operation not valid on empty stack.");
+			}
+
 			return value;
 		}
 
@@ -87,17 +89,17 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <exception cref="InvalidOperationException">The stack is empty.</exception>
 		public ImmutableStack<T> Pop()
 		{
-			if (IsEmpty)
+			if (IsEmpty) {
 				throw new InvalidOperationException("Operation not valid on empty stack.");
+			}
+
 			return next;
 		}
 
 		/// <summary>
 		/// Gets if this stack is empty.
 		/// </summary>
-		public bool IsEmpty {
-			get { return next == null; }
-		}
+		public bool IsEmpty => next == null;
 
 		/// <summary>
 		/// Gets an enumerator that iterates through the stack top-to-bottom.
@@ -119,7 +121,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <inheritdoc/>
 		public override string ToString()
 		{
-			StringBuilder b = new StringBuilder("[Stack");
+			StringBuilder b = new("[Stack");
 			foreach (T val in this) {
 				b.Append(' ');
 				b.Append(val);

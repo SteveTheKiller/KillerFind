@@ -55,15 +55,15 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			FocusableProperty.OverrideMetadata(typeof(TextView), new FrameworkPropertyMetadata(Boxes.False));
 		}
 
-		ColumnRulerRenderer columnRulerRenderer;
-		CurrentLineHighlightRenderer currentLineHighlighRenderer;
+		private readonly ColumnRulerRenderer columnRulerRenderer;
+		private readonly CurrentLineHighlightRenderer currentLineHighlighRenderer;
 
 		/// <summary>
 		/// Creates a new TextView instance.
 		/// </summary>
 		public TextView()
 		{
-			services.AddService(typeof(TextView), this);
+			Services.AddService(typeof(TextView), this);
 			textLayer = new TextLayer(this);
 			elementGenerators = new ObserveAddRemoveCollection<VisualLineElementGenerator>(ElementGenerator_Added, ElementGenerator_Removed);
 			lineTransformers = new ObserveAddRemoveCollection<IVisualLineTransformer>(LineTransformer_Added, LineTransformer_Removed);
@@ -92,34 +92,29 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			DependencyProperty.Register("Document", typeof(TextDocument), typeof(TextView),
 										new FrameworkPropertyMetadata(OnDocumentChanged));
 
-		TextDocument document;
-		HeightTree heightTree;
+		private TextDocument document;
+		private HeightTree heightTree;
 
 		/// <summary>
 		/// Gets/Sets the document displayed by the text editor.
 		/// </summary>
 		public TextDocument Document {
-			get { return (TextDocument)GetValue(DocumentProperty); }
-			set { SetValue(DocumentProperty, value); }
+			get => (TextDocument)GetValue(DocumentProperty); set => SetValue(DocumentProperty, value);
 		}
 
-		static void OnDocumentChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
+		private static void OnDocumentChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
 		{
 			((TextView)dp).OnDocumentChanged((TextDocument)e.OldValue, (TextDocument)e.NewValue);
 		}
 
-		internal double FontSize {
-			get {
-				return (double)GetValue(TextBlock.FontSizeProperty);
-			}
-		}
+		internal double FontSize => (double)GetValue(TextBlock.FontSizeProperty);
 
 		/// <summary>
 		/// Occurs when the document property has changed.
 		/// </summary>
 		public event EventHandler DocumentChanged;
 
-		void OnDocumentChanged(TextDocument oldValue, TextDocument newValue)
+		private void OnDocumentChanged(TextDocument oldValue, TextDocument newValue)
 		{
 			if (oldValue != null) {
 				heightTree.Dispose();
@@ -141,15 +136,14 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				cachedElements = new TextViewCachedElements();
 			}
 			InvalidateMeasure(DispatcherPriority.Normal);
-			if (DocumentChanged != null)
-				DocumentChanged(this, EventArgs.Empty);
+			DocumentChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		/// <summary>
 		/// Recreates the text formatter that is used internally
 		/// by calling <see cref="TextFormatterFactory.Create"/>.
 		/// </summary>
-		void RecreateTextFormatter()
+		private void RecreateTextFormatter()
 		{
 			if (formatter != null) {
 				formatter.Dispose();
@@ -158,7 +152,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		void RecreateCachedElements()
+		private void RecreateCachedElements()
 		{
 			if (cachedElements != null) {
 				cachedElements.Dispose();
@@ -202,8 +196,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Gets/Sets the options used by the text editor.
 		/// </summary>
 		public TextEditorOptions Options {
-			get { return (TextEditorOptions)GetValue(OptionsProperty); }
-			set { SetValue(OptionsProperty, value); }
+			get => (TextEditorOptions)GetValue(OptionsProperty); set => SetValue(OptionsProperty, value);
 		}
 
 		/// <summary>
@@ -216,25 +209,24 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		protected virtual void OnOptionChanged(PropertyChangedEventArgs e)
 		{
-			if (OptionChanged != null) {
-				OptionChanged(this, e);
-			}
+			OptionChanged?.Invoke(this, e);
 
-			if (Options.ShowColumnRuler)
+			if (Options.ShowColumnRuler) {
 				columnRulerRenderer.SetRuler(Options.ColumnRulerPosition, ColumnRulerPen);
-			else
+			} else {
 				columnRulerRenderer.SetRuler(-1, ColumnRulerPen);
+			}
 
 			UpdateBuiltinElementGeneratorsFromOptions();
 			Redraw();
 		}
 
-		static void OnOptionsChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
+		private static void OnOptionsChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
 		{
 			((TextView)dp).OnOptionsChanged((TextEditorOptions)e.OldValue, (TextEditorOptions)e.NewValue);
 		}
 
-		void OnOptionsChanged(TextEditorOptions oldValue, TextEditorOptions newValue)
+		private void OnOptionsChanged(TextEditorOptions oldValue, TextEditorOptions newValue)
 		{
 			if (oldValue != null) {
 				PropertyChangedWeakEventManager.RemoveListener(oldValue, this);
@@ -247,43 +239,39 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		#endregion
 
 		#region ElementGenerators+LineTransformers Properties
-		readonly ObserveAddRemoveCollection<VisualLineElementGenerator> elementGenerators;
+		private readonly ObserveAddRemoveCollection<VisualLineElementGenerator> elementGenerators;
 
 		/// <summary>
 		/// Gets a collection where element generators can be registered.
 		/// </summary>
-		public IList<VisualLineElementGenerator> ElementGenerators {
-			get { return elementGenerators; }
-		}
+		public IList<VisualLineElementGenerator> ElementGenerators => elementGenerators;
 
-		void ElementGenerator_Added(VisualLineElementGenerator generator)
+		private void ElementGenerator_Added(VisualLineElementGenerator generator)
 		{
 			ConnectToTextView(generator);
 			Redraw();
 		}
 
-		void ElementGenerator_Removed(VisualLineElementGenerator generator)
+		private void ElementGenerator_Removed(VisualLineElementGenerator generator)
 		{
 			DisconnectFromTextView(generator);
 			Redraw();
 		}
 
-		readonly ObserveAddRemoveCollection<IVisualLineTransformer> lineTransformers;
+		private readonly ObserveAddRemoveCollection<IVisualLineTransformer> lineTransformers;
 
 		/// <summary>
 		/// Gets a collection where line transformers can be registered.
 		/// </summary>
-		public IList<IVisualLineTransformer> LineTransformers {
-			get { return lineTransformers; }
-		}
+		public IList<IVisualLineTransformer> LineTransformers => lineTransformers;
 
-		void LineTransformer_Added(IVisualLineTransformer lineTransformer)
+		private void LineTransformer_Added(IVisualLineTransformer lineTransformer)
 		{
 			ConnectToTextView(lineTransformer);
 			Redraw();
 		}
 
-		void LineTransformer_Removed(IVisualLineTransformer lineTransformer)
+		private void LineTransformer_Removed(IVisualLineTransformer lineTransformer)
 		{
 			DisconnectFromTextView(lineTransformer);
 			Redraw();
@@ -292,11 +280,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		#region Builtin ElementGenerators
 		//		NewLineElementGenerator newLineElementGenerator;
-		SingleCharacterElementGenerator singleCharacterElementGenerator;
-		LinkElementGenerator linkElementGenerator;
-		MailLinkElementGenerator mailLinkElementGenerator;
+		private SingleCharacterElementGenerator singleCharacterElementGenerator;
+		private LinkElementGenerator linkElementGenerator;
+		private MailLinkElementGenerator mailLinkElementGenerator;
 
-		void UpdateBuiltinElementGeneratorsFromOptions()
+		private void UpdateBuiltinElementGeneratorsFromOptions()
 		{
 			TextEditorOptions options = this.Options;
 
@@ -306,7 +294,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			AddRemoveDefaultElementGeneratorOnDemand(ref mailLinkElementGenerator, options.EnableEmailHyperlinks);
 		}
 
-		void AddRemoveDefaultElementGeneratorOnDemand<T>(ref T generator, bool demand)
+		private void AddRemoveDefaultElementGeneratorOnDemand<T>(ref T generator, bool demand)
 			where T : VisualLineElementGenerator, IBuiltinElementGenerator, new()
 		{
 			bool hasGenerator = generator != null;
@@ -319,25 +307,22 @@ namespace ICSharpCode.AvalonEdit.Rendering
 					generator = null;
 				}
 			}
-			if (generator != null)
-				generator.FetchOptions(this.Options);
+			generator?.FetchOptions(this.Options);
 		}
 		#endregion
 
 		#region Layers
 		internal readonly TextLayer textLayer;
-		readonly LayerCollection layers;
+		private readonly LayerCollection layers;
 
 		/// <summary>
 		/// Gets the list of layers displayed in the text view.
 		/// </summary>
-		public UIElementCollection Layers {
-			get { return layers; }
-		}
+		public UIElementCollection Layers => layers;
 
-		sealed class LayerCollection : UIElementCollection
+		private sealed class LayerCollection : UIElementCollection
 		{
-			readonly TextView textView;
+			private readonly TextView textView;
 
 			public LayerCollection(TextView textView)
 				: base(textView, textView)
@@ -371,7 +356,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		void LayersChanged()
+		private void LayersChanged()
 		{
 			textLayer.index = layers.IndexOf(textLayer);
 		}
@@ -384,16 +369,23 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <param name="position">Specifies whether the layer is inserted above,below, or replaces the referenced layer</param>
 		public void InsertLayer(UIElement layer, KnownLayer referencedLayer, LayerInsertionPosition position)
 		{
-			if (layer == null)
+			if (layer == null) {
 				throw new ArgumentNullException("layer");
-			if (!Enum.IsDefined(typeof(KnownLayer), referencedLayer))
-				throw new InvalidEnumArgumentException("referencedLayer", (int)referencedLayer, typeof(KnownLayer));
-			if (!Enum.IsDefined(typeof(LayerInsertionPosition), position))
-				throw new InvalidEnumArgumentException("position", (int)position, typeof(LayerInsertionPosition));
-			if (referencedLayer == KnownLayer.Background && position != LayerInsertionPosition.Above)
-				throw new InvalidOperationException("Cannot replace or insert below the background layer.");
+			}
 
-			LayerPosition newPosition = new LayerPosition(referencedLayer, position);
+			if (!Enum.IsDefined(typeof(KnownLayer), referencedLayer)) {
+				throw new InvalidEnumArgumentException("referencedLayer", (int)referencedLayer, typeof(KnownLayer));
+			}
+
+			if (!Enum.IsDefined(typeof(LayerInsertionPosition), position)) {
+				throw new InvalidEnumArgumentException("position", (int)position, typeof(LayerInsertionPosition));
+			}
+
+			if (referencedLayer == KnownLayer.Background && position != LayerInsertionPosition.Above) {
+				throw new InvalidOperationException("Cannot replace or insert below the background layer.");
+			}
+
+			LayerPosition newPosition = new(referencedLayer, position);
 			LayerPosition.SetLayerPosition(layer, newPosition);
 			for (int i = 0; i < layers.Count; i++) {
 				LayerPosition p = LayerPosition.GetLayerPosition(layers[i]);
@@ -424,32 +416,27 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		}
 
 		/// <inheritdoc/>
-		protected override int VisualChildrenCount {
-			get { return layers.Count + inlineObjects.Count; }
-		}
+		protected override int VisualChildrenCount => layers.Count + inlineObjects.Count;
 
 		/// <inheritdoc/>
 		protected override Visual GetVisualChild(int index)
 		{
 			int cut = textLayer.index + 1;
-			if (index < cut)
+			if (index < cut) {
 				return layers[index];
-			else if (index < cut + inlineObjects.Count)
+			} else if (index < cut + inlineObjects.Count) {
 				return inlineObjects[index - cut].Element;
-			else
+			} else {
 				return layers[index - inlineObjects.Count];
+			}
 		}
 
 		/// <inheritdoc/>
-		protected override System.Collections.IEnumerator LogicalChildren {
-			get {
-				return inlineObjects.Select(io => io.Element).Concat(layers.Cast<UIElement>()).GetEnumerator();
-			}
-		}
+		protected override System.Collections.IEnumerator LogicalChildren => inlineObjects.Select(io => io.Element).Concat(layers.Cast<UIElement>()).GetEnumerator();
 		#endregion
 
 		#region Inline object handling
-		List<InlineObjectRun> inlineObjects = new List<InlineObjectRun>();
+		private readonly List<InlineObjectRun> inlineObjects = [];
 
 		/// <summary>
 		/// Adds a new inline object.
@@ -477,7 +464,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			inlineObject.desiredSize = inlineObject.Element.DesiredSize;
 		}
 
-		void MeasureInlineObjects()
+		private void MeasureInlineObjects()
 		{
 			// As part of MeasureOverride(), re-measure the inline objects
 			foreach (InlineObjectRun inlineObject in inlineObjects) {
@@ -497,9 +484,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		List<VisualLine> visualLinesWithOutstandingInlineObjects = new List<VisualLine>();
+		private readonly List<VisualLine> visualLinesWithOutstandingInlineObjects = [];
 
-		void RemoveInlineObjects(VisualLine visualLine)
+		private void RemoveInlineObjects(VisualLine visualLine)
 		{
 			// Delay removing inline objects:
 			// A document change immediately invalidates affected visual lines, but it does not
@@ -514,10 +501,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Remove the inline objects that were marked for removal.
 		/// </summary>
-		void RemoveInlineObjectsNow()
+		private void RemoveInlineObjectsNow()
 		{
-			if (visualLinesWithOutstandingInlineObjects.Count == 0)
+			if (visualLinesWithOutstandingInlineObjects.Count == 0) {
 				return;
+			}
+
 			inlineObjects.RemoveAll(
 				ior => {
 					if (visualLinesWithOutstandingInlineObjects.Contains(ior.VisualLine)) {
@@ -531,7 +520,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		// Remove InlineObjectRun.Element from TextLayer.
 		// Caller of RemoveInlineObjectRun will remove it from inlineObjects collection.
-		void RemoveInlineObjectRun(InlineObjectRun ior, bool keepElement)
+		private void RemoveInlineObjectRun(InlineObjectRun ior, bool keepElement)
 		{
 			if (!keepElement && ior.Element.IsKeyboardFocusWithin) {
 				// When the inline element that has the focus is removed, WPF will reset the
@@ -541,12 +530,14 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				while (element != null && !element.Focusable) {
 					element = VisualTreeHelper.GetParent(element) as UIElement;
 				}
-				if (element != null)
+				if (element != null) {
 					Keyboard.Focus(element);
+				}
 			}
 			ior.VisualLine = null;
-			if (!keepElement)
+			if (!keepElement) {
 				RemoveVisualChild(ior.Element);
+			}
 		}
 		#endregion
 
@@ -562,8 +553,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Gets/sets the Brush used for displaying non-printable characters.
 		/// </summary>
 		public Brush NonPrintableCharacterBrush {
-			get { return (Brush)GetValue(NonPrintableCharacterBrushProperty); }
-			set { SetValue(NonPrintableCharacterBrushProperty, value); }
+			get => (Brush)GetValue(NonPrintableCharacterBrushProperty); set => SetValue(NonPrintableCharacterBrushProperty, value);
 		}
 
 		/// <summary>
@@ -577,8 +567,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Gets/sets the Brush used for displaying link texts.
 		/// </summary>
 		public Brush LinkTextForegroundBrush {
-			get { return (Brush)GetValue(LinkTextForegroundBrushProperty); }
-			set { SetValue(LinkTextForegroundBrushProperty, value); }
+			get => (Brush)GetValue(LinkTextForegroundBrushProperty); set => SetValue(LinkTextForegroundBrushProperty, value);
 		}
 
 		/// <summary>
@@ -592,8 +581,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Gets/sets the Brush used for the background of link texts.
 		/// </summary>
 		public Brush LinkTextBackgroundBrush {
-			get { return (Brush)GetValue(LinkTextBackgroundBrushProperty); }
-			set { SetValue(LinkTextBackgroundBrushProperty, value); }
+			get => (Brush)GetValue(LinkTextBackgroundBrushProperty); set => SetValue(LinkTextBackgroundBrushProperty, value);
 		}
 		#endregion
 
@@ -612,8 +600,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Set TextEditorOptions.EnableHyperlinks and EnableEmailHyperlinks to false to disable links completely.
 		/// </remarks>
 		public bool LinkTextUnderline {
-			get { return (bool)GetValue(LinkTextUnderlineProperty); }
-			set { SetValue(LinkTextUnderlineProperty, value); }
+			get => (bool)GetValue(LinkTextUnderlineProperty); set => SetValue(LinkTextUnderlineProperty, value);
 		}
 
 		#region Redraw methods / VisualLine invalidation
@@ -714,7 +701,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// The caller of ClearVisualLines() must also call InvalidateMeasure() to ensure
 		/// that the visual lines will be recreated.
 		/// </summary>
-		void ClearVisualLines()
+		private void ClearVisualLines()
 		{
 			visibleVisualLines = null;
 			if (allVisualLines.Count != 0) {
@@ -725,7 +712,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		void DisposeVisualLine(VisualLine visualLine)
+		private void DisposeVisualLine(VisualLine visualLine)
 		{
 			if (newVisualLines != null && newVisualLines.Contains(visualLine)) {
 				throw new ArgumentException("Cannot dispose visual line because it is in construction!");
@@ -737,9 +724,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		#endregion
 
 		#region InvalidateMeasure(DispatcherPriority)
-		DispatcherOperation invalidateMeasureOperation;
+		private DispatcherOperation invalidateMeasureOperation;
 
-		void InvalidateMeasure(DispatcherPriority priority)
+		private void InvalidateMeasure(DispatcherPriority priority)
 		{
 			if (priority >= DispatcherPriority.Render) {
 				if (invalidateMeasureOperation != null) {
@@ -774,11 +761,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		{
 			// TODO: EnsureVisualLines() ?
 			foreach (VisualLine visualLine in allVisualLines) {
-				Debug.Assert(visualLine.IsDisposed == false);
+				Debug.Assert(!visualLine.IsDisposed);
 				int start = visualLine.FirstDocumentLine.LineNumber;
 				int end = visualLine.LastDocumentLine.LineNumber;
-				if (documentLineNumber >= start && documentLineNumber <= end)
+				if (documentLineNumber >= start && documentLineNumber <= end) {
 					return visualLine;
+				}
 			}
 			return null;
 		}
@@ -789,10 +777,14 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public VisualLine GetOrConstructVisualLine(DocumentLine documentLine)
 		{
-			if (documentLine == null)
+			if (documentLine == null) {
 				throw new ArgumentNullException("documentLine");
-			if (!this.Document.Lines.Contains(documentLine))
+			}
+
+			if (!this.Document.Lines.Contains(documentLine)) {
 				throw new InvalidOperationException("Line belongs to wrong document");
+			}
+
 			VerifyAccess();
 
 			VisualLine l = GetVisualLine(documentLine.LineNumber);
@@ -806,11 +798,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 				l = BuildVisualLine(documentLine,
 									globalTextRunProperties, paragraphProperties,
-									elementGenerators.ToArray(), lineTransformers.ToArray(),
+									[.. elementGenerators], [.. lineTransformers],
 									lastAvailableSize);
 				allVisualLines.Add(l);
 				// update all visual top values (building the line might have changed visual top of other lines due to word wrapping)
-				foreach (var line in allVisualLines) {
+				foreach (VisualLine line in allVisualLines) {
 					line.VisualTop = heightTree.GetVisualPosition(line.FirstDocumentLine);
 				}
 			}
@@ -819,10 +811,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		#endregion
 
 		#region Visual Lines (fields and properties)
-		List<VisualLine> allVisualLines = new List<VisualLine>();
-		ReadOnlyCollection<VisualLine> visibleVisualLines;
-		double clippedPixelsOnTop;
-		List<VisualLine> newVisualLines;
+		private List<VisualLine> allVisualLines = [];
+		private ReadOnlyCollection<VisualLine> visibleVisualLines;
+		private double clippedPixelsOnTop;
+		private List<VisualLine> newVisualLines;
 
 		/// <summary>
 		/// Gets the currently visible visual lines.
@@ -836,8 +828,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations")]
 		public ReadOnlyCollection<VisualLine> VisualLines {
 			get {
-				if (visibleVisualLines == null)
+				if (visibleVisualLines == null) {
 					throw new VisualLinesInvalidException();
+				}
+
 				return visibleVisualLines;
 			}
 		}
@@ -848,9 +842,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Accessing the visual lines property will cause a <see cref="VisualLinesInvalidException"/>
 		/// if this property is <c>false</c>.
 		/// </summary>
-		public bool VisualLinesValid {
-			get { return visibleVisualLines != null; }
-		}
+		public bool VisualLinesValid => visibleVisualLines != null;
 
 		/// <summary>
 		/// Occurs when the TextView is about to be measured and will regenerate its visual lines.
@@ -873,8 +865,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public void EnsureVisualLines()
 		{
 			Dispatcher.VerifyAccess();
-			if (inMeasure)
+			if (inMeasure) {
 				throw new InvalidOperationException("The visual line build process is already running! Cannot EnsureVisualLines() during Measure!");
+			}
+
 			if (!VisualLinesValid) {
 				// increase priority for re-measure
 				InvalidateMeasure(DispatcherPriority.Normal);
@@ -887,8 +881,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				Debug.WriteLine("UpdateLayout() failed in EnsureVisualLines");
 				MeasureOverride(lastAvailableSize);
 			}
-			if (!VisualLinesValid)
+			if (!VisualLinesValid) {
 				throw new VisualLinesInvalidException("Internal error: visual lines invalid after EnsureVisualLines call");
+			}
 		}
 		#endregion
 
@@ -897,20 +892,23 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Additonal amount that allows horizontal scrolling past the end of the longest line.
 		/// This is necessary to ensure the caret always is visible, even when it is at the end of the longest line.
 		/// </summary>
-		const double AdditionalHorizontalScrollAmount = 3;
+		private const double AdditionalHorizontalScrollAmount = 3;
 
-		Size lastAvailableSize;
-		bool inMeasure;
+		private Size lastAvailableSize;
+		private bool inMeasure;
 
 		/// <inheritdoc/>
 		protected override Size MeasureOverride(Size availableSize)
 		{
 			// We don't support infinite available width, so we'll limit it to 32000 pixels.
-			if (availableSize.Width > 32000)
+			if (availableSize.Width > 32000) {
 				availableSize.Width = 32000;
+			}
 
-			if (!canHorizontallyScroll && !availableSize.Width.IsClose(lastAvailableSize.Width))
+			if (!canHorizontallyScroll && !availableSize.Width.IsClose(lastAvailableSize.Width)) {
 				ClearVisualLines();
+			}
+
 			lastAvailableSize = availableSize;
 
 			foreach (UIElement layer in layers) {
@@ -923,7 +921,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			double maxWidth;
 			if (document == null) {
 				// no document -> create empty list of lines
-				allVisualLines = new List<VisualLine>();
+				allVisualLines = [];
 				visibleVisualLines = allVisualLines.AsReadOnly();
 				maxWidth = 0;
 			} else {
@@ -958,8 +956,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			SetScrollData(availableSize,
 						  new Size(maxWidth, heightTreeHeight),
 						  scrollOffset);
-			if (VisualLinesChanged != null)
-				VisualLinesChanged(this, EventArgs.Empty);
+			VisualLinesChanged?.Invoke(this, EventArgs.Empty);
 
 			return new Size(Math.Min(availableSize.Width, maxWidth), Math.Min(availableSize.Height, heightTreeHeight));
 		}
@@ -968,38 +965,33 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Build all VisualLines in the visible range.
 		/// </summary>
 		/// <returns>Width the longest line</returns>
-		double CreateAndMeasureVisualLines(Size availableSize)
+		private double CreateAndMeasureVisualLines(Size availableSize)
 		{
 			TextRunProperties globalTextRunProperties = CreateGlobalTextRunProperties();
 			VisualLineTextParagraphProperties paragraphProperties = CreateParagraphProperties(globalTextRunProperties);
 
 			Debug.WriteLine("Measure availableSize=" + availableSize + ", scrollOffset=" + scrollOffset);
-			var firstLineInView = heightTree.GetLineByVisualPosition(scrollOffset.Y);
+			DocumentLine firstLineInView = heightTree.GetLineByVisualPosition(scrollOffset.Y);
 
 			// number of pixels clipped from the first visual line(s)
 			clippedPixelsOnTop = scrollOffset.Y - heightTree.GetVisualPosition(firstLineInView);
 			// clippedPixelsOnTop should be >= 0, except for floating point inaccuracy.
 			Debug.Assert(clippedPixelsOnTop >= -ExtensionMethods.Epsilon);
 
-			newVisualLines = new List<VisualLine>();
+			newVisualLines = [];
 
-			if (VisualLineConstructionStarting != null)
-				VisualLineConstructionStarting(this, new VisualLineConstructionStartEventArgs(firstLineInView));
+			VisualLineConstructionStarting?.Invoke(this, new VisualLineConstructionStartEventArgs(firstLineInView));
 
-			var elementGeneratorsArray = elementGenerators.ToArray();
-			var lineTransformersArray = lineTransformers.ToArray();
-			var nextLine = firstLineInView;
+			VisualLineElementGenerator[] elementGeneratorsArray = [.. elementGenerators];
+			IVisualLineTransformer[] lineTransformersArray = [.. lineTransformers];
+			DocumentLine nextLine = firstLineInView;
 			double maxWidth = 0;
 			double yPos = -clippedPixelsOnTop;
 			while (yPos < availableSize.Height && nextLine != null) {
-				VisualLine visualLine = GetVisualLine(nextLine.LineNumber);
-				if (visualLine == null) {
-					visualLine = BuildVisualLine(nextLine,
+				VisualLine visualLine = GetVisualLine(nextLine.LineNumber) ?? BuildVisualLine(nextLine,
 												 globalTextRunProperties, paragraphProperties,
 												 elementGeneratorsArray, lineTransformersArray,
 												 availableSize);
-				}
-
 				visualLine.VisualTop = scrollOffset.Y + yPos;
 
 				nextLine = visualLine.LastDocumentLine.NextLine;
@@ -1007,17 +999,19 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				yPos += visualLine.Height;
 
 				foreach (TextLine textLine in visualLine.TextLines) {
-					if (textLine.WidthIncludingTrailingWhitespace > maxWidth)
+					if (textLine.WidthIncludingTrailingWhitespace > maxWidth) {
 						maxWidth = textLine.WidthIncludingTrailingWhitespace;
+					}
 				}
 
 				newVisualLines.Add(visualLine);
 			}
 
 			foreach (VisualLine line in allVisualLines) {
-				Debug.Assert(line.IsDisposed == false);
-				if (!newVisualLines.Contains(line))
+				Debug.Assert(!line.IsDisposed);
+				if (!newVisualLines.Contains(line)) {
 					DisposeVisualLine(line);
+				}
 			}
 
 			allVisualLines = newVisualLines;
@@ -1035,21 +1029,22 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		#endregion
 
 		#region BuildVisualLine
-		TextFormatter formatter;
+		private TextFormatter formatter;
 		internal TextViewCachedElements cachedElements;
 
-		TextRunProperties CreateGlobalTextRunProperties()
+		private TextRunProperties CreateGlobalTextRunProperties()
 		{
-			var p = new GlobalTextRunProperties();
-			p.typeface = this.CreateTypeface();
-			p.fontRenderingEmSize = FontSize;
-			p.foregroundBrush = (Brush)GetValue(Control.ForegroundProperty);
+			GlobalTextRunProperties p = new() {
+				typeface = this.CreateTypeface(),
+				fontRenderingEmSize = FontSize,
+				foregroundBrush = (Brush)GetValue(Control.ForegroundProperty)
+			};
 			ExtensionMethods.CheckIsFrozen(p.foregroundBrush);
 			p.cultureInfo = CultureInfo.CurrentCulture;
 			return p;
 		}
 
-		VisualLineTextParagraphProperties CreateParagraphProperties(TextRunProperties defaultTextRunProperties)
+		private VisualLineTextParagraphProperties CreateParagraphProperties(TextRunProperties defaultTextRunProperties)
 		{
 			return new VisualLineTextParagraphProperties {
 				defaultTextRunProperties = defaultTextRunProperties,
@@ -1059,20 +1054,21 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			};
 		}
 
-		VisualLine BuildVisualLine(DocumentLine documentLine,
+		private VisualLine BuildVisualLine(DocumentLine documentLine,
 								   TextRunProperties globalTextRunProperties,
 								   VisualLineTextParagraphProperties paragraphProperties,
 								   VisualLineElementGenerator[] elementGeneratorsArray,
 								   IVisualLineTransformer[] lineTransformersArray,
 								   Size availableSize)
 		{
-			if (heightTree.GetIsCollapsed(documentLine.LineNumber))
+			if (heightTree.GetIsCollapsed(documentLine.LineNumber)) {
 				throw new InvalidOperationException("Trying to build visual line from collapsed line");
+			}
 
 			//Debug.WriteLine("Building line " + documentLine.LineNumber);
 
-			VisualLine visualLine = new VisualLine(this, documentLine);
-			VisualLineTextSource textSource = new VisualLineTextSource(visualLine) {
+			VisualLine visualLine = new(this, documentLine);
+			VisualLineTextSource textSource = new(visualLine) {
 				Document = document,
 				GlobalTextRunProperties = globalTextRunProperties,
 				TextView = this
@@ -1086,8 +1082,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				double lastLinePos = heightTree.GetVisualPosition(visualLine.LastDocumentLine.NextLine ?? visualLine.LastDocumentLine);
 				if (!firstLinePos.IsClose(lastLinePos)) {
 					for (int i = visualLine.FirstDocumentLine.LineNumber + 1; i <= visualLine.LastDocumentLine.LineNumber; i++) {
-						if (!heightTree.GetIsCollapsed(i))
+						if (!heightTree.GetIsCollapsed(i)) {
 							throw new InvalidOperationException("Line " + i + " was skipped by a VisualLineElementGenerator, but it is not collapsed.");
+						}
 					}
 					throw new InvalidOperationException("All lines collapsed but visual pos different - height tree inconsistency?");
 				}
@@ -1098,7 +1095,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			// now construct textLines:
 			int textOffset = 0;
 			TextLineBreak lastLineBreak = null;
-			var textLines = new List<TextLine>();
+			List<TextLine> textLines = [];
 			paragraphProperties.indent = 0;
 			paragraphProperties.firstLineInParagraph = true;
 			while (textOffset <= visualLine.VisualLengthWithEndOfLineMarker) {
@@ -1113,8 +1110,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				textOffset += textLine.Length;
 
 				// exit loop so that we don't do the indentation calculation if there's only a single line
-				if (textOffset >= visualLine.VisualLengthWithEndOfLineMarker)
+				if (textOffset >= visualLine.VisualLengthWithEndOfLineMarker) {
 					break;
+				}
 
 				if (paragraphProperties.firstLineInParagraph) {
 					paragraphProperties.firstLineInParagraph = false;
@@ -1130,8 +1128,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 					}
 					indentation += options.WordWrapIndentation;
 					// apply the calculated indentation unless it's more than half of the text editor size:
-					if (indentation > 0 && indentation * 2 < availableSize.Width)
+					if (indentation > 0 && indentation * 2 < availableSize.Width) {
 						paragraphProperties.indent = indentation;
+					}
 				}
 				lastLineBreak = textLine.GetTextLineBreak();
 			}
@@ -1140,10 +1139,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			return visualLine;
 		}
 
-		static int GetIndentationVisualColumn(VisualLine visualLine)
+		private static int GetIndentationVisualColumn(VisualLine visualLine)
 		{
-			if (visualLine.Elements.Count == 0)
+			if (visualLine.Elements.Count == 0) {
 				return 0;
+			}
+
 			int column = 0;
 			int elementIndex = 0;
 			VisualLineElement element = visualLine.Elements[elementIndex];
@@ -1151,8 +1152,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				column++;
 				if (column == element.VisualColumn + element.VisualLength) {
 					elementIndex++;
-					if (elementIndex == visualLine.Elements.Count)
+					if (elementIndex == visualLine.Elements.Count) {
 						break;
+					}
+
 					element = visualLine.Elements[elementIndex];
 				}
 			}
@@ -1172,8 +1175,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				layer.Arrange(new Rect(new Point(0, 0), finalSize));
 			}
 
-			if (document == null || allVisualLines.Count == 0)
+			if (document == null || allVisualLines.Count == 0) {
 				return finalSize;
+			}
 
 			// validate scroll position
 			Vector newScrollOffset = scrollOffset;
@@ -1183,21 +1187,21 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			if (scrollOffset.Y + finalSize.Height > scrollExtent.Height) {
 				newScrollOffset.Y = Math.Max(0, scrollExtent.Height - finalSize.Height);
 			}
-			if (SetScrollData(scrollViewport, scrollExtent, newScrollOffset))
+			if (SetScrollData(scrollViewport, scrollExtent, newScrollOffset)) {
 				InvalidateMeasure(DispatcherPriority.Normal);
+			}
 
 			//Debug.WriteLine("Arrange finalSize=" + finalSize + ", scrollOffset=" + scrollOffset);
 
 			//			double maxWidth = 0;
 
 			if (visibleVisualLines != null) {
-				Point pos = new Point(-scrollOffset.X, -clippedPixelsOnTop);
+				Point pos = new(-scrollOffset.X, -clippedPixelsOnTop);
 				foreach (VisualLine visualLine in visibleVisualLines) {
 					int offset = 0;
 					foreach (TextLine textLine in visualLine.TextLines) {
-						foreach (var span in textLine.GetTextRunSpans()) {
-							InlineObjectRun inline = span.Value as InlineObjectRun;
-							if (inline != null && inline.VisualLine != null) {
+						foreach (TextSpan<TextRun>? span in textLine.GetTextRunSpans()) {
+							if (span.Value is InlineObjectRun inline && inline.VisualLine != null) {
 								Debug.Assert(inlineObjects.Contains(inline));
 								double distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(offset, 0));
 								inline.Element.Arrange(new Rect(new Point(pos.X + distance, pos.Y), inline.Element.DesiredSize));
@@ -1215,22 +1219,20 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		#endregion
 
 		#region Render
-		readonly ObserveAddRemoveCollection<IBackgroundRenderer> backgroundRenderers;
+		private readonly ObserveAddRemoveCollection<IBackgroundRenderer> backgroundRenderers;
 
 		/// <summary>
 		/// Gets the list of background renderers.
 		/// </summary>
-		public IList<IBackgroundRenderer> BackgroundRenderers {
-			get { return backgroundRenderers; }
-		}
+		public IList<IBackgroundRenderer> BackgroundRenderers => backgroundRenderers;
 
-		void BackgroundRenderer_Added(IBackgroundRenderer renderer)
+		private void BackgroundRenderer_Added(IBackgroundRenderer renderer)
 		{
 			ConnectToTextView(renderer);
 			InvalidateLayer(renderer.Layer);
 		}
 
-		void BackgroundRenderer_Removed(IBackgroundRenderer renderer)
+		private void BackgroundRenderer_Removed(IBackgroundRenderer renderer)
 		{
 			DisconnectFromTextView(renderer);
 			InvalidateLayer(renderer.Layer);
@@ -1247,18 +1249,21 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		protected override void OnRender(DrawingContext drawingContext)
 		{
 			RenderBackground(drawingContext, KnownLayer.Background);
-			foreach (var line in visibleVisualLines) {
+			foreach (VisualLine line in visibleVisualLines) {
 				Brush currentBrush = null;
 				int startVC = 0;
 				int length = 0;
-				foreach (var element in line.Elements) {
+				foreach (VisualLineElement element in line.Elements) {
 					if (currentBrush == null || !currentBrush.Equals(element.BackgroundBrush)) {
 						if (currentBrush != null) {
-							BackgroundGeometryBuilder builder = new BackgroundGeometryBuilder();
-							builder.AlignToWholePixels = true;
-							builder.CornerRadius = 3;
-							foreach (var rect in BackgroundGeometryBuilder.GetRectsFromVisualSegment(this, line, startVC, startVC + length))
+							BackgroundGeometryBuilder builder = new() {
+								AlignToWholePixels = true,
+								CornerRadius = 3
+							};
+							foreach (Rect rect in BackgroundGeometryBuilder.GetRectsFromVisualSegment(this, line, startVC, startVC + length)) {
 								builder.AddRectangle(this, rect);
+							}
+
 							Geometry geometry = builder.CreateGeometry();
 							if (geometry != null) {
 								drawingContext.DrawGeometry(currentBrush, null, geometry);
@@ -1272,11 +1277,14 @@ namespace ICSharpCode.AvalonEdit.Rendering
 					}
 				}
 				if (currentBrush != null) {
-					BackgroundGeometryBuilder builder = new BackgroundGeometryBuilder();
-					builder.AlignToWholePixels = true;
-					builder.CornerRadius = 3;
-					foreach (var rect in BackgroundGeometryBuilder.GetRectsFromVisualSegment(this, line, startVC, startVC + length))
+					BackgroundGeometryBuilder builder = new() {
+						AlignToWholePixels = true,
+						CornerRadius = 3
+					};
+					foreach (Rect rect in BackgroundGeometryBuilder.GetRectsFromVisualSegment(this, line, startVC, startVC + length)) {
 						builder.AddRectangle(this, rect);
+					}
+
 					Geometry geometry = builder.CreateGeometry();
 					if (geometry != null) {
 						drawingContext.DrawGeometry(currentBrush, null, geometry);
@@ -1296,10 +1304,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		internal void ArrangeTextLayer(IList<VisualLineDrawingVisual> visuals)
 		{
-			Point pos = new Point(-scrollOffset.X, -clippedPixelsOnTop);
+			Point pos = new(-scrollOffset.X, -clippedPixelsOnTop);
 			foreach (VisualLineDrawingVisual visual in visuals) {
-				TranslateTransform t = visual.Transform as TranslateTransform;
-				if (t == null || t.X != pos.X || t.Y != pos.Y) {
+				if (visual.Transform is not TranslateTransform t || t.X != pos.X || t.Y != pos.Y) {
 					visual.Transform = new TranslateTransform(pos.X, pos.Y);
 					visual.Transform.Freeze();
 				}
@@ -1312,24 +1319,24 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Size of the document, in pixels.
 		/// </summary>
-		Size scrollExtent;
+		private Size scrollExtent;
 
 		/// <summary>
 		/// Offset of the scroll position.
 		/// </summary>
-		Vector scrollOffset;
+		private Vector scrollOffset;
 
 		/// <summary>
 		/// Size of the viewport.
 		/// </summary>
-		Size scrollViewport;
+		private Size scrollViewport;
 
-		void ClearScrollData()
+		private void ClearScrollData()
 		{
 			SetScrollData(new Size(), new Size(), new Vector());
 		}
 
-		bool SetScrollData(Size viewport, Size extent, Vector offset)
+		private bool SetScrollData(Size viewport, Size extent, Vector offset)
 		{
 			if (!(viewport.IsClose(this.scrollViewport)
 				  && extent.IsClose(this.scrollExtent)
@@ -1343,17 +1350,15 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			return false;
 		}
 
-		void OnScrollChange()
+		private void OnScrollChange()
 		{
 			ScrollViewer scrollOwner = ((IScrollInfo)this).ScrollOwner;
-			if (scrollOwner != null) {
-				scrollOwner.InvalidateScrollInfo();
-			}
+			scrollOwner?.InvalidateScrollInfo();
 		}
 
-		bool canVerticallyScroll;
+		private bool canVerticallyScroll;
 		bool IScrollInfo.CanVerticallyScroll {
-			get { return canVerticallyScroll; }
+			get => canVerticallyScroll;
 			set {
 				if (canVerticallyScroll != value) {
 					canVerticallyScroll = value;
@@ -1361,9 +1366,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				}
 			}
 		}
-		bool canHorizontallyScroll;
+		private bool canHorizontallyScroll;
 		bool IScrollInfo.CanHorizontallyScroll {
-			get { return canHorizontallyScroll; }
+			get => canHorizontallyScroll;
 			set {
 				if (canHorizontallyScroll != value) {
 					canHorizontallyScroll = value;
@@ -1373,59 +1378,47 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		double IScrollInfo.ExtentWidth {
-			get { return scrollExtent.Width; }
-		}
+		double IScrollInfo.ExtentWidth => scrollExtent.Width;
 
-		double IScrollInfo.ExtentHeight {
-			get { return scrollExtent.Height; }
-		}
+		double IScrollInfo.ExtentHeight => scrollExtent.Height;
 
-		double IScrollInfo.ViewportWidth {
-			get { return scrollViewport.Width; }
-		}
+		double IScrollInfo.ViewportWidth => scrollViewport.Width;
 
-		double IScrollInfo.ViewportHeight {
-			get { return scrollViewport.Height; }
-		}
+		double IScrollInfo.ViewportHeight => scrollViewport.Height;
 
 		/// <summary>
 		/// Gets the horizontal scroll offset.
 		/// </summary>
-		public double HorizontalOffset {
-			get { return scrollOffset.X; }
-		}
+		public double HorizontalOffset => scrollOffset.X;
 
 		/// <summary>
 		/// Gets the vertical scroll offset.
 		/// </summary>
-		public double VerticalOffset {
-			get { return scrollOffset.Y; }
-		}
+		public double VerticalOffset => scrollOffset.Y;
 
 		/// <summary>
 		/// Gets the scroll offset;
 		/// </summary>
-		public Vector ScrollOffset {
-			get { return scrollOffset; }
-		}
+		public Vector ScrollOffset => scrollOffset;
 
 		/// <summary>
 		/// Occurs when the scroll offset has changed.
 		/// </summary>
 		public event EventHandler ScrollOffsetChanged;
 
-		void SetScrollOffset(Vector vector)
+		private void SetScrollOffset(Vector vector)
 		{
-			if (!canHorizontallyScroll)
+			if (!canHorizontallyScroll) {
 				vector.X = 0;
-			if (!canVerticallyScroll)
+			}
+
+			if (!canVerticallyScroll) {
 				vector.Y = 0;
+			}
 
 			if (!scrollOffset.IsClose(vector)) {
 				scrollOffset = vector;
-				if (ScrollOffsetChanged != null)
-					ScrollOffsetChanged(this, EventArgs.Empty);
+				ScrollOffsetChanged?.Invoke(this, EventArgs.Empty);
 			}
 		}
 
@@ -1499,10 +1492,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			OnScrollChange();
 		}
 
-		bool defaultTextMetricsValid;
-		double wideSpaceWidth; // Width of an 'x'. Used as basis for the tab width, and for scrolling.
-		double defaultLineHeight; // Height of a line containing 'x'. Used for scrolling.
-		double defaultBaseline; // Baseline of a line containing 'x'. Used for TextTop/TextBottom calculation.
+		private bool defaultTextMetricsValid;
+		private double wideSpaceWidth; // Width of an 'x'. Used as basis for the tab width, and for scrolling.
+		private double defaultLineHeight; // Height of a line containing 'x'. Used for scrolling.
+		private double defaultBaseline; // Baseline of a line containing 'x'. Used for TextTop/TextBottom calculation.
 
 		/// <summary>
 		/// Gets the width of a 'wide space' (the space width used for calculating the tab size).
@@ -1543,7 +1536,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		void InvalidateDefaultTextMetrics()
+		private void InvalidateDefaultTextMetrics()
 		{
 			defaultTextMetricsValid = false;
 			if (heightTree != null) {
@@ -1552,43 +1545,48 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		void CalculateDefaultTextMetrics()
+		private void CalculateDefaultTextMetrics()
 		{
-			if (defaultTextMetricsValid)
+			if (defaultTextMetricsValid) {
 				return;
+			}
+
 			defaultTextMetricsValid = true;
 			if (formatter != null) {
-				var textRunProperties = CreateGlobalTextRunProperties();
-				using (var line = formatter.FormatLine(
+				TextRunProperties textRunProperties = CreateGlobalTextRunProperties();
+				using TextLine line = formatter.FormatLine(
 					new SimpleTextSource("x", textRunProperties),
 					0, 32000,
 					new VisualLineTextParagraphProperties {
 						defaultTextRunProperties = textRunProperties,
 						flowDirection = FlowDirection
 					},
-					null)) {
-					wideSpaceWidth = Math.Max(1, line.WidthIncludingTrailingWhitespace);
-					defaultBaseline = Math.Max(1, line.Baseline);
-					defaultLineHeight = Math.Max(1, line.Height);
-				}
+					null);
+				wideSpaceWidth = Math.Max(1, line.WidthIncludingTrailingWhitespace);
+				defaultBaseline = Math.Max(1, line.Baseline);
+				defaultLineHeight = Math.Max(1, line.Height);
 			} else {
 				wideSpaceWidth = FontSize / 2;
 				defaultBaseline = FontSize;
 				defaultLineHeight = FontSize + 3;
 			}
 			// Update heightTree.DefaultLineHeight, if a document is loaded.
-			if (heightTree != null)
+			if (heightTree != null) {
 				heightTree.DefaultLineHeight = defaultLineHeight;
+			}
 		}
 
-		static double ValidateVisualOffset(double offset)
+		private static double ValidateVisualOffset(double offset)
 		{
-			if (double.IsNaN(offset))
+			if (double.IsNaN(offset)) {
 				throw new ArgumentException("offset must not be NaN");
-			if (offset < 0)
+			}
+
+			if (offset < 0) {
 				return 0;
-			else
+			} else {
 				return offset;
+			}
 		}
 
 		void IScrollInfo.SetHorizontalOffset(double offset)
@@ -1629,12 +1627,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public virtual void MakeVisible(Rect rectangle)
 		{
-			Rect visibleRectangle = new Rect(scrollOffset.X, scrollOffset.Y,
+			Rect visibleRectangle = new(scrollOffset.X, scrollOffset.Y,
 											 scrollViewport.Width, scrollViewport.Height);
 			Vector newScrollOffset = scrollOffset;
 			if (rectangle.Left < visibleRectangle.Left) {
 				if (rectangle.Right > visibleRectangle.Right) {
-					newScrollOffset.X = rectangle.Left + rectangle.Width / 2;
+					newScrollOffset.X = rectangle.Left + (rectangle.Width / 2);
 				} else {
 					newScrollOffset.X = rectangle.Left;
 				}
@@ -1643,7 +1641,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 			if (rectangle.Top < visibleRectangle.Top) {
 				if (rectangle.Bottom > visibleRectangle.Bottom) {
-					newScrollOffset.Y = rectangle.Top + rectangle.Height / 2;
+					newScrollOffset.Y = rectangle.Top + (rectangle.Height / 2);
 				} else {
 					newScrollOffset.Y = rectangle.Top;
 				}
@@ -1668,7 +1666,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			return new PointHitTestResult(this, hitTestParameters.HitPoint);
 		}
 
-		[ThreadStatic] static bool invalidCursor;
+		[ThreadStatic] private static bool invalidCursor;
 
 		/// <summary>
 		/// Updates the mouse cursor by calling <see cref="Mouse.UpdateCursor"/>, but with background priority.
@@ -1692,17 +1690,16 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			// Don't unnecessarily call Mouse.UpdateCursor() if the mouse is outside the text view.
 			// Unnecessary updates may cause the mouse pointer to flicker
 			// (e.g. if it is over a window border, it blinks between Resize and Normal)
-			if (this.IsMouseOver)
+			if (this.IsMouseOver) {
 				InvalidateCursor();
+			}
 		}
 
 		/// <inheritdoc/>
 		protected override void OnQueryCursor(QueryCursorEventArgs e)
 		{
 			VisualLineElement element = GetVisualLineElementFromPosition(e.GetPosition(this) + scrollOffset);
-			if (element != null) {
-				element.OnQueryCursor(e);
-			}
+			element?.OnQueryCursor(e);
 		}
 
 		/// <inheritdoc/>
@@ -1712,9 +1709,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			if (!e.Handled) {
 				EnsureVisualLines();
 				VisualLineElement element = GetVisualLineElementFromPosition(e.GetPosition(this) + scrollOffset);
-				if (element != null) {
-					element.OnMouseDown(e);
-				}
+				element?.OnMouseDown(e);
 			}
 		}
 
@@ -1725,9 +1720,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			if (!e.Handled) {
 				EnsureVisualLines();
 				VisualLineElement element = GetVisualLineElementFromPosition(e.GetPosition(this) + scrollOffset);
-				if (element != null) {
-					element.OnMouseUp(e);
-				}
+				element?.OnMouseUp(e);
 			}
 		}
 		#endregion
@@ -1744,10 +1737,13 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			// required to make GetPosition work as expected!
 			EnsureVisualLines();
 			foreach (VisualLine vl in this.VisualLines) {
-				if (visualTop < vl.VisualTop)
+				if (visualTop < vl.VisualTop) {
 					continue;
-				if (visualTop < vl.VisualTop + vl.Height)
+				}
+
+				if (visualTop < vl.VisualTop + vl.Height) {
 					return vl;
+				}
 			}
 			return null;
 		}
@@ -1758,20 +1754,24 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public double GetVisualTopByDocumentLine(int line)
 		{
 			VerifyAccess();
-			if (heightTree == null)
+			if (heightTree == null) {
 				throw ThrowUtil.NoDocumentAssigned();
+			}
+
 			return heightTree.GetVisualPosition(heightTree.GetLineByNumber(line));
 		}
 
-		VisualLineElement GetVisualLineElementFromPosition(Point visualPosition)
+		private VisualLineElement GetVisualLineElementFromPosition(Point visualPosition)
 		{
 			VisualLine vl = GetVisualLineFromVisualTop(visualPosition.Y);
 			if (vl != null) {
 				int column = vl.GetVisualColumnFloor(visualPosition);
 				//				Debug.WriteLine(vl.FirstDocumentLine.LineNumber + " vc " + column);
 				foreach (VisualLineElement element in vl.Elements) {
-					if (element.VisualColumn + element.VisualLength <= column)
+					if (element.VisualColumn + element.VisualLength <= column) {
 						continue;
+					}
+
 					return element;
 				}
 			}
@@ -1790,8 +1790,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public Point GetVisualPosition(TextViewPosition position, VisualYPosition yPositionMode)
 		{
 			VerifyAccess();
-			if (this.Document == null)
+			if (this.Document == null) {
 				throw ThrowUtil.NoDocumentAssigned();
+			}
+
 			DocumentLine documentLine = this.Document.GetLineByNumber(position.Line);
 			VisualLine visualLine = GetOrConstructVisualLine(documentLine);
 			int visualColumn = position.VisualColumn;
@@ -1812,11 +1814,15 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public TextViewPosition? GetPosition(Point visualPosition)
 		{
 			VerifyAccess();
-			if (this.Document == null)
+			if (this.Document == null) {
 				throw ThrowUtil.NoDocumentAssigned();
+			}
+
 			VisualLine line = GetVisualLineFromVisualTop(visualPosition.Y);
-			if (line == null)
+			if (line == null) {
 				return null;
+			}
+
 			return line.GetTextViewPosition(visualPosition, Options.EnableVirtualSpace);
 		}
 
@@ -1830,17 +1836,20 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public TextViewPosition? GetPositionFloor(Point visualPosition)
 		{
 			VerifyAccess();
-			if (this.Document == null)
+			if (this.Document == null) {
 				throw ThrowUtil.NoDocumentAssigned();
+			}
+
 			VisualLine line = GetVisualLineFromVisualTop(visualPosition.Y);
-			if (line == null)
+			if (line == null) {
 				return null;
+			}
+
 			return line.GetTextViewPositionFloor(visualPosition, Options.EnableVirtualSpace);
 		}
 		#endregion
 
 		#region Service Provider
-		readonly ServiceContainer services = new ServiceContainer();
 
 		/// <summary>
 		/// Gets a service container used to associate services with the text view.
@@ -1850,9 +1859,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// use <c>TextView.GetService()</c> instead of <c>TextView.Services.GetService()</c> to ensure
 		/// that document services can be found as well.
 		/// </remarks>
-		public ServiceContainer Services {
-			get { return services; }
-		}
+		public ServiceContainer Services { get; } = new();
 
 		/// <summary>
 		/// Retrieves a service from the text view.
@@ -1861,25 +1868,23 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public virtual object GetService(Type serviceType)
 		{
-			object instance = services.GetService(serviceType);
+			object instance = Services.GetService(serviceType);
 			if (instance == null && document != null) {
 				instance = document.ServiceProvider.GetService(serviceType);
 			}
 			return instance;
 		}
 
-		void ConnectToTextView(object obj)
+		private void ConnectToTextView(object obj)
 		{
 			ITextViewConnect c = obj as ITextViewConnect;
-			if (c != null)
-				c.AddToTextView(this);
+			c?.AddToTextView(this);
 		}
 
-		void DisconnectFromTextView(object obj)
+		private void DisconnectFromTextView(object obj)
 		{
 			ITextViewConnect c = obj as ITextViewConnect;
-			if (c != null)
-				c.RemoveFromTextView(this);
+			c?.RemoveFromTextView(this);
 		}
 		#endregion
 
@@ -1915,47 +1920,43 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Occurs when the mouse has hovered over a fixed location for some time.
 		/// </summary>
 		public event MouseEventHandler PreviewMouseHover {
-			add { AddHandler(PreviewMouseHoverEvent, value); }
-			remove { RemoveHandler(PreviewMouseHoverEvent, value); }
+			add => AddHandler(PreviewMouseHoverEvent, value); remove => RemoveHandler(PreviewMouseHoverEvent, value);
 		}
 
 		/// <summary>
 		/// Occurs when the mouse has hovered over a fixed location for some time.
 		/// </summary>
 		public event MouseEventHandler MouseHover {
-			add { AddHandler(MouseHoverEvent, value); }
-			remove { RemoveHandler(MouseHoverEvent, value); }
+			add => AddHandler(MouseHoverEvent, value); remove => RemoveHandler(MouseHoverEvent, value);
 		}
 
 		/// <summary>
 		/// Occurs when the mouse had previously hovered but now started moving again.
 		/// </summary>
 		public event MouseEventHandler PreviewMouseHoverStopped {
-			add { AddHandler(PreviewMouseHoverStoppedEvent, value); }
-			remove { RemoveHandler(PreviewMouseHoverStoppedEvent, value); }
+			add => AddHandler(PreviewMouseHoverStoppedEvent, value); remove => RemoveHandler(PreviewMouseHoverStoppedEvent, value);
 		}
 
 		/// <summary>
 		/// Occurs when the mouse had previously hovered but now started moving again.
 		/// </summary>
 		public event MouseEventHandler MouseHoverStopped {
-			add { AddHandler(MouseHoverStoppedEvent, value); }
-			remove { RemoveHandler(MouseHoverStoppedEvent, value); }
+			add => AddHandler(MouseHoverStoppedEvent, value); remove => RemoveHandler(MouseHoverStoppedEvent, value);
 		}
 
-		MouseHoverLogic hoverLogic;
+		private readonly MouseHoverLogic hoverLogic;
 
-		void RaiseHoverEventPair(MouseEventArgs e, RoutedEvent tunnelingEvent, RoutedEvent bubblingEvent)
+		private void RaiseHoverEventPair(MouseEventArgs e, RoutedEvent tunnelingEvent, RoutedEvent bubblingEvent)
 		{
-			var mouseDevice = e.MouseDevice;
-			var stylusDevice = e.StylusDevice;
+			MouseDevice mouseDevice = e.MouseDevice;
+			StylusDevice stylusDevice = e.StylusDevice;
 			int inputTime = Environment.TickCount;
-			var args1 = new MouseEventArgs(mouseDevice, inputTime, stylusDevice) {
+			MouseEventArgs args1 = new(mouseDevice, inputTime, stylusDevice) {
 				RoutedEvent = tunnelingEvent,
 				Source = this
 			};
 			RaiseEvent(args1);
-			var args2 = new MouseEventArgs(mouseDevice, inputTime, stylusDevice) {
+			MouseEventArgs args2 = new(mouseDevice, inputTime, stylusDevice) {
 				RoutedEvent = bubblingEvent,
 				Source = this,
 				Handled = args1.Handled
@@ -1983,20 +1984,19 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public CollapsedLineSection CollapseLines(DocumentLine start, DocumentLine end)
 		{
 			VerifyAccess();
-			if (heightTree == null)
+			if (heightTree == null) {
 				throw ThrowUtil.NoDocumentAssigned();
+			}
+
 			return heightTree.CollapseText(start, end);
 		}
 
 		/// <summary>
 		/// Gets the height of the document.
 		/// </summary>
-		public double DocumentHeight {
-			get {
+		public double DocumentHeight =>
 				// return 0 if there is no document = no heightTree
-				return heightTree != null ? heightTree.TotalHeight : 0;
-			}
-		}
+				heightTree != null ? heightTree.TotalHeight : 0;
 
 		/// <summary>
 		/// Gets the document line at the specified visual position.
@@ -2004,8 +2004,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public DocumentLine GetDocumentLineByVisualTop(double visualTop)
 		{
 			VerifyAccess();
-			if (heightTree == null)
+			if (heightTree == null) {
 				throw ThrowUtil.NoDocumentAssigned();
+			}
+
 			return heightTree.GetLineByVisualPosition(visualTop);
 		}
 
@@ -2060,9 +2062,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			DependencyProperty.Register("ColumnRulerPen", typeof(Pen), typeof(TextView),
 										new FrameworkPropertyMetadata(CreateFrozenPen(Brushes.LightGray)));
 
-		static Pen CreateFrozenPen(SolidColorBrush brush)
+		private static Pen CreateFrozenPen(SolidColorBrush brush)
 		{
-			Pen pen = new Pen(brush, 1);
+			Pen pen = new(brush, 1);
 			pen.Freeze();
 			return pen;
 		}
@@ -2072,8 +2074,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <seealso cref="TextEditorOptions.ShowColumnRuler"/>
 		/// </summary>
 		public Pen ColumnRulerPen {
-			get { return (Pen)GetValue(ColumnRulerPenProperty); }
-			set { SetValue(ColumnRulerPenProperty, value); }
+			get => (Pen)GetValue(ColumnRulerPenProperty); set => SetValue(ColumnRulerPenProperty, value);
 		}
 
 		/// <summary>
@@ -2086,8 +2087,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Gets/Sets the background brush used by current line highlighter.
 		/// </summary>
 		public Brush CurrentLineBackground {
-			get { return (Brush)GetValue(CurrentLineBackgroundProperty); }
-			set { SetValue(CurrentLineBackgroundProperty, value); }
+			get => (Brush)GetValue(CurrentLineBackgroundProperty); set => SetValue(CurrentLineBackgroundProperty, value);
 		}
 
 		/// <summary>
@@ -2100,23 +2100,19 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Gets/Sets the background brush used for the current line.
 		/// </summary>
 		public Pen CurrentLineBorder {
-			get { return (Pen)GetValue(CurrentLineBorderProperty); }
-			set { SetValue(CurrentLineBorderProperty, value); }
+			get => (Pen)GetValue(CurrentLineBorderProperty); set => SetValue(CurrentLineBorderProperty, value);
 		}
 
 		/// <summary>
 		/// Gets/Sets highlighted line number.
 		/// </summary>
 		public int HighlightedLine {
-			get { return this.currentLineHighlighRenderer.Line; }
-			set { this.currentLineHighlighRenderer.Line = value; }
+			get => this.currentLineHighlighRenderer.Line; set => this.currentLineHighlighRenderer.Line = value;
 		}
 
 		/// <summary>
 		/// Empty line selection width.
 		/// </summary>
-		public virtual double EmptyLineSelectionWidth {
-			get { return 1; }
-		}
+		public virtual double EmptyLineSelectionWidth => 1;
 	}
 }

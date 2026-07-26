@@ -25,9 +25,9 @@ using ICSharpCode.AvalonEdit.Editing;
 
 namespace ICSharpCode.AvalonEdit.Snippets
 {
-	sealed class SnippetInputHandler : TextAreaStackedInputHandler
+	internal sealed class SnippetInputHandler : TextAreaStackedInputHandler
 	{
-		readonly InsertionContext context;
+		private readonly InsertionContext context;
 
 		public SnippetInputHandler(InsertionContext context)
 			: base(context.TextArea)
@@ -64,7 +64,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 			}
 		}
 
-		void SelectElement(IActiveElement element)
+		private void SelectElement(IActiveElement element)
 		{
 			if (element != null) {
 				TextArea.Selection = Selection.Create(TextArea, element.Segment);
@@ -72,19 +72,21 @@ namespace ICSharpCode.AvalonEdit.Snippets
 			}
 		}
 
-		IActiveElement FindNextEditableElement(int offset, bool backwards)
+		private IActiveElement FindNextEditableElement(int offset, bool backwards)
 		{
 			IEnumerable<IActiveElement> elements = context.ActiveElements.Where(e => e.IsEditable && e.Segment != null);
 			if (backwards) {
 				elements = elements.Reverse();
 				foreach (IActiveElement element in elements) {
-					if (offset > element.Segment.EndOffset)
+					if (offset > element.Segment.EndOffset) {
 						return element;
+					}
 				}
 			} else {
 				foreach (IActiveElement element in elements) {
-					if (offset < element.Segment.Offset)
+					if (offset < element.Segment.Offset) {
 						return element;
+					}
 				}
 			}
 			return elements.FirstOrDefault();

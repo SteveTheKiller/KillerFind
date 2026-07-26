@@ -24,9 +24,9 @@ using ICSharpCode.AvalonEdit.Rendering;
 
 namespace ICSharpCode.AvalonEdit.Editing
 {
-	sealed class SelectionLayer : Layer, IWeakEventListener
+	internal sealed class SelectionLayer : Layer, IWeakEventListener
 	{
-		readonly TextArea textArea;
+		private readonly TextArea textArea;
 
 		public SelectionLayer(TextArea textArea) : base(textArea.TextView, KnownLayer.Selection)
 		{
@@ -51,14 +51,15 @@ namespace ICSharpCode.AvalonEdit.Editing
 		{
 			base.OnRender(drawingContext);
 
-			var selectionBorder = textArea.SelectionBorder;
+			Pen? selectionBorder = textArea.SelectionBorder;
 
-			BackgroundGeometryBuilder geoBuilder = new BackgroundGeometryBuilder();
-			geoBuilder.AlignToWholePixels = true;
-			geoBuilder.BorderThickness = selectionBorder != null ? selectionBorder.Thickness : 0;
-			geoBuilder.ExtendToFullWidthAtLineEnd = textArea.Selection.EnableVirtualSpace;
-			geoBuilder.CornerRadius = textArea.SelectionCornerRadius;
-			foreach (var segment in textArea.Selection.Segments) {
+			BackgroundGeometryBuilder geoBuilder = new() {
+				AlignToWholePixels = true,
+				BorderThickness = selectionBorder != null ? selectionBorder.Thickness : 0,
+				ExtendToFullWidthAtLineEnd = textArea.Selection.EnableVirtualSpace,
+				CornerRadius = textArea.SelectionCornerRadius
+			};
+			foreach (SelectionSegment segment in textArea.Selection.Segments) {
 				geoBuilder.AddSegment(textView, segment);
 			}
 			Geometry geometry = geoBuilder.CreateGeometry();

@@ -37,7 +37,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// <see cref="TextEditorOptions"/>.
 	/// </remarks>
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "Whitespace")]
-	sealed class SingleCharacterElementGenerator : VisualLineElementGenerator, IBuiltinElementGenerator
+	internal sealed class SingleCharacterElementGenerator : VisualLineElementGenerator, IBuiltinElementGenerator
 	{
 		/// <summary>
 		/// Gets/Sets whether to show · for spaces.
@@ -80,12 +80,16 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				char c = relevantText.Text[relevantText.Offset + i];
 				switch (c) {
 					case ' ':
-						if (ShowSpaces)
+						if (ShowSpaces) {
 							return startOffset + i;
+						}
+
 						break;
 					case '\t':
-						if (ShowTabs)
+						if (ShowTabs) {
 							return startOffset + i;
+						}
+
 						break;
 					default:
 						if (ShowBoxForControlCharacters && char.IsControl(c)) {
@@ -105,10 +109,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			} else if (ShowTabs && c == '\t') {
 				return new TabTextElement(CurrentContext.TextView.cachedElements.GetTextForNonPrintableCharacter("\u00BB", CurrentContext));
 			} else if (ShowBoxForControlCharacters && char.IsControl(c)) {
-				var p = new VisualLineElementTextRunProperties(CurrentContext.GlobalTextRunProperties);
+				VisualLineElementTextRunProperties p = new(CurrentContext.GlobalTextRunProperties);
 				p.SetForegroundBrush(Brushes.White);
-				var textFormatter = TextFormatterFactory.Create(CurrentContext.TextView);
-				var text = FormattedTextElement.PrepareText(textFormatter,
+				TextFormatter textFormatter = TextFormatterFactory.Create(CurrentContext.TextView);
+				TextLine text = FormattedTextElement.PrepareText(textFormatter,
 															TextUtilities.GetControlCharacterName(c), p);
 				return new SpecialCharacterBoxElement(text);
 			} else {
@@ -116,7 +120,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		sealed class SpaceTextElement : FormattedTextElement
+		private sealed class SpaceTextElement : FormattedTextElement
 		{
 			public SpaceTextElement(TextLine textLine) : base(textLine, 1)
 			{
@@ -126,10 +130,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 			public override int GetNextCaretPosition(int visualColumn, LogicalDirection direction, CaretPositioningMode mode)
 			{
-				if (mode == CaretPositioningMode.Normal || mode == CaretPositioningMode.EveryCodepoint)
+				if (mode is CaretPositioningMode.Normal or CaretPositioningMode.EveryCodepoint) {
 					return base.GetNextCaretPosition(visualColumn, direction, mode);
-				else
+				} else {
 					return -1;
+				}
 			}
 
 			public override bool IsWhitespace(int visualColumn)
@@ -138,7 +143,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		sealed class TabTextElement : VisualLineElement
+		private sealed class TabTextElement : VisualLineElement
 		{
 			internal readonly TextLine text;
 
@@ -151,20 +156,22 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			{
 				// the TabTextElement consists of two TextRuns:
 				// first a TabGlyphRun, then TextCharacters '\t' to let WPF handle the tab indentation
-				if (startVisualColumn == this.VisualColumn)
+				if (startVisualColumn == this.VisualColumn) {
 					return new TabGlyphRun(this, this.TextRunProperties);
-				else if (startVisualColumn == this.VisualColumn + 1)
+				} else if (startVisualColumn == this.VisualColumn + 1) {
 					return new TextCharacters("\t", 0, 1, this.TextRunProperties);
-				else
+				} else {
 					throw new ArgumentOutOfRangeException("startVisualColumn");
+				}
 			}
 
 			public override int GetNextCaretPosition(int visualColumn, LogicalDirection direction, CaretPositioningMode mode)
 			{
-				if (mode == CaretPositioningMode.Normal || mode == CaretPositioningMode.EveryCodepoint)
+				if (mode is CaretPositioningMode.Normal or CaretPositioningMode.EveryCodepoint) {
 					return base.GetNextCaretPosition(visualColumn, direction, mode);
-				else
+				} else {
 					return -1;
+				}
 			}
 
 			public override bool IsWhitespace(int visualColumn)
@@ -173,42 +180,28 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		sealed class TabGlyphRun : TextEmbeddedObject
+		private sealed class TabGlyphRun : TextEmbeddedObject
 		{
-			readonly TabTextElement element;
-			TextRunProperties properties;
+			private readonly TabTextElement element;
+			private readonly TextRunProperties properties;
 
 			public TabGlyphRun(TabTextElement element, TextRunProperties properties)
 			{
-				if (properties == null)
-					throw new ArgumentNullException("properties");
-				this.properties = properties;
+				this.properties = properties ?? throw new ArgumentNullException("properties");
 				this.element = element;
 			}
 
-			public override LineBreakCondition BreakBefore {
-				get { return LineBreakCondition.BreakPossible; }
-			}
+			public override LineBreakCondition BreakBefore => LineBreakCondition.BreakPossible;
 
-			public override LineBreakCondition BreakAfter {
-				get { return LineBreakCondition.BreakRestrained; }
-			}
+			public override LineBreakCondition BreakAfter => LineBreakCondition.BreakRestrained;
 
-			public override bool HasFixedSize {
-				get { return true; }
-			}
+			public override bool HasFixedSize => true;
 
-			public override CharacterBufferReference CharacterBufferReference {
-				get { return new CharacterBufferReference(); }
-			}
+			public override CharacterBufferReference CharacterBufferReference => new();
 
-			public override int Length {
-				get { return 1; }
-			}
+			public override int Length => 1;
 
-			public override TextRunProperties Properties {
-				get { return properties; }
-			}
+			public override TextRunProperties Properties => properties;
 
 			public override TextEmbeddedObjectMetrics Format(double remainingParagraphWidth)
 			{
@@ -229,7 +222,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		sealed class SpecialCharacterBoxElement : FormattedTextElement
+		private sealed class SpecialCharacterBoxElement : FormattedTextElement
 		{
 			public SpecialCharacterBoxElement(TextLine text) : base(text, 1)
 			{
@@ -241,9 +234,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		sealed class SpecialCharacterTextRun : FormattedTextRun
+		private sealed class SpecialCharacterTextRun : FormattedTextRun
 		{
-			static readonly SolidColorBrush darkGrayBrush;
+			private static readonly SolidColorBrush darkGrayBrush;
 
 			static SpecialCharacterTextRun()
 			{
@@ -258,9 +251,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 			public override void Draw(DrawingContext drawingContext, Point origin, bool rightToLeft, bool sideways)
 			{
-				Point newOrigin = new Point(origin.X + 1.5, origin.Y);
-				var metrics = base.Format(double.PositiveInfinity);
-				Rect r = new Rect(newOrigin.X - 0.5, newOrigin.Y - metrics.Baseline, metrics.Width + 2, metrics.Height);
+				Point newOrigin = new(origin.X + 1.5, origin.Y);
+				TextEmbeddedObjectMetrics metrics = base.Format(double.PositiveInfinity);
+				Rect r = new(newOrigin.X - 0.5, newOrigin.Y - metrics.Baseline, metrics.Width + 2, metrics.Height);
 				drawingContext.DrawRoundedRectangle(darkGrayBrush, null, r, 2.5, 2.5);
 				base.Draw(drawingContext, newOrigin, rightToLeft, sideways);
 			}

@@ -30,16 +30,20 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <inheritdoc/>
 		protected override void InsertItem(int index, T item)
 		{
-			if (item == null)
+			if (item == null) {
 				throw new ArgumentNullException("item");
+			}
+
 			base.InsertItem(index, item);
 		}
 
 		/// <inheritdoc/>
 		protected override void SetItem(int index, T item)
 		{
-			if (item == null)
+			if (item == null) {
 				throw new ArgumentNullException("item");
+			}
+
 			base.SetItem(index, item);
 		}
 	}

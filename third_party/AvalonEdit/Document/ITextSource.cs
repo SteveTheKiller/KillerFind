@@ -225,19 +225,17 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// Gets a text source containing the empty string.
 		/// </summary>
-		public static readonly StringTextSource Empty = new StringTextSource(string.Empty);
+		public static readonly StringTextSource Empty = new(string.Empty);
 
-		readonly string text;
-		readonly ITextSourceVersion version;
+		private readonly string text;
+		private readonly ITextSourceVersion version;
 
 		/// <summary>
 		/// Creates a new StringTextSource with the given text.
 		/// </summary>
 		public StringTextSource(string text)
 		{
-			if (text == null)
-				throw new ArgumentNullException("text");
-			this.text = text;
+			this.text = text ?? throw new ArgumentNullException("text");
 		}
 
 		/// <summary>
@@ -245,26 +243,18 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public StringTextSource(string text, ITextSourceVersion version)
 		{
-			if (text == null)
-				throw new ArgumentNullException("text");
-			this.text = text;
+			this.text = text ?? throw new ArgumentNullException("text");
 			this.version = version;
 		}
 
 		/// <inheritdoc/>
-		public ITextSourceVersion Version {
-			get { return version; }
-		}
+		public ITextSourceVersion Version => version;
 
 		/// <inheritdoc/>
-		public int TextLength {
-			get { return text.Length; }
-		}
+		public int TextLength => text.Length;
 
 		/// <inheritdoc/>
-		public string Text {
-			get { return text; }
-		}
+		public string Text => text;
 
 		/// <inheritdoc/>
 		public ITextSource CreateSnapshot()
@@ -317,8 +307,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <inheritdoc/>
 		public string GetText(ISegment segment)
 		{
-			if (segment == null)
+			if (segment == null) {
 				throw new ArgumentNullException("segment");
+			}
+
 			return text.Substring(segment.Offset, segment.Length);
 		}
 

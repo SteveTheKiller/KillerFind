@@ -16,10 +16,10 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+using LineNode = ICSharpCode.AvalonEdit.Document.DocumentLine;
+
 namespace ICSharpCode.AvalonEdit.Document
 {
-	using LineNode = DocumentLine;
-
 	// A tree node in the document line tree.
 	// For the purpose of the invariants, "children", "descendants", "siblings" etc. include the DocumentLine object,
 	// it is treated as a third child node between left and right.
@@ -30,7 +30,7 @@ namespace ICSharpCode.AvalonEdit.Document
 	//	sealed class LineNode
 	//	{
 	//		internal readonly DocumentLine documentLine;
-	partial class DocumentLine
+	public partial class DocumentLine
 	{
 		internal DocumentLine left, right, parent;
 		internal bool color;
@@ -64,8 +64,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		internal LineNode LeftMost {
 			get {
 				LineNode node = this;
-				while (node.left != null)
+				while (node.left != null) {
 					node = node.left;
+				}
+
 				return node;
 			}
 		}
@@ -73,8 +75,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		internal LineNode RightMost {
 			get {
 				LineNode node = this;
-				while (node.right != null)
+				while (node.right != null) {
 					node = node.right;
+				}
+
 				return node;
 			}
 		}

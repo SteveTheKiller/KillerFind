@@ -63,16 +63,16 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <exception cref="ArgumentNullException">input is null.</exception>
 		public Rope(IEnumerable<T> input)
 		{
-			if (input == null)
+			if (input == null) {
 				throw new ArgumentNullException("input");
-			Rope<T> inputRope = input as Rope<T>;
-			if (inputRope != null) {
+			}
+
+			if (input is Rope<T> inputRope) {
 				// clone ropes instead of copying them
 				inputRope.root.Publish();
 				this.root = inputRope.root;
 			} else {
-				string text = input as string;
-				if (text != null) {
+				if (input is string text) {
 					// if a string is IEnumerable<T>, then T must be char
 					((Rope<char>)(object)this).root = CharRope.InitFromString(text);
 				} else {
@@ -117,10 +117,14 @@ namespace ICSharpCode.AvalonEdit.Utils
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
 		public Rope(int length, Func<Rope<T>> initializer)
 		{
-			if (initializer == null)
+			if (initializer == null) {
 				throw new ArgumentNullException("initializer");
-			if (length < 0)
+			}
+
+			if (length < 0) {
 				throw new ArgumentOutOfRangeException("length", length, "Length must not be negative");
+			}
+
 			if (length == 0) {
 				this.root = RopeNode<T>.emptyRopeNode;
 			} else {
@@ -129,10 +133,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 			this.root.CheckInvariants();
 		}
 
-		static T[] ToArray(IEnumerable<T> input)
+		private static T[] ToArray(IEnumerable<T> input)
 		{
 			T[] arr = input as T[];
-			return arr ?? input.ToArray();
+			return arr ?? [.. input];
 		}
 
 		/// <summary>
@@ -174,9 +178,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <remarks>
 		/// This method counts as a read access and may be called concurrently to other read accesses.
 		/// </remarks>
-		public int Length {
-			get { return root.length; }
-		}
+		public int Length => root.length;
 
 		/// <summary>
 		/// Gets the length of the rope.
@@ -185,9 +187,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <remarks>
 		/// This method counts as a read access and may be called concurrently to other read accesses.
 		/// </remarks>
-		public int Count {
-			get { return root.length; }
-		}
+		public int Count => root.length;
 
 		/// <summary>
 		/// Inserts another rope into this rope.
@@ -200,8 +200,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 			if (index < 0 || index > this.Length) {
 				throw new ArgumentOutOfRangeException("index", index, "0 <= index <= " + this.Length.ToString(CultureInfo.InvariantCulture));
 			}
-			if (newElements == null)
+			if (newElements == null) {
 				throw new ArgumentNullException("newElements");
+			}
+
 			newElements.root.Publish();
 			root = root.Insert(index, newElements.root);
 			OnChanged();
@@ -215,10 +217,11 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <exception cref="ArgumentOutOfRangeException">index or length is outside the valid range.</exception>
 		public void InsertRange(int index, IEnumerable<T> newElements)
 		{
-			if (newElements == null)
+			if (newElements == null) {
 				throw new ArgumentNullException("newElements");
-			Rope<T> newElementsRope = newElements as Rope<T>;
-			if (newElementsRope != null) {
+			}
+
+			if (newElements is Rope<T> newElementsRope) {
 				InsertRange(index, newElementsRope);
 			} else {
 				T[] arr = ToArray(newElements);
@@ -394,10 +397,14 @@ namespace ICSharpCode.AvalonEdit.Utils
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes")]
 		public static Rope<T> Concat(Rope<T> left, Rope<T> right)
 		{
-			if (left == null)
+			if (left == null) {
 				throw new ArgumentNullException("left");
-			if (right == null)
+			}
+
+			if (right == null) {
 				throw new ArgumentNullException("right");
+			}
+
 			left.root.Publish();
 			right.root.Publish();
 			return new Rope<T>(RopeNode<T>.Concat(left.root, right.root));
@@ -412,16 +419,20 @@ namespace ICSharpCode.AvalonEdit.Utils
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes")]
 		public static Rope<T> Concat(params Rope<T>[] ropes)
 		{
-			if (ropes == null)
+			if (ropes == null) {
 				throw new ArgumentNullException("ropes");
-			Rope<T> result = new Rope<T>();
-			foreach (Rope<T> r in ropes)
+			}
+
+			Rope<T> result = [];
+			foreach (Rope<T> r in ropes) {
 				result.AddRange(r);
+			}
+
 			return result;
 		}
 
 		#region Caches / Changed event
-		internal struct RopeCacheEntry
+		internal readonly struct RopeCacheEntry
 		{
 			internal readonly RopeNode<T> node;
 			internal readonly int nodeStartIndex;
@@ -432,7 +443,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 				this.nodeStartIndex = nodeStartOffset;
 			}
 
-			internal bool IsInside(int offset)
+			internal readonly bool IsInside(int offset)
 			{
 				return offset >= nodeStartIndex && offset < nodeStartIndex + node.length;
 			}
@@ -440,7 +451,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 
 		// cached pointer to 'last used node', used to speed up accesses by index that are close together
 		[NonSerialized]
-		volatile ImmutableStack<RopeCacheEntry> lastUsedNodeStack;
+		private volatile ImmutableStack<RopeCacheEntry> lastUsedNodeStack;
 
 		internal void OnChanged()
 		{
@@ -522,11 +533,11 @@ namespace ICSharpCode.AvalonEdit.Utils
 			ImmutableStack<RopeCacheEntry> stack = lastUsedNodeStack;
 			ImmutableStack<RopeCacheEntry> oldStack = stack;
 
-			if (stack == null) {
-				stack = ImmutableStack<RopeCacheEntry>.Empty.Push(new RopeCacheEntry(root, 0));
-			}
-			while (!stack.PeekOrDefault().IsInside(index))
+			stack ??= ImmutableStack<RopeCacheEntry>.Empty.Push(new RopeCacheEntry(root, 0));
+			while (!stack.PeekOrDefault().IsInside(index)) {
 				stack = stack.Pop();
+			}
+
 			while (true) {
 				RopeCacheEntry entry = stack.PeekOrDefault();
 				// check if we've reached a leaf or function node
@@ -542,10 +553,11 @@ namespace ICSharpCode.AvalonEdit.Utils
 					}
 				}
 				// go down towards leaves
-				if (index - entry.nodeStartIndex >= entry.node.left.length)
+				if (index - entry.nodeStartIndex >= entry.node.left.length) {
 					stack = stack.Push(new RopeCacheEntry(entry.node.right, entry.nodeStartIndex + entry.node.left.length));
-				else
+				} else {
 					stack = stack.Push(new RopeCacheEntry(entry.node.left, entry.nodeStartIndex));
+				}
 			}
 
 			// write back stack to volatile cache variable
@@ -574,8 +586,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 
 		internal static void VerifyArrayWithRange(T[] array, int arrayIndex, int count)
 		{
-			if (array == null)
+			if (array == null) {
 				throw new ArgumentNullException("array");
+			}
+
 			if (arrayIndex < 0 || arrayIndex > array.Length) {
 				throw new ArgumentOutOfRangeException("startIndex", arrayIndex, "0 <= arrayIndex <= " + array.Length.ToString(CultureInfo.InvariantCulture));
 			}
@@ -595,16 +609,17 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </remarks>
 		public override string ToString()
 		{
-			Rope<char> charRope = this as Rope<char>;
-			if (charRope != null) {
+			if (this is Rope<char> charRope) {
 				return charRope.ToString(0, this.Length);
 			} else {
-				StringBuilder b = new StringBuilder();
+				StringBuilder b = new();
 				foreach (T element in this) {
-					if (b.Length == 0)
+					if (b.Length == 0) {
 						b.Append('{');
-					else
+					} else {
 						b.Append(", ");
+					}
+
 					b.Append(element.ToString());
 				}
 				b.Append('}');
@@ -622,9 +637,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		}
 		#endregion
 
-		bool ICollection<T>.IsReadOnly {
-			get { return false; }
-		}
+		bool ICollection<T>.IsReadOnly => false;
 
 		/// <summary>
 		/// Finds the first occurrence of item.
@@ -654,13 +667,15 @@ namespace ICSharpCode.AvalonEdit.Utils
 			VerifyRange(startIndex, count);
 
 			while (count > 0) {
-				var entry = FindNodeUsingCache(startIndex).PeekOrDefault();
+				RopeCacheEntry entry = FindNodeUsingCache(startIndex).PeekOrDefault();
 				T[] contents = entry.node.contents;
 				int startWithinNode = startIndex - entry.nodeStartIndex;
 				int nodeLength = Math.Min(entry.node.length, startWithinNode + count);
 				int r = Array.IndexOf(contents, item, startWithinNode, nodeLength - startWithinNode);
-				if (r >= 0)
+				if (r >= 0) {
 					return entry.nodeStartIndex + r;
+				}
+
 				count -= nodeLength - startWithinNode;
 				startIndex = entry.nodeStartIndex + nodeLength;
 			}
@@ -688,10 +703,11 @@ namespace ICSharpCode.AvalonEdit.Utils
 		{
 			VerifyRange(startIndex, count);
 
-			var comparer = EqualityComparer<T>.Default;
+			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
 			for (int i = startIndex + count - 1; i >= startIndex; i--) {
-				if (comparer.Equals(this[i], item))
+				if (comparer.Equals(this[i], item)) {
 					return i;
+				}
 			}
 			return -1;
 		}
@@ -702,7 +718,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public void Insert(int index, T item)
 		{
-			InsertRange(index, new[] { item }, 0, 1);
+			InsertRange(index, [item], 0, 1);
 		}
 
 		/// <summary>
@@ -720,7 +736,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public void Add(T item)
 		{
-			InsertRange(this.Length, new[] { item }, 0, 1);
+			InsertRange(this.Length, [item], 0, 1);
 		}
 
 		/// <summary>
@@ -818,9 +834,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 			return arr;
 		}
 
-		static IEnumerator<T> Enumerate(RopeNode<T> node)
+		private static IEnumerator<T> Enumerate(RopeNode<T> node)
 		{
-			Stack<RopeNode<T>> stack = new Stack<RopeNode<T>>();
+			Stack<RopeNode<T>> stack = new();
 			while (node != null) {
 				// go to leftmost node, pushing the right parts that we'll have to visit later
 				while (node.contents == null) {
@@ -838,10 +854,11 @@ namespace ICSharpCode.AvalonEdit.Utils
 					yield return node.contents[i];
 				}
 				// go up to the next node not visited yet
-				if (stack.Count > 0)
+				if (stack.Count > 0) {
 					node = stack.Pop();
-				else
+				} else {
 					node = null;
+				}
 			}
 		}
 

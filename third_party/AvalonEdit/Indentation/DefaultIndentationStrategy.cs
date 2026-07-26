@@ -31,10 +31,14 @@ namespace ICSharpCode.AvalonEdit.Indentation
 		/// <inheritdoc/>
 		public virtual void IndentLine(TextDocument document, DocumentLine line)
 		{
-			if (document == null)
+			if (document == null) {
 				throw new ArgumentNullException("document");
-			if (line == null)
+			}
+
+			if (line == null) {
 				throw new ArgumentNullException("line");
+			}
+
 			DocumentLine previousLine = line.PreviousLine;
 			if (previousLine != null) {
 				ISegment indentationSegment = TextUtilities.GetWhitespaceAfter(document, previousLine.Offset);

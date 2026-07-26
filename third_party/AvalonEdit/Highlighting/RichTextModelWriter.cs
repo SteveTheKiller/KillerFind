@@ -29,13 +29,13 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 	/// <summary>
 	/// A RichTextWriter that writes into a document and RichTextModel.
 	/// </summary>
-	class RichTextModelWriter : PlainRichTextWriter
+	internal class RichTextModelWriter : PlainRichTextWriter
 	{
-		readonly RichTextModel richTextModel;
-		readonly DocumentTextWriter documentTextWriter;
-		readonly Stack<HighlightingColor> colorStack = new Stack<HighlightingColor>();
-		HighlightingColor currentColor;
-		int currentColorBegin = -1;
+		private readonly RichTextModel richTextModel;
+		private readonly DocumentTextWriter documentTextWriter;
+		private readonly Stack<HighlightingColor> colorStack = new();
+		private HighlightingColor currentColor;
+		private int currentColorBegin = -1;
 
 		/// <summary>
 		/// Creates a new RichTextModelWriter that inserts into document, starting at insertionOffset.
@@ -43,9 +43,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		public RichTextModelWriter(RichTextModel richTextModel, IDocument document, int insertionOffset)
 			: base(new DocumentTextWriter(document, insertionOffset))
 		{
-			if (richTextModel == null)
-				throw new ArgumentNullException("richTextModel");
-			this.richTextModel = richTextModel;
+			this.richTextModel = richTextModel ?? throw new ArgumentNullException("richTextModel");
 			this.documentTextWriter = (DocumentTextWriter)base.textWriter;
 			currentColor = richTextModel.GetHighlightingAt(Math.Max(0, insertionOffset - 1));
 		}
@@ -54,8 +52,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// Gets/Sets the current insertion offset.
 		/// </summary>
 		public int InsertionOffset {
-			get { return documentTextWriter.InsertionOffset; }
-			set { documentTextWriter.InsertionOffset = value; }
+			get => documentTextWriter.InsertionOffset; set => documentTextWriter.InsertionOffset = value;
 		}
 
 
@@ -65,7 +62,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			colorStack.Push(currentColor);
 		}
 
-		void BeginColorSpan()
+		private void BeginColorSpan()
 		{
 			WriteIndentationIfNecessary();
 			colorStack.Push(currentColor);

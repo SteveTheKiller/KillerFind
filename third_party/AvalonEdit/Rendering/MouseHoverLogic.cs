@@ -28,27 +28,25 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// </summary>
 	public class MouseHoverLogic : IDisposable
 	{
-		UIElement target;
+		private readonly UIElement target;
 
-		DispatcherTimer mouseHoverTimer;
-		Point mouseHoverStartPoint;
-		MouseEventArgs mouseHoverLastEventArgs;
-		bool mouseHovering;
+		private DispatcherTimer mouseHoverTimer;
+		private Point mouseHoverStartPoint;
+		private MouseEventArgs mouseHoverLastEventArgs;
+		private bool mouseHovering;
 
 		/// <summary>
 		/// Creates a new instance and attaches itself to the <paramref name="target" /> UIElement.
 		/// </summary>
 		public MouseHoverLogic(UIElement target)
 		{
-			if (target == null)
-				throw new ArgumentNullException("target");
-			this.target = target;
+			this.target = target ?? throw new ArgumentNullException("target");
 			this.target.MouseLeave += MouseHoverLogicMouseLeave;
 			this.target.MouseMove += MouseHoverLogicMouseMove;
 			this.target.MouseEnter += MouseHoverLogicMouseEnter;
 		}
 
-		void MouseHoverLogicMouseMove(object sender, MouseEventArgs e)
+		private void MouseHoverLogicMouseMove(object sender, MouseEventArgs e)
 		{
 			Vector mouseMovement = mouseHoverStartPoint - e.GetPosition(this.target);
 			if (Math.Abs(mouseMovement.X) > SystemParameters.MouseHoverWidth
@@ -58,13 +56,13 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			// do not set e.Handled - allow others to also handle MouseMove
 		}
 
-		void MouseHoverLogicMouseEnter(object sender, MouseEventArgs e)
+		private void MouseHoverLogicMouseEnter(object sender, MouseEventArgs e)
 		{
 			StartHovering(e);
 			// do not set e.Handled - allow others to also handle MouseEnter
 		}
 
-		void StartHovering(MouseEventArgs e)
+		private void StartHovering(MouseEventArgs e)
 		{
 			StopHovering();
 			mouseHoverStartPoint = e.GetPosition(this.target);
@@ -73,13 +71,13 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			mouseHoverTimer.Start();
 		}
 
-		void MouseHoverLogicMouseLeave(object sender, MouseEventArgs e)
+		private void MouseHoverLogicMouseLeave(object sender, MouseEventArgs e)
 		{
 			StopHovering();
 			// do not set e.Handled - allow others to also handle MouseLeave
 		}
 
-		void StopHovering()
+		private void StopHovering()
 		{
 			if (mouseHoverTimer != null) {
 				mouseHoverTimer.Stop();
@@ -91,7 +89,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		void OnMouseHoverTimerElapsed(object sender, EventArgs e)
+		private void OnMouseHoverTimerElapsed(object sender, EventArgs e)
 		{
 			mouseHoverTimer.Stop();
 			mouseHoverTimer = null;
@@ -110,9 +108,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		protected virtual void OnMouseHover(MouseEventArgs e)
 		{
-			if (MouseHover != null) {
-				MouseHover(this, e);
-			}
+			MouseHover?.Invoke(this, e);
 		}
 
 		/// <summary>
@@ -125,12 +121,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		protected virtual void OnMouseHoverStopped(MouseEventArgs e)
 		{
-			if (MouseHoverStopped != null) {
-				MouseHoverStopped(this, e);
-			}
+			MouseHoverStopped?.Invoke(this, e);
 		}
 
-		bool disposed;
+		private bool disposed;
 
 		/// <summary>
 		/// Removes the MouseHover support from the target UIElement.

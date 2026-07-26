@@ -41,15 +41,14 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// during Undo events
 		internal int state = StateListen;
 
-		Deque<IUndoableOperation> undostack = new Deque<IUndoableOperation>();
-		Deque<IUndoableOperation> redostack = new Deque<IUndoableOperation>();
-		int sizeLimit = int.MaxValue;
+		private readonly Deque<IUndoableOperation> undostack = new();
+		private readonly Deque<IUndoableOperation> redostack = new();
+		private int sizeLimit = int.MaxValue;
 
-		int undoGroupDepth;
-		int actionCountInUndoGroup;
-		int optionalActionCount;
-		object lastGroupDescriptor;
-		bool allowContinue;
+		private int undoGroupDepth;
+		private int actionCountInUndoGroup;
+		private int optionalActionCount;
+		private bool allowContinue;
 
 		#region IsOriginalFile implementation
 		// implements feature request SD2-784 - File still considered dirty after undoing all changes
@@ -59,22 +58,18 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Negative: number of times redo must be executed until the original state is reached.
 		/// Special case: int.MinValue == original state is unreachable
 		/// </summary>
-		int elementsOnUndoUntilOriginalFile;
-
-		bool isOriginalFile = true;
+		private int elementsOnUndoUntilOriginalFile;
 
 		/// <summary>
 		/// Gets whether the document is currently in its original state (no modifications).
 		/// </summary>
-		public bool IsOriginalFile {
-			get { return isOriginalFile; }
-		}
+		public bool IsOriginalFile { get; private set; } = true;
 
-		void RecalcIsOriginalFile()
+		private void RecalcIsOriginalFile()
 		{
-			bool newIsOriginalFile = (elementsOnUndoUntilOriginalFile == 0);
-			if (newIsOriginalFile != isOriginalFile) {
-				isOriginalFile = newIsOriginalFile;
+			bool newIsOriginalFile = elementsOnUndoUntilOriginalFile == 0;
+			if (newIsOriginalFile != IsOriginalFile) {
+				IsOriginalFile = newIsOriginalFile;
 				NotifyPropertyChanged("IsOriginalFile");
 			}
 		}
@@ -97,14 +92,16 @@ namespace ICSharpCode.AvalonEdit.Document
 			RecalcIsOriginalFile();
 		}
 
-		void FileModified(int newElementsOnUndoStack)
+		private void FileModified(int newElementsOnUndoStack)
 		{
-			if (elementsOnUndoUntilOriginalFile == int.MinValue)
+			if (elementsOnUndoUntilOriginalFile == int.MinValue) {
 				return;
+			}
 
 			elementsOnUndoUntilOriginalFile += newElementsOnUndoStack;
-			if (elementsOnUndoUntilOriginalFile > undostack.Count)
+			if (elementsOnUndoUntilOriginalFile > undostack.Count) {
 				elementsOnUndoUntilOriginalFile = int.MinValue;
+			}
 
 			// don't call RecalcIsOriginalFile(): wait until end of undo group
 		}
@@ -114,25 +111,19 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Gets if the undo stack currently accepts changes.
 		/// Is false while an undo action is running.
 		/// </summary>
-		public bool AcceptChanges {
-			get { return state == StateListen; }
-		}
+		public bool AcceptChanges => state == StateListen;
 
 		/// <summary>
 		/// Gets if there are actions on the undo stack.
 		/// Use the PropertyChanged event to listen to changes of this property.
 		/// </summary>
-		public bool CanUndo {
-			get { return undostack.Count > 0; }
-		}
+		public bool CanUndo => undostack.Count > 0;
 
 		/// <summary>
 		/// Gets if there are actions on the redo stack.
 		/// Use the PropertyChanged event to listen to changes of this property.
 		/// </summary>
-		public bool CanRedo {
-			get { return redostack.Count > 0; }
-		}
+		public bool CanRedo => redostack.Count > 0;
 
 		/// <summary>
 		/// Gets/Sets the limit on the number of items on the undo stack.
@@ -140,26 +131,32 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <remarks>The size limit is enforced only on the number of stored top-level undo groups.
 		/// Elements within undo groups do not count towards the size limit.</remarks>
 		public int SizeLimit {
-			get { return sizeLimit; }
+			get => sizeLimit;
 			set {
-				if (value < 0)
+				if (value < 0) {
 					ThrowUtil.CheckNotNegative(value, "value");
+				}
+
 				if (sizeLimit != value) {
 					sizeLimit = value;
 					NotifyPropertyChanged("SizeLimit");
-					if (undoGroupDepth == 0)
+					if (undoGroupDepth == 0) {
 						EnforceSizeLimit();
+					}
 				}
 			}
 		}
 
-		void EnforceSizeLimit()
+		private void EnforceSizeLimit()
 		{
 			Debug.Assert(undoGroupDepth == 0);
-			while (undostack.Count > sizeLimit)
+			while (undostack.Count > sizeLimit) {
 				undostack.PopFront();
-			while (redostack.Count > sizeLimit)
+			}
+
+			while (redostack.Count > sizeLimit) {
 				redostack.PopFront();
+			}
 		}
 
 		/// <summary>
@@ -171,9 +168,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// use a group descriptor to mark your changes, and on the second action,
 		/// compare LastGroupDescriptor and use <see cref="StartContinuedUndoGroup"/> if you
 		/// want to join the undo groups.</remarks>
-		public object LastGroupDescriptor {
-			get { return lastGroupDescriptor; }
-		}
+		public object LastGroupDescriptor { get; private set; }
 
 		/// <summary>
 		/// Starts grouping changes.
@@ -195,7 +190,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			if (undoGroupDepth == 0) {
 				actionCountInUndoGroup = 0;
 				optionalActionCount = 0;
-				lastGroupDescriptor = groupDescriptor;
+				LastGroupDescriptor = groupDescriptor;
 			}
 			undoGroupDepth++;
 			//Util.LoggingService.Debug("Open undo group (new depth=" + undoGroupDepth + ")");
@@ -214,7 +209,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			if (undoGroupDepth == 0) {
 				actionCountInUndoGroup = (allowContinue && undostack.Count > 0) ? 1 : 0;
 				optionalActionCount = 0;
-				lastGroupDescriptor = groupDescriptor;
+				LastGroupDescriptor = groupDescriptor;
 			}
 			undoGroupDepth++;
 			//Util.LoggingService.Debug("Continue undo group (new depth=" + undoGroupDepth + ")");
@@ -225,7 +220,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public void EndUndoGroup()
 		{
-			if (undoGroupDepth == 0) throw new InvalidOperationException("There are no open undo groups");
+			if (undoGroupDepth == 0) {
+				throw new InvalidOperationException("There are no open undo groups");
+			}
+
 			undoGroupDepth--;
 			//Util.LoggingService.Debug("Close undo group (new depth=" + undoGroupDepth + ")");
 			if (undoGroupDepth == 0) {
@@ -252,7 +250,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// Throws an InvalidOperationException if an undo group is current open.
 		/// </summary>
-		void ThrowIfUndoGroupOpen()
+		private void ThrowIfUndoGroupOpen()
 		{
 			if (undoGroupDepth != 0) {
 				undoGroupDepth = 0;
@@ -263,19 +261,19 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		List<TextDocument> affectedDocuments;
+		private List<TextDocument> affectedDocuments;
 
 		internal void RegisterAffectedDocument(TextDocument document)
 		{
-			if (affectedDocuments == null)
-				affectedDocuments = new List<TextDocument>();
+			affectedDocuments ??= [];
+
 			if (!affectedDocuments.Contains(document)) {
 				affectedDocuments.Add(document);
 				document.BeginUpdate();
 			}
 		}
 
-		void CallEndUpdateOnAffectedDocuments()
+		private void CallEndUpdateOnAffectedDocuments()
 		{
 			if (affectedDocuments != null) {
 				foreach (TextDocument doc in affectedDocuments) {
@@ -293,7 +291,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			ThrowIfUndoGroupOpen();
 			if (undostack.Count > 0) {
 				// disallow continuing undo groups after undo operation
-				lastGroupDescriptor = null; allowContinue = false;
+				LastGroupDescriptor = null; allowContinue = false;
 				// fetch operation to undo and move it to redo stack
 				IUndoableOperation uedit = undostack.PopBack();
 				redostack.PushBack(uedit);
@@ -306,20 +304,23 @@ namespace ICSharpCode.AvalonEdit.Document
 					CallEndUpdateOnAffectedDocuments();
 				}
 				RecalcIsOriginalFile();
-				if (undostack.Count == 0)
+				if (undostack.Count == 0) {
 					NotifyPropertyChanged("CanUndo");
-				if (redostack.Count == 1)
+				}
+
+				if (redostack.Count == 1) {
 					NotifyPropertyChanged("CanRedo");
+				}
 			}
 		}
 
 		internal void RunUndo(IUndoableOperation op)
 		{
-			IUndoableOperationWithContext opWithCtx = op as IUndoableOperationWithContext;
-			if (opWithCtx != null)
+			if (op is IUndoableOperationWithContext opWithCtx) {
 				opWithCtx.Undo(this);
-			else
+			} else {
 				op.Undo();
+			}
 		}
 
 		/// <summary>
@@ -329,7 +330,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		{
 			ThrowIfUndoGroupOpen();
 			if (redostack.Count > 0) {
-				lastGroupDescriptor = null; allowContinue = false;
+				LastGroupDescriptor = null; allowContinue = false;
 				IUndoableOperation uedit = redostack.PopBack();
 				undostack.PushBack(uedit);
 				state = StatePlayback;
@@ -341,20 +342,23 @@ namespace ICSharpCode.AvalonEdit.Document
 					CallEndUpdateOnAffectedDocuments();
 				}
 				RecalcIsOriginalFile();
-				if (redostack.Count == 0)
+				if (redostack.Count == 0) {
 					NotifyPropertyChanged("CanRedo");
-				if (undostack.Count == 1)
+				}
+
+				if (undostack.Count == 1) {
 					NotifyPropertyChanged("CanUndo");
+				}
 			}
 		}
 
 		internal void RunRedo(IUndoableOperation op)
 		{
-			IUndoableOperationWithContext opWithCtx = op as IUndoableOperationWithContext;
-			if (opWithCtx != null)
+			if (op is IUndoableOperationWithContext opWithCtx) {
 				opWithCtx.Redo(this);
-			else
+			} else {
 				op.Redo();
+			}
 		}
 
 		/// <summary>
@@ -375,12 +379,14 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public void PushOptional(IUndoableOperation operation)
 		{
-			if (undoGroupDepth == 0)
+			if (undoGroupDepth == 0) {
 				throw new InvalidOperationException("Cannot use PushOptional outside of undo group");
+			}
+
 			Push(operation, true);
 		}
 
-		void Push(IUndoableOperation operation, bool isOptional)
+		private void Push(IUndoableOperation operation, bool isOptional)
 		{
 			if (operation == null) {
 				throw new ArgumentNullException("operation");
@@ -390,16 +396,26 @@ namespace ICSharpCode.AvalonEdit.Document
 				bool wasEmpty = undostack.Count == 0;
 
 				bool needsUndoGroup = undoGroupDepth == 0;
-				if (needsUndoGroup) StartUndoGroup();
+				if (needsUndoGroup) {
+					StartUndoGroup();
+				}
+
 				undostack.PushBack(operation);
 				actionCountInUndoGroup++;
-				if (isOptional)
+				if (isOptional) {
 					optionalActionCount++;
-				else
+				} else {
 					FileModified(1);
-				if (needsUndoGroup) EndUndoGroup();
-				if (wasEmpty)
+				}
+
+				if (needsUndoGroup) {
+					EndUndoGroup();
+				}
+
+				if (wasEmpty) {
 					NotifyPropertyChanged("CanUndo");
+				}
+
 				ClearRedoStack();
 			}
 		}
@@ -413,8 +429,9 @@ namespace ICSharpCode.AvalonEdit.Document
 				redostack.Clear();
 				NotifyPropertyChanged("CanRedo");
 				// if the "original file" marker is on the redo stack: remove it
-				if (elementsOnUndoUntilOriginalFile < 0)
+				if (elementsOnUndoUntilOriginalFile < 0) {
 					elementsOnUndoUntilOriginalFile = int.MinValue;
+				}
 			}
 		}
 
@@ -427,7 +444,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			actionCountInUndoGroup = 0;
 			optionalActionCount = 0;
 			if (undostack.Count != 0) {
-				lastGroupDescriptor = null;
+				LastGroupDescriptor = null;
 				allowContinue = false;
 				undostack.Clear();
 				NotifyPropertyChanged("CanUndo");
@@ -437,12 +454,15 @@ namespace ICSharpCode.AvalonEdit.Document
 
 		internal void Push(TextDocument document, DocumentChangeEventArgs e)
 		{
-			if (state == StatePlayback)
+			if (state == StatePlayback) {
 				throw new InvalidOperationException("Document changes during undo/redo operations are not allowed.");
-			if (state == StatePlaybackModifyDocument)
+			}
+
+			if (state == StatePlaybackModifyDocument) {
 				state = StatePlayback; // allow only 1 change per expected modification
-			else
+			} else {
 				Push(new DocumentChangeOperation(document, e));
+			}
 		}
 
 		/// <summary>
@@ -450,10 +470,9 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		void NotifyPropertyChanged(string propertyName)
+		private void NotifyPropertyChanged(string propertyName)
 		{
-			if (PropertyChanged != null)
-				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 	}
 }

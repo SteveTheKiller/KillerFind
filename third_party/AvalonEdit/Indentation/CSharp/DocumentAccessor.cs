@@ -44,18 +44,16 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 	/// </summary>
 	public sealed class TextDocumentAccessor : IDocumentAccessor
 	{
-		readonly TextDocument doc;
-		readonly int minLine;
-		readonly int maxLine;
+		private readonly TextDocument doc;
+		private readonly int minLine;
+		private readonly int maxLine;
 
 		/// <summary>
 		/// Creates a new TextDocumentAccessor.
 		/// </summary>
 		public TextDocumentAccessor(TextDocument document)
 		{
-			if (document == null)
-				throw new ArgumentNullException("document");
-			doc = document;
+			doc = document ?? throw new ArgumentNullException("document");
 			this.minLine = 1;
 			this.maxLine = doc.LineCount;
 		}
@@ -65,42 +63,33 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 		/// </summary>
 		public TextDocumentAccessor(TextDocument document, int minLine, int maxLine)
 		{
-			if (document == null)
-				throw new ArgumentNullException("document");
-			doc = document;
+			doc = document ?? throw new ArgumentNullException("document");
 			this.minLine = minLine;
 			this.maxLine = maxLine;
 		}
 
-		int num;
-
 		// Both are only meaningful once MoveNext has returned true, which is this accessor's
 		// contract. null! rather than nullable so callers that honour it are not pushed through
 		// a null check the contract already rules out.
-		string text = null!;
-		DocumentLine line = null!;
+		private string text = null!;
+		private DocumentLine line = null!;
 
 		/// <inheritdoc/>
-		public bool IsReadOnly {
-			get {
-				return num < minLine;
-			}
-		}
+		public bool IsReadOnly => LineNumber < minLine;
 
 		/// <inheritdoc/>
-		public int LineNumber {
-			get {
-				return num;
-			}
-		}
+		public int LineNumber { get; private set; }
 
-		bool lineDirty;
+		private bool lineDirty;
 
 		/// <inheritdoc/>
 		public string Text {
-			get { return text; }
+			get => text;
 			set {
-				if (num < minLine) return;
+				if (LineNumber < minLine) {
+					return;
+				}
+
 				text = value;
 				lineDirty = true;
 			}
@@ -113,9 +102,12 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 				doc.Replace(line, text);
 				lineDirty = false;
 			}
-			++num;
-			if (num > maxLine) return false;
-			line = doc.GetLineByNumber(num);
+			++LineNumber;
+			if (LineNumber > maxLine) {
+				return false;
+			}
+
+			line = doc.GetLineByNumber(LineNumber);
 			text = doc.GetText(line);
 			return true;
 		}

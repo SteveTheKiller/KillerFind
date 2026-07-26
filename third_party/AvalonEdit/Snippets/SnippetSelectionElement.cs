@@ -35,7 +35,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 		/// <inheritdoc/>
 		public override void Insert(InsertionContext context)
 		{
-			StringBuilder tabString = new StringBuilder();
+			StringBuilder tabString = new();
 
 			for (int i = 0; i < Indentation; i++) {
 				tabString.Append(context.Tab);
@@ -51,8 +51,9 @@ namespace ICSharpCode.AvalonEdit.Snippets
 			context.Document.Insert(context.InsertionPosition, text);
 			context.InsertionPosition += text.Length;
 
-			if (string.IsNullOrEmpty(context.SelectedText))
+			if (string.IsNullOrEmpty(context.SelectedText)) {
 				SnippetCaretElement.SetCaret(context);
+			}
 		}
 	}
 }

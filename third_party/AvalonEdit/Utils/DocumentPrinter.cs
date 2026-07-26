@@ -36,14 +36,19 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public static Block ConvertTextDocumentToBlock(IDocument document, IHighlighter highlighter)
 		{
-			if (document == null)
+			if (document == null) {
 				throw new ArgumentNullException("document");
-			Paragraph p = new Paragraph();
-			p.TextAlignment = TextAlignment.Left;
+			}
+
+			Paragraph p = new() {
+				TextAlignment = TextAlignment.Left
+			};
 			for (int lineNumber = 1; lineNumber <= document.LineCount; lineNumber++) {
-				if (lineNumber > 1)
+				if (lineNumber > 1) {
 					p.Inlines.Add(new LineBreak());
-				var line = document.GetLineByNumber(lineNumber);
+				}
+
+				IDocumentLine line = document.GetLineByNumber(lineNumber);
 				if (highlighter != null) {
 					HighlightedLine highlightedLine = highlighter.HighlightLine(lineNumber);
 					p.Inlines.AddRange(highlightedLine.ToRichText().CreateRuns());
@@ -59,13 +64,17 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public static RichText ConvertTextDocumentToRichText(IDocument document, IHighlighter highlighter)
 		{
-			if (document == null)
+			if (document == null) {
 				throw new ArgumentNullException("document");
-			var texts = new List<RichText>();
+			}
+
+			List<RichText> texts = [];
 			for (int lineNumber = 1; lineNumber <= document.LineCount; lineNumber++) {
-				var line = document.GetLineByNumber(lineNumber);
-				if (lineNumber > 1)
+				IDocumentLine line = document.GetLineByNumber(lineNumber);
+				if (lineNumber > 1) {
 					texts.Add(line.PreviousLine.DelimiterLength == 2 ? "\r\n" : "\n");
+				}
+
 				if (highlighter != null) {
 					HighlightedLine highlightedLine = highlighter.HighlightLine(lineNumber);
 					texts.Add(highlightedLine.ToRichText());
@@ -73,7 +82,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 					texts.Add(document.GetText(line));
 				}
 			}
-			return RichText.Concat(texts.ToArray());
+			return RichText.Concat([.. texts]);
 		}
 
 		/// <summary>
@@ -82,9 +91,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		public static FlowDocument CreateFlowDocumentForEditor(TextEditor editor)
 		{
 			IHighlighter highlighter = editor.TextArea.GetService(typeof(IHighlighter)) as IHighlighter;
-			FlowDocument doc = new FlowDocument(ConvertTextDocumentToBlock(editor.Document, highlighter));
-			doc.FontFamily = editor.FontFamily;
-			doc.FontSize = editor.FontSize;
+			FlowDocument doc = new(ConvertTextDocumentToBlock(editor.Document, highlighter)) {
+				FontFamily = editor.FontFamily,
+				FontSize = editor.FontSize
+			};
 			return doc;
 		}
 	}

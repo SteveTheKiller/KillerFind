@@ -32,13 +32,15 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 	/// </summary>
 	public sealed class RichTextModel
 	{
-		List<int> stateChangeOffsets = new List<int>();
-		List<HighlightingColor> stateChanges = new List<HighlightingColor>();
+		private readonly List<int> stateChangeOffsets = [];
+		private readonly List<HighlightingColor> stateChanges = [];
 
-		int GetIndexForOffset(int offset)
+		private int GetIndexForOffset(int offset)
 		{
-			if (offset < 0)
+			if (offset < 0) {
 				throw new ArgumentOutOfRangeException("offset");
+			}
+
 			int index = stateChangeOffsets.BinarySearch(offset);
 			if (index < 0) {
 				// If no color change exists directly at offset,
@@ -50,10 +52,12 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			return index;
 		}
 
-		int GetIndexForOffsetUseExistingSegment(int offset)
+		private int GetIndexForOffsetUseExistingSegment(int offset)
 		{
-			if (offset < 0)
+			if (offset < 0) {
 				throw new ArgumentOutOfRangeException("offset");
+			}
+
 			int index = stateChangeOffsets.BinarySearch(offset);
 			if (index < 0) {
 				// If no color change exists directly at offset,
@@ -63,13 +67,14 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			return index;
 		}
 
-		int GetEnd(int index)
+		private int GetEnd(int index)
 		{
 			// Gets the end of the color segment no. index.
-			if (index + 1 < stateChangeOffsets.Count)
+			if (index + 1 < stateChangeOffsets.Count) {
 				return stateChangeOffsets[index + 1];
-			else
+			} else {
 				return int.MaxValue;
+			}
 		}
 
 		/// <summary>
@@ -98,8 +103,10 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <param name="e">TextChangeEventArgs instance describing the change to the document.</param>
 		public void UpdateOffsets(TextChangeEventArgs e)
 		{
-			if (e == null)
+			if (e == null) {
 				throw new ArgumentNullException("e");
+			}
+
 			UpdateOffsets(e.GetNewOffset);
 		}
 
@@ -109,8 +116,10 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <param name="change">OffsetChangeMap instance describing the change to the document.</param>
 		public void UpdateOffsets(OffsetChangeMap change)
 		{
-			if (change == null)
+			if (change == null) {
 				throw new ArgumentNullException("change");
+			}
+
 			UpdateOffsets(change.GetNewOffset);
 		}
 
@@ -123,7 +132,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			UpdateOffsets(change.GetNewOffset);
 		}
 
-		void UpdateOffsets(Func<int, AnchorMovementType, int> updateOffset)
+		private void UpdateOffsets(Func<int, AnchorMovementType, int> updateOffset)
 		{
 			int readPos = 1;
 			int writePos = 1;
@@ -199,8 +208,10 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		public void SetHighlighting(int offset, int length, HighlightingColor color)
 		{
-			if (length <= 0)
+			if (length <= 0) {
 				return;
+			}
+
 			int startIndex = GetIndexForOffset(offset);
 			int endIndex = GetIndexForOffset(offset + length);
 			stateChanges[startIndex] = color != null ? color.Clone() : new HighlightingColor();
@@ -287,7 +298,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			for (int i = 0; i < runs.Length; i++) {
 				int startOffset = stateChangeOffsets[i];
 				int endOffset = i + 1 < stateChangeOffsets.Count ? stateChangeOffsets[i + 1] : textSource.TextLength;
-				Run r = new Run(textSource.GetText(startOffset, endOffset - startOffset));
+				Run r = new(textSource.GetText(startOffset, endOffset - startOffset));
 				HighlightingColor state = stateChanges[i];
 				RichText.ApplyColorToTextElement(r, state);
 				runs[i] = r;

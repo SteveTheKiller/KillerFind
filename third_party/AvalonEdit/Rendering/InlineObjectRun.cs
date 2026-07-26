@@ -42,16 +42,15 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public InlineObjectElement(int documentLength, UIElement element)
 			: base(1, documentLength)
 		{
-			if (element == null)
-				throw new ArgumentNullException("element");
-			this.Element = element;
+			this.Element = element ?? throw new ArgumentNullException("element");
 		}
 
 		/// <inheritdoc/>
 		public override TextRun CreateTextRun(int startVisualColumn, ITextRunConstructionContext context)
 		{
-			if (context == null)
+			if (context == null) {
 				throw new ArgumentNullException("context");
+			}
 
 			return new InlineObjectRun(1, this.TextRunProperties, this.Element);
 		}
@@ -62,9 +61,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// </summary>
 	public class InlineObjectRun : TextEmbeddedObject
 	{
-		UIElement element;
-		int length;
-		TextRunProperties properties;
+		private readonly int length;
+		private readonly TextRunProperties properties;
 		internal Size desiredSize;
 
 		/// <summary>
@@ -75,24 +73,19 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <param name="element">The <see cref="UIElement"/> to display.</param>
 		public InlineObjectRun(int length, TextRunProperties properties, UIElement element)
 		{
-			if (length <= 0)
+			if (length <= 0) {
 				throw new ArgumentOutOfRangeException("length", length, "Value must be positive");
-			if (properties == null)
-				throw new ArgumentNullException("properties");
-			if (element == null)
-				throw new ArgumentNullException("element");
+			}
 
 			this.length = length;
-			this.properties = properties;
-			this.element = element;
+			this.properties = properties ?? throw new ArgumentNullException("properties");
+			this.Element = element ?? throw new ArgumentNullException("element");
 		}
 
 		/// <summary>
 		/// Gets the element displayed by the InlineObjectRun.
 		/// </summary>
-		public UIElement Element {
-			get { return element; }
-		}
+		public UIElement Element { get; }
 
 		/// <summary>
 		/// Gets the VisualLine that contains this object. This property is only available after the object
@@ -101,51 +94,43 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public VisualLine VisualLine { get; internal set; }
 
 		/// <inheritdoc/>
-		public override LineBreakCondition BreakBefore {
-			get { return LineBreakCondition.BreakDesired; }
-		}
+		public override LineBreakCondition BreakBefore => LineBreakCondition.BreakDesired;
 
 		/// <inheritdoc/>
-		public override LineBreakCondition BreakAfter {
-			get { return LineBreakCondition.BreakDesired; }
-		}
+		public override LineBreakCondition BreakAfter => LineBreakCondition.BreakDesired;
 
 		/// <inheritdoc/>
-		public override bool HasFixedSize {
-			get { return true; }
-		}
+		public override bool HasFixedSize => true;
 
 		/// <inheritdoc/>
-		public override CharacterBufferReference CharacterBufferReference {
-			get { return new CharacterBufferReference(); }
-		}
+		public override CharacterBufferReference CharacterBufferReference => new();
 
 		/// <inheritdoc/>
-		public override int Length {
-			get { return length; }
-		}
+		public override int Length => length;
 
 		/// <inheritdoc/>
-		public override TextRunProperties Properties {
-			get { return properties; }
-		}
+		public override TextRunProperties Properties => properties;
 
 		/// <inheritdoc/>
 		public override TextEmbeddedObjectMetrics Format(double remainingParagraphWidth)
 		{
-			double baseline = TextBlock.GetBaselineOffset(element);
-			if (double.IsNaN(baseline))
+			double baseline = TextBlock.GetBaselineOffset(Element);
+			if (double.IsNaN(baseline)) {
 				baseline = desiredSize.Height;
+			}
+
 			return new TextEmbeddedObjectMetrics(desiredSize.Width, desiredSize.Height, baseline);
 		}
 
 		/// <inheritdoc/>
 		public override Rect ComputeBoundingBox(bool rightToLeft, bool sideways)
 		{
-			if (this.element.IsArrangeValid) {
-				double baseline = TextBlock.GetBaselineOffset(element);
-				if (double.IsNaN(baseline))
+			if (this.Element.IsArrangeValid) {
+				double baseline = TextBlock.GetBaselineOffset(Element);
+				if (double.IsNaN(baseline)) {
 					baseline = desiredSize.Height;
+				}
+
 				return new Rect(new Point(0, -baseline), desiredSize);
 			} else {
 				return Rect.Empty;

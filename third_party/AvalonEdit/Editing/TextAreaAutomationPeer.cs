@@ -27,7 +27,7 @@ using ICSharpCode.AvalonEdit.Document;
 
 namespace ICSharpCode.AvalonEdit.Editing
 {
-	class TextAreaAutomationPeer : FrameworkElementAutomationPeer, IValueProvider, ITextProvider
+	internal class TextAreaAutomationPeer : FrameworkElementAutomationPeer, IValueProvider, ITextProvider
 	{
 		public TextAreaAutomationPeer(TextArea owner)
 			: base(owner)
@@ -42,29 +42,23 @@ namespace ICSharpCode.AvalonEdit.Editing
 			RaiseAutomationEvent(AutomationEvents.TextPatternOnTextSelectionChanged);
 		}
 
-		private TextArea TextArea { get { return (TextArea)base.Owner; } }
+		private TextArea TextArea => (TextArea)base.Owner;
 
 		protected override AutomationControlType GetAutomationControlTypeCore()
 		{
 			return AutomationControlType.Document;
 		}
 
-		internal IRawElementProviderSimple Provider {
-			get { return ProviderFromPeer(this); }
-		}
+		internal IRawElementProviderSimple Provider => ProviderFromPeer(this);
 
-		public bool IsReadOnly {
-			get { return TextArea.ReadOnlySectionProvider == ReadOnlySectionDocument.Instance; }
-		}
+		public bool IsReadOnly => TextArea.ReadOnlySectionProvider == ReadOnlySectionDocument.Instance;
 
 		public void SetValue(string value)
 		{
 			TextArea.Document.Text = value;
 		}
 
-		public string Value {
-			get { return TextArea.Document.Text; }
-		}
+		public string Value => TextArea.Document.Text;
 
 		public ITextRangeProvider DocumentRange {
 			get {
@@ -77,9 +71,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 		{
 			Debug.WriteLine("TextAreaAutomationPeer.GetSelection()");
 			if (TextArea.Selection.IsEmpty) {
-				var anchor = TextArea.Document.CreateAnchor(TextArea.Caret.Offset);
+				TextAnchor anchor = TextArea.Document.CreateAnchor(TextArea.Caret.Offset);
 				anchor.SurviveDeletion = true;
-				return new ITextRangeProvider[] { new TextRangeProvider(TextArea, TextArea.Document, new AnchorSegment(anchor, anchor)) };
+				return [new TextRangeProvider(TextArea, TextArea.Document, new AnchorSegment(anchor, anchor))];
 			}
 			return TextArea.Selection.Segments.Select(s => new TextRangeProvider(TextArea, TextArea.Document, s)).ToArray();
 		}
@@ -102,22 +96,24 @@ namespace ICSharpCode.AvalonEdit.Editing
 			throw new NotImplementedException();
 		}
 
-		public SupportedTextSelection SupportedTextSelection {
-			get { return SupportedTextSelection.Single; }
-		}
+		public SupportedTextSelection SupportedTextSelection => SupportedTextSelection.Single;
 
 		public override object GetPattern(PatternInterface patternInterface)
 		{
-			if (patternInterface == PatternInterface.Text)
+			if (patternInterface == PatternInterface.Text) {
 				return this;
-			if (patternInterface == PatternInterface.Value)
+			}
+
+			if (patternInterface == PatternInterface.Value) {
 				return this;
+			}
+
 			if (patternInterface == PatternInterface.Scroll) {
-				TextEditor editor = TextArea.GetService(typeof(TextEditor)) as TextEditor;
-				if (editor != null) {
-					var fromElement = FromElement(editor);
-					if (fromElement != null)
+				if (TextArea.GetService(typeof(TextEditor)) is TextEditor editor) {
+					AutomationPeer fromElement = FromElement(editor);
+					if (fromElement != null) {
 						return fromElement.GetPattern(patternInterface);
+					}
 				}
 			}
 			return base.GetPattern(patternInterface);

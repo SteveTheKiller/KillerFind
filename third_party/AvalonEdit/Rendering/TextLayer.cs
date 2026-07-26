@@ -35,7 +35,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// is handled by the TextView.
 	/// This allows UIElements that are displayed behind the text, but still can react to mouse input.
 	/// </remarks>
-	sealed class TextLayer : Layer
+	internal sealed class TextLayer : Layer
 	{
 		/// <summary>
 		/// the index of the text layer in the layers collection
@@ -46,13 +46,14 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		{
 		}
 
-		List<VisualLineDrawingVisual> visuals = new List<VisualLineDrawingVisual>();
+		private readonly List<VisualLineDrawingVisual> visuals = [];
 
 		internal void SetVisualLines(ICollection<VisualLine> visualLines)
 		{
 			foreach (VisualLineDrawingVisual v in visuals) {
-				if (v.VisualLine.IsDisposed)
+				if (v.VisualLine.IsDisposed) {
 					RemoveVisualChild(v);
+				}
 			}
 			visuals.Clear();
 			foreach (VisualLine newLine in visualLines) {
@@ -66,9 +67,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			InvalidateArrange();
 		}
 
-		protected override int VisualChildrenCount {
-			get { return visuals.Count; }
-		}
+		protected override int VisualChildrenCount => visuals.Count;
 
 		protected override Visual GetVisualChild(int index)
 		{

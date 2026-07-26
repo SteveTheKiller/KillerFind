@@ -30,14 +30,12 @@ namespace ICSharpCode.AvalonEdit.Snippets
 	[Serializable]
 	public class SnippetContainerElement : SnippetElement
 	{
-		NullSafeCollection<SnippetElement> elements = new NullSafeCollection<SnippetElement>();
+		private readonly NullSafeCollection<SnippetElement> elements = [];
 
 		/// <summary>
 		/// Gets the list of child elements.
 		/// </summary>
-		public IList<SnippetElement> Elements {
-			get { return elements; }
-		}
+		public IList<SnippetElement> Elements => elements;
 
 		/// <inheritdoc/>
 		public override void Insert(InsertionContext context)
@@ -50,11 +48,12 @@ namespace ICSharpCode.AvalonEdit.Snippets
 		/// <inheritdoc/>
 		public override Inline ToTextRun()
 		{
-			Span span = new Span();
+			Span span = new();
 			foreach (SnippetElement e in this.Elements) {
 				Inline r = e.ToTextRun();
-				if (r != null)
+				if (r != null) {
 					span.Inlines.Add(r);
+				}
 			}
 			return span;
 		}

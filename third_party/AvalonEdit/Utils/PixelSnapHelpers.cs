@@ -33,8 +33,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public static Size GetPixelSize(Visual visual)
 		{
-			if (visual == null)
+			if (visual == null) {
 				throw new ArgumentNullException("visual");
+			}
+
 			PresentationSource source = PresentationSource.FromVisual(visual);
 			if (source != null) {
 				Matrix matrix = source.CompositionTarget.TransformFromDevice;

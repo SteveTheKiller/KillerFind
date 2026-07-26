@@ -27,57 +27,52 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// </summary>
 	public class DocumentTextWriter : TextWriter
 	{
-		readonly IDocument document;
-		int insertionOffset;
+		private readonly IDocument document;
 
 		/// <summary>
 		/// Creates a new DocumentTextWriter that inserts into document, starting at insertionOffset.
 		/// </summary>
 		public DocumentTextWriter(IDocument document, int insertionOffset)
 		{
-			this.insertionOffset = insertionOffset;
-			if (document == null)
-				throw new ArgumentNullException("document");
-			this.document = document;
-			var line = document.GetLineByOffset(insertionOffset);
-			if (line.DelimiterLength == 0)
+			this.InsertionOffset = insertionOffset;
+			this.document = document ?? throw new ArgumentNullException("document");
+			IDocumentLine line = document.GetLineByOffset(insertionOffset);
+			if (line.DelimiterLength == 0) {
 				line = line.PreviousLine;
-			if (line != null)
+			}
+
+			if (line != null) {
 				this.NewLine = document.GetText(line.EndOffset, line.DelimiterLength);
+			}
 		}
 
 		/// <summary>
 		/// Gets/Sets the current insertion offset.
 		/// </summary>
-		public int InsertionOffset {
-			get { return insertionOffset; }
-			set { insertionOffset = value; }
-		}
+		public int InsertionOffset { get; set; }
 
 		/// <inheritdoc/>
 		public override void Write(char value)
 		{
-			document.Insert(insertionOffset, value.ToString());
-			insertionOffset++;
+			document.Insert(InsertionOffset, value.ToString());
+			InsertionOffset++;
 		}
 
 		/// <inheritdoc/>
 		public override void Write(char[] buffer, int index, int count)
 		{
-			document.Insert(insertionOffset, new string(buffer, index, count));
-			insertionOffset += count;
+			document.Insert(InsertionOffset, new string(buffer, index, count));
+			InsertionOffset += count;
 		}
 
 		/// <inheritdoc/>
 		public override void Write(string value)
 		{
-			document.Insert(insertionOffset, value);
-			insertionOffset += value.Length;
+			document.Insert(InsertionOffset, value);
+			InsertionOffset += value.Length;
 		}
 
 		/// <inheritdoc/>
-		public override Encoding Encoding {
-			get { return Encoding.UTF8; }
-		}
+		public override Encoding Encoding => Encoding.UTF8;
 	}
 }

@@ -66,11 +66,11 @@ namespace ICSharpCode.AvalonEdit.Snippets
 		event EventHandler TextChanged;
 	}
 
-	sealed class ReplaceableActiveElement : IReplaceableActiveElement, IWeakEventListener
+	internal sealed class ReplaceableActiveElement : IReplaceableActiveElement, IWeakEventListener
 	{
-		readonly InsertionContext context;
-		readonly int startOffset, endOffset;
-		TextAnchor start, end;
+		private readonly InsertionContext context;
+		private readonly int startOffset, endOffset;
+		private TextAnchor start, end;
 
 		public ReplaceableActiveElement(InsertionContext context, int startOffset, int endOffset)
 		{
@@ -79,7 +79,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 			this.endOffset = endOffset;
 		}
 
-		void AnchorDeleted(object sender, EventArgs e)
+		private void AnchorDeleted(object sender, EventArgs e)
 		{
 			context.Deactivate(new SnippetEventArgs(DeactivateReason.Deleted));
 		}
@@ -118,9 +118,9 @@ namespace ICSharpCode.AvalonEdit.Snippets
 			context.TextArea.Caret.PositionChanged -= Caret_PositionChanged;
 		}
 
-		bool isCaretInside;
+		private bool isCaretInside;
 
-		void Caret_PositionChanged(object sender, EventArgs e)
+		private void Caret_PositionChanged(object sender, EventArgs e)
 		{
 			ISegment s = this.Segment;
 			if (s != null) {
@@ -132,16 +132,17 @@ namespace ICSharpCode.AvalonEdit.Snippets
 			}
 		}
 
-		Renderer background, foreground;
+		private Renderer background, foreground;
 
 		public string Text { get; private set; }
 
-		string GetText()
+		private string GetText()
 		{
-			if (start.IsDeleted || end.IsDeleted)
+			if (start.IsDeleted || end.IsDeleted) {
 				return string.Empty;
-			else
+			} else {
 				return context.Document.GetText(start.Offset, Math.Max(0, end.Offset - start.Offset));
+			}
 		}
 
 		public event EventHandler TextChanged;
@@ -152,44 +153,44 @@ namespace ICSharpCode.AvalonEdit.Snippets
 				string newText = GetText();
 				if (this.Text != newText) {
 					this.Text = newText;
-					if (TextChanged != null)
-						TextChanged(this, e);
+					TextChanged?.Invoke(this, e);
 				}
 				return true;
 			}
 			return false;
 		}
 
-		public bool IsEditable {
-			get { return true; }
-		}
+		public bool IsEditable => true;
 
 		public ISegment Segment {
 			get {
-				if (start.IsDeleted || end.IsDeleted)
+				if (start.IsDeleted || end.IsDeleted) {
 					return null;
-				else
+				} else {
 					return new SimpleSegment(start.Offset, Math.Max(0, end.Offset - start.Offset));
+				}
 			}
 		}
 
-		sealed class Renderer : IBackgroundRenderer
+		private sealed class Renderer : IBackgroundRenderer
 		{
-			static readonly Brush backgroundBrush = CreateBackgroundBrush();
-			static readonly Pen activeBorderPen = CreateBorderPen();
+			private static readonly Brush backgroundBrush = CreateBackgroundBrush();
+			private static readonly Pen activeBorderPen = CreateBorderPen();
 
-			static Brush CreateBackgroundBrush()
+			private static Brush CreateBackgroundBrush()
 			{
-				SolidColorBrush b = new SolidColorBrush(Colors.LimeGreen);
-				b.Opacity = 0.4;
+				SolidColorBrush b = new(Colors.LimeGreen) {
+					Opacity = 0.4
+				};
 				b.Freeze();
 				return b;
 			}
 
-			static Pen CreateBorderPen()
+			private static Pen CreateBorderPen()
 			{
-				Pen p = new Pen(Brushes.Black, 1);
-				p.DashStyle = DashStyles.Dot;
+				Pen p = new(Brushes.Black, 1) {
+					DashStyle = DashStyles.Dot
+				};
 				p.Freeze();
 				return p;
 			}
@@ -202,9 +203,10 @@ namespace ICSharpCode.AvalonEdit.Snippets
 			{
 				ISegment s = element.Segment;
 				if (s != null) {
-					BackgroundGeometryBuilder geoBuilder = new BackgroundGeometryBuilder();
-					geoBuilder.AlignToWholePixels = true;
-					geoBuilder.BorderThickness = activeBorderPen != null ? activeBorderPen.Thickness : 0;
+					BackgroundGeometryBuilder geoBuilder = new() {
+						AlignToWholePixels = true,
+						BorderThickness = activeBorderPen != null ? activeBorderPen.Thickness : 0
+					};
 					if (Layer == KnownLayer.Background) {
 						geoBuilder.AddSegment(textView, s);
 						drawingContext.DrawGeometry(backgroundBrush, null, geoBuilder.CreateGeometry());

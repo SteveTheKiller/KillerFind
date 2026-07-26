@@ -66,9 +66,7 @@ namespace ICSharpCode.AvalonEdit
 		/// </summary>
 		protected TextEditor(TextArea textArea)
 		{
-			if (textArea == null)
-				throw new ArgumentNullException("textArea");
-			this.textArea = textArea;
+			this.TextArea = textArea ?? throw new ArgumentNullException("textArea");
 
 			textArea.TextView.Services.AddService(typeof(TextEditor), this);
 
@@ -90,7 +88,7 @@ namespace ICSharpCode.AvalonEdit
 		{
 			base.OnGotKeyboardFocus(e);
 			if (e.NewFocus == this) {
-				Keyboard.Focus(textArea);
+				Keyboard.Focus(TextArea);
 				e.Handled = true;
 			}
 		}
@@ -108,8 +106,7 @@ namespace ICSharpCode.AvalonEdit
 		/// This is a dependency property.
 		/// </summary>
 		public TextDocument Document {
-			get { return (TextDocument)GetValue(DocumentProperty); }
-			set { SetValue(DocumentProperty, value); }
+			get => (TextDocument)GetValue(DocumentProperty); set => SetValue(DocumentProperty, value);
 		}
 
 		/// <summary>
@@ -122,23 +119,21 @@ namespace ICSharpCode.AvalonEdit
 		/// </summary>
 		protected virtual void OnDocumentChanged(EventArgs e)
 		{
-			if (DocumentChanged != null) {
-				DocumentChanged(this, e);
-			}
+			DocumentChanged?.Invoke(this, e);
 		}
 
-		static void OnDocumentChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
+		private static void OnDocumentChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
 		{
 			((TextEditor)dp).OnDocumentChanged((TextDocument)e.OldValue, (TextDocument)e.NewValue);
 		}
 
-		void OnDocumentChanged(TextDocument oldValue, TextDocument newValue)
+		private void OnDocumentChanged(TextDocument oldValue, TextDocument newValue)
 		{
 			if (oldValue != null) {
 				TextDocumentWeakEventManager.TextChanged.RemoveListener(oldValue, this);
 				PropertyChangedEventManager.RemoveListener(oldValue.UndoStack, this, "IsOriginalFile");
 			}
-			textArea.Document = newValue;
+			TextArea.Document = newValue;
 			if (newValue != null) {
 				TextDocumentWeakEventManager.TextChanged.AddListener(newValue, this);
 				PropertyChangedEventManager.AddListener(newValue.UndoStack, this, "IsOriginalFile");
@@ -159,8 +154,7 @@ namespace ICSharpCode.AvalonEdit
 		/// Gets/Sets the options currently used by the text editor.
 		/// </summary>
 		public TextEditorOptions Options {
-			get { return (TextEditorOptions)GetValue(OptionsProperty); }
-			set { SetValue(OptionsProperty, value); }
+			get => (TextEditorOptions)GetValue(OptionsProperty); set => SetValue(OptionsProperty, value);
 		}
 
 		/// <summary>
@@ -173,22 +167,20 @@ namespace ICSharpCode.AvalonEdit
 		/// </summary>
 		protected virtual void OnOptionChanged(PropertyChangedEventArgs e)
 		{
-			if (OptionChanged != null) {
-				OptionChanged(this, e);
-			}
+			OptionChanged?.Invoke(this, e);
 		}
 
-		static void OnOptionsChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
+		private static void OnOptionsChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
 		{
 			((TextEditor)dp).OnOptionsChanged((TextEditorOptions)e.OldValue, (TextEditorOptions)e.NewValue);
 		}
 
-		void OnOptionsChanged(TextEditorOptions oldValue, TextEditorOptions newValue)
+		private void OnOptionsChanged(TextEditorOptions oldValue, TextEditorOptions newValue)
 		{
 			if (oldValue != null) {
 				PropertyChangedWeakEventManager.RemoveListener(oldValue, this);
 			}
-			textArea.Options = newValue;
+			TextArea.Options = newValue;
 			if (newValue != null) {
 				PropertyChangedWeakEventManager.AddListener(newValue, this);
 			}
@@ -236,11 +228,9 @@ namespace ICSharpCode.AvalonEdit
 			}
 		}
 
-		TextDocument GetDocument()
+		private TextDocument GetDocument()
 		{
-			TextDocument document = this.Document;
-			if (document == null)
-				throw ThrowUtil.NoDocumentAssigned();
+			TextDocument document = this.Document ?? throw ThrowUtil.NoDocumentAssigned();
 			return document;
 		}
 
@@ -254,15 +244,11 @@ namespace ICSharpCode.AvalonEdit
 		/// </summary>
 		protected virtual void OnTextChanged(EventArgs e)
 		{
-			if (TextChanged != null) {
-				TextChanged(this, e);
-			}
+			TextChanged?.Invoke(this, e);
 		}
 		#endregion
 
 		#region TextArea / ScrollViewer properties
-		readonly TextArea textArea;
-		ScrollViewer scrollViewer;
 
 		/// <summary>
 		/// Is called after the template was applied.
@@ -270,34 +256,28 @@ namespace ICSharpCode.AvalonEdit
 		public override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
-			scrollViewer = (ScrollViewer)Template.FindName("PART_ScrollViewer", this);
+			ScrollViewer = (ScrollViewer)Template.FindName("PART_ScrollViewer", this);
 		}
 
 		/// <summary>
 		/// Gets the text area.
 		/// </summary>
-		public TextArea TextArea {
-			get {
-				return textArea;
-			}
-		}
+		public TextArea TextArea { get; }
 
 		/// <summary>
 		/// Gets the scroll viewer used by the text editor.
 		/// This property can return null if the template has not been applied / does not contain a scroll viewer.
 		/// </summary>
-		internal ScrollViewer ScrollViewer {
-			get { return scrollViewer; }
+		internal ScrollViewer ScrollViewer { get; private set; }
+
+		private bool CanExecute(RoutedUICommand command)
+		{
+			return command.CanExecute(null, TextArea);
 		}
 
-		bool CanExecute(RoutedUICommand command)
+		private void Execute(RoutedUICommand command)
 		{
-			return command.CanExecute(null, textArea);
-		}
-
-		void Execute(RoutedUICommand command)
-		{
-			command.Execute(null, textArea);
+			command.Execute(null, TextArea);
 		}
 		#endregion
 
@@ -314,27 +294,27 @@ namespace ICSharpCode.AvalonEdit
 		/// Gets/sets the syntax highlighting definition used to colorize the text.
 		/// </summary>
 		public IHighlightingDefinition SyntaxHighlighting {
-			get { return (IHighlightingDefinition)GetValue(SyntaxHighlightingProperty); }
-			set { SetValue(SyntaxHighlightingProperty, value); }
+			get => (IHighlightingDefinition)GetValue(SyntaxHighlightingProperty); set => SetValue(SyntaxHighlightingProperty, value);
 		}
 
-		IVisualLineTransformer colorizer;
+		private IVisualLineTransformer colorizer;
 
-		static void OnSyntaxHighlightingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		private static void OnSyntaxHighlightingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 			((TextEditor)d).OnSyntaxHighlightingChanged(e.NewValue as IHighlightingDefinition);
 		}
 
-		void OnSyntaxHighlightingChanged(IHighlightingDefinition newValue)
+		private void OnSyntaxHighlightingChanged(IHighlightingDefinition newValue)
 		{
 			if (colorizer != null) {
-				textArea.TextView.LineTransformers.Remove(colorizer);
+				TextArea.TextView.LineTransformers.Remove(colorizer);
 				colorizer = null;
 			}
 			if (newValue != null) {
 				colorizer = CreateColorizer(newValue);
-				if (colorizer != null)
-					textArea.TextView.LineTransformers.Insert(0, colorizer);
+				if (colorizer != null) {
+					TextArea.TextView.LineTransformers.Insert(0, colorizer);
+				}
 			}
 		}
 
@@ -345,8 +325,10 @@ namespace ICSharpCode.AvalonEdit
 		/// <returns></returns>
 		protected virtual IVisualLineTransformer CreateColorizer(IHighlightingDefinition highlightingDefinition)
 		{
-			if (highlightingDefinition == null)
+			if (highlightingDefinition == null) {
 				throw new ArgumentNullException("highlightingDefinition");
+			}
+
 			return new HighlightingColorizer(highlightingDefinition);
 		}
 		#endregion
@@ -367,8 +349,7 @@ namespace ICSharpCode.AvalonEdit
 		/// HorizontalScrollBarVisibility setting.
 		/// </remarks>
 		public bool WordWrap {
-			get { return (bool)GetValue(WordWrapProperty); }
-			set { SetValue(WordWrapProperty, Boxes.Box(value)); }
+			get => (bool)GetValue(WordWrapProperty); set => SetValue(WordWrapProperty, Boxes.Box(value));
 		}
 		#endregion
 
@@ -386,23 +367,20 @@ namespace ICSharpCode.AvalonEdit
 		/// <see cref="Editing.TextArea.ReadOnlySectionProvider">TextArea.ReadOnlySectionProvider</see>.
 		/// </summary>
 		public bool IsReadOnly {
-			get { return (bool)GetValue(IsReadOnlyProperty); }
-			set { SetValue(IsReadOnlyProperty, Boxes.Box(value)); }
+			get => (bool)GetValue(IsReadOnlyProperty); set => SetValue(IsReadOnlyProperty, Boxes.Box(value));
 		}
 
-		static void OnIsReadOnlyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		private static void OnIsReadOnlyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			TextEditor editor = d as TextEditor;
-			if (editor != null) {
-				if ((bool)e.NewValue)
+			if (d is TextEditor editor) {
+				if ((bool)e.NewValue) {
 					editor.TextArea.ReadOnlySectionProvider = ReadOnlySectionDocument.Instance;
-				else
+				} else {
 					editor.TextArea.ReadOnlySectionProvider = NoReadOnlySections.Instance;
+				}
 
 				TextEditorAutomationPeer peer = TextEditorAutomationPeer.FromElement(editor) as TextEditorAutomationPeer;
-				if (peer != null) {
-					peer.RaiseIsReadOnlyChanged((bool)e.OldValue, (bool)e.NewValue);
-				}
+				peer?.RaiseIsReadOnlyChanged((bool)e.OldValue, (bool)e.NewValue);
 			}
 		}
 		#endregion
@@ -419,20 +397,19 @@ namespace ICSharpCode.AvalonEdit
 		/// Gets/Sets the 'modified' flag.
 		/// </summary>
 		public bool IsModified {
-			get { return (bool)GetValue(IsModifiedProperty); }
-			set { SetValue(IsModifiedProperty, Boxes.Box(value)); }
+			get => (bool)GetValue(IsModifiedProperty); set => SetValue(IsModifiedProperty, Boxes.Box(value));
 		}
 
-		static void OnIsModifiedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		private static void OnIsModifiedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			TextEditor editor = d as TextEditor;
-			if (editor != null) {
+			if (d is TextEditor editor) {
 				TextDocument document = editor.Document;
 				if (document != null) {
 					UndoStack undoStack = document.UndoStack;
 					if ((bool)e.NewValue) {
-						if (undoStack.IsOriginalFile)
+						if (undoStack.IsOriginalFile) {
 							undoStack.DiscardOriginalFileMarker();
+						}
 					} else {
 						undoStack.MarkAsOriginalFile();
 					}
@@ -440,7 +417,7 @@ namespace ICSharpCode.AvalonEdit
 			}
 		}
 
-		bool HandleIsOriginalChanged(PropertyChangedEventArgs e)
+		private bool HandleIsOriginalChanged(PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == "IsOriginalFile") {
 				TextDocument document = this.Document;
@@ -466,20 +443,19 @@ namespace ICSharpCode.AvalonEdit
 		/// Specifies whether line numbers are shown on the left to the text view.
 		/// </summary>
 		public bool ShowLineNumbers {
-			get { return (bool)GetValue(ShowLineNumbersProperty); }
-			set { SetValue(ShowLineNumbersProperty, Boxes.Box(value)); }
+			get => (bool)GetValue(ShowLineNumbersProperty); set => SetValue(ShowLineNumbersProperty, Boxes.Box(value));
 		}
 
-		static void OnShowLineNumbersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		private static void OnShowLineNumbersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 			TextEditor editor = (TextEditor)d;
-			var leftMargins = editor.TextArea.LeftMargins;
+			System.Collections.ObjectModel.ObservableCollection<UIElement> leftMargins = editor.TextArea.LeftMargins;
 			if ((bool)e.NewValue) {
-				LineNumberMargin lineNumbers = new LineNumberMargin();
+				LineNumberMargin lineNumbers = new();
 				Line line = (Line)DottedLineMargin.Create();
 				leftMargins.Insert(0, lineNumbers);
 				leftMargins.Insert(1, line);
-				var lineNumbersForeground = new Binding("LineNumbersForeground") { Source = editor };
+				Binding lineNumbersForeground = new("LineNumbersForeground") { Source = editor };
 				line.SetBinding(Line.StrokeProperty, lineNumbersForeground);
 				lineNumbers.SetBinding(Control.ForegroundProperty, lineNumbersForeground);
 			} else {
@@ -508,18 +484,15 @@ namespace ICSharpCode.AvalonEdit
 		/// Gets/sets the Brush used for displaying the foreground color of line numbers.
 		/// </summary>
 		public Brush LineNumbersForeground {
-			get { return (Brush)GetValue(LineNumbersForegroundProperty); }
-			set { SetValue(LineNumbersForegroundProperty, value); }
+			get => (Brush)GetValue(LineNumbersForegroundProperty); set => SetValue(LineNumbersForegroundProperty, value);
 		}
 
-		static void OnLineNumbersForegroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		private static void OnLineNumbersForegroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 			TextEditor editor = (TextEditor)d;
-			var lineNumberMargin = editor.TextArea.LeftMargins.FirstOrDefault(margin => margin is LineNumberMargin) as LineNumberMargin; ;
+			LineNumberMargin? lineNumberMargin = editor.TextArea.LeftMargins.FirstOrDefault(margin => margin is LineNumberMargin) as LineNumberMargin; ;
 
-			if (lineNumberMargin != null) {
-				lineNumberMargin.SetValue(Control.ForegroundProperty, e.NewValue);
-			}
+			lineNumberMargin?.SetValue(Control.ForegroundProperty, e.NewValue);
 		}
 		#endregion
 
@@ -529,7 +502,7 @@ namespace ICSharpCode.AvalonEdit
 		/// </summary>
 		public void AppendText(string textData)
 		{
-			var document = GetDocument();
+			TextDocument document = GetDocument();
 			document.Insert(document.TextLength, textData);
 		}
 
@@ -587,8 +560,7 @@ namespace ICSharpCode.AvalonEdit
 		/// </summary>
 		public void LineDown()
 		{
-			if (scrollViewer != null)
-				scrollViewer.LineDown();
+			ScrollViewer?.LineDown();
 		}
 
 		/// <summary>
@@ -596,8 +568,7 @@ namespace ICSharpCode.AvalonEdit
 		/// </summary>
 		public void LineLeft()
 		{
-			if (scrollViewer != null)
-				scrollViewer.LineLeft();
+			ScrollViewer?.LineLeft();
 		}
 
 		/// <summary>
@@ -605,8 +576,7 @@ namespace ICSharpCode.AvalonEdit
 		/// </summary>
 		public void LineRight()
 		{
-			if (scrollViewer != null)
-				scrollViewer.LineRight();
+			ScrollViewer?.LineRight();
 		}
 
 		/// <summary>
@@ -614,8 +584,7 @@ namespace ICSharpCode.AvalonEdit
 		/// </summary>
 		public void LineUp()
 		{
-			if (scrollViewer != null)
-				scrollViewer.LineUp();
+			ScrollViewer?.LineUp();
 		}
 
 		/// <summary>
@@ -623,8 +592,7 @@ namespace ICSharpCode.AvalonEdit
 		/// </summary>
 		public void PageDown()
 		{
-			if (scrollViewer != null)
-				scrollViewer.PageDown();
+			ScrollViewer?.PageDown();
 		}
 
 		/// <summary>
@@ -632,8 +600,7 @@ namespace ICSharpCode.AvalonEdit
 		/// </summary>
 		public void PageUp()
 		{
-			if (scrollViewer != null)
-				scrollViewer.PageUp();
+			ScrollViewer?.PageUp();
 		}
 
 		/// <summary>
@@ -641,8 +608,7 @@ namespace ICSharpCode.AvalonEdit
 		/// </summary>
 		public void PageLeft()
 		{
-			if (scrollViewer != null)
-				scrollViewer.PageLeft();
+			ScrollViewer?.PageLeft();
 		}
 
 		/// <summary>
@@ -650,8 +616,7 @@ namespace ICSharpCode.AvalonEdit
 		/// </summary>
 		public void PageRight()
 		{
-			if (scrollViewer != null)
-				scrollViewer.PageRight();
+			ScrollViewer?.PageRight();
 		}
 
 		/// <summary>
@@ -681,8 +646,7 @@ namespace ICSharpCode.AvalonEdit
 		public void ScrollToEnd()
 		{
 			ApplyTemplate(); // ensure scrollViewer is created
-			if (scrollViewer != null)
-				scrollViewer.ScrollToEnd();
+			ScrollViewer?.ScrollToEnd();
 		}
 
 		/// <summary>
@@ -691,8 +655,7 @@ namespace ICSharpCode.AvalonEdit
 		public void ScrollToHome()
 		{
 			ApplyTemplate(); // ensure scrollViewer is created
-			if (scrollViewer != null)
-				scrollViewer.ScrollToHome();
+			ScrollViewer?.ScrollToHome();
 		}
 
 		/// <summary>
@@ -701,8 +664,7 @@ namespace ICSharpCode.AvalonEdit
 		public void ScrollToHorizontalOffset(double offset)
 		{
 			ApplyTemplate(); // ensure scrollViewer is created
-			if (scrollViewer != null)
-				scrollViewer.ScrollToHorizontalOffset(offset);
+			ScrollViewer?.ScrollToHorizontalOffset(offset);
 		}
 
 		/// <summary>
@@ -711,8 +673,7 @@ namespace ICSharpCode.AvalonEdit
 		public void ScrollToVerticalOffset(double offset)
 		{
 			ApplyTemplate(); // ensure scrollViewer is created
-			if (scrollViewer != null)
-				scrollViewer.ScrollToVerticalOffset(offset);
+			ScrollViewer?.ScrollToVerticalOffset(offset);
 		}
 
 		/// <summary>
@@ -739,70 +700,42 @@ namespace ICSharpCode.AvalonEdit
 		/// <summary>
 		/// Gets if the most recent undone command can be redone.
 		/// </summary>
-		public bool CanRedo {
-			get { return CanExecute(ApplicationCommands.Redo); }
-		}
+		public bool CanRedo => CanExecute(ApplicationCommands.Redo);
 
 		/// <summary>
 		/// Gets if the most recent command can be undone.
 		/// </summary>
-		public bool CanUndo {
-			get { return CanExecute(ApplicationCommands.Undo); }
-		}
+		public bool CanUndo => CanExecute(ApplicationCommands.Undo);
 
 		/// <summary>
 		/// Gets the vertical size of the document.
 		/// </summary>
-		public double ExtentHeight {
-			get {
-				return scrollViewer != null ? scrollViewer.ExtentHeight : 0;
-			}
-		}
+		public double ExtentHeight => ScrollViewer != null ? ScrollViewer.ExtentHeight : 0;
 
 		/// <summary>
 		/// Gets the horizontal size of the current document region.
 		/// </summary>
-		public double ExtentWidth {
-			get {
-				return scrollViewer != null ? scrollViewer.ExtentWidth : 0;
-			}
-		}
+		public double ExtentWidth => ScrollViewer != null ? ScrollViewer.ExtentWidth : 0;
 
 		/// <summary>
 		/// Gets the horizontal size of the viewport.
 		/// </summary>
-		public double ViewportHeight {
-			get {
-				return scrollViewer != null ? scrollViewer.ViewportHeight : 0;
-			}
-		}
+		public double ViewportHeight => ScrollViewer != null ? ScrollViewer.ViewportHeight : 0;
 
 		/// <summary>
 		/// Gets the horizontal size of the viewport.
 		/// </summary>
-		public double ViewportWidth {
-			get {
-				return scrollViewer != null ? scrollViewer.ViewportWidth : 0;
-			}
-		}
+		public double ViewportWidth => ScrollViewer != null ? ScrollViewer.ViewportWidth : 0;
 
 		/// <summary>
 		/// Gets the vertical scroll position.
 		/// </summary>
-		public double VerticalOffset {
-			get {
-				return scrollViewer != null ? scrollViewer.VerticalOffset : 0;
-			}
-		}
+		public double VerticalOffset => ScrollViewer != null ? ScrollViewer.VerticalOffset : 0;
 
 		/// <summary>
 		/// Gets the horizontal scroll position.
 		/// </summary>
-		public double HorizontalOffset {
-			get {
-				return scrollViewer != null ? scrollViewer.HorizontalOffset : 0;
-			}
-		}
+		public double HorizontalOffset => ScrollViewer != null ? ScrollViewer.HorizontalOffset : 0;
 		#endregion
 
 		#region TextBox methods
@@ -814,20 +747,23 @@ namespace ICSharpCode.AvalonEdit
 			get {
 				// We'll get the text from the whole surrounding segment.
 				// This is done to ensure that SelectedText.Length == SelectionLength.
-				if (textArea.Document != null && !textArea.Selection.IsEmpty)
-					return textArea.Document.GetText(textArea.Selection.SurroundingSegment);
-				else
+				if (TextArea.Document != null && !TextArea.Selection.IsEmpty) {
+					return TextArea.Document.GetText(TextArea.Selection.SurroundingSegment);
+				} else {
 					return string.Empty;
+				}
 			}
 			set {
-				if (value == null)
+				if (value == null) {
 					throw new ArgumentNullException("value");
-				if (textArea.Document != null) {
+				}
+
+				if (TextArea.Document != null) {
 					int offset = this.SelectionStart;
 					int length = this.SelectionLength;
-					textArea.Document.Replace(offset, length, value);
+					TextArea.Document.Replace(offset, length, value);
 					// keep inserted text selected
-					textArea.Selection = SimpleSelection.Create(textArea, offset, offset + value.Length);
+					TextArea.Selection = SimpleSelection.Create(TextArea, offset, offset + value.Length);
 				}
 			}
 		}
@@ -837,12 +773,7 @@ namespace ICSharpCode.AvalonEdit
 		/// </summary>
 		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public int CaretOffset {
-			get {
-				return textArea.Caret.Offset;
-			}
-			set {
-				textArea.Caret.Offset = value;
-			}
+			get => TextArea.Caret.Offset; set => TextArea.Caret.Offset = value;
 		}
 
 		/// <summary>
@@ -851,14 +782,14 @@ namespace ICSharpCode.AvalonEdit
 		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public int SelectionStart {
 			get {
-				if (textArea.Selection.IsEmpty)
-					return textArea.Caret.Offset;
-				else
-					return textArea.Selection.SurroundingSegment.Offset;
+				if (TextArea.Selection.IsEmpty) {
+					return TextArea.Caret.Offset;
+				} else {
+					return TextArea.Selection.SurroundingSegment.Offset;
+				}
 			}
-			set {
-				Select(value, SelectionLength);
-			}
+
+			set => Select(value, SelectionLength);
 		}
 
 		/// <summary>
@@ -867,14 +798,14 @@ namespace ICSharpCode.AvalonEdit
 		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public int SelectionLength {
 			get {
-				if (!textArea.Selection.IsEmpty)
-					return textArea.Selection.SurroundingSegment.Length;
-				else
+				if (!TextArea.Selection.IsEmpty) {
+					return TextArea.Selection.SurroundingSegment.Length;
+				} else {
 					return 0;
+				}
 			}
-			set {
-				Select(SelectionStart, value);
-			}
+
+			set => Select(SelectionStart, value);
 		}
 
 		/// <summary>
@@ -883,12 +814,16 @@ namespace ICSharpCode.AvalonEdit
 		public void Select(int start, int length)
 		{
 			int documentLength = Document != null ? Document.TextLength : 0;
-			if (start < 0 || start > documentLength)
+			if (start < 0 || start > documentLength) {
 				throw new ArgumentOutOfRangeException("start", start, "Value must be between 0 and " + documentLength);
-			if (length < 0 || start + length > documentLength)
+			}
+
+			if (length < 0 || start + length > documentLength) {
 				throw new ArgumentOutOfRangeException("length", length, "Value must be between 0 and " + (documentLength - start));
-			textArea.Selection = SimpleSelection.Create(textArea, start, start + length);
-			textArea.Caret.Offset = start + length;
+			}
+
+			TextArea.Selection = SimpleSelection.Create(TextArea, start, start + length);
+			TextArea.Caret.Offset = start + length;
 		}
 
 		/// <summary>
@@ -898,10 +833,11 @@ namespace ICSharpCode.AvalonEdit
 		public int LineCount {
 			get {
 				TextDocument document = this.Document;
-				if (document != null)
+				if (document != null) {
 					return document.LineCount;
-				else
+				} else {
 					return 1;
+				}
 			}
 		}
 
@@ -935,11 +871,12 @@ namespace ICSharpCode.AvalonEdit
 		/// </summary>
 		public void Load(string fileName)
 		{
-			if (fileName == null)
+			if (fileName == null) {
 				throw new ArgumentNullException("fileName");
-			using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read)) {
-				Load(fs);
 			}
+
+			using FileStream fs = new(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+			Load(fs);
 		}
 
 		/// <summary>
@@ -957,8 +894,7 @@ namespace ICSharpCode.AvalonEdit
 		/// </remarks>
 		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public Encoding Encoding {
-			get { return (Encoding)GetValue(EncodingProperty); }
-			set { SetValue(EncodingProperty, value); }
+			get => (Encoding)GetValue(EncodingProperty); set => SetValue(EncodingProperty, value);
 		}
 
 		/// <summary>
@@ -969,13 +905,14 @@ namespace ICSharpCode.AvalonEdit
 		/// </remarks>
 		public void Save(Stream stream)
 		{
-			if (stream == null)
+			if (stream == null) {
 				throw new ArgumentNullException("stream");
-			var encoding = this.Encoding;
-			var document = this.Document;
+			}
+
+			Encoding encoding = this.Encoding;
+			TextDocument document = this.Document;
 			StreamWriter writer = encoding != null ? new StreamWriter(stream, encoding) : new StreamWriter(stream);
-			if (document != null)
-				document.WriteTextTo(writer);
+			document?.WriteTextTo(writer);
 			writer.Flush();
 			// do not close the stream
 			SetCurrentValue(IsModifiedProperty, Boxes.False);
@@ -986,11 +923,12 @@ namespace ICSharpCode.AvalonEdit
 		/// </summary>
 		public void Save(string fileName)
 		{
-			if (fileName == null)
+			if (fileName == null) {
 				throw new ArgumentNullException("fileName");
-			using (FileStream fs = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None)) {
-				Save(fs);
 			}
+
+			using FileStream fs = new(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
+			Save(fs);
 		}
 		#endregion
 
@@ -1025,32 +963,28 @@ namespace ICSharpCode.AvalonEdit
 		/// Occurs when the mouse has hovered over a fixed location for some time.
 		/// </summary>
 		public event MouseEventHandler PreviewMouseHover {
-			add { AddHandler(PreviewMouseHoverEvent, value); }
-			remove { RemoveHandler(PreviewMouseHoverEvent, value); }
+			add => AddHandler(PreviewMouseHoverEvent, value); remove => RemoveHandler(PreviewMouseHoverEvent, value);
 		}
 
 		/// <summary>
 		/// Occurs when the mouse has hovered over a fixed location for some time.
 		/// </summary>
 		public event MouseEventHandler MouseHover {
-			add { AddHandler(MouseHoverEvent, value); }
-			remove { RemoveHandler(MouseHoverEvent, value); }
+			add => AddHandler(MouseHoverEvent, value); remove => RemoveHandler(MouseHoverEvent, value);
 		}
 
 		/// <summary>
 		/// Occurs when the mouse had previously hovered but now started moving again.
 		/// </summary>
 		public event MouseEventHandler PreviewMouseHoverStopped {
-			add { AddHandler(PreviewMouseHoverStoppedEvent, value); }
-			remove { RemoveHandler(PreviewMouseHoverStoppedEvent, value); }
+			add => AddHandler(PreviewMouseHoverStoppedEvent, value); remove => RemoveHandler(PreviewMouseHoverStoppedEvent, value);
 		}
 
 		/// <summary>
 		/// Occurs when the mouse had previously hovered but now started moving again.
 		/// </summary>
 		public event MouseEventHandler MouseHoverStopped {
-			add { AddHandler(MouseHoverStoppedEvent, value); }
-			remove { RemoveHandler(MouseHoverStoppedEvent, value); }
+			add => AddHandler(MouseHoverStoppedEvent, value); remove => RemoveHandler(MouseHoverStoppedEvent, value);
 		}
 		#endregion
 
@@ -1064,8 +998,7 @@ namespace ICSharpCode.AvalonEdit
 		/// Gets/Sets the horizontal scroll bar visibility.
 		/// </summary>
 		public ScrollBarVisibility HorizontalScrollBarVisibility {
-			get { return (ScrollBarVisibility)GetValue(HorizontalScrollBarVisibilityProperty); }
-			set { SetValue(HorizontalScrollBarVisibilityProperty, value); }
+			get => (ScrollBarVisibility)GetValue(HorizontalScrollBarVisibilityProperty); set => SetValue(HorizontalScrollBarVisibilityProperty, value);
 		}
 
 		/// <summary>
@@ -1077,14 +1010,13 @@ namespace ICSharpCode.AvalonEdit
 		/// Gets/Sets the vertical scroll bar visibility.
 		/// </summary>
 		public ScrollBarVisibility VerticalScrollBarVisibility {
-			get { return (ScrollBarVisibility)GetValue(VerticalScrollBarVisibilityProperty); }
-			set { SetValue(VerticalScrollBarVisibilityProperty, value); }
+			get => (ScrollBarVisibility)GetValue(VerticalScrollBarVisibilityProperty); set => SetValue(VerticalScrollBarVisibilityProperty, value);
 		}
 		#endregion
 
 		object IServiceProvider.GetService(Type serviceType)
 		{
-			return textArea.GetService(serviceType);
+			return TextArea.GetService(serviceType);
 		}
 
 		/// <summary>
@@ -1095,8 +1027,10 @@ namespace ICSharpCode.AvalonEdit
 		/// <returns>The text view position, or null if the point is outside the document.</returns>
 		public TextViewPosition? GetPositionFromPoint(Point point)
 		{
-			if (this.Document == null)
+			if (this.Document == null) {
 				return null;
+			}
+
 			TextView textView = this.TextArea.TextView;
 			return textView.GetPosition(TranslatePoint(point, textView) + textView.ScrollOffset);
 		}
@@ -1117,7 +1051,7 @@ namespace ICSharpCode.AvalonEdit
 		public void ScrollTo(int line, int column)
 		{
 			const double MinimumScrollFraction = 0.3;
-			ScrollTo(line, column, VisualYPosition.LineMiddle, null != scrollViewer ? scrollViewer.ViewportHeight / 2 : 0.0, MinimumScrollFraction);
+			ScrollTo(line, column, VisualYPosition.LineMiddle, null != ScrollViewer ? ScrollViewer.ViewportHeight / 2 : 0.0, MinimumScrollFraction);
 		}
 
 		/// <summary>
@@ -1131,13 +1065,16 @@ namespace ICSharpCode.AvalonEdit
 		/// <param name="minimumScrollFraction">The minimum vertical and/or horizontal scroll offset, expressed as fraction of the height or width of the viewport window, respectively.</param>
 		public void ScrollTo(int line, int column, VisualYPosition yPositionMode, double referencedVerticalViewPortOffset, double minimumScrollFraction)
 		{
-			TextView textView = textArea.TextView;
+			TextView textView = TextArea.TextView;
 			TextDocument document = textView.Document;
-			if (scrollViewer != null && document != null) {
-				if (line < 1)
+			if (ScrollViewer != null && document != null) {
+				if (line < 1) {
 					line = 1;
-				if (line > document.LineCount)
+				}
+
+				if (line > document.LineCount) {
 					line = document.LineCount;
+				}
 
 				IScrollInfo scrollInfo = textView;
 				if (!scrollInfo.CanHorizontallyScroll) {
@@ -1149,26 +1086,28 @@ namespace ICSharpCode.AvalonEdit
 
 					while (remainingHeight > 0) {
 						DocumentLine prevLine = vl.FirstDocumentLine.PreviousLine;
-						if (prevLine == null)
+						if (prevLine == null) {
 							break;
+						}
+
 						vl = textView.GetOrConstructVisualLine(prevLine);
 						remainingHeight -= vl.Height;
 					}
 				}
 
-				Point p = textArea.TextView.GetVisualPosition(new TextViewPosition(line, Math.Max(1, column)), yPositionMode);
+				Point p = TextArea.TextView.GetVisualPosition(new TextViewPosition(line, Math.Max(1, column)), yPositionMode);
 				double verticalPos = p.Y - referencedVerticalViewPortOffset;
-				if (Math.Abs(verticalPos - scrollViewer.VerticalOffset) > minimumScrollFraction * scrollViewer.ViewportHeight) {
-					scrollViewer.ScrollToVerticalOffset(Math.Max(0, verticalPos));
+				if (Math.Abs(verticalPos - ScrollViewer.VerticalOffset) > minimumScrollFraction * ScrollViewer.ViewportHeight) {
+					ScrollViewer.ScrollToVerticalOffset(Math.Max(0, verticalPos));
 				}
 				if (column > 0) {
-					if (p.X > scrollViewer.ViewportWidth - Caret.MinimumDistanceToViewBorder * 2) {
-						double horizontalPos = Math.Max(0, p.X - scrollViewer.ViewportWidth / 2);
-						if (Math.Abs(horizontalPos - scrollViewer.HorizontalOffset) > minimumScrollFraction * scrollViewer.ViewportWidth) {
-							scrollViewer.ScrollToHorizontalOffset(horizontalPos);
+					if (p.X > ScrollViewer.ViewportWidth - (Caret.MinimumDistanceToViewBorder * 2)) {
+						double horizontalPos = Math.Max(0, p.X - (ScrollViewer.ViewportWidth / 2));
+						if (Math.Abs(horizontalPos - ScrollViewer.HorizontalOffset) > minimumScrollFraction * ScrollViewer.ViewportWidth) {
+							ScrollViewer.ScrollToHorizontalOffset(horizontalPos);
 						}
 					} else {
-						scrollViewer.ScrollToHorizontalOffset(0);
+						ScrollViewer.ScrollToHorizontalOffset(0);
 					}
 				}
 			}

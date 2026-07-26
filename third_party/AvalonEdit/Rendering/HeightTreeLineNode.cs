@@ -21,7 +21,7 @@ using System.Diagnostics;
 
 namespace ICSharpCode.AvalonEdit.Rendering
 {
-	struct HeightTreeLineNode
+	internal struct HeightTreeLineNode
 	{
 		internal HeightTreeLineNode(double height)
 		{
@@ -32,14 +32,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		internal double height;
 		internal List<CollapsedLineSection> collapsedSections;
 
-		internal bool IsDirectlyCollapsed {
-			get { return collapsedSections != null; }
-		}
+		internal readonly bool IsDirectlyCollapsed => collapsedSections != null;
 
 		internal void AddDirectlyCollapsed(CollapsedLineSection section)
 		{
-			if (collapsedSections == null)
-				collapsedSections = new List<CollapsedLineSection>();
+			collapsedSections ??= [];
+
 			collapsedSections.Add(section);
 		}
 
@@ -47,17 +45,14 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		{
 			Debug.Assert(collapsedSections.Contains(section));
 			collapsedSections.Remove(section);
-			if (collapsedSections.Count == 0)
+			if (collapsedSections.Count == 0) {
 				collapsedSections = null;
+			}
 		}
 
 		/// <summary>
 		/// Returns 0 if the line is directly collapsed, otherwise, returns <see cref="height"/>.
 		/// </summary>
-		internal double TotalHeight {
-			get {
-				return IsDirectlyCollapsed ? 0 : height;
-			}
-		}
+		internal readonly double TotalHeight => IsDirectlyCollapsed ? 0 : height;
 	}
 }

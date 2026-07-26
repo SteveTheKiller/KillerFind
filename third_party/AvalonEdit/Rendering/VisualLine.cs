@@ -38,7 +38,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// </summary>
 	public sealed class VisualLine
 	{
-		enum LifetimePhase : byte
+		private enum LifetimePhase : byte
 		{
 			Generating,
 			Transforming,
@@ -46,10 +46,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			Disposed
 		}
 
-		TextView textView;
-		List<VisualLineElement> elements;
+		private readonly TextView textView;
+		private List<VisualLineElement> elements;
 		internal bool hasInlineObjects;
-		LifetimePhase phase;
+		private LifetimePhase phase;
 
 		/// <summary>
 		/// Gets the document to which this VisualLine belongs.
@@ -71,15 +71,17 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public ReadOnlyCollection<VisualLineElement> Elements { get; private set; }
 
-		ReadOnlyCollection<TextLine> textLines;
+		private ReadOnlyCollection<TextLine> textLines;
 
 		/// <summary>
 		/// Gets a read-only collection of text lines.
 		/// </summary>
 		public ReadOnlyCollection<TextLine> TextLines {
 			get {
-				if (phase < LifetimePhase.Live)
+				if (phase < LifetimePhase.Live) {
 					throw new InvalidOperationException();
+				}
+
 				return textLines;
 			}
 		}
@@ -88,11 +90,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Gets the start offset of the VisualLine inside the document.
 		/// This is equivalent to <c>FirstDocumentLine.Offset</c>.
 		/// </summary>
-		public int StartOffset {
-			get {
-				return FirstDocumentLine.Offset;
-			}
-		}
+		public int StartOffset => FirstDocumentLine.Offset;
 
 		/// <summary>
 		/// Length in visual line coordinates.
@@ -105,7 +103,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public int VisualLengthWithEndOfLineMarker {
 			get {
 				int length = VisualLength;
-				if (textView.Options.ShowEndOfLine && LastDocumentLine.NextLine != null) length++;
+				if (textView.Options.ShowEndOfLine && LastDocumentLine.NextLine != null) {
+					length++;
+				}
+
 				return length;
 			}
 		}
@@ -135,14 +136,14 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			foreach (VisualLineElementGenerator g in generators) {
 				g.StartGeneration(context);
 			}
-			elements = new List<VisualLineElement>();
+			elements = [];
 			PerformVisualElementConstruction(generators);
 			foreach (VisualLineElementGenerator g in generators) {
 				g.FinishGeneration();
 			}
 
-			var globalTextRunProperties = context.GlobalTextRunProperties;
-			foreach (var element in elements) {
+			TextRunProperties globalTextRunProperties = context.GlobalTextRunProperties;
+			foreach (VisualLineElement element in elements) {
 				element.SetTextRunProperties(new VisualLineElementTextRunProperties(globalTextRunProperties));
 			}
 			this.Elements = elements.AsReadOnly();
@@ -150,7 +151,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			phase = LifetimePhase.Transforming;
 		}
 
-		void PerformVisualElementConstruction(VisualLineElementGenerator[] generators)
+		private void PerformVisualElementConstruction(VisualLineElementGenerator[] generators)
 		{
 			TextDocument document = this.Document;
 			int offset = FirstDocumentLine.Offset;
@@ -162,12 +163,15 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				foreach (VisualLineElementGenerator g in generators) {
 					g.cachedInterest = g.GetFirstInterestedOffset(offset + askInterestOffset);
 					if (g.cachedInterest != -1) {
-						if (g.cachedInterest < offset)
+						if (g.cachedInterest < offset) {
 							throw new ArgumentOutOfRangeException(g.GetType().Name + ".GetFirstInterestedOffset",
 																  g.cachedInterest,
 																  "GetFirstInterestedOffset must not return an offset less than startOffset. Return -1 to signal no interest.");
-						if (g.cachedInterest < textPieceEndOffset)
+						}
+
+						if (g.cachedInterest < textPieceEndOffset) {
 							textPieceEndOffset = g.cachedInterest;
+						}
 					}
 				}
 				Debug.Assert(textPieceEndOffset >= offset);
@@ -206,7 +210,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		void CalculateOffsets()
+		private void CalculateOffsets()
 		{
 			int visualOffset = 0;
 			int textOffset = 0;
@@ -259,18 +263,22 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </remarks>
 		public void ReplaceElement(int elementIndex, int count, params VisualLineElement[] newElements)
 		{
-			if (phase != LifetimePhase.Transforming)
+			if (phase != LifetimePhase.Transforming) {
 				throw new InvalidOperationException("This method may only be called by line transformers.");
+			}
+
 			int oldDocumentLength = 0;
 			for (int i = elementIndex; i < elementIndex + count; i++) {
 				oldDocumentLength += elements[i].DocumentLength;
 			}
 			int newDocumentLength = 0;
-			foreach (var newElement in newElements) {
+			foreach (VisualLineElement newElement in newElements) {
 				newDocumentLength += newElement.DocumentLength;
 			}
-			if (oldDocumentLength != newDocumentLength)
+			if (oldDocumentLength != newDocumentLength) {
 				throw new InvalidOperationException("Old elements have document length " + oldDocumentLength + ", but new elements have length " + newDocumentLength);
+			}
+
 			elements.RemoveRange(elementIndex, count);
 			elements.InsertRange(elementIndex, newElements);
 			CalculateOffsets();
@@ -280,8 +288,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		{
 			this.textLines = textLines.AsReadOnly();
 			Height = 0;
-			foreach (TextLine line in textLines)
+			foreach (TextLine line in textLines) {
 				Height += line.Height;
+			}
 		}
 
 		/// <summary>
@@ -329,15 +338,20 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public TextLine GetTextLine(int visualColumn, bool isAtEndOfLine)
 		{
-			if (visualColumn < 0)
+			if (visualColumn < 0) {
 				throw new ArgumentOutOfRangeException("visualColumn");
-			if (visualColumn >= VisualLengthWithEndOfLineMarker)
-				return TextLines[TextLines.Count - 1];
+			}
+
+			if (visualColumn >= VisualLengthWithEndOfLineMarker) {
+				return TextLines[^1];
+			}
+
 			foreach (TextLine line in TextLines) {
-				if (isAtEndOfLine ? visualColumn <= line.Length : visualColumn < line.Length)
+				if (isAtEndOfLine ? visualColumn <= line.Length : visualColumn < line.Length) {
 					return line;
-				else
+				} else {
 					visualColumn -= line.Length;
+				}
 			}
 			throw new InvalidOperationException("Shouldn't happen (VisualLength incorrect?)");
 		}
@@ -349,29 +363,23 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// from the top of the document to the top of the specified text line.</returns>
 		public double GetTextLineVisualYPosition(TextLine textLine, VisualYPosition yPositionMode)
 		{
-			if (textLine == null)
+			if (textLine == null) {
 				throw new ArgumentNullException("textLine");
+			}
+
 			double pos = VisualTop;
 			foreach (TextLine tl in TextLines) {
 				if (tl == textLine) {
-					switch (yPositionMode) {
-						case VisualYPosition.LineTop:
-							return pos;
-						case VisualYPosition.LineMiddle:
-							return pos + tl.Height / 2;
-						case VisualYPosition.LineBottom:
-							return pos + tl.Height;
-						case VisualYPosition.TextTop:
-							return pos + tl.Baseline - textView.DefaultBaseline;
-						case VisualYPosition.TextBottom:
-							return pos + tl.Baseline - textView.DefaultBaseline + textView.DefaultLineHeight;
-						case VisualYPosition.TextMiddle:
-							return pos + tl.Baseline - textView.DefaultBaseline + textView.DefaultLineHeight / 2;
-						case VisualYPosition.Baseline:
-							return pos + tl.Baseline;
-						default:
-							throw new ArgumentException("Invalid yPositionMode:" + yPositionMode);
-					}
+					return yPositionMode switch {
+						VisualYPosition.LineTop => pos,
+						VisualYPosition.LineMiddle => pos + (tl.Height / 2),
+						VisualYPosition.LineBottom => pos + tl.Height,
+						VisualYPosition.TextTop => pos + tl.Baseline - textView.DefaultBaseline,
+						VisualYPosition.TextBottom => pos + tl.Baseline - textView.DefaultBaseline + textView.DefaultLineHeight,
+						VisualYPosition.TextMiddle => pos + tl.Baseline - textView.DefaultBaseline + (textView.DefaultLineHeight / 2),
+						VisualYPosition.Baseline => pos + tl.Baseline,
+						_ => throw new ArgumentException("Invalid yPositionMode:" + yPositionMode),
+					};
 				} else {
 					pos += tl.Height;
 				}
@@ -384,14 +392,17 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public int GetTextLineVisualStartColumn(TextLine textLine)
 		{
-			if (!TextLines.Contains(textLine))
+			if (!TextLines.Contains(textLine)) {
 				throw new ArgumentException("textLine is not a line in this VisualLine");
+			}
+
 			int col = 0;
 			foreach (TextLine tl in TextLines) {
-				if (tl == textLine)
+				if (tl == textLine) {
 					break;
-				else
+				} else {
 					col += tl.Length;
+				}
 			}
 			return col;
 		}
@@ -405,10 +416,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			double pos = this.VisualTop;
 			foreach (TextLine tl in TextLines) {
 				pos += tl.Height;
-				if (visualTop + epsilon < pos)
+				if (visualTop + epsilon < pos) {
 					return tl;
+				}
 			}
-			return TextLines[TextLines.Count - 1];
+			return TextLines[^1];
 		}
 
 		/// <summary>
@@ -438,8 +450,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public double GetTextLineVisualXPosition(TextLine textLine, int visualColumn)
 		{
-			if (textLine == null)
+			if (textLine == null) {
 				throw new ArgumentNullException("textLine");
+			}
+
 			double xPos = textLine.GetDistanceFromCharacterHit(
 				new CharacterHit(Math.Min(visualColumn, VisualLengthWithEndOfLineMarker), 0));
 			if (visualColumn > VisualLengthWithEndOfLineMarker) {
@@ -468,9 +482,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		internal int GetVisualColumn(Point point, bool allowVirtualSpace, out bool isAtEndOfLine)
 		{
-			var textLine = GetTextLineByVisualYPosition(point.Y);
+			TextLine textLine = GetTextLineByVisualYPosition(point.Y);
 			int vc = GetVisualColumn(textLine, point.X, allowVirtualSpace);
-			isAtEndOfLine = (vc >= GetTextLineVisualStartColumn(textLine) + textLine.Length);
+			isAtEndOfLine = vc >= GetTextLineVisualStartColumn(textLine) + textLine.Length;
 			return vc;
 		}
 
@@ -481,7 +495,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public int GetVisualColumn(TextLine textLine, double xPos, bool allowVirtualSpace)
 		{
 			if (xPos > textLine.WidthIncludingTrailingWhitespace) {
-				if (allowVirtualSpace && textLine == TextLines[TextLines.Count - 1]) {
+				if (allowVirtualSpace && textLine == TextLines[^1]) {
 					int virtualX = (int)Math.Round((xPos - textLine.WidthIncludingTrailingWhitespace) / textView.WideSpaceWidth, MidpointRounding.AwayFromZero);
 					return VisualLengthWithEndOfLineMarker + virtualX;
 				}
@@ -535,8 +549,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public int GetVisualColumnFloor(Point point, bool allowVirtualSpace)
 		{
-			bool tmp;
-			return GetVisualColumnFloor(point, allowVirtualSpace, out tmp);
+			return GetVisualColumnFloor(point, allowVirtualSpace, out _);
 		}
 
 		internal int GetVisualColumnFloor(Point point, bool allowVirtualSpace, out bool isAtEndOfLine)
@@ -544,7 +557,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			TextLine textLine = GetTextLineByVisualYPosition(point.Y);
 			if (point.X > textLine.WidthIncludingTrailingWhitespace) {
 				isAtEndOfLine = true;
-				if (allowVirtualSpace && textLine == TextLines[TextLines.Count - 1]) {
+				if (allowVirtualSpace && textLine == TextLines[^1]) {
 					// clicking virtual space in the last line
 					int virtualX = (int)((point.X - textLine.WidthIncludingTrailingWhitespace) / textView.WideSpaceWidth);
 					return VisualLengthWithEndOfLineMarker + virtualX;
@@ -579,11 +592,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <param name="allowVirtualSpace">Controls whether positions in virtual space may be returned.</param>
 		public TextViewPosition GetTextViewPosition(Point visualPosition, bool allowVirtualSpace)
 		{
-			bool isAtEndOfLine;
-			int visualColumn = GetVisualColumn(visualPosition, allowVirtualSpace, out isAtEndOfLine);
+			int visualColumn = GetVisualColumn(visualPosition, allowVirtualSpace, out bool isAtEndOfLine);
 			int documentOffset = GetRelativeOffset(visualColumn) + this.FirstDocumentLine.Offset;
-			TextViewPosition pos = new TextViewPosition(this.Document.GetLocation(documentOffset), visualColumn);
-			pos.IsAtEndOfLine = isAtEndOfLine;
+			TextViewPosition pos = new(this.Document.GetLocation(documentOffset), visualColumn) {
+				IsAtEndOfLine = isAtEndOfLine
+			};
 			return pos;
 		}
 
@@ -596,25 +609,25 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <param name="allowVirtualSpace">Controls whether positions in virtual space may be returned.</param>
 		public TextViewPosition GetTextViewPositionFloor(Point visualPosition, bool allowVirtualSpace)
 		{
-			bool isAtEndOfLine;
-			int visualColumn = GetVisualColumnFloor(visualPosition, allowVirtualSpace, out isAtEndOfLine);
+			int visualColumn = GetVisualColumnFloor(visualPosition, allowVirtualSpace, out bool isAtEndOfLine);
 			int documentOffset = GetRelativeOffset(visualColumn) + this.FirstDocumentLine.Offset;
-			TextViewPosition pos = new TextViewPosition(this.Document.GetLocation(documentOffset), visualColumn);
-			pos.IsAtEndOfLine = isAtEndOfLine;
+			TextViewPosition pos = new(this.Document.GetLocation(documentOffset), visualColumn) {
+				IsAtEndOfLine = isAtEndOfLine
+			};
 			return pos;
 		}
 
 		/// <summary>
 		/// Gets whether the visual line was disposed.
 		/// </summary>
-		public bool IsDisposed {
-			get { return phase == LifetimePhase.Disposed; }
-		}
+		public bool IsDisposed => phase == LifetimePhase.Disposed;
 
 		internal void Dispose()
 		{
-			if (phase == LifetimePhase.Disposed)
+			if (phase == LifetimePhase.Disposed) {
 				return;
+			}
+
 			Debug.Assert(phase == LifetimePhase.Live);
 			phase = LifetimePhase.Disposed;
 			foreach (TextLine textLine in TextLines) {
@@ -627,27 +640,30 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public int GetNextCaretPosition(int visualColumn, LogicalDirection direction, CaretPositioningMode mode, bool allowVirtualSpace)
 		{
-			if (!HasStopsInVirtualSpace(mode))
+			if (!HasStopsInVirtualSpace(mode)) {
 				allowVirtualSpace = false;
+			}
 
 			if (elements.Count == 0) {
 				// special handling for empty visual lines:
 				if (allowVirtualSpace) {
-					if (direction == LogicalDirection.Forward)
+					if (direction == LogicalDirection.Forward) {
 						return Math.Max(0, visualColumn + 1);
-					else if (visualColumn > 0)
+					} else if (visualColumn > 0) {
 						return visualColumn - 1;
-					else
+					} else {
 						return -1;
+					}
 				} else {
 					// even though we don't have any elements,
 					// there's a single caret stop at visualColumn 0
-					if (visualColumn < 0 && direction == LogicalDirection.Forward)
+					if (visualColumn < 0 && direction == LogicalDirection.Forward) {
 						return 0;
-					else if (visualColumn > 0 && direction == LogicalDirection.Backward)
+					} else if (visualColumn > 0 && direction == LogicalDirection.Backward) {
 						return 0;
-					else
+					} else {
 						return -1;
+					}
 				}
 			}
 
@@ -656,89 +672,97 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				// Search Backwards:
 				// If the last element doesn't handle line borders, return the line end as caret stop
 
-				if (visualColumn > this.VisualLength && !elements[elements.Count - 1].HandlesLineBorders && HasImplicitStopAtLineEnd(mode)) {
-					if (allowVirtualSpace)
+				if (visualColumn > this.VisualLength && !elements[^1].HandlesLineBorders && HasImplicitStopAtLineEnd(mode)) {
+					if (allowVirtualSpace) {
 						return visualColumn - 1;
-					else
+					} else {
 						return this.VisualLength;
+					}
 				}
 				// skip elements that start after or at visualColumn
 				for (i = elements.Count - 1; i >= 0; i--) {
-					if (elements[i].VisualColumn < visualColumn)
+					if (elements[i].VisualColumn < visualColumn) {
 						break;
+					}
 				}
 				// search last element that has a caret stop
 				for (; i >= 0; i--) {
 					int pos = elements[i].GetNextCaretPosition(
 						Math.Min(visualColumn, elements[i].VisualColumn + elements[i].VisualLength + 1),
 						direction, mode);
-					if (pos >= 0)
+					if (pos >= 0) {
 						return pos;
+					}
 				}
 				// If we've found nothing, and the first element doesn't handle line borders,
 				// return the line start as normal caret stop.
-				if (visualColumn > 0 && !elements[0].HandlesLineBorders && HasImplicitStopAtLineStart(mode))
+				if (visualColumn > 0 && !elements[0].HandlesLineBorders && HasImplicitStopAtLineStart(mode)) {
 					return 0;
+				}
 			} else {
 				// Search Forwards:
 				// If the first element doesn't handle line borders, return the line start as caret stop
-				if (visualColumn < 0 && !elements[0].HandlesLineBorders && HasImplicitStopAtLineStart(mode))
+				if (visualColumn < 0 && !elements[0].HandlesLineBorders && HasImplicitStopAtLineStart(mode)) {
 					return 0;
+				}
 				// skip elements that end before or at visualColumn
 				for (i = 0; i < elements.Count; i++) {
-					if (elements[i].VisualColumn + elements[i].VisualLength > visualColumn)
+					if (elements[i].VisualColumn + elements[i].VisualLength > visualColumn) {
 						break;
+					}
 				}
 				// search first element that has a caret stop
 				for (; i < elements.Count; i++) {
 					int pos = elements[i].GetNextCaretPosition(
 						Math.Max(visualColumn, elements[i].VisualColumn - 1),
 						direction, mode);
-					if (pos >= 0)
+					if (pos >= 0) {
 						return pos;
+					}
 				}
 				// if we've found nothing, and the last element doesn't handle line borders,
 				// return the line end as caret stop
-				if ((allowVirtualSpace || !elements[elements.Count - 1].HandlesLineBorders) && HasImplicitStopAtLineEnd(mode)) {
-					if (visualColumn < this.VisualLength)
+				if ((allowVirtualSpace || !elements[^1].HandlesLineBorders) && HasImplicitStopAtLineEnd(mode)) {
+					if (visualColumn < this.VisualLength) {
 						return this.VisualLength;
-					else if (allowVirtualSpace)
+					} else if (allowVirtualSpace) {
 						return visualColumn + 1;
+					}
 				}
 			}
 			// we've found nothing, return -1 and let the caret search continue in the next line
 			return -1;
 		}
 
-		static bool HasStopsInVirtualSpace(CaretPositioningMode mode)
+		private static bool HasStopsInVirtualSpace(CaretPositioningMode mode)
 		{
-			return mode == CaretPositioningMode.Normal || mode == CaretPositioningMode.EveryCodepoint;
+			return mode is CaretPositioningMode.Normal or CaretPositioningMode.EveryCodepoint;
 		}
 
-		static bool HasImplicitStopAtLineStart(CaretPositioningMode mode)
+		private static bool HasImplicitStopAtLineStart(CaretPositioningMode mode)
 		{
-			return mode == CaretPositioningMode.Normal || mode == CaretPositioningMode.EveryCodepoint;
+			return mode is CaretPositioningMode.Normal or CaretPositioningMode.EveryCodepoint;
 		}
 
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "mode",
 														 Justification = "make method consistent with HasImplicitStopAtLineStart; might depend on mode in the future")]
-		static bool HasImplicitStopAtLineEnd(CaretPositioningMode mode)
+		private static bool HasImplicitStopAtLineEnd(CaretPositioningMode mode)
 		{
 			return true;
 		}
 
-		VisualLineDrawingVisual visual;
+		private VisualLineDrawingVisual visual;
 
 		internal VisualLineDrawingVisual Render()
 		{
 			Debug.Assert(phase == LifetimePhase.Live);
-			if (visual == null)
-				visual = new VisualLineDrawingVisual(this, textView.FlowDirection);
+			visual ??= new VisualLineDrawingVisual(this, textView.FlowDirection);
+
 			return visual;
 		}
 	}
 
-	sealed class VisualLineDrawingVisual : DrawingVisual
+	internal sealed class VisualLineDrawingVisual : DrawingVisual
 	{
 		public readonly VisualLine VisualLine;
 		public readonly double Height;
@@ -747,7 +771,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public VisualLineDrawingVisual(VisualLine visualLine, FlowDirection flow)
 		{
 			this.VisualLine = visualLine;
-			var drawingContext = RenderOpen();
+			DrawingContext drawingContext = RenderOpen();
 			double pos = 0;
 			foreach (TextLine textLine in visualLine.TextLines) {
 				if (flow == FlowDirection.LeftToRight) {

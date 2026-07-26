@@ -39,11 +39,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public void Transform(ITextRunConstructionContext context, IList<VisualLineElement> elements)
 		{
-			if (elements == null)
-				throw new ArgumentNullException("elements");
-			if (this.CurrentElements != null)
+			if (this.CurrentElements != null) {
 				throw new InvalidOperationException("Recursive Transform() call");
-			this.CurrentElements = elements;
+			}
+
+			this.CurrentElements = elements ?? throw new ArgumentNullException("elements");
 			try {
 				Colorize(context);
 			} finally {
@@ -69,12 +69,16 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <param name="action">Action that changes an individual <see cref="VisualLineElement"/>.</param>
 		protected void ChangeVisualElements(int visualStartColumn, int visualEndColumn, Action<VisualLineElement> action)
 		{
-			if (action == null)
+			if (action == null) {
 				throw new ArgumentNullException("action");
+			}
+
 			for (int i = 0; i < CurrentElements.Count; i++) {
 				VisualLineElement e = CurrentElements[i];
-				if (e.VisualColumn > visualEndColumn)
+				if (e.VisualColumn > visualEndColumn) {
 					break;
+				}
+
 				if (e.VisualColumn < visualStartColumn &&
 					e.VisualColumn + e.VisualLength > visualStartColumn) {
 					if (e.CanSplit) {

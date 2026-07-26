@@ -25,20 +25,13 @@ using ICSharpCode.AvalonEdit.Rendering;
 
 namespace ICSharpCode.AvalonEdit.Search
 {
-	class SearchResultBackgroundRenderer : IBackgroundRenderer
+	internal class SearchResultBackgroundRenderer : IBackgroundRenderer
 	{
-		TextSegmentCollection<SearchResult> currentResults = new TextSegmentCollection<SearchResult>();
+		public TextSegmentCollection<SearchResult> CurrentResults { get; } = [];
 
-		public TextSegmentCollection<SearchResult> CurrentResults {
-			get { return currentResults; }
-		}
-
-		public KnownLayer Layer {
-			get {
+		public KnownLayer Layer =>
 				// draw behind selection
-				return KnownLayer.Selection;
-			}
-		}
+				KnownLayer.Selection;
 
 		public SearchResultBackgroundRenderer()
 		{
@@ -56,17 +49,22 @@ namespace ICSharpCode.AvalonEdit.Search
 
 		public void Draw(TextView textView, DrawingContext drawingContext)
 		{
-			if (textView == null)
+			if (textView == null) {
 				throw new ArgumentNullException("textView");
-			if (drawingContext == null)
+			}
+
+			if (drawingContext == null) {
 				throw new ArgumentNullException("drawingContext");
+			}
 
-			if (currentResults == null || !textView.VisualLinesValid)
+			if (CurrentResults == null || !textView.VisualLinesValid) {
 				return;
+			}
 
-			var visualLines = textView.VisualLines;
-			if (visualLines.Count == 0)
+			System.Collections.ObjectModel.ReadOnlyCollection<VisualLine> visualLines = textView.VisualLines;
+			if (visualLines.Count == 0) {
 				return;
+			}
 
 			int viewStart = visualLines.First().FirstDocumentLine.Offset;
 			int viewEnd = visualLines.Last().LastDocumentLine.EndOffset;
@@ -76,11 +74,12 @@ namespace ICSharpCode.AvalonEdit.Search
 			double markerCornerRadius = MarkerCornerRadius;
 			double markerPenThickness = markerPen != null ? markerPen.Thickness : 0;
 
-			foreach (SearchResult result in currentResults.FindOverlappingSegments(viewStart, viewEnd - viewStart)) {
-				BackgroundGeometryBuilder geoBuilder = new BackgroundGeometryBuilder();
-				geoBuilder.AlignToWholePixels = true;
-				geoBuilder.BorderThickness = markerPenThickness;
-				geoBuilder.CornerRadius = markerCornerRadius;
+			foreach (SearchResult result in CurrentResults.FindOverlappingSegments(viewStart, viewEnd - viewStart)) {
+				BackgroundGeometryBuilder geoBuilder = new() {
+					AlignToWholePixels = true,
+					BorderThickness = markerPenThickness,
+					CornerRadius = markerCornerRadius
+				};
 				geoBuilder.AddSegment(textView, result);
 				Geometry geometry = geoBuilder.CreateGeometry();
 				if (geometry != null) {

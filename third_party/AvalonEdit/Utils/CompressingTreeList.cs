@@ -42,7 +42,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		// - but that would make tree manipulations more difficult to handle.
 
 		#region Node definition
-		sealed class Node
+		private sealed class Node
 		{
 			internal Node left, right, parent;
 			internal bool color;
@@ -59,8 +59,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 			internal Node LeftMost {
 				get {
 					Node node = this;
-					while (node.left != null)
+					while (node.left != null) {
 						node = node.left;
+					}
+
 					return node;
 				}
 			}
@@ -68,8 +70,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 			internal Node RightMost {
 				get {
 					Node node = this;
-					while (node.right != null)
+					while (node.right != null) {
 						node = node.right;
+					}
+
 					return node;
 				}
 			}
@@ -122,8 +126,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 		#endregion
 
 		#region Fields and Constructor
-		readonly Func<T, T, bool> comparisonFunc;
-		Node root;
+		private readonly Func<T, T, bool> comparisonFunc;
+		private Node root;
 
 		/// <summary>
 		/// Creates a new CompressingTreeList instance.
@@ -132,8 +136,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// A single node may be used to store the multiple values that are considered equal.</param>
 		public CompressingTreeList(IEqualityComparer<T> equalityComparer)
 		{
-			if (equalityComparer == null)
+			if (equalityComparer == null) {
 				throw new ArgumentNullException("equalityComparer");
+			}
+
 			this.comparisonFunc = equalityComparer.Equals;
 		}
 
@@ -144,9 +150,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// function returns true, a single node may be used to store the two values.</param>
 		public CompressingTreeList(Func<T, T, bool> comparisonFunc)
 		{
-			if (comparisonFunc == null)
-				throw new ArgumentNullException("comparisonFunc");
-			this.comparisonFunc = comparisonFunc;
+			this.comparisonFunc = comparisonFunc ?? throw new ArgumentNullException("comparisonFunc");
 		}
 		#endregion
 
@@ -157,15 +161,22 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public void InsertRange(int index, int count, T item)
 		{
-			if (index < 0 || index > this.Count)
+			if (index < 0 || index > this.Count) {
 				throw new ArgumentOutOfRangeException("index", index, "Value must be between 0 and " + this.Count);
-			if (count < 0)
+			}
+
+			if (count < 0) {
 				throw new ArgumentOutOfRangeException("count", count, "Value must not be negative");
-			if (count == 0)
+			}
+
+			if (count == 0) {
 				return;
+			}
+
 			unchecked {
-				if (this.Count + count < 0)
+				if (this.Count + count < 0) {
 					throw new OverflowException("Cannot insert elements: total number of elements must not exceed int.MaxValue.");
+				}
 			}
 
 			if (root == null) {
@@ -204,7 +215,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			CheckProperties();
 		}
 
-		void InsertBefore(Node node, Node newNode)
+		private void InsertBefore(Node node, Node newNode)
 		{
 			if (node.left == null) {
 				InsertAsLeft(node, newNode);
@@ -221,12 +232,17 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public void RemoveRange(int index, int count)
 		{
-			if (index < 0 || index > this.Count)
+			if (index < 0 || index > this.Count) {
 				throw new ArgumentOutOfRangeException("index", index, "Value must be between 0 and " + this.Count);
-			if (count < 0 || index + count > this.Count)
+			}
+
+			if (count < 0 || index + count > this.Count) {
 				throw new ArgumentOutOfRangeException("count", count, "0 <= length, index(" + index + ")+count <= " + this.Count);
-			if (count == 0)
+			}
+
+			if (count == 0) {
 				return;
+			}
 
 			Node n = GetNode(ref index);
 			if (index + count < n.count) {
@@ -237,7 +253,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 				// keep only the part of n from 0 to index
 				Node firstNodeBeforeDeletedRange;
 				if (index > 0) {
-					count -= (n.count - index);
+					count -= n.count - index;
 					n.count = index;
 					UpdateAugmentedData(n);
 					firstNodeBeforeDeletedRange = n;
@@ -284,7 +300,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		#endregion
 
 		#region GetNode
-		Node GetNode(ref int index)
+		private Node GetNode(ref int index)
 		{
 			Node node = root;
 			while (true) {
@@ -294,8 +310,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 					if (node.left != null) {
 						index -= node.left.totalCount;
 					}
-					if (index < node.count || node.right == null)
+					if (index < node.count || node.right == null) {
 						return node;
+					}
+
 					index -= node.count;
 					node = node.right;
 				}
@@ -304,15 +322,22 @@ namespace ICSharpCode.AvalonEdit.Utils
 		#endregion
 
 		#region UpdateAugmentedData
-		void UpdateAugmentedData(Node node)
+		private void UpdateAugmentedData(Node node)
 		{
 			int totalCount = node.count;
-			if (node.left != null) totalCount += node.left.totalCount;
-			if (node.right != null) totalCount += node.right.totalCount;
+			if (node.left != null) {
+				totalCount += node.left.totalCount;
+			}
+
+			if (node.right != null) {
+				totalCount += node.right.totalCount;
+			}
+
 			if (node.totalCount != totalCount) {
 				node.totalCount = totalCount;
-				if (node.parent != null)
+				if (node.parent != null) {
 					UpdateAugmentedData(node.parent);
+				}
 			}
 		}
 		#endregion
@@ -323,8 +348,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public T this[int index] {
 			get {
-				if (index < 0 || index >= this.Count)
+				if (index < 0 || index >= this.Count) {
 					throw new ArgumentOutOfRangeException("index", index, "Value must be between 0 and " + (this.Count - 1));
+				}
+
 				return GetNode(ref index).value;
 			}
 			set {
@@ -338,18 +365,15 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public int Count {
 			get {
-				if (root != null)
+				if (root != null) {
 					return root.totalCount;
-				else
+				} else {
 					return 0;
+				}
 			}
 		}
 
-		bool ICollection<T>.IsReadOnly {
-			get {
-				return false;
-			}
-		}
+		bool ICollection<T>.IsReadOnly => false;
 
 		/// <summary>
 		/// Gets the index of the specified <paramref name="item"/>.
@@ -360,8 +384,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 			if (root != null) {
 				Node n = root.LeftMost;
 				while (n != null) {
-					if (comparisonFunc(n.value, item))
+					if (comparisonFunc(n.value, item)) {
 						return index;
+					}
+
 					index += n.count;
 					n = n.Successor;
 				}
@@ -376,8 +402,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public int GetStartOfRun(int index)
 		{
-			if (index < 0 || index >= this.Count)
+			if (index < 0 || index >= this.Count) {
 				throw new ArgumentOutOfRangeException("index", index, "Value must be between 0 and " + (this.Count - 1));
+			}
+
 			int indexInRun = index;
 			GetNode(ref indexInRun);
 			return index - indexInRun;
@@ -390,8 +418,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public int GetEndOfRun(int index)
 		{
-			if (index < 0 || index >= this.Count)
+			if (index < 0 || index >= this.Count) {
 				throw new ArgumentOutOfRangeException("index", index, "Value must be between 0 and " + (this.Count - 1));
+			}
+
 			int indexInRun = index;
 			int runLength = GetNode(ref indexInRun).count;
 			return index - indexInRun + runLength;
@@ -402,8 +432,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public void Transform(Func<T, T> converter)
 		{
-			if (root == null)
+			if (root == null) {
 				return;
+			}
+
 			Node prevNode = null;
 			for (Node n = root.LeftMost; n != null; n = n.Successor) {
 				n.value = converter(n.value);
@@ -422,8 +454,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public void TransformRange(int index, int length, Func<T, T> converter)
 		{
-			if (root == null)
+			if (root == null) {
 				return;
+			}
+
 			int endIndex = index + length;
 			int pos = index;
 			while (pos < endIndex) {
@@ -480,12 +514,18 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			if (array == null)
+			if (array == null) {
 				throw new ArgumentNullException("array");
-			if (array.Length < this.Count)
+			}
+
+			if (array.Length < this.Count) {
 				throw new ArgumentException("The array is too small", "array");
-			if (arrayIndex < 0 || arrayIndex + this.Count > array.Length)
+			}
+
+			if (arrayIndex < 0 || arrayIndex + this.Count > array.Length) {
 				throw new ArgumentOutOfRangeException("arrayIndex", arrayIndex, "Value must be between 0 and " + (array.Length - this.Count));
+			}
+
 			foreach (T v in this) {
 				array[arrayIndex++] = v;
 			}
@@ -533,7 +573,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		internal const bool RED = true;
 		internal const bool BLACK = false;
 
-		void InsertAsLeft(Node parentNode, Node newNode)
+		private void InsertAsLeft(Node parentNode, Node newNode)
 		{
 			Debug.Assert(parentNode.left == null);
 			parentNode.left = newNode;
@@ -543,7 +583,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			FixTreeOnInsert(newNode);
 		}
 
-		void InsertAsRight(Node parentNode, Node newNode)
+		private void InsertAsRight(Node parentNode, Node newNode)
 		{
 			Debug.Assert(parentNode.right == null);
 			parentNode.right = newNode;
@@ -553,7 +593,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			FixTreeOnInsert(newNode);
 		}
 
-		void FixTreeOnInsert(Node node)
+		private void FixTreeOnInsert(Node node)
 		{
 			Debug.Assert(node != null);
 			Debug.Assert(node.color == RED);
@@ -612,7 +652,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			}
 		}
 
-		void RemoveNode(Node removedNode)
+		private void RemoveNode(Node removedNode)
 		{
 			if (removedNode.left != null && removedNode.right != null) {
 				// replace removedNode with it's in-order successor
@@ -623,13 +663,22 @@ namespace ICSharpCode.AvalonEdit.Utils
 				// and overwrite the removedNode with it
 				ReplaceNode(removedNode, leftMost);
 				leftMost.left = removedNode.left;
-				if (leftMost.left != null) leftMost.left.parent = leftMost;
+				if (leftMost.left != null) {
+					leftMost.left.parent = leftMost;
+				}
+
 				leftMost.right = removedNode.right;
-				if (leftMost.right != null) leftMost.right.parent = leftMost;
+				if (leftMost.right != null) {
+					leftMost.right.parent = leftMost;
+				}
+
 				leftMost.color = removedNode.color;
 
 				UpdateAugmentedData(leftMost);
-				if (leftMost.parent != null) UpdateAugmentedData(leftMost.parent);
+				if (leftMost.parent != null) {
+					UpdateAugmentedData(leftMost.parent);
+				}
+
 				return;
 			}
 
@@ -638,7 +687,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 			Node parentNode = removedNode.parent;
 			Node childNode = removedNode.left ?? removedNode.right;
 			ReplaceNode(removedNode, childNode);
-			if (parentNode != null) UpdateAugmentedData(parentNode);
+			if (parentNode != null) {
+				UpdateAugmentedData(parentNode);
+			}
+
 			if (removedNode.color == BLACK) {
 				if (childNode != null && childNode.color == RED) {
 					childNode.color = BLACK;
@@ -648,11 +700,12 @@ namespace ICSharpCode.AvalonEdit.Utils
 			}
 		}
 
-		void FixTreeOnDelete(Node node, Node parentNode)
+		private void FixTreeOnDelete(Node node, Node parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
-			if (parentNode == null)
+			if (parentNode == null) {
 				return;
+			}
 
 			// warning: node may be null
 			Node sibling = Sibling(node, parentNode);
@@ -720,16 +773,17 @@ namespace ICSharpCode.AvalonEdit.Utils
 			}
 		}
 
-		void ReplaceNode(Node replacedNode, Node newNode)
+		private void ReplaceNode(Node replacedNode, Node newNode)
 		{
 			if (replacedNode.parent == null) {
 				Debug.Assert(replacedNode == root);
 				root = newNode;
 			} else {
-				if (replacedNode.parent.left == replacedNode)
+				if (replacedNode.parent.left == replacedNode) {
 					replacedNode.parent.left = newNode;
-				else
+				} else {
 					replacedNode.parent.right = newNode;
+				}
 			}
 			if (newNode != null) {
 				newNode.parent = replacedNode.parent;
@@ -737,7 +791,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			replacedNode.parent = null;
 		}
 
-		void RotateLeft(Node p)
+		private void RotateLeft(Node p)
 		{
 			// let q be p's right child
 			Node q = p.right;
@@ -748,7 +802,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 
 			// set p's right child to be q's left child
 			p.right = q.left;
-			if (p.right != null) p.right.parent = p;
+			if (p.right != null) {
+				p.right.parent = p;
+			}
 			// set q's left child to be p
 			q.left = p;
 			p.parent = q;
@@ -756,7 +812,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			UpdateAugmentedData(q);
 		}
 
-		void RotateRight(Node p)
+		private void RotateRight(Node p)
 		{
 			// let q be p's left child
 			Node q = p.left;
@@ -767,7 +823,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 
 			// set p's left child to be q's right child
 			p.left = q.right;
-			if (p.left != null) p.left.parent = p;
+			if (p.left != null) {
+				p.left.parent = p;
+			}
 			// set q's right child to be p
 			q.right = p;
 			p.parent = q;
@@ -775,26 +833,28 @@ namespace ICSharpCode.AvalonEdit.Utils
 			UpdateAugmentedData(q);
 		}
 
-		static Node Sibling(Node node)
+		private static Node Sibling(Node node)
 		{
-			if (node == node.parent.left)
+			if (node == node.parent.left) {
 				return node.parent.right;
-			else
+			} else {
 				return node.parent.left;
+			}
 		}
 
-		static Node Sibling(Node node, Node parentNode)
+		private static Node Sibling(Node node, Node parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
-			if (node == parentNode.left)
+			if (node == parentNode.left) {
 				return parentNode.right;
-			else
+			} else {
 				return parentNode.left;
+			}
 		}
 
-		static bool GetColor(Node node)
+		private static bool GetColor(Node node)
 		{
-			return node != null ? node.color : BLACK;
+			return node != null && node.color;
 		}
 		#endregion
 
@@ -823,7 +883,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		}
 
 #if DEBUG
-		void CheckProperties(Node node)
+		private void CheckProperties(Node node)
 		{
 			Debug.Assert(node.count > 0);
 			int totalCount = node.count;
@@ -845,9 +905,11 @@ namespace ICSharpCode.AvalonEdit.Utils
 		4. Both children of every red node are black. (So every red node must have a black parent.)
 		5. Every simple path from a node to a descendant leaf contains the same number of black nodes. (Not counting the leaf node.)
 		 */
-		void CheckNodeProperties(Node node, Node parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
+		private void CheckNodeProperties(Node node, Node parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
 		{
-			if (node == null) return;
+			if (node == null) {
+				return;
+			}
 
 			Debug.Assert(node.parent == parentNode);
 
@@ -859,10 +921,11 @@ namespace ICSharpCode.AvalonEdit.Utils
 			}
 			if (node.left == null && node.right == null) {
 				// node is a leaf node:
-				if (expectedBlackCount == -1)
+				if (expectedBlackCount == -1) {
 					expectedBlackCount = blackCount;
-				else
+				} else {
 					Debug.Assert(expectedBlackCount == blackCount);
+				}
 			}
 			CheckNodeProperties(node.left, node, node.color, blackCount, ref expectedBlackCount);
 			CheckNodeProperties(node.right, node, node.color, blackCount, ref expectedBlackCount);
@@ -874,9 +937,11 @@ namespace ICSharpCode.AvalonEdit.Utils
 		internal string GetTreeAsString()
 		{
 #if DEBUG
-			if (root == null)
+			if (root == null) {
 				return "<empty tree>";
-			StringBuilder b = new StringBuilder();
+			}
+
+			StringBuilder b = new();
 			AppendTreeToString(root, b, 0);
 			return b.ToString();
 #else
@@ -885,12 +950,14 @@ namespace ICSharpCode.AvalonEdit.Utils
 		}
 
 #if DEBUG
-		static void AppendTreeToString(Node node, StringBuilder b, int indent)
+		private static void AppendTreeToString(Node node, StringBuilder b, int indent)
 		{
-			if (node.color == RED)
+			if (node.color == RED) {
 				b.Append("RED   ");
-			else
+			} else {
 				b.Append("BLACK ");
+			}
+
 			b.AppendLine(node.ToString());
 			indent += 2;
 			if (node.left != null) {

@@ -40,15 +40,11 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 													 new FrameworkPropertyMetadata(typeof(CompletionList)));
 		}
 
-		bool isFiltering = true;
 		/// <summary>
 		/// If true, the CompletionList is filtered to show only matching items. Also enables search by substring.
 		/// If false, enables the old behavior: no filtering, search by string.StartsWith.
 		/// </summary>
-		public bool IsFiltering {
-			get { return isFiltering; }
-			set { isFiltering = value; }
-		}
+		public bool IsFiltering { get; set; } = true;
 
 		/// <summary>
 		/// Dependency property for <see cref="EmptyTemplate" />.
@@ -62,8 +58,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		/// If EmptyTemplate is null, nothing will be shown.
 		/// </summary>
 		public ControlTemplate EmptyTemplate {
-			get { return (ControlTemplate)GetValue(EmptyTemplateProperty); }
-			set { SetValue(EmptyTemplateProperty, value); }
+			get => (ControlTemplate)GetValue(EmptyTemplateProperty); set => SetValue(EmptyTemplateProperty, value);
 		}
 
 		/// <summary>
@@ -77,11 +72,10 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		/// </summary>
 		public void RequestInsertion(EventArgs e)
 		{
-			if (InsertionRequested != null)
-				InsertionRequested(this, e);
+			InsertionRequested?.Invoke(this, e);
 		}
 
-		CompletionListBox listBox;
+		private CompletionListBox listBox;
 
 		/// <inheritdoc/>
 		public override void OnApplyTemplate()
@@ -99,8 +93,10 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		/// </summary>
 		public CompletionListBox ListBox {
 			get {
-				if (listBox == null)
+				if (listBox == null) {
 					ApplyTemplate();
+				}
+
 				return listBox;
 			}
 		}
@@ -108,18 +104,14 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		/// <summary>
 		/// Gets the scroll viewer used in this list box.
 		/// </summary>
-		public ScrollViewer ScrollViewer {
-			get { return listBox != null ? listBox.scrollViewer : null; }
-		}
+		public ScrollViewer ScrollViewer => listBox?.scrollViewer;
 
-		ObservableCollection<ICompletionData> completionData = new ObservableCollection<ICompletionData>();
+		private readonly ObservableCollection<ICompletionData> completionData = [];
 
 		/// <summary>
 		/// Gets the list to which completion data can be added.
 		/// </summary>
-		public IList<ICompletionData> CompletionData {
-			get { return completionData; }
-		}
+		public IList<ICompletionData> CompletionData => completionData;
 
 		/// <inheritdoc/>
 		protected override void OnKeyDown(KeyEventArgs e)
@@ -136,8 +128,9 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		/// </summary>
 		public void HandleKey(KeyEventArgs e)
 		{
-			if (listBox == null)
+			if (listBox == null) {
 				return;
+			}
 
 			// We have to do some key handling manually, because the default doesn't work with
 			// our simulated events.
@@ -196,14 +189,16 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		/// You might want to also call <see cref="ScrollIntoView"/>.
 		/// </remarks>
 		public ICompletionData SelectedItem {
-			get {
-				return (listBox != null ? listBox.SelectedItem : null) as ICompletionData;
-			}
+			get => (listBox?.SelectedItem) as ICompletionData;
 			set {
-				if (listBox == null && value != null)
+				if (listBox == null && value != null) {
 					ApplyTemplate();
+				}
+
 				if (listBox != null) // may still be null if ApplyTemplate fails, or if listBox and value both are null
+{
 					listBox.SelectedItem = value;
+				}
 			}
 		}
 
@@ -212,33 +207,36 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		/// </summary>
 		public void ScrollIntoView(ICompletionData item)
 		{
-			if (listBox == null)
+			if (listBox == null) {
 				ApplyTemplate();
-			if (listBox != null)
-				listBox.ScrollIntoView(item);
+			}
+
+			listBox?.ScrollIntoView(item);
 		}
 
 		/// <summary>
 		/// Occurs when the SelectedItem property changes.
 		/// </summary>
 		public event SelectionChangedEventHandler SelectionChanged {
-			add { AddHandler(Selector.SelectionChangedEvent, value); }
-			remove { RemoveHandler(Selector.SelectionChangedEvent, value); }
+			add => AddHandler(Selector.SelectionChangedEvent, value); remove => RemoveHandler(Selector.SelectionChangedEvent, value);
 		}
 
 		// SelectItem gets called twice for every typed character (once from FormatLine), this helps execute SelectItem only once
-		string currentText;
-		ObservableCollection<ICompletionData> currentList;
+		private string currentText;
+		private ObservableCollection<ICompletionData> currentList;
 
 		/// <summary>
 		/// Selects the best match, and filter the items if turned on using <see cref="IsFiltering" />.
 		/// </summary>
 		public void SelectItem(string text)
 		{
-			if (text == currentText)
+			if (text == currentText) {
 				return;
-			if (listBox == null)
+			}
+
+			if (listBox == null) {
 				ApplyTemplate();
+			}
 
 			if (this.IsFiltering) {
 				SelectItemFiltering(text);
@@ -251,10 +249,10 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		/// <summary>
 		/// Filters CompletionList items to show only those matching given query, and selects the best match.
 		/// </summary>
-		void SelectItemFiltering(string query)
+		private void SelectItemFiltering(string query)
 		{
 			// if the user just typed one more character, don't filter all data but just filter what we are already displaying
-			var listToFilter = (this.currentList != null && (!string.IsNullOrEmpty(this.currentText)) && (!string.IsNullOrEmpty(query)) &&
+			ObservableCollection<ICompletionData> listToFilter = (this.currentList != null && (!string.IsNullOrEmpty(this.currentText)) && (!string.IsNullOrEmpty(query)) &&
 								query.StartsWith(this.currentText, StringComparison.Ordinal)) ?
 				this.currentList : this.completionData;
 
@@ -265,9 +263,9 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 				select new { Item = item, Quality = quality };
 
 			// e.g. "DateTimeKind k = (*cc here suggests DateTimeKind*)"
-			ICompletionData suggestedItem = listBox.SelectedIndex != -1 ? (ICompletionData)(listBox.Items[listBox.SelectedIndex]) : null;
+			ICompletionData suggestedItem = listBox.SelectedIndex != -1 ? (ICompletionData)listBox.Items[listBox.SelectedIndex] : null;
 
-			var listBoxItems = new ObservableCollection<ICompletionData>();
+			ObservableCollection<ICompletionData> listBoxItems = [];
 			int bestIndex = -1;
 			int bestQuality = -1;
 			double bestPriority = 0;
@@ -291,10 +289,11 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		/// <summary>
 		/// Selects the item that starts with the specified query.
 		/// </summary>
-		void SelectItemWithStart(string query)
+		private void SelectItemWithStart(string query)
 		{
-			if (string.IsNullOrEmpty(query))
+			if (string.IsNullOrEmpty(query)) {
 				return;
+			}
 
 			int suggestedIndex = listBox.SelectedIndex;
 
@@ -303,8 +302,9 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			double bestPriority = 0;
 			for (int i = 0; i < completionData.Count; ++i) {
 				int quality = GetMatchQuality(completionData[i].Text, query);
-				if (quality < 0)
+				if (quality < 0) {
 					continue;
+				}
 
 				double priority = completionData[i].Priority;
 				bool useThisItem;
@@ -329,7 +329,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			SelectIndexCentered(bestIndex);
 		}
 
-		void SelectIndexCentered(int bestIndex)
+		private void SelectIndexCentered(int bestIndex)
 		{
 			if (bestIndex < 0) {
 				listBox.ClearSelection();
@@ -345,10 +345,11 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			}
 		}
 
-		int GetMatchQuality(string itemText, string query)
+		private int GetMatchQuality(string itemText, string query)
 		{
-			if (itemText == null)
+			if (itemText == null) {
 				throw new ArgumentNullException("itemText", "ICompletionData.Text returned null");
+			}
 
 			// Qualities:
 			//  	8 = full match case sensitive
@@ -360,54 +361,74 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			//		2 = match substring
 			//		1 = match CamelCase
 			//		-1 = no match
-			if (query == itemText)
+			if (query == itemText) {
 				return 8;
-			if (string.Equals(itemText, query, StringComparison.InvariantCultureIgnoreCase))
-				return 7;
+			}
 
-			if (itemText.StartsWith(query, StringComparison.InvariantCulture))
+			if (string.Equals(itemText, query, StringComparison.InvariantCultureIgnoreCase)) {
+				return 7;
+			}
+
+			if (itemText.StartsWith(query, StringComparison.InvariantCulture)) {
 				return 6;
-			if (itemText.StartsWith(query, StringComparison.InvariantCultureIgnoreCase))
+			}
+
+			if (itemText.StartsWith(query, StringComparison.InvariantCultureIgnoreCase)) {
 				return 5;
+			}
 
 			bool? camelCaseMatch = null;
 			if (query.Length <= 2) {
 				camelCaseMatch = CamelCaseMatch(itemText, query);
-				if (camelCaseMatch == true) return 4;
+				if (camelCaseMatch == true) {
+					return 4;
+				}
 			}
 
 			// search by substring, if filtering (i.e. new behavior) turned on
 			if (IsFiltering) {
-				if (itemText.IndexOf(query, StringComparison.InvariantCulture) >= 0)
+				if (itemText.IndexOf(query, StringComparison.InvariantCulture) >= 0) {
 					return 3;
-				if (itemText.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) >= 0)
+				}
+
+				if (itemText.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) >= 0) {
 					return 2;
+				}
 			}
 
-			if (!camelCaseMatch.HasValue)
+			if (!camelCaseMatch.HasValue) {
 				camelCaseMatch = CamelCaseMatch(itemText, query);
-			if (camelCaseMatch == true)
+			}
+
+			if (camelCaseMatch == true) {
 				return 1;
+			}
 
 			return -1;
 		}
 
-		static bool CamelCaseMatch(string text, string query)
+		private static bool CamelCaseMatch(string text, string query)
 		{
 			// We take the first letter of the text regardless of whether or not it's upper case so we match
 			// against camelCase text as well as PascalCase text ("cct" matches "camelCaseText")
-			var theFirstLetterOfEachWord = text.Take(1).Concat(text.Skip(1).Where(char.IsUpper));
+			IEnumerable<char> theFirstLetterOfEachWord = text.Take(1).Concat(text.Skip(1).Where(char.IsUpper));
 
 			int i = 0;
-			foreach (var letter in theFirstLetterOfEachWord) {
-				if (i > query.Length - 1)
+			foreach (char letter in theFirstLetterOfEachWord) {
+				if (i > query.Length - 1) {
 					return true;    // return true here for CamelCase partial match ("CQ" matches "CodeQualityAnalysis")
-				if (char.ToUpperInvariant(query[i]) != char.ToUpperInvariant(letter))
+				}
+
+				if (char.ToUpperInvariant(query[i]) != char.ToUpperInvariant(letter)) {
 					return false;
+				}
+
 				i++;
 			}
-			if (i >= query.Length)
+			if (i >= query.Length) {
 				return true;
+			}
+
 			return false;
 		}
 	}

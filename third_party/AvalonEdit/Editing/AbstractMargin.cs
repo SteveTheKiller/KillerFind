@@ -46,11 +46,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		/// <remarks>Adding a margin to <see cref="TextArea.LeftMargins"/> will automatically set this property to the text area's TextView.</remarks>
 		public TextView TextView {
-			get { return (TextView)GetValue(TextViewProperty); }
-			set { SetValue(TextViewProperty, value); }
+			get => (TextView)GetValue(TextViewProperty); set => SetValue(TextViewProperty, value);
 		}
 
-		static void OnTextViewChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
+		private static void OnTextViewChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
 		{
 			AbstractMargin margin = (AbstractMargin)dp;
 			margin.wasAutoAddedToTextView = false;
@@ -58,7 +57,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		}
 
 		// automatically set/unset TextView property using ITextViewConnect
-		bool wasAutoAddedToTextView;
+		private bool wasAutoAddedToTextView;
 
 		void ITextViewConnect.AddToTextView(TextView textView)
 		{
@@ -78,14 +77,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		TextDocument document;
-
 		/// <summary>
 		/// Gets the document associated with the margin.
 		/// </summary>
-		public TextDocument Document {
-			get { return document; }
-		}
+		public TextDocument Document { get; private set; }
 
 		/// <summary>
 		/// Called when the <see cref="TextView"/> is changing.
@@ -101,9 +96,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 			TextViewDocumentChanged(null, null);
 		}
 
-		void TextViewDocumentChanged(object sender, EventArgs e)
+		private void TextViewDocumentChanged(object sender, EventArgs e)
 		{
-			OnDocumentChanged(document, TextView != null ? TextView.Document : null);
+			OnDocumentChanged(Document, TextView?.Document);
 		}
 
 		/// <summary>
@@ -111,7 +106,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		protected virtual void OnDocumentChanged(TextDocument oldDocument, TextDocument newDocument)
 		{
-			document = newDocument;
+			Document = newDocument;
 		}
 	}
 }

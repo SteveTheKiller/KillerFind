@@ -22,7 +22,7 @@ using System.Windows.Media.TextFormatting;
 
 namespace ICSharpCode.AvalonEdit.Rendering
 {
-	sealed class GlobalTextRunProperties : TextRunProperties
+	internal sealed class GlobalTextRunProperties : TextRunProperties
 	{
 		// Set by TextView immediately after construction, never left null in practice, so null!
 		// rather than a constructor: this type is filled field by field on purpose.
@@ -31,18 +31,18 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		internal Brush foregroundBrush = null!;
 		internal System.Globalization.CultureInfo cultureInfo = null!;
 
-		public override Typeface Typeface { get { return typeface; } }
-		public override double FontRenderingEmSize { get { return fontRenderingEmSize; } }
-		public override double FontHintingEmSize { get { return fontRenderingEmSize; } }
-		public override TextDecorationCollection? TextDecorations { get { return null; } }
-		public override Brush ForegroundBrush { get { return foregroundBrush; } }
+		public override Typeface Typeface => typeface;
+		public override double FontRenderingEmSize => fontRenderingEmSize;
+		public override double FontHintingEmSize => fontRenderingEmSize;
+		public override TextDecorationCollection? TextDecorations => null;
+		public override Brush ForegroundBrush => foregroundBrush;
 
 		// KillerFind: upstream backs this with an internal backgroundBrush field that nothing in
 		// the assembly ever assigns (CS0649), so the property could only ever return null. The
 		// dead field is gone and the null is now stated outright, the same shape TextDecorations
 		// and TextEffects already use. A background comes from the renderer layers, not from here.
-		public override Brush? BackgroundBrush { get { return null; } }
-		public override System.Globalization.CultureInfo CultureInfo { get { return cultureInfo; } }
-		public override TextEffectCollection? TextEffects { get { return null; } }
+		public override Brush? BackgroundBrush => null;
+		public override System.Globalization.CultureInfo CultureInfo => cultureInfo;
+		public override TextEffectCollection? TextEffects => null;
 	}
 }

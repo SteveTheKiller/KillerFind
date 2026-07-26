@@ -32,7 +32,7 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// Interface to allow TextSegments to access the TextSegmentCollection - we cannot use a direct reference
 	/// because TextSegmentCollection is generic.
 	/// </summary>
-	interface ISegmentTree
+	internal interface ISegmentTree
 	{
 		void Add(TextSegment s);
 		void Remove(TextSegment s);
@@ -49,29 +49,8 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// <see cref="TextSegment"/>
 	public sealed class TextSegmentCollection<T> : ICollection<T>, ISegmentTree, IWeakEventListener where T : TextSegment
 	{
-		// Implementation: this is basically a mixture of an augmented interval tree
-		// and the TextAnchorTree.
-
-		// WARNING: you need to understand interval trees (the version with the augmented 'high'/'max' field)
-		// and how the TextAnchorTree works before you have any chance of understanding this code.
-
-		// This means that every node holds two "segments":
-		// one like the segments in the text anchor tree to support efficient offset changes
-		// and another that is the interval as seen by the user
-
-		// So basically, the tree contains a list of contiguous node segments of the first kind,
-		// with interval segments starting at the end of every node segment.
-
-		// Performance:
-		// Add is O(lg n)
-		// Remove is O(lg n)
-		// DocumentChanged is O(m * lg n), with m the number of segments that intersect with the changed document section
-		// FindFirstSegmentWithStartAfter is O(m + lg n) with m being the number of segments at the same offset as the result segment
-		// FindIntersectingSegments is O(m + lg n) with m being the number of intersecting segments.
-
-		int count;
-		TextSegment root;
-		bool isConnectedToDocument;
+		private TextSegment root;
+		private readonly bool isConnectedToDocument;
 
 		#region Constructor
 		/// <summary>
@@ -89,8 +68,9 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// position of the text segments will be updated accordingly.</param>
 		public TextSegmentCollection(TextDocument textDocument)
 		{
-			if (textDocument == null)
+			if (textDocument == null) {
 				throw new ArgumentNullException("textDocument");
+			}
 
 			textDocument.VerifyAccess();
 			isConnectedToDocument = true;
@@ -114,15 +94,19 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <param name="e">DocumentChangeEventArgs instance describing the change to the document.</param>
 		public void UpdateOffsets(DocumentChangeEventArgs e)
 		{
-			if (e == null)
+			if (e == null) {
 				throw new ArgumentNullException("e");
-			if (isConnectedToDocument)
+			}
+
+			if (isConnectedToDocument) {
 				throw new InvalidOperationException("This TextSegmentCollection will automatically update offsets; do not call UpdateOffsets manually!");
+			}
+
 			OnDocumentChanged(e);
 			CheckProperties();
 		}
 
-		void OnDocumentChanged(DocumentChangeEventArgs e)
+		private void OnDocumentChanged(DocumentChangeEventArgs e)
 		{
 			OffsetChangeMap map = e.OffsetChangeMapOrNull;
 			if (map != null) {
@@ -140,15 +124,17 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <param name="change">OffsetChangeMapEntry instance describing the change to the document.</param>
 		public void UpdateOffsets(OffsetChangeMapEntry change)
 		{
-			if (isConnectedToDocument)
+			if (isConnectedToDocument) {
 				throw new InvalidOperationException("This TextSegmentCollection will automatically update offsets; do not call UpdateOffsets manually!");
+			}
+
 			UpdateOffsetsInternal(change);
 			CheckProperties();
 		}
 		#endregion
 
 		#region UpdateOffsets (implementation)
-		void UpdateOffsetsInternal(OffsetChangeMapEntry change)
+		private void UpdateOffsetsInternal(OffsetChangeMapEntry change)
 		{
 			// Special case pure insertions, because they don't always cause a text segment to increase in size when the replaced region
 			// is inside a segment (when offset is at start or end of a text segment).
@@ -159,10 +145,11 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		void InsertText(int offset, int length)
+		private void InsertText(int offset, int length)
 		{
-			if (length == 0)
+			if (length == 0) {
 				return;
+			}
 
 			// enlarge segments that contain offset (excluding those that have offset as endpoint)
 			foreach (TextSegment segment in FindSegmentsContaining(offset)) {
@@ -179,7 +166,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		void ReplaceText(OffsetChangeMapEntry change)
+		private void ReplaceText(OffsetChangeMapEntry change)
 		{
 			Debug.Assert(change.RemovalLength > 0);
 			int offset = change.Offset;
@@ -220,10 +207,14 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public void Add(T item)
 		{
-			if (item == null)
+			if (item == null) {
 				throw new ArgumentNullException("item");
-			if (item.ownerTree != null)
+			}
+
+			if (item.ownerTree != null) {
 				throw new ArgumentException("The segment is already added to a SegmentCollection.");
+			}
+
 			AddSegment(item);
 		}
 
@@ -232,7 +223,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			AddSegment(s);
 		}
 
-		void AddSegment(TextSegment node)
+		private void AddSegment(TextSegment node)
 		{
 			int insertionOffset = node.StartOffset;
 			node.distanceToMaxEnd = node.segmentLength;
@@ -253,11 +244,11 @@ namespace ICSharpCode.AvalonEdit.Document
 				InsertBefore(n, node);
 			}
 			node.ownerTree = this;
-			count++;
+			Count++;
 			CheckProperties();
 		}
 
-		void InsertBefore(TextSegment node, TextSegment newNode)
+		private void InsertBefore(TextSegment node, TextSegment newNode)
 		{
 			if (node.left == null) {
 				InsertAsLeft(node, newNode);
@@ -275,8 +266,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public T GetNextSegment(T segment)
 		{
-			if (!Contains(segment))
+			if (!Contains(segment)) {
 				throw new ArgumentException("segment is not inside the segment tree");
+			}
+
 			return (T)segment.Successor;
 		}
 
@@ -287,8 +280,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public T GetPreviousSegment(T segment)
 		{
-			if (!Contains(segment))
+			if (!Contains(segment)) {
 				throw new ArgumentException("segment is not inside the segment tree");
+			}
+
 			return (T)segment.Predecessor;
 		}
 		#endregion
@@ -297,20 +292,12 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// Returns the first segment in the collection or null, if the collection is empty.
 		/// </summary>
-		public T FirstSegment {
-			get {
-				return root == null ? null : (T)root.LeftMost;
-			}
-		}
+		public T FirstSegment => root == null ? null : (T)root.LeftMost;
 
 		/// <summary>
 		/// Returns the last segment in the collection or null, if the collection is empty.
 		/// </summary>
-		public T LastSegment {
-			get {
-				return root == null ? null : (T)root.RightMost;
-			}
-		}
+		public T LastSegment => root == null ? null : (T)root.RightMost;
 		#endregion
 
 		#region FindFirstSegmentWithStartAfter
@@ -320,10 +307,14 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public T FindFirstSegmentWithStartAfter(int startOffset)
 		{
-			if (root == null)
+			if (root == null) {
 				return null;
-			if (startOffset <= 0)
+			}
+
+			if (startOffset <= 0) {
 				return (T)root.LeftMost;
+			}
+
 			TextSegment s = FindNode(ref startOffset);
 			// startOffset means that the previous segment is starting at the offset we were looking for
 			while (startOffset == 0) {
@@ -341,7 +332,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Finds the node at the specified offset.
 		/// After the method has run, offset is relative to the beginning of the returned node.
 		/// </summary>
-		TextSegment FindNode(ref int offset)
+		private TextSegment FindNode(ref int offset)
 		{
 			TextSegment n = root;
 			while (true) {
@@ -388,8 +379,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// This means it is safe to modify the TextSegmentCollection while iterating through the result collection.</returns>
 		public ReadOnlyCollection<T> FindOverlappingSegments(ISegment segment)
 		{
-			if (segment == null)
+			if (segment == null) {
 				throw new ArgumentNullException("segment");
+			}
+
 			return FindOverlappingSegments(segment.Offset, segment.Length);
 		}
 
@@ -402,14 +395,14 @@ namespace ICSharpCode.AvalonEdit.Document
 		public ReadOnlyCollection<T> FindOverlappingSegments(int offset, int length)
 		{
 			ThrowUtil.CheckNotNegative(length, "length");
-			List<T> results = new List<T>();
+			List<T> results = [];
 			if (root != null) {
 				FindOverlappingSegments(results, root, offset, offset + length);
 			}
 			return results.AsReadOnly();
 		}
 
-		void FindOverlappingSegments(List<T> results, TextSegment node, int low, int high)
+		private void FindOverlappingSegments(List<T> results, TextSegment node, int low, int high)
 		{
 			// low and high are relative to node.LeftMost startpos (not node.LeftMost.Offset)
 			if (high < 0) {
@@ -430,8 +423,9 @@ namespace ICSharpCode.AvalonEdit.Document
 				return;
 			}
 
-			if (node.left != null)
+			if (node.left != null) {
 				FindOverlappingSegments(results, node.left, low, high);
+			}
 
 			if (nodeHigh < 0) {
 				// node and everything in node.right is before low
@@ -442,13 +436,14 @@ namespace ICSharpCode.AvalonEdit.Document
 				results.Add((T)node);
 			}
 
-			if (node.right != null)
+			if (node.right != null) {
 				FindOverlappingSegments(results, node.right, nodeLow, nodeHigh);
+			}
 		}
 		#endregion
 
 		#region UpdateAugmentedData
-		void UpdateAugmentedData(TextSegment node)
+		private void UpdateAugmentedData(TextSegment node)
 		{
 			int totalLength = node.nodeLength;
 			int distanceToMaxEnd = node.segmentLength;
@@ -457,11 +452,14 @@ namespace ICSharpCode.AvalonEdit.Document
 
 				int leftDTME = node.left.distanceToMaxEnd;
 				// dtme is relative, so convert it to the coordinates of node:
-				if (node.left.right != null)
+				if (node.left.right != null) {
 					leftDTME -= node.left.right.totalNodeLength;
+				}
+
 				leftDTME -= node.nodeLength;
-				if (leftDTME > distanceToMaxEnd)
+				if (leftDTME > distanceToMaxEnd) {
 					distanceToMaxEnd = leftDTME;
+				}
 			}
 			if (node.right != null) {
 				totalLength += node.right.totalNodeLength;
@@ -469,17 +467,21 @@ namespace ICSharpCode.AvalonEdit.Document
 				int rightDTME = node.right.distanceToMaxEnd;
 				// dtme is relative, so convert it to the coordinates of node:
 				rightDTME += node.right.nodeLength;
-				if (node.right.left != null)
+				if (node.right.left != null) {
 					rightDTME += node.right.left.totalNodeLength;
-				if (rightDTME > distanceToMaxEnd)
+				}
+
+				if (rightDTME > distanceToMaxEnd) {
 					distanceToMaxEnd = rightDTME;
+				}
 			}
 			if (node.totalNodeLength != totalLength
 				|| node.distanceToMaxEnd != distanceToMaxEnd) {
 				node.totalNodeLength = totalLength;
 				node.distanceToMaxEnd = distanceToMaxEnd;
-				if (node.parent != null)
+				if (node.parent != null) {
 					UpdateAugmentedData(node.parent);
+				}
 			}
 		}
 
@@ -496,8 +498,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public bool Remove(T item)
 		{
-			if (!Contains(item))
+			if (!Contains(item)) {
 				return false;
+			}
+
 			RemoveSegment(item);
 			return true;
 		}
@@ -507,25 +511,29 @@ namespace ICSharpCode.AvalonEdit.Document
 			RemoveSegment(s);
 		}
 
-		void RemoveSegment(TextSegment s)
+		private void RemoveSegment(TextSegment s)
 		{
 			int oldOffset = s.StartOffset;
 			TextSegment successor = s.Successor;
-			if (successor != null)
+			if (successor != null) {
 				successor.nodeLength += s.nodeLength;
+			}
+
 			RemoveNode(s);
-			if (successor != null)
+			if (successor != null) {
 				UpdateAugmentedData(successor);
+			}
+
 			Disconnect(s, oldOffset);
 			CheckProperties();
 		}
 
-		void Disconnect(TextSegment s, int offset)
+		private void Disconnect(TextSegment s, int offset)
 		{
 			s.left = s.right = s.parent = null;
 			s.ownerTree = null;
 			s.nodeLength = offset;
-			count--;
+			Count--;
 		}
 
 		/// <summary>
@@ -533,7 +541,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public void Clear()
 		{
-			T[] segments = this.ToArray();
+			T[] segments = [.. this];
 			root = null;
 			int offset = 0;
 			foreach (TextSegment s in segments) {
@@ -561,14 +569,16 @@ namespace ICSharpCode.AvalonEdit.Document
 			// we cannot trust LINQ not to call ICollection.Count, so we need this loop
 			// to count the elements in the tree
 			using (IEnumerator<T> en = GetEnumerator()) {
-				while (en.MoveNext()) expectedCount++;
+				while (en.MoveNext()) {
+					expectedCount++;
+				}
 			}
-			Debug.Assert(count == expectedCount);
+			Debug.Assert(Count == expectedCount);
 #endif
 		}
 
 #if DEBUG
-		void CheckProperties(TextSegment node)
+		private void CheckProperties(TextSegment node)
 		{
 			int totalLength = node.nodeLength;
 			int distanceToMaxEnd = node.segmentLength;
@@ -595,9 +605,11 @@ namespace ICSharpCode.AvalonEdit.Document
 		4. Both children of every red node are black. (So every red node must have a black parent.)
 		5. Every simple path from a node to a descendant leaf contains the same number of black nodes. (Not counting the leaf node.)
 		 */
-		void CheckNodeProperties(TextSegment node, TextSegment parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
+		private void CheckNodeProperties(TextSegment node, TextSegment parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
 		{
-			if (node == null) return;
+			if (node == null) {
+				return;
+			}
 
 			Debug.Assert(node.parent == parentNode);
 
@@ -609,21 +621,24 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 			if (node.left == null && node.right == null) {
 				// node is a leaf node:
-				if (expectedBlackCount == -1)
+				if (expectedBlackCount == -1) {
 					expectedBlackCount = blackCount;
-				else
+				} else {
 					Debug.Assert(expectedBlackCount == blackCount);
+				}
 			}
 			CheckNodeProperties(node.left, node, node.color, blackCount, ref expectedBlackCount);
 			CheckNodeProperties(node.right, node, node.color, blackCount, ref expectedBlackCount);
 		}
 
-		static void AppendTreeToString(TextSegment node, StringBuilder b, int indent)
+		private static void AppendTreeToString(TextSegment node, StringBuilder b, int indent)
 		{
-			if (node.color == RED)
+			if (node.color == RED) {
 				b.Append("RED   ");
-			else
+			} else {
 				b.Append("BLACK ");
+			}
+
 			b.AppendLine(node.ToString() + node.ToDebugString());
 			indent += 2;
 			if (node.left != null) {
@@ -642,9 +657,11 @@ namespace ICSharpCode.AvalonEdit.Document
 		internal string GetTreeAsString()
 		{
 #if DEBUG
-			StringBuilder b = new StringBuilder();
-			if (root != null)
+			StringBuilder b = new();
+			if (root != null) {
 				AppendTreeToString(root, b, 0);
+			}
+
 			return b.ToString();
 #else
 			return "Not available in release build.";
@@ -656,7 +673,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		internal const bool RED = true;
 		internal const bool BLACK = false;
 
-		void InsertAsLeft(TextSegment parentNode, TextSegment newNode)
+		private void InsertAsLeft(TextSegment parentNode, TextSegment newNode)
 		{
 			Debug.Assert(parentNode.left == null);
 			parentNode.left = newNode;
@@ -666,7 +683,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			FixTreeOnInsert(newNode);
 		}
 
-		void InsertAsRight(TextSegment parentNode, TextSegment newNode)
+		private void InsertAsRight(TextSegment parentNode, TextSegment newNode)
 		{
 			Debug.Assert(parentNode.right == null);
 			parentNode.right = newNode;
@@ -676,7 +693,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			FixTreeOnInsert(newNode);
 		}
 
-		void FixTreeOnInsert(TextSegment node)
+		private void FixTreeOnInsert(TextSegment node)
 		{
 			Debug.Assert(node != null);
 			Debug.Assert(node.color == RED);
@@ -735,7 +752,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		void RemoveNode(TextSegment removedNode)
+		private void RemoveNode(TextSegment removedNode)
 		{
 			if (removedNode.left != null && removedNode.right != null) {
 				// replace removedNode with it's in-order successor
@@ -746,13 +763,22 @@ namespace ICSharpCode.AvalonEdit.Document
 				// and overwrite the removedNode with it
 				ReplaceNode(removedNode, leftMost);
 				leftMost.left = removedNode.left;
-				if (leftMost.left != null) leftMost.left.parent = leftMost;
+				if (leftMost.left != null) {
+					leftMost.left.parent = leftMost;
+				}
+
 				leftMost.right = removedNode.right;
-				if (leftMost.right != null) leftMost.right.parent = leftMost;
+				if (leftMost.right != null) {
+					leftMost.right.parent = leftMost;
+				}
+
 				leftMost.color = removedNode.color;
 
 				UpdateAugmentedData(leftMost);
-				if (leftMost.parent != null) UpdateAugmentedData(leftMost.parent);
+				if (leftMost.parent != null) {
+					UpdateAugmentedData(leftMost.parent);
+				}
+
 				return;
 			}
 
@@ -761,7 +787,10 @@ namespace ICSharpCode.AvalonEdit.Document
 			TextSegment parentNode = removedNode.parent;
 			TextSegment childNode = removedNode.left ?? removedNode.right;
 			ReplaceNode(removedNode, childNode);
-			if (parentNode != null) UpdateAugmentedData(parentNode);
+			if (parentNode != null) {
+				UpdateAugmentedData(parentNode);
+			}
+
 			if (removedNode.color == BLACK) {
 				if (childNode != null && childNode.color == RED) {
 					childNode.color = BLACK;
@@ -771,11 +800,12 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		void FixTreeOnDelete(TextSegment node, TextSegment parentNode)
+		private void FixTreeOnDelete(TextSegment node, TextSegment parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
-			if (parentNode == null)
+			if (parentNode == null) {
 				return;
+			}
 
 			// warning: node may be null
 			TextSegment sibling = Sibling(node, parentNode);
@@ -843,16 +873,17 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		void ReplaceNode(TextSegment replacedNode, TextSegment newNode)
+		private void ReplaceNode(TextSegment replacedNode, TextSegment newNode)
 		{
 			if (replacedNode.parent == null) {
 				Debug.Assert(replacedNode == root);
 				root = newNode;
 			} else {
-				if (replacedNode.parent.left == replacedNode)
+				if (replacedNode.parent.left == replacedNode) {
 					replacedNode.parent.left = newNode;
-				else
+				} else {
 					replacedNode.parent.right = newNode;
+				}
 			}
 			if (newNode != null) {
 				newNode.parent = replacedNode.parent;
@@ -860,7 +891,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			replacedNode.parent = null;
 		}
 
-		void RotateLeft(TextSegment p)
+		private void RotateLeft(TextSegment p)
 		{
 			// let q be p's right child
 			TextSegment q = p.right;
@@ -871,7 +902,9 @@ namespace ICSharpCode.AvalonEdit.Document
 
 			// set p's right child to be q's left child
 			p.right = q.left;
-			if (p.right != null) p.right.parent = p;
+			if (p.right != null) {
+				p.right.parent = p;
+			}
 			// set q's left child to be p
 			q.left = p;
 			p.parent = q;
@@ -879,7 +912,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			UpdateAugmentedData(q);
 		}
 
-		void RotateRight(TextSegment p)
+		private void RotateRight(TextSegment p)
 		{
 			// let q be p's left child
 			TextSegment q = p.left;
@@ -890,7 +923,9 @@ namespace ICSharpCode.AvalonEdit.Document
 
 			// set p's left child to be q's right child
 			p.left = q.right;
-			if (p.left != null) p.left.parent = p;
+			if (p.left != null) {
+				p.left.parent = p;
+			}
 			// set q's right child to be p
 			q.right = p;
 			p.parent = q;
@@ -898,26 +933,28 @@ namespace ICSharpCode.AvalonEdit.Document
 			UpdateAugmentedData(q);
 		}
 
-		static TextSegment Sibling(TextSegment node)
+		private static TextSegment Sibling(TextSegment node)
 		{
-			if (node == node.parent.left)
+			if (node == node.parent.left) {
 				return node.parent.right;
-			else
+			} else {
 				return node.parent.left;
+			}
 		}
 
-		static TextSegment Sibling(TextSegment node, TextSegment parentNode)
+		private static TextSegment Sibling(TextSegment node, TextSegment parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
-			if (node == parentNode.left)
+			if (node == parentNode.left) {
 				return parentNode.right;
-			else
+			} else {
 				return parentNode.left;
+			}
 		}
 
-		static bool GetColor(TextSegment node)
+		private static bool GetColor(TextSegment node)
 		{
-			return node != null ? node.color : BLACK;
+			return node != null && node.color;
 		}
 		#endregion
 
@@ -925,13 +962,9 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// Gets the number of segments in the tree.
 		/// </summary>
-		public int Count {
-			get { return count; }
-		}
+		public int Count { get; private set; }
 
-		bool ICollection<T>.IsReadOnly {
-			get { return false; }
-		}
+		bool ICollection<T>.IsReadOnly => false;
 
 		/// <summary>
 		/// Gets whether this tree contains the specified item.
@@ -946,12 +979,18 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			if (array == null)
+			if (array == null) {
 				throw new ArgumentNullException("array");
-			if (array.Length < this.Count)
+			}
+
+			if (array.Length < this.Count) {
 				throw new ArgumentException("The array is too small", "array");
-			if (arrayIndex < 0 || arrayIndex + count > array.Length)
-				throw new ArgumentOutOfRangeException("arrayIndex", arrayIndex, "Value must be between 0 and " + (array.Length - count));
+			}
+
+			if (arrayIndex < 0 || arrayIndex + Count > array.Length) {
+				throw new ArgumentOutOfRangeException("arrayIndex", arrayIndex, "Value must be between 0 and " + (array.Length - Count));
+			}
+
 			foreach (T s in this) {
 				array[arrayIndex++] = s;
 			}

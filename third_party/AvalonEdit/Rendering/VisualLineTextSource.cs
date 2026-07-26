@@ -28,7 +28,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// <summary>
 	/// WPF TextSource implementation that creates TextRuns for a VisualLine.
 	/// </summary>
-	sealed class VisualLineTextSource : TextSource, ITextRunConstructionContext
+	internal sealed class VisualLineTextSource : TextSource, ITextRunConstructionContext
 	{
 		public VisualLineTextSource(VisualLine visualLine)
 		{
@@ -47,15 +47,16 @@ namespace ICSharpCode.AvalonEdit.Rendering
 					if (textSourceCharacterIndex >= element.VisualColumn
 						&& textSourceCharacterIndex < element.VisualColumn + element.VisualLength) {
 						int relativeOffset = textSourceCharacterIndex - element.VisualColumn;
-						TextRun run = element.CreateTextRun(textSourceCharacterIndex, this);
-						if (run == null)
-							throw new ArgumentNullException(element.GetType().Name + ".CreateTextRun");
-						if (run.Length == 0)
+						TextRun run = element.CreateTextRun(textSourceCharacterIndex, this) ?? throw new ArgumentNullException(element.GetType().Name + ".CreateTextRun");
+						if (run.Length == 0) {
 							throw new ArgumentException("The returned TextRun must not have length 0.", element.GetType().Name + ".Length");
-						if (relativeOffset + run.Length > element.VisualLength)
+						}
+
+						if (relativeOffset + run.Length > element.VisualLength) {
 							throw new ArgumentException("The returned TextRun is too long.", element.GetType().Name + ".CreateTextRun");
-						InlineObjectRun inlineRun = run as InlineObjectRun;
-						if (inlineRun != null) {
+						}
+
+						if (run is InlineObjectRun inlineRun) {
 							inlineRun.VisualLine = VisualLine;
 							VisualLine.hasInlineObjects = true;
 							TextView.AddInlineObject(inlineRun);
@@ -73,7 +74,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		TextRun CreateTextRunForNewLine()
+		private TextRun CreateTextRunForNewLine()
 		{
 			string newlineText = "";
 			DocumentLine lastDocumentLine = VisualLine.LastDocumentLine;
@@ -81,12 +82,13 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				newlineText = "¶";
 			} else if (lastDocumentLine.DelimiterLength == 1) {
 				char newlineChar = Document.GetCharAt(lastDocumentLine.Offset + lastDocumentLine.Length);
-				if (newlineChar == '\r')
+				if (newlineChar == '\r') {
 					newlineText = "\\r";
-				else if (newlineChar == '\n')
+				} else if (newlineChar == '\n') {
 					newlineText = "\\n";
-				else
+				} else {
 					newlineText = "?";
+				}
 			}
 			return new FormattedTextRun(new FormattedTextElement(TextView.cachedElements.GetTextForNonPrintableCharacter(newlineText, this), 0), GlobalTextRunProperties);
 		}
@@ -98,11 +100,15 @@ namespace ICSharpCode.AvalonEdit.Rendering
 					if (textSourceCharacterIndexLimit > element.VisualColumn
 						&& textSourceCharacterIndexLimit <= element.VisualColumn + element.VisualLength) {
 						TextSpan<CultureSpecificCharacterBufferRange> span = element.GetPrecedingText(textSourceCharacterIndexLimit, this);
-						if (span == null)
+						if (span == null) {
 							break;
+						}
+
 						int relativeOffset = textSourceCharacterIndexLimit - element.VisualColumn;
-						if (span.Length > relativeOffset)
+						if (span.Length > relativeOffset) {
 							throw new ArgumentException("The returned TextSpan is too long.", element.GetType().Name + ".GetPrecedingText");
+						}
+
 						return span;
 					}
 				}
@@ -119,8 +125,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			throw new NotSupportedException();
 		}
 
-		string cachedString;
-		int cachedStringOffset;
+		private string cachedString;
+		private int cachedStringOffset;
 
 		public StringSegment GetText(int offset, int length)
 		{

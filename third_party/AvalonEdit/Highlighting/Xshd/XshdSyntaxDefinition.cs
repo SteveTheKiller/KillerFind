@@ -34,8 +34,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		/// </summary>
 		public XshdSyntaxDefinition()
 		{
-			this.Elements = new NullSafeCollection<XshdElement>();
-			this.Extensions = new NullSafeCollection<string>();
+			this.Elements = [];
+			this.Extensions = [];
 		}
 
 		/// <summary>

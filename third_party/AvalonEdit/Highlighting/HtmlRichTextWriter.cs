@@ -31,15 +31,15 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 	/// <summary>
 	/// RichTextWriter implementation that produces HTML.
 	/// </summary>
-	class HtmlRichTextWriter : RichTextWriter
+	internal class HtmlRichTextWriter : RichTextWriter
 	{
-		readonly TextWriter htmlWriter;
-		readonly HtmlOptions options;
-		Stack<string> endTagStack = new Stack<string>();
-		bool spaceNeedsEscaping = true;
-		bool hasSpace;
-		bool needIndentation = true;
-		int indentationLevel;
+		private readonly TextWriter htmlWriter;
+		private readonly HtmlOptions options;
+		private readonly Stack<string> endTagStack = new();
+		private bool spaceNeedsEscaping = true;
+		private bool hasSpace;
+		private bool needIndentation = true;
+		private int indentationLevel;
 
 		/// <summary>
 		/// Creates a new HtmlRichTextWriter instance.
@@ -52,16 +52,12 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <param name="options">Options that control the HTML output.</param>
 		public HtmlRichTextWriter(TextWriter htmlWriter, HtmlOptions options = null)
 		{
-			if (htmlWriter == null)
-				throw new ArgumentNullException("htmlWriter");
-			this.htmlWriter = htmlWriter;
+			this.htmlWriter = htmlWriter ?? throw new ArgumentNullException("htmlWriter");
 			this.options = options ?? new HtmlOptions();
 		}
 
 		/// <inheritdoc/>
-		public override Encoding Encoding {
-			get { return htmlWriter.Encoding; }
-		}
+		public override Encoding Encoding => htmlWriter.Encoding;
 
 		/// <inheritdoc/>
 		public override void Flush()
@@ -79,19 +75,21 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			base.Dispose(disposing);
 		}
 
-		void FlushSpace(bool nextIsWhitespace)
+		private void FlushSpace(bool nextIsWhitespace)
 		{
 			if (hasSpace) {
-				if (spaceNeedsEscaping || nextIsWhitespace)
+				if (spaceNeedsEscaping || nextIsWhitespace) {
 					htmlWriter.Write("&nbsp;");
-				else
+				} else {
 					htmlWriter.Write(' ');
+				}
+
 				hasSpace = false;
 				spaceNeedsEscaping = true;
 			}
 		}
 
-		void WriteIndentation()
+		private void WriteIndentation()
 		{
 			if (needIndentation) {
 				for (int i = 0; i < indentationLevel; i++) {
@@ -108,18 +106,20 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			WriteChar(value);
 		}
 
-		static readonly char[] specialChars = { ' ', '\t', '\r', '\n' };
+		private static readonly char[] specialChars = [' ', '\t', '\r', '\n'];
 
-		void WriteChar(char c)
+		private void WriteChar(char c)
 		{
 			bool isWhitespace = char.IsWhiteSpace(c);
 			FlushSpace(isWhitespace);
 			switch (c) {
 				case ' ':
-					if (spaceNeedsEscaping)
+					if (spaceNeedsEscaping) {
 						htmlWriter.Write("&nbsp;");
-					else
+					} else {
 						hasSpace = true;
+					}
+
 					break;
 				case '\t':
 					for (int i = 0; i < options.TabSize; i++) {
@@ -153,26 +153,30 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			do {
 				int endPos = value.IndexOfAny(specialChars, pos);
 				if (endPos < 0) {
-					WriteSimpleString(value.Substring(pos));
+					WriteSimpleString(value[pos..]);
 					return; // reached end of string
 				}
-				if (endPos > pos)
-					WriteSimpleString(value.Substring(pos, endPos - pos));
+				if (endPos > pos) {
+					WriteSimpleString(value[pos..endPos]);
+				}
+
 				WriteChar(value[endPos]);
 				pos = endPos + 1;
 			} while (pos < value.Length);
 		}
 
-		void WriteIndentationAndSpace()
+		private void WriteIndentationAndSpace()
 		{
 			WriteIndentation();
 			FlushSpace(false);
 		}
 
-		void WriteSimpleString(string value)
+		private void WriteSimpleString(string value)
 		{
-			if (value.Length == 0)
+			if (value.Length == 0) {
 				return;
+			}
+
 			WriteIndentationAndSpace();
 			WebUtility.HtmlEncode(value, htmlWriter);
 		}
@@ -186,8 +190,10 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <inheritdoc/>
 		public override void Unindent()
 		{
-			if (indentationLevel == 0)
+			if (indentationLevel == 0) {
 				throw new NotSupportedException();
+			}
+
 			indentationLevel--;
 		}
 

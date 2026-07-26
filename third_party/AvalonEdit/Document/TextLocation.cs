@@ -32,12 +32,12 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// </remarks>
 	[Serializable]
 	[TypeConverter(typeof(TextLocationConverter))]
-	public struct TextLocation : IComparable<TextLocation>, IEquatable<TextLocation>
+	public readonly struct TextLocation : IComparable<TextLocation>, IEquatable<TextLocation>
 	{
 		/// <summary>
 		/// Represents no text location (0, 0).
 		/// </summary>
-		public static readonly TextLocation Empty = new TextLocation(0, 0);
+		public static readonly TextLocation Empty = new(0, 0);
 
 		/// <summary>
 		/// Creates a TextLocation instance.
@@ -48,35 +48,27 @@ namespace ICSharpCode.AvalonEdit.Document
 			this.column = column;
 		}
 
-		readonly int column, line;
+		private readonly int column, line;
 
 		/// <summary>
 		/// Gets the line number.
 		/// </summary>
-		public int Line {
-			get { return line; }
-		}
+		public readonly int Line => line;
 
 		/// <summary>
 		/// Gets the column number.
 		/// </summary>
-		public int Column {
-			get { return column; }
-		}
+		public readonly int Column => column;
 
 		/// <summary>
 		/// Gets whether the TextLocation instance is empty.
 		/// </summary>
-		public bool IsEmpty {
-			get {
-				return column <= 0 && line <= 0;
-			}
-		}
+		public readonly bool IsEmpty => column <= 0 && line <= 0;
 
 		/// <summary>
 		/// Gets a string representation for debugging purposes.
 		/// </summary>
-		public override string ToString()
+		public override readonly string ToString()
 		{
 			return string.Format(CultureInfo.InvariantCulture, "(Line {1}, Col {0})", this.column, this.line);
 		}
@@ -84,24 +76,27 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// Gets a hash code.
 		/// </summary>
-		public override int GetHashCode()
+		public override readonly int GetHashCode()
 		{
-			return unchecked(191 * column.GetHashCode() ^ line.GetHashCode());
+			return unchecked((191 * column.GetHashCode()) ^ line.GetHashCode());
 		}
 
 		/// <summary>
 		/// Equality test.
 		/// </summary>
-		public override bool Equals(object obj)
+		public override readonly bool Equals(object obj)
 		{
-			if (!(obj is TextLocation)) return false;
+			if (obj is not TextLocation) {
+				return false;
+			}
+
 			return (TextLocation)obj == this;
 		}
 
 		/// <summary>
 		/// Equality test.
 		/// </summary>
-		public bool Equals(TextLocation other)
+		public readonly bool Equals(TextLocation other)
 		{
 			return this == other;
 		}
@@ -127,12 +122,13 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public static bool operator <(TextLocation left, TextLocation right)
 		{
-			if (left.line < right.line)
+			if (left.line < right.line) {
 				return true;
-			else if (left.line == right.line)
+			} else if (left.line == right.line) {
 				return left.column < right.column;
-			else
+			} else {
 				return false;
+			}
 		}
 
 		/// <summary>
@@ -140,12 +136,13 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public static bool operator >(TextLocation left, TextLocation right)
 		{
-			if (left.line > right.line)
+			if (left.line > right.line) {
 				return true;
-			else if (left.line == right.line)
+			} else if (left.line == right.line) {
 				return left.column > right.column;
-			else
+			} else {
 				return false;
+			}
 		}
 
 		/// <summary>
@@ -167,14 +164,17 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// Compares two text locations.
 		/// </summary>
-		public int CompareTo(TextLocation other)
+		public readonly int CompareTo(TextLocation other)
 		{
-			if (this == other)
+			if (this == other) {
 				return 0;
-			if (this < other)
+			}
+
+			if (this < other) {
 				return -1;
-			else
+			} else {
 				return 1;
+			}
 		}
 	}
 
@@ -211,7 +211,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is TextLocation && destinationType == typeof(string)) {
-				var loc = (TextLocation)value;
+				TextLocation loc = (TextLocation)value;
 				return loc.Line.ToString(culture) + ";" + loc.Column.ToString(culture);
 			}
 			return base.ConvertTo(context, culture, value, destinationType);

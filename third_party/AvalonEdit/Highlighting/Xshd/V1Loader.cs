@@ -32,16 +32,14 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 	/// <summary>
 	/// Loads .xshd files, version 1.0.
 	/// </summary>
-	sealed class V1Loader
+	internal sealed class V1Loader
 	{
-		static XmlSchemaSet schemaSet;
+		private static XmlSchemaSet schemaSet;
 
-		static XmlSchemaSet SchemaSet {
+		private static XmlSchemaSet SchemaSet {
 			get {
-				if (schemaSet == null) {
-					schemaSet = HighlightingLoader.LoadSchemaSet(new XmlTextReader(
+				schemaSet ??= HighlightingLoader.LoadSchemaSet(new XmlTextReader(
 						Resources.OpenStream("ModeV1.xsd")));
-				}
 				return schemaSet;
 			}
 		}
@@ -49,16 +47,17 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		public static XshdSyntaxDefinition LoadDefinition(XmlReader reader, bool skipValidation)
 		{
 			reader = HighlightingLoader.GetValidatingReader(reader, false, skipValidation ? null : SchemaSet);
-			XmlDocument document = new XmlDocument();
+			XmlDocument document = new();
 			document.Load(reader);
-			V1Loader loader = new V1Loader();
+			V1Loader loader = new();
 			return loader.ParseDefinition(document.DocumentElement);
 		}
 
-		XshdSyntaxDefinition ParseDefinition(XmlElement syntaxDefinition)
+		private XshdSyntaxDefinition ParseDefinition(XmlElement syntaxDefinition)
 		{
-			XshdSyntaxDefinition def = new XshdSyntaxDefinition();
-			def.Name = syntaxDefinition.GetAttributeOrNull("name");
+			XshdSyntaxDefinition def = new() {
+				Name = syntaxDefinition.GetAttributeOrNull("name")
+			};
 			if (syntaxDefinition.HasAttribute("extensions")) {
 				def.Extensions.AddRange(syntaxDefinition.GetAttribute("extensions").Split(';', '|'));
 			}
@@ -67,8 +66,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			foreach (XmlElement element in syntaxDefinition.GetElementsByTagName("RuleSet")) {
 				XshdRuleSet ruleSet = ImportRuleSet(element);
 				def.Elements.Add(ruleSet);
-				if (ruleSet.Name == null)
+				if (ruleSet.Name == null) {
 					mainRuleSetElement = ruleSet;
+				}
 
 				if (syntaxDefinition["Digits"] != null) {
 					// create digit highlighting rule
@@ -100,32 +100,43 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			return def;
 		}
 
-		static XshdColor GetColorFromElement(XmlElement element)
+		private static XshdColor GetColorFromElement(XmlElement element)
 		{
-			if (!element.HasAttribute("bold") && !element.HasAttribute("italic") && !element.HasAttribute("color") && !element.HasAttribute("bgcolor"))
+			if (!element.HasAttribute("bold") && !element.HasAttribute("italic") && !element.HasAttribute("color") && !element.HasAttribute("bgcolor")) {
 				return null;
-			XshdColor color = new XshdColor();
-			if (element.HasAttribute("bold"))
+			}
+
+			XshdColor color = new();
+			if (element.HasAttribute("bold")) {
 				color.FontWeight = XmlConvert.ToBoolean(element.GetAttribute("bold")) ? FontWeights.Bold : FontWeights.Normal;
-			if (element.HasAttribute("italic"))
+			}
+
+			if (element.HasAttribute("italic")) {
 				color.FontStyle = XmlConvert.ToBoolean(element.GetAttribute("italic")) ? FontStyles.Italic : FontStyles.Normal;
-			if (element.HasAttribute("color"))
+			}
+
+			if (element.HasAttribute("color")) {
 				color.Foreground = ParseColor(element.GetAttribute("color"));
-			if (element.HasAttribute("bgcolor"))
+			}
+
+			if (element.HasAttribute("bgcolor")) {
 				color.Background = ParseColor(element.GetAttribute("bgcolor"));
+			}
+
 			return color;
 		}
 
-		static XshdReference<XshdColor> GetColorReference(XmlElement element)
+		private static XshdReference<XshdColor> GetColorReference(XmlElement element)
 		{
 			XshdColor color = GetColorFromElement(element);
-			if (color != null)
+			if (color != null) {
 				return new XshdReference<XshdColor>(color);
-			else
+			} else {
 				return new XshdReference<XshdColor>();
+			}
 		}
 
-		static HighlightingBrush ParseColor(string c)
+		private static HighlightingBrush ParseColor(string c)
 		{
 			if (c.StartsWith("#", StringComparison.Ordinal)) {
 				int a = 255;
@@ -146,12 +157,13 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			}
 		}
 
-		char ruleSetEscapeCharacter;
+		private char ruleSetEscapeCharacter;
 
-		XshdRuleSet ImportRuleSet(XmlElement element)
+		private XshdRuleSet ImportRuleSet(XmlElement element)
 		{
-			XshdRuleSet ruleSet = new XshdRuleSet();
-			ruleSet.Name = element.GetAttributeOrNull("name");
+			XshdRuleSet ruleSet = new() {
+				Name = element.GetAttributeOrNull("name")
+			};
 
 			if (element.HasAttribute("escapecharacter")) {
 				ruleSetEscapeCharacter = element.GetAttribute("escapecharacter")[0];
@@ -170,14 +182,16 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			ruleSet.IgnoreCase = element.GetBoolAttribute("ignorecase");
 
 			foreach (XmlElement el in element.GetElementsByTagName("KeyWords")) {
-				XshdKeywords keywords = new XshdKeywords();
-				keywords.ColorReference = GetColorReference(el);
+				XshdKeywords keywords = new() {
+					ColorReference = GetColorReference(el)
+				};
 				// we have to handle old syntax highlighting definitions that contain
 				// empty keywords or empty keyword groups
 				foreach (XmlElement node in el.GetElementsByTagName("Key")) {
 					string word = node.GetAttribute("word");
-					if (!string.IsNullOrEmpty(word))
+					if (!string.IsNullOrEmpty(word)) {
 						keywords.Words.Add(word);
+					}
 				}
 				if (keywords.Words.Count > 0) {
 					ruleSet.Elements.Add(keywords);
@@ -198,7 +212,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			return ruleSet;
 		}
 
-		static XshdRule ImportMarkPrevNext(XmlElement el, bool markFollowing)
+		private static XshdRule ImportMarkPrevNext(XmlElement el, bool markFollowing)
 		{
 			bool markMarker = el.GetBoolAttribute("markmarker") ?? false;
 			string what = Regex.Escape(el.InnerText);
@@ -226,9 +240,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			};
 		}
 
-		XshdSpan ImportSpan(XmlElement element)
+		private XshdSpan ImportSpan(XmlElement element)
 		{
-			XshdSpan span = new XshdSpan();
+			XshdSpan span = new();
 			if (element.HasAttribute("rule")) {
 				span.RuleSetReference = new XshdReference<XshdRuleSet>(null, element.GetAttribute("rule"));
 			}
@@ -257,7 +271,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			}
 
 			if (escapeCharacter != '\0') {
-				XshdRuleSet ruleSet = new XshdRuleSet();
+				XshdRuleSet ruleSet = new();
 				if (endElementText.Length == 1 && endElementText[0] == escapeCharacter) {
 					// ""-style escape
 					ruleSet.Elements.Add(new XshdSpan {
@@ -279,9 +293,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			return span;
 		}
 
-		static string ImportRegex(string expr, bool singleWord, bool? startOfLine)
+		private static string ImportRegex(string expr, bool singleWord, bool? startOfLine)
 		{
-			StringBuilder b = new StringBuilder();
+			StringBuilder b = new();
 			if (startOfLine != null) {
 				if (startOfLine.Value) {
 					b.Append(@"(?<=(^\s*))");
@@ -289,22 +303,25 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 					b.Append(@"(?<!(^\s*))");
 				}
 			} else {
-				if (singleWord)
+				if (singleWord) {
 					b.Append(@"\b");
+				}
 			}
 			for (int i = 0; i < expr.Length; i++) {
 				char c = expr[i];
 				if (c == '@') {
 					++i;
-					if (i == expr.Length)
+					if (i == expr.Length) {
 						throw new HighlightingDefinitionInvalidException("Unexpected end of @ sequence, use @@ to look for a single @.");
+					}
+
 					switch (expr[i]) {
 						case 'C': // match whitespace or punctuation
 							b.Append(@"[^\w\d_]");
 							break;
 						case '!': // negative lookahead
 							{
-								StringBuilder whatmatch = new StringBuilder();
+								StringBuilder whatmatch = new();
 								++i;
 								while (i < expr.Length && expr[i] != '@') {
 									whatmatch.Append(expr[i++]);
@@ -316,7 +333,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 							break;
 						case '-': // negative lookbehind
 							{
-								StringBuilder whatmatch = new StringBuilder();
+								StringBuilder whatmatch = new();
 								++i;
 								while (i < expr.Length && expr[i] != '@') {
 									whatmatch.Append(expr[i++]);
@@ -336,8 +353,10 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 					b.Append(Regex.Escape(c.ToString()));
 				}
 			}
-			if (singleWord)
+			if (singleWord) {
 				b.Append(@"\b");
+			}
+
 			return b.ToString();
 		}
 	}

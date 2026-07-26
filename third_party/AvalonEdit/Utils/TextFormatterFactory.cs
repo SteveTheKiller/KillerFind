@@ -28,15 +28,17 @@ namespace ICSharpCode.AvalonEdit.Utils
 	/// <summary>
 	/// Creates TextFormatter instances that with the correct TextFormattingMode, if running on .NET 4.0.
 	/// </summary>
-	static class TextFormatterFactory
+	internal static class TextFormatterFactory
 	{
 		/// <summary>
 		/// Creates a <see cref="TextFormatter"/> using the formatting mode used by the specified owner object.
 		/// </summary>
 		public static TextFormatter Create(DependencyObject owner)
 		{
-			if (owner == null)
+			if (owner == null) {
 				throw new ArgumentNullException("owner");
+			}
+
 			return TextFormatter.Create(TextOptions.GetTextFormattingMode(owner));
 		}
 
@@ -60,16 +62,20 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <returns>A FormattedText object using the specified settings.</returns>
 		public static FormattedText CreateFormattedText(FrameworkElement element, string text, Typeface typeface, double? emSize, Brush foreground)
 		{
-			if (element == null)
+			if (element == null) {
 				throw new ArgumentNullException("element");
-			if (text == null)
+			}
+
+			if (text == null) {
 				throw new ArgumentNullException("text");
-			if (typeface == null)
-				typeface = element.CreateTypeface();
-			if (emSize == null)
-				emSize = TextBlock.GetFontSize(element);
-			if (foreground == null)
-				foreground = TextBlock.GetForeground(element);
+			}
+
+			typeface ??= element.CreateTypeface();
+
+			emSize ??= TextBlock.GetFontSize(element);
+
+			foreground ??= TextBlock.GetForeground(element);
+
 			return new FormattedText(
 				text,
 				CultureInfo.CurrentCulture,

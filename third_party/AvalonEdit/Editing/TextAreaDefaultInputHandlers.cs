@@ -59,12 +59,11 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		internal static KeyBinding CreateFrozenKeyBinding(ICommand command, ModifierKeys modifiers, Key key)
 		{
-			KeyBinding kb = new KeyBinding(command, key, modifiers);
+			KeyBinding kb = new(command, key, modifiers);
 			// Mark KeyBindings as frozen because they're shared between multiple editor instances.
 			// KeyBinding derives from Freezable only in .NET 4, so we have to use this little trick:
 			Freezable f = ((object)kb) as Freezable;
-			if (f != null)
-				f.Freeze();
+			f?.Freeze();
 			return kb;
 		}
 
@@ -74,23 +73,24 @@ namespace ICSharpCode.AvalonEdit.Editing
 			// KeyBinding retains a reference to whichever UIElement it is used in first.
 			// Using a dummy element for this purpose ensures that we don't leak
 			// a real text editor (with a potentially large document).
-			UIElement dummyElement = new UIElement();
+			UIElement dummyElement = new();
 			dummyElement.InputBindings.AddRange(inputBindings);
 		}
 
 		#region Undo / Redo
-		UndoStack GetUndoStack()
+		private UndoStack GetUndoStack()
 		{
 			TextDocument document = this.TextArea.Document;
-			if (document != null)
+			if (document != null) {
 				return document.UndoStack;
-			else
+			} else {
 				return null;
+			}
 		}
 
-		void ExecuteUndo(object sender, ExecutedRoutedEventArgs e)
+		private void ExecuteUndo(object sender, ExecutedRoutedEventArgs e)
 		{
-			var undoStack = GetUndoStack();
+			UndoStack undoStack = GetUndoStack();
 			if (undoStack != null) {
 				if (undoStack.CanUndo) {
 					undoStack.Undo();
@@ -100,18 +100,18 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		void CanExecuteUndo(object sender, CanExecuteRoutedEventArgs e)
+		private void CanExecuteUndo(object sender, CanExecuteRoutedEventArgs e)
 		{
-			var undoStack = GetUndoStack();
+			UndoStack undoStack = GetUndoStack();
 			if (undoStack != null) {
 				e.Handled = true;
 				e.CanExecute = undoStack.CanUndo;
 			}
 		}
 
-		void ExecuteRedo(object sender, ExecutedRoutedEventArgs e)
+		private void ExecuteRedo(object sender, ExecutedRoutedEventArgs e)
 		{
-			var undoStack = GetUndoStack();
+			UndoStack undoStack = GetUndoStack();
 			if (undoStack != null) {
 				if (undoStack.CanRedo) {
 					undoStack.Redo();
@@ -121,9 +121,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		void CanExecuteRedo(object sender, CanExecuteRoutedEventArgs e)
+		private void CanExecuteRedo(object sender, CanExecuteRoutedEventArgs e)
 		{
-			var undoStack = GetUndoStack();
+			UndoStack undoStack = GetUndoStack();
 			if (undoStack != null) {
 				e.Handled = true;
 				e.CanExecute = undoStack.CanRedo;

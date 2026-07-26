@@ -27,7 +27,7 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// <summary>
 	/// A tree of TextAnchorNodes.
 	/// </summary>
-	sealed class TextAnchorTree
+	internal sealed class TextAnchorTree
 	{
 		// The text anchor tree has difficult requirements:
 		// - it must QUICKLY update the offset in all anchors whenever there is a document change
@@ -59,9 +59,9 @@ namespace ICSharpCode.AvalonEdit.Document
 		// This allows computing the Offset from an anchor by walking up the list of parent nodes instead of going
 		// through all predecessor nodes. So computing the Offset runs in O(log N).
 
-		readonly TextDocument document;
-		readonly List<TextAnchorNode> nodesToDelete = new List<TextAnchorNode>();
-		TextAnchorNode root;
+		private readonly TextDocument document;
+		private readonly List<TextAnchorNode> nodesToDelete = [];
+		private TextAnchorNode root;
 
 		public TextAnchorTree(TextDocument document)
 		{
@@ -69,16 +69,17 @@ namespace ICSharpCode.AvalonEdit.Document
 		}
 
 		[Conditional("DEBUG")]
-		static void Log(string text)
+		private static void Log(string text)
 		{
 			Debug.WriteLine("TextAnchorTree: " + text);
 		}
 
 		#region Insert Text
-		void InsertText(int offset, int length, bool defaultAnchorMovementIsBeforeInsertion)
+		private void InsertText(int offset, int length, bool defaultAnchorMovementIsBeforeInsertion)
 		{
-			if (length == 0 || root == null || offset > root.totalLength)
+			if (length == 0 || root == null || offset > root.totalLength) {
 				return;
+			}
 
 			// find the range of nodes that are placed exactly at offset
 			// beginNode is inclusive, endNode is exclusive
@@ -99,28 +100,28 @@ namespace ICSharpCode.AvalonEdit.Document
 			DeleteMarkedNodes();
 		}
 
-		TextAnchorNode FindActualBeginNode(TextAnchorNode node)
+		private TextAnchorNode FindActualBeginNode(TextAnchorNode node)
 		{
 			// now find the actual beginNode
-			while (node != null && node.length == 0)
+			while (node != null && node.length == 0) {
 				node = node.Predecessor;
-			if (node == null) {
-				// no predecessor = beginNode is first node in tree
-				node = root.LeftMost;
 			}
+
+			// no predecessor = beginNode is first node in tree
+			node ??= root.LeftMost;
 			return node;
 		}
 
 		// Sorts the nodes in the range [beginNode, endNode) by MovementType
 		// and inserts the length between the BeforeInsertion and the AfterInsertion nodes.
-		void PerformInsertText(TextAnchorNode beginNode, TextAnchorNode endNode, int length, bool defaultAnchorMovementIsBeforeInsertion)
+		private void PerformInsertText(TextAnchorNode beginNode, TextAnchorNode endNode, int length, bool defaultAnchorMovementIsBeforeInsertion)
 		{
 			Debug.Assert(beginNode != null);
 			// endNode may be null at the end of the anchor tree
 
 			// now we need to sort the nodes in the range [beginNode, endNode); putting those with
 			// MovementType.BeforeInsertion in front of those with MovementType.AfterInsertion
-			List<TextAnchorNode> beforeInsert = new List<TextAnchorNode>();
+			List<TextAnchorNode> beforeInsert = [];
 			//List<TextAnchorNode> afterInsert = new List<TextAnchorNode>();
 			TextAnchorNode temp = beginNode;
 			while (temp != endNode) {
@@ -158,7 +159,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// Swaps the anchors stored in the two nodes.
 		/// </summary>
-		void SwapAnchors(TextAnchorNode n1, TextAnchorNode n2)
+		private void SwapAnchors(TextAnchorNode n1, TextAnchorNode n2)
 		{
 			if (n1 != n2) {
 				TextAnchor anchor1 = (TextAnchor)n1.Target;
@@ -209,16 +210,17 @@ namespace ICSharpCode.AvalonEdit.Document
 			int offset = entry.Offset;
 			int remainingRemovalLength = entry.RemovalLength;
 			// if the text change is happening after the last anchor, we don't have to do anything
-			if (root == null || offset >= root.totalLength)
+			if (root == null || offset >= root.totalLength) {
 				return;
+			}
+
 			TextAnchorNode node = FindNode(ref offset);
 			TextAnchorNode firstDeletionSurvivor = null;
 			// go forward through the tree and delete all nodes in the removal segment
 			while (node != null && offset + remainingRemovalLength > node.length) {
 				TextAnchor anchor = (TextAnchor)node.Target;
 				if (anchor != null && (anchor.SurviveDeletion || entry.RemovalNeverCausesAnchorDeletion)) {
-					if (firstDeletionSurvivor == null)
-						firstDeletionSurvivor = node;
+					firstDeletionSurvivor ??= node;
 					// This node should be deleted, but it wants to survive.
 					// We'll just remove the deleted length segment, so the node will be positioned
 					// in front of the removed segment.
@@ -234,8 +236,7 @@ namespace ICSharpCode.AvalonEdit.Document
 					RemoveNode(node);
 					// we already deleted the node, don't delete it twice
 					nodesToDelete.Remove(node);
-					if (anchor != null)
-						anchor.OnDeleted(delayedEvents);
+					anchor?.OnDeleted(delayedEvents);
 					node = s;
 				}
 			}
@@ -275,13 +276,14 @@ namespace ICSharpCode.AvalonEdit.Document
 		#endregion
 
 		#region Node removal when TextAnchor was GC'ed
-		void MarkNodeForDelete(TextAnchorNode node)
+		private void MarkNodeForDelete(TextAnchorNode node)
 		{
-			if (!nodesToDelete.Contains(node))
+			if (!nodesToDelete.Contains(node)) {
 				nodesToDelete.Add(node);
+			}
 		}
 
-		void DeleteMarkedNodes()
+		private void DeleteMarkedNodes()
 		{
 			CheckProperties();
 			while (nodesToDelete.Count > 0) {
@@ -308,7 +310,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Finds the node at the specified offset.
 		/// After the method has run, offset is relative to the beginning of the returned node.
 		/// </summary>
-		TextAnchorNode FindNode(ref int offset)
+		private TextAnchorNode FindNode(ref int offset)
 		{
 			TextAnchorNode n = root;
 			while (true) {
@@ -320,8 +322,10 @@ namespace ICSharpCode.AvalonEdit.Document
 						offset -= n.left.totalLength; // skip left subtree
 					}
 				}
-				if (!n.IsAlive)
+				if (!n.IsAlive) {
 					MarkNodeForDelete(n);
+				}
+
 				if (offset < n.length) {
 					return n; // found correct node
 				} else {
@@ -338,20 +342,26 @@ namespace ICSharpCode.AvalonEdit.Document
 		#endregion
 
 		#region UpdateAugmentedData
-		void UpdateAugmentedData(TextAnchorNode n)
+		private void UpdateAugmentedData(TextAnchorNode n)
 		{
-			if (!n.IsAlive)
+			if (!n.IsAlive) {
 				MarkNodeForDelete(n);
+			}
 
 			int totalLength = n.length;
-			if (n.left != null)
+			if (n.left != null) {
 				totalLength += n.left.totalLength;
-			if (n.right != null)
+			}
+
+			if (n.right != null) {
 				totalLength += n.right.totalLength;
+			}
+
 			if (n.totalLength != totalLength) {
 				n.totalLength = totalLength;
-				if (n.parent != null)
+				if (n.parent != null) {
 					UpdateAugmentedData(n.parent);
+				}
 			}
 		}
 		#endregion
@@ -360,7 +370,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		public TextAnchor CreateAnchor(int offset)
 		{
 			Log("CreateAnchor(" + offset + ")");
-			TextAnchor anchor = new TextAnchor(document);
+			TextAnchor anchor = new(document);
 			anchor.node = new TextAnchorNode(anchor);
 			if (root == null) {
 				// creating the first text anchor
@@ -383,7 +393,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			return anchor;
 		}
 
-		void InsertBefore(TextAnchorNode node, TextAnchorNode newNode)
+		private void InsertBefore(TextAnchorNode node, TextAnchorNode newNode)
 		{
 			if (node.left == null) {
 				InsertAsLeft(node, newNode);
@@ -397,7 +407,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		internal const bool RED = true;
 		internal const bool BLACK = false;
 
-		void InsertAsLeft(TextAnchorNode parentNode, TextAnchorNode newNode)
+		private void InsertAsLeft(TextAnchorNode parentNode, TextAnchorNode newNode)
 		{
 			Debug.Assert(parentNode.left == null);
 			parentNode.left = newNode;
@@ -407,7 +417,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			FixTreeOnInsert(newNode);
 		}
 
-		void InsertAsRight(TextAnchorNode parentNode, TextAnchorNode newNode)
+		private void InsertAsRight(TextAnchorNode parentNode, TextAnchorNode newNode)
 		{
 			Debug.Assert(parentNode.right == null);
 			parentNode.right = newNode;
@@ -417,7 +427,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			FixTreeOnInsert(newNode);
 		}
 
-		void FixTreeOnInsert(TextAnchorNode node)
+		private void FixTreeOnInsert(TextAnchorNode node)
 		{
 			Debug.Assert(node != null);
 			Debug.Assert(node.color == RED);
@@ -476,7 +486,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		void RemoveNode(TextAnchorNode removedNode)
+		private void RemoveNode(TextAnchorNode removedNode)
 		{
 			if (removedNode.left != null && removedNode.right != null) {
 				// replace removedNode with it's in-order successor
@@ -487,13 +497,22 @@ namespace ICSharpCode.AvalonEdit.Document
 				// and overwrite the removedNode with it
 				ReplaceNode(removedNode, leftMost);
 				leftMost.left = removedNode.left;
-				if (leftMost.left != null) leftMost.left.parent = leftMost;
+				if (leftMost.left != null) {
+					leftMost.left.parent = leftMost;
+				}
+
 				leftMost.right = removedNode.right;
-				if (leftMost.right != null) leftMost.right.parent = leftMost;
+				if (leftMost.right != null) {
+					leftMost.right.parent = leftMost;
+				}
+
 				leftMost.color = removedNode.color;
 
 				UpdateAugmentedData(leftMost);
-				if (leftMost.parent != null) UpdateAugmentedData(leftMost.parent);
+				if (leftMost.parent != null) {
+					UpdateAugmentedData(leftMost.parent);
+				}
+
 				return;
 			}
 
@@ -502,7 +521,10 @@ namespace ICSharpCode.AvalonEdit.Document
 			TextAnchorNode parentNode = removedNode.parent;
 			TextAnchorNode childNode = removedNode.left ?? removedNode.right;
 			ReplaceNode(removedNode, childNode);
-			if (parentNode != null) UpdateAugmentedData(parentNode);
+			if (parentNode != null) {
+				UpdateAugmentedData(parentNode);
+			}
+
 			if (removedNode.color == BLACK) {
 				if (childNode != null && childNode.color == RED) {
 					childNode.color = BLACK;
@@ -512,11 +534,12 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		void FixTreeOnDelete(TextAnchorNode node, TextAnchorNode parentNode)
+		private void FixTreeOnDelete(TextAnchorNode node, TextAnchorNode parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
-			if (parentNode == null)
+			if (parentNode == null) {
 				return;
+			}
 
 			// warning: node may be null
 			TextAnchorNode sibling = Sibling(node, parentNode);
@@ -584,16 +607,17 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		void ReplaceNode(TextAnchorNode replacedNode, TextAnchorNode newNode)
+		private void ReplaceNode(TextAnchorNode replacedNode, TextAnchorNode newNode)
 		{
 			if (replacedNode.parent == null) {
 				Debug.Assert(replacedNode == root);
 				root = newNode;
 			} else {
-				if (replacedNode.parent.left == replacedNode)
+				if (replacedNode.parent.left == replacedNode) {
 					replacedNode.parent.left = newNode;
-				else
+				} else {
 					replacedNode.parent.right = newNode;
+				}
 			}
 			if (newNode != null) {
 				newNode.parent = replacedNode.parent;
@@ -601,7 +625,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			replacedNode.parent = null;
 		}
 
-		void RotateLeft(TextAnchorNode p)
+		private void RotateLeft(TextAnchorNode p)
 		{
 			// let q be p's right child
 			TextAnchorNode q = p.right;
@@ -612,7 +636,9 @@ namespace ICSharpCode.AvalonEdit.Document
 
 			// set p's right child to be q's left child
 			p.right = q.left;
-			if (p.right != null) p.right.parent = p;
+			if (p.right != null) {
+				p.right.parent = p;
+			}
 			// set q's left child to be p
 			q.left = p;
 			p.parent = q;
@@ -620,7 +646,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			UpdateAugmentedData(q);
 		}
 
-		void RotateRight(TextAnchorNode p)
+		private void RotateRight(TextAnchorNode p)
 		{
 			// let q be p's left child
 			TextAnchorNode q = p.left;
@@ -631,7 +657,9 @@ namespace ICSharpCode.AvalonEdit.Document
 
 			// set p's left child to be q's right child
 			p.left = q.right;
-			if (p.left != null) p.left.parent = p;
+			if (p.left != null) {
+				p.left.parent = p;
+			}
 			// set q's right child to be p
 			q.right = p;
 			p.parent = q;
@@ -639,26 +667,28 @@ namespace ICSharpCode.AvalonEdit.Document
 			UpdateAugmentedData(q);
 		}
 
-		static TextAnchorNode Sibling(TextAnchorNode node)
+		private static TextAnchorNode Sibling(TextAnchorNode node)
 		{
-			if (node == node.parent.left)
+			if (node == node.parent.left) {
 				return node.parent.right;
-			else
+			} else {
 				return node.parent.left;
+			}
 		}
 
-		static TextAnchorNode Sibling(TextAnchorNode node, TextAnchorNode parentNode)
+		private static TextAnchorNode Sibling(TextAnchorNode node, TextAnchorNode parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
-			if (node == parentNode.left)
+			if (node == parentNode.left) {
 				return parentNode.right;
-			else
+			} else {
 				return parentNode.left;
+			}
 		}
 
-		static bool GetColor(TextAnchorNode node)
+		private static bool GetColor(TextAnchorNode node)
 		{
-			return node != null ? node.color : BLACK;
+			return node != null && node.color;
 		}
 		#endregion
 
@@ -678,7 +708,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		}
 
 #if DEBUG
-		void CheckProperties(TextAnchorNode node)
+		private void CheckProperties(TextAnchorNode node)
 		{
 			int totalLength = node.length;
 			if (node.left != null) {
@@ -699,9 +729,11 @@ namespace ICSharpCode.AvalonEdit.Document
 		4. Both children of every red node are black. (So every red node must have a black parent.)
 		5. Every simple path from a node to a descendant leaf contains the same number of black nodes. (Not counting the leaf node.)
 		 */
-		void CheckNodeProperties(TextAnchorNode node, TextAnchorNode parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
+		private void CheckNodeProperties(TextAnchorNode node, TextAnchorNode parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
 		{
-			if (node == null) return;
+			if (node == null) {
+				return;
+			}
 
 			Debug.Assert(node.parent == parentNode);
 
@@ -713,10 +745,11 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 			if (node.left == null && node.right == null) {
 				// node is a leaf node:
-				if (expectedBlackCount == -1)
+				if (expectedBlackCount == -1) {
 					expectedBlackCount = blackCount;
-				else
+				} else {
 					Debug.Assert(expectedBlackCount == blackCount);
+				}
 			}
 			CheckNodeProperties(node.left, node, node.color, blackCount, ref expectedBlackCount);
 			CheckNodeProperties(node.right, node, node.color, blackCount, ref expectedBlackCount);
@@ -729,19 +762,23 @@ namespace ICSharpCode.AvalonEdit.Document
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
 		public string GetTreeAsString()
 		{
-			if (root == null)
+			if (root == null) {
 				return "<empty tree>";
-			StringBuilder b = new StringBuilder();
+			}
+
+			StringBuilder b = new();
 			AppendTreeToString(root, b, 0);
 			return b.ToString();
 		}
 
-		static void AppendTreeToString(TextAnchorNode node, StringBuilder b, int indent)
+		private static void AppendTreeToString(TextAnchorNode node, StringBuilder b, int indent)
 		{
-			if (node.color == RED)
+			if (node.color == RED) {
 				b.Append("RED   ");
-			else
+			} else {
 				b.Append("BLACK ");
+			}
+
 			b.AppendLine(node.ToString());
 			indent += 2;
 			if (node.left != null) {

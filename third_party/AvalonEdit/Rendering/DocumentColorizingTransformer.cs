@@ -30,9 +30,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// </summary>
 	public abstract class DocumentColorizingTransformer : ColorizingTransformer
 	{
-		DocumentLine currentDocumentLine;
-		int firstLineStart;
-		int currentDocumentLineStartOffset, currentDocumentLineEndOffset;
+		private DocumentLine currentDocumentLine;
+		private int firstLineStart;
+		private int currentDocumentLineStartOffset, currentDocumentLineEndOffset;
 
 		/// <summary>
 		/// Gets the current ITextRunConstructionContext.
@@ -42,9 +42,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <inheritdoc/>
 		protected override void Colorize(ITextRunConstructionContext context)
 		{
-			if (context == null)
-				throw new ArgumentNullException("context");
-			this.CurrentContext = context;
+			this.CurrentContext = context ?? throw new ArgumentNullException("context");
 
 			currentDocumentLine = context.VisualLine.FirstDocumentLine;
 			firstLineStart = currentDocumentLineStartOffset = currentDocumentLine.Offset;
@@ -84,10 +82,14 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <param name="action">Action that changes an individual <see cref="VisualLineElement"/>.</param>
 		protected void ChangeLinePart(int startOffset, int endOffset, Action<VisualLineElement> action)
 		{
-			if (startOffset < currentDocumentLineStartOffset || startOffset > currentDocumentLineEndOffset)
+			if (startOffset < currentDocumentLineStartOffset || startOffset > currentDocumentLineEndOffset) {
 				throw new ArgumentOutOfRangeException("startOffset", startOffset, "Value must be between " + currentDocumentLineStartOffset + " and " + currentDocumentLineEndOffset);
-			if (endOffset < startOffset || endOffset > currentDocumentLineEndOffset)
+			}
+
+			if (endOffset < startOffset || endOffset > currentDocumentLineEndOffset) {
 				throw new ArgumentOutOfRangeException("endOffset", endOffset, "Value must be between " + startOffset + " and " + currentDocumentLineEndOffset);
+			}
+
 			VisualLine vl = this.CurrentContext.VisualLine;
 			int visualStart = vl.GetVisualColumn(startOffset - firstLineStart);
 			int visualEnd = vl.GetVisualColumn(endOffset - firstLineStart);

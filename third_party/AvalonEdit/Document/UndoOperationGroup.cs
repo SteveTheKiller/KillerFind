@@ -27,9 +27,9 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// This class stacks the last x operations from the undostack and makes
 	/// one undo/redo operation from it.
 	/// </summary>
-	sealed class UndoOperationGroup : IUndoableOperationWithContext
+	internal sealed class UndoOperationGroup : IUndoableOperationWithContext
 	{
-		IUndoableOperation[] undolist;
+		private readonly IUndoableOperation[] undolist;
 
 		public UndoOperationGroup(Deque<IUndoableOperation> stack, int numops)
 		{

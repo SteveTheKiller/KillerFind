@@ -37,13 +37,11 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		public HighlightedLine(IDocument document, IDocumentLine documentLine)
 		{
-			if (document == null)
-				throw new ArgumentNullException("document");
 			//if (!document.Lines.Contains(documentLine))
 			//	throw new ArgumentException("Line is null or not part of document");
-			this.Document = document;
+			this.Document = document ?? throw new ArgumentNullException("document");
 			this.DocumentLine = documentLine;
-			this.Sections = new NullSafeCollection<HighlightedSection>();
+			this.Sections = [];
 		}
 
 		/// <summary>
@@ -70,13 +68,15 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <seealso cref="Sections"/>
 		public void ValidateInvariants()
 		{
-			var line = this;
+			HighlightedLine line = this;
 			int lineStartOffset = line.DocumentLine.Offset;
 			int lineEndOffset = line.DocumentLine.EndOffset;
 			for (int i = 0; i < line.Sections.Count; i++) {
 				HighlightedSection s1 = line.Sections[i];
-				if (s1.Offset < lineStartOffset || s1.Length < 0 || s1.Offset + s1.Length > lineEndOffset)
+				if (s1.Offset < lineStartOffset || s1.Length < 0 || s1.Offset + s1.Length > lineEndOffset) {
 					throw new InvalidOperationException("Section is outside line bounds");
+				}
+
 				for (int j = i + 1; j < line.Sections.Count; j++) {
 					HighlightedSection s2 = line.Sections[j];
 					if (s2.Offset >= s1.Offset + s1.Length) {
@@ -96,15 +96,16 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		public void MergeWith(HighlightedLine additionalLine)
 		{
-			if (additionalLine == null)
+			if (additionalLine == null) {
 				return;
+			}
 #if DEBUG
 			ValidateInvariants();
 			additionalLine.ValidateInvariants();
 #endif
 
 			int pos = 0;
-			Stack<int> activeSectionEndOffsets = new Stack<int>();
+			Stack<int> activeSectionEndOffsets = new();
 			int lineEndOffset = this.DocumentLine.EndOffset;
 			activeSectionEndOffsets.Push(lineEndOffset);
 			foreach (HighlightedSection newSection in additionalLine.Sections) {
@@ -113,8 +114,10 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 				// we need to insert the first part of the newSection
 				while (pos < this.Sections.Count) {
 					HighlightedSection s = this.Sections[pos];
-					if (newSection.Offset < s.Offset)
+					if (newSection.Offset < s.Offset) {
 						break;
+					}
+
 					while (s.Offset > activeSectionEndOffsets.Peek()) {
 						activeSectionEndOffsets.Pop();
 					}
@@ -124,14 +127,15 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 				// Now insert the new section
 				// Create a copy of the stack so that we can track the sections we traverse
 				// during the insertion process:
-				Stack<int> insertionStack = new Stack<int>(activeSectionEndOffsets.Reverse());
+				Stack<int> insertionStack = new(activeSectionEndOffsets.Reverse());
 				// The stack enumerator reverses the order of the elements, so we call Reverse() to restore
 				// the original order.
 				int i;
 				for (i = pos; i < this.Sections.Count; i++) {
 					HighlightedSection s = this.Sections[i];
-					if (newSection.Offset + newSection.Length <= s.Offset)
+					if (newSection.Offset + newSection.Length <= s.Offset) {
 						break;
+					}
 					// Insert a segment in front of s:
 					Insert(ref i, ref newSectionStart, s.Offset, newSection.Color, insertionStack);
 
@@ -148,7 +152,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 #endif
 		}
 
-		void Insert(ref int pos, ref int newSectionStart, int insertionEndPos, HighlightingColor color, Stack<int> insertionStack)
+		private void Insert(ref int pos, ref int newSectionStart, int insertionEndPos, HighlightingColor color, Stack<int> insertionStack)
 		{
 			if (newSectionStart >= insertionEndPos) {
 				// nothing to insert here
@@ -182,7 +186,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		#endregion
 
 		#region WriteTo / ToHtml
-		sealed class HtmlElement : IComparable<HtmlElement>
+		private sealed class HtmlElement : IComparable<HtmlElement>
 		{
 			internal readonly int Offset;
 			internal readonly int Nesting;
@@ -200,18 +204,22 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			public int CompareTo(HtmlElement other)
 			{
 				int r = Offset.CompareTo(other.Offset);
-				if (r != 0)
+				if (r != 0) {
 					return r;
+				}
+
 				if (IsEnd != other.IsEnd) {
-					if (IsEnd)
+					if (IsEnd) {
 						return -1;
-					else
+					} else {
 						return 1;
+					}
 				} else {
-					if (IsEnd)
+					if (IsEnd) {
 						return other.Nesting.CompareTo(Nesting);
-					else
+					} else {
 						return Nesting.CompareTo(other.Nesting);
+					}
 				}
 			}
 		}
@@ -230,17 +238,23 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		internal void WriteTo(RichTextWriter writer, int startOffset, int endOffset)
 		{
-			if (writer == null)
+			if (writer == null) {
 				throw new ArgumentNullException("writer");
+			}
+
 			int documentLineStartOffset = this.DocumentLine.Offset;
 			int documentLineEndOffset = documentLineStartOffset + this.DocumentLine.Length;
-			if (startOffset < documentLineStartOffset || startOffset > documentLineEndOffset)
+			if (startOffset < documentLineStartOffset || startOffset > documentLineEndOffset) {
 				throw new ArgumentOutOfRangeException("startOffset", startOffset, "Value must be between " + documentLineStartOffset + " and " + documentLineEndOffset);
-			if (endOffset < startOffset || endOffset > documentLineEndOffset)
+			}
+
+			if (endOffset < startOffset || endOffset > documentLineEndOffset) {
 				throw new ArgumentOutOfRangeException("endOffset", endOffset, "Value must be between startOffset and " + documentLineEndOffset);
+			}
+
 			ISegment requestedSegment = new SimpleSegment(startOffset, endOffset - startOffset);
 
-			List<HtmlElement> elements = new List<HtmlElement>();
+			List<HtmlElement> elements = [];
 			for (int i = 0; i < this.Sections.Count; i++) {
 				HighlightedSection s = this.Sections[i];
 				if (SimpleSegment.GetOverlap(s, requestedSegment).Length > 0) {
@@ -258,10 +272,11 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 					document.WriteTextTo(writer, textOffset, newOffset - textOffset);
 				}
 				textOffset = Math.Max(textOffset, newOffset);
-				if (e.IsEnd)
+				if (e.IsEnd) {
 					writer.EndSpan();
-				else
+				} else {
 					writer.BeginSpan(e.Color);
+				}
 			}
 			document.WriteTextTo(writer, textOffset, endOffset - textOffset);
 		}
@@ -271,8 +286,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		public string ToHtml(HtmlOptions options = null)
 		{
-			StringWriter stringWriter = new StringWriter(CultureInfo.InvariantCulture);
-			using (var htmlWriter = new HtmlRichTextWriter(stringWriter, options)) {
+			StringWriter stringWriter = new(CultureInfo.InvariantCulture);
+			using (HtmlRichTextWriter htmlWriter = new(stringWriter, options)) {
 				WriteTo(htmlWriter);
 			}
 			return stringWriter.ToString();
@@ -283,8 +298,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		public string ToHtml(int startOffset, int endOffset, HtmlOptions options = null)
 		{
-			StringWriter stringWriter = new StringWriter(CultureInfo.InvariantCulture);
-			using (var htmlWriter = new HtmlRichTextWriter(stringWriter, options)) {
+			StringWriter stringWriter = new(CultureInfo.InvariantCulture);
+			using (HtmlRichTextWriter htmlWriter = new(stringWriter, options)) {
 				WriteTo(htmlWriter, startOffset, endOffset);
 			}
 			return stringWriter.ToString();
@@ -303,7 +318,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		[Obsolete("Use ToRichText() instead")]
 		public HighlightedInlineBuilder ToInlineBuilder()
 		{
-			HighlightedInlineBuilder builder = new HighlightedInlineBuilder(Document.GetText(DocumentLine));
+			HighlightedInlineBuilder builder = new(Document.GetText(DocumentLine));
 			int startOffset = DocumentLine.Offset;
 			foreach (HighlightedSection section in Sections) {
 				builder.SetHighlighting(section.Offset - startOffset, section.Length, section.Color);
@@ -316,7 +331,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		public RichTextModel ToRichTextModel()
 		{
-			var builder = new RichTextModel();
+			RichTextModel builder = new();
 			int startOffset = DocumentLine.Offset;
 			foreach (HighlightedSection section in Sections) {
 				builder.ApplyHighlighting(section.Offset - startOffset, section.Length, section.Color);

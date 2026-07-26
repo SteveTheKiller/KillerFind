@@ -22,12 +22,12 @@ using System.Windows.Media;
 
 namespace ICSharpCode.AvalonEdit.Rendering
 {
-	sealed class CurrentLineHighlightRenderer : IBackgroundRenderer
+	internal sealed class CurrentLineHighlightRenderer : IBackgroundRenderer
 	{
 		#region Fields
 
-		int line;
-		TextView textView;
+		private int line;
+		private readonly TextView textView;
 
 		public static readonly Color DefaultBackground = Color.FromArgb(22, 20, 220, 224);
 		public static readonly Color DefaultBorder = Color.FromArgb(52, 0, 255, 110);
@@ -37,7 +37,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		#region Properties
 
 		public int Line {
-			get { return this.line; }
+			get => this.line;
 			set {
 				if (this.line != value) {
 					this.line = value;
@@ -46,9 +46,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		public KnownLayer Layer {
-			get { return KnownLayer.Selection; }
-		}
+		public KnownLayer Layer => KnownLayer.Selection;
 
 		public Brush BackgroundBrush {
 			get; set;
@@ -62,16 +60,13 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		public CurrentLineHighlightRenderer(TextView textView)
 		{
-			if (textView == null)
-				throw new ArgumentNullException("textView");
-
 			this.BorderPen = new Pen(new SolidColorBrush(DefaultBorder), 1);
 			this.BorderPen.Freeze();
 
 			this.BackgroundBrush = new SolidColorBrush(DefaultBackground);
 			this.BackgroundBrush.Freeze();
 
-			this.textView = textView;
+			this.textView = textView ?? throw new ArgumentNullException("textView");
 			this.textView.BackgroundRenderers.Add(this);
 
 			this.line = 0;
@@ -79,15 +74,18 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		public void Draw(TextView textView, DrawingContext drawingContext)
 		{
-			if (!this.textView.Options.HighlightCurrentLine)
+			if (!this.textView.Options.HighlightCurrentLine) {
 				return;
+			}
 
-			BackgroundGeometryBuilder builder = new BackgroundGeometryBuilder();
+			BackgroundGeometryBuilder builder = new();
 
-			var visualLine = this.textView.GetVisualLine(line);
-			if (visualLine == null) return;
+			VisualLine visualLine = this.textView.GetVisualLine(line);
+			if (visualLine == null) {
+				return;
+			}
 
-			var linePosY = visualLine.VisualTop - this.textView.ScrollOffset.Y;
+			double linePosY = visualLine.VisualTop - this.textView.ScrollOffset.Y;
 
 			builder.AddRectangle(textView, new Rect(0, linePosY, textView.ActualWidth, visualLine.Height));
 

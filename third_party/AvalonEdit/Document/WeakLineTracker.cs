@@ -25,8 +25,8 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// </summary>
 	public sealed class WeakLineTracker : ILineTracker
 	{
-		TextDocument textDocument;
-		WeakReference targetObject;
+		private TextDocument textDocument;
+		private readonly WeakReference targetObject;
 
 		private WeakLineTracker(TextDocument textDocument, ILineTracker targetTracker)
 		{
@@ -41,11 +41,15 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public static WeakLineTracker Register(TextDocument textDocument, ILineTracker targetTracker)
 		{
-			if (textDocument == null)
+			if (textDocument == null) {
 				throw new ArgumentNullException("textDocument");
-			if (targetTracker == null)
+			}
+
+			if (targetTracker == null) {
 				throw new ArgumentNullException("targetTracker");
-			WeakLineTracker wlt = new WeakLineTracker(textDocument, targetTracker);
+			}
+
+			WeakLineTracker wlt = new(textDocument, targetTracker);
 			textDocument.LineTrackers.Add(wlt);
 			return wlt;
 		}
@@ -63,47 +67,47 @@ namespace ICSharpCode.AvalonEdit.Document
 
 		void ILineTracker.BeforeRemoveLine(DocumentLine line)
 		{
-			ILineTracker targetTracker = targetObject.Target as ILineTracker;
-			if (targetTracker != null)
+			if (targetObject.Target is ILineTracker targetTracker) {
 				targetTracker.BeforeRemoveLine(line);
-			else
+			} else {
 				Deregister();
+			}
 		}
 
 		void ILineTracker.SetLineLength(DocumentLine line, int newTotalLength)
 		{
-			ILineTracker targetTracker = targetObject.Target as ILineTracker;
-			if (targetTracker != null)
+			if (targetObject.Target is ILineTracker targetTracker) {
 				targetTracker.SetLineLength(line, newTotalLength);
-			else
+			} else {
 				Deregister();
+			}
 		}
 
 		void ILineTracker.LineInserted(DocumentLine insertionPos, DocumentLine newLine)
 		{
-			ILineTracker targetTracker = targetObject.Target as ILineTracker;
-			if (targetTracker != null)
+			if (targetObject.Target is ILineTracker targetTracker) {
 				targetTracker.LineInserted(insertionPos, newLine);
-			else
+			} else {
 				Deregister();
+			}
 		}
 
 		void ILineTracker.RebuildDocument()
 		{
-			ILineTracker targetTracker = targetObject.Target as ILineTracker;
-			if (targetTracker != null)
+			if (targetObject.Target is ILineTracker targetTracker) {
 				targetTracker.RebuildDocument();
-			else
+			} else {
 				Deregister();
+			}
 		}
 
 		void ILineTracker.ChangeComplete(DocumentChangeEventArgs e)
 		{
-			ILineTracker targetTracker = targetObject.Target as ILineTracker;
-			if (targetTracker != null)
+			if (targetObject.Target is ILineTracker targetTracker) {
 				targetTracker.ChangeComplete(e);
-			else
+			} else {
 				Deregister();
+			}
 		}
 	}
 }

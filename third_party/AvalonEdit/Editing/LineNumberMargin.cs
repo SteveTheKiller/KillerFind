@@ -53,7 +53,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 													 new FrameworkPropertyMetadata(typeof(LineNumberMargin)));
 		}
 
-		TextArea textArea;
+		private TextArea textArea;
 
 		/// <summary>
 		/// The typeface used for rendering the line number margin.
@@ -89,7 +89,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			TextView textView = this.TextView;
 			Size renderSize = this.RenderSize;
 			if (textView != null && textView.VisualLinesValid) {
-				var foreground = (Brush)GetValue(Control.ForegroundProperty);
+				Brush foreground = (Brush)GetValue(Control.ForegroundProperty);
 				foreach (VisualLine line in textView.VisualLines) {
 					int lineNumber = line.FirstDocumentLine.LineNumber;
 					FormattedText text = TextFormatterFactory.CreateFormattedText(
@@ -154,15 +154,16 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		protected int maxLineNumberLength = 1;
 
-		void OnDocumentLineCountChanged()
+		private void OnDocumentLineCountChanged()
 		{
 			int documentLineCount = Document != null ? Document.LineCount : 1;
 			int newLength = documentLineCount.ToString(CultureInfo.CurrentCulture).Length;
 
 			// The margin looks too small when there is only one digit, so always reserve space for
 			// at least two digits
-			if (newLength < 2)
+			if (newLength < 2) {
 				newLength = 2;
+			}
 
 			if (newLength != maxLineNumberLength) {
 				maxLineNumberLength = newLength;
@@ -170,13 +171,13 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		void TextViewVisualLinesChanged(object sender, EventArgs e)
+		private void TextViewVisualLinesChanged(object sender, EventArgs e)
 		{
 			InvalidateVisual();
 		}
 
-		AnchorSegment selectionStart;
-		bool selecting;
+		private AnchorSegment selectionStart;
+		private bool selecting;
 
 		/// <inheritdoc/>
 		protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
@@ -187,16 +188,18 @@ namespace ICSharpCode.AvalonEdit.Editing
 				textArea.Focus();
 
 				SimpleSegment currentSeg = GetTextLineSegment(e);
-				if (currentSeg == SimpleSegment.Invalid)
+				if (currentSeg == SimpleSegment.Invalid) {
 					return;
+				}
+
 				textArea.Caret.Offset = currentSeg.Offset + currentSeg.Length;
 				if (CaptureMouse()) {
 					selecting = true;
 					selectionStart = new AnchorSegment(Document, currentSeg.Offset, currentSeg.Length);
 					if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift) {
-						SimpleSelection simpleSelection = textArea.Selection as SimpleSelection;
-						if (simpleSelection != null)
+						if (textArea.Selection is SimpleSelection simpleSelection) {
 							selectionStart = new AnchorSegment(Document, simpleSelection.SurroundingSegment);
+						}
 					}
 					textArea.Selection = Selection.Create(textArea, selectionStart);
 					if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift) {
@@ -207,27 +210,31 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		SimpleSegment GetTextLineSegment(MouseEventArgs e)
+		private SimpleSegment GetTextLineSegment(MouseEventArgs e)
 		{
 			Point pos = e.GetPosition(TextView);
 			pos.X = 0;
 			pos.Y = pos.Y.CoerceValue(0, TextView.ActualHeight);
 			pos.Y += TextView.VerticalOffset;
 			VisualLine vl = TextView.GetVisualLineFromVisualTop(pos.Y);
-			if (vl == null)
+			if (vl == null) {
 				return SimpleSegment.Invalid;
+			}
+
 			TextLine tl = vl.GetTextLineByVisualYPosition(pos.Y);
 			int visualStartColumn = vl.GetTextLineVisualStartColumn(tl);
 			int visualEndColumn = visualStartColumn + tl.Length;
 			int relStart = vl.FirstDocumentLine.Offset;
 			int startOffset = vl.GetRelativeOffset(visualStartColumn) + relStart;
 			int endOffset = vl.GetRelativeOffset(visualEndColumn) + relStart;
-			if (endOffset == vl.LastDocumentLine.Offset + vl.LastDocumentLine.Length)
+			if (endOffset == vl.LastDocumentLine.Offset + vl.LastDocumentLine.Length) {
 				endOffset += vl.LastDocumentLine.DelimiterLength;
+			}
+
 			return new SimpleSegment(startOffset, endOffset - startOffset);
 		}
 
-		void ExtendSelection(SimpleSegment currentSeg)
+		private void ExtendSelection(SimpleSegment currentSeg)
 		{
 			if (currentSeg.Offset < selectionStart.Offset) {
 				textArea.Caret.Offset = currentSeg.Offset;
@@ -244,8 +251,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 			if (selecting && textArea != null && TextView != null) {
 				e.Handled = true;
 				SimpleSegment currentSeg = GetTextLineSegment(e);
-				if (currentSeg == SimpleSegment.Invalid)
+				if (currentSeg == SimpleSegment.Invalid) {
 					return;
+				}
+
 				ExtendSelection(currentSeg);
 				textArea.Caret.BringCaretToView(5.0);
 			}

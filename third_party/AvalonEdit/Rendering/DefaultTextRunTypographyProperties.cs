@@ -27,159 +27,113 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	public class DefaultTextRunTypographyProperties : TextRunTypographyProperties
 	{
 		/// <inheritdoc/>
-		public override FontVariants Variants {
-			get { return FontVariants.Normal; }
-		}
+		public override FontVariants Variants => FontVariants.Normal;
 
 		/// <inheritdoc/>
-		public override bool StylisticSet1 { get { return false; } }
+		public override bool StylisticSet1 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet2 { get { return false; } }
+		public override bool StylisticSet2 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet3 { get { return false; } }
+		public override bool StylisticSet3 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet4 { get { return false; } }
+		public override bool StylisticSet4 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet5 { get { return false; } }
+		public override bool StylisticSet5 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet6 { get { return false; } }
+		public override bool StylisticSet6 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet7 { get { return false; } }
+		public override bool StylisticSet7 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet8 { get { return false; } }
+		public override bool StylisticSet8 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet9 { get { return false; } }
+		public override bool StylisticSet9 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet10 { get { return false; } }
+		public override bool StylisticSet10 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet11 { get { return false; } }
+		public override bool StylisticSet11 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet12 { get { return false; } }
+		public override bool StylisticSet12 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet13 { get { return false; } }
+		public override bool StylisticSet13 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet14 { get { return false; } }
+		public override bool StylisticSet14 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet15 { get { return false; } }
+		public override bool StylisticSet15 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet16 { get { return false; } }
+		public override bool StylisticSet16 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet17 { get { return false; } }
+		public override bool StylisticSet17 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet18 { get { return false; } }
+		public override bool StylisticSet18 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet19 { get { return false; } }
+		public override bool StylisticSet19 => false;
 		/// <inheritdoc/>
-		public override bool StylisticSet20 { get { return false; } }
+		public override bool StylisticSet20 => false;
 
 		/// <inheritdoc/>
-		public override int StylisticAlternates {
-			get { return 0; }
-		}
+		public override int StylisticAlternates => 0;
 
 		/// <inheritdoc/>
-		public override int StandardSwashes {
-			get { return 0; }
-		}
+		public override int StandardSwashes => 0;
 
 		/// <inheritdoc/>
-		public override bool StandardLigatures {
-			get { return true; }
-		}
+		public override bool StandardLigatures => true;
 
 		/// <inheritdoc/>
-		public override bool SlashedZero {
-			get { return false; }
-		}
+		public override bool SlashedZero => false;
 
 		/// <inheritdoc/>
-		public override FontNumeralStyle NumeralStyle {
-			get { return FontNumeralStyle.Normal; }
-		}
+		public override FontNumeralStyle NumeralStyle => FontNumeralStyle.Normal;
 
 		/// <inheritdoc/>
-		public override FontNumeralAlignment NumeralAlignment {
-			get { return FontNumeralAlignment.Normal; }
-		}
+		public override FontNumeralAlignment NumeralAlignment => FontNumeralAlignment.Normal;
 
 		/// <inheritdoc/>
-		public override bool MathematicalGreek {
-			get { return false; }
-		}
+		public override bool MathematicalGreek => false;
 
 		/// <inheritdoc/>
-		public override bool Kerning {
-			get { return true; }
-		}
+		public override bool Kerning => true;
 
 		/// <inheritdoc/>
-		public override bool HistoricalLigatures {
-			get { return false; }
-		}
+		public override bool HistoricalLigatures => false;
 
 		/// <inheritdoc/>
-		public override bool HistoricalForms {
-			get { return false; }
-		}
+		public override bool HistoricalForms => false;
 
 		/// <inheritdoc/>
-		public override FontFraction Fraction {
-			get { return FontFraction.Normal; }
-		}
+		public override FontFraction Fraction => FontFraction.Normal;
 
 		/// <inheritdoc/>
-		public override FontEastAsianWidths EastAsianWidths {
-			get { return FontEastAsianWidths.Normal; }
-		}
+		public override FontEastAsianWidths EastAsianWidths => FontEastAsianWidths.Normal;
 
 		/// <inheritdoc/>
-		public override FontEastAsianLanguage EastAsianLanguage {
-			get { return FontEastAsianLanguage.Normal; }
-		}
+		public override FontEastAsianLanguage EastAsianLanguage => FontEastAsianLanguage.Normal;
 
 		/// <inheritdoc/>
-		public override bool EastAsianExpertForms {
-			get { return false; }
-		}
+		public override bool EastAsianExpertForms => false;
 
 		/// <inheritdoc/>
-		public override bool DiscretionaryLigatures {
-			get { return false; }
-		}
+		public override bool DiscretionaryLigatures => false;
 
 		/// <inheritdoc/>
-		public override int ContextualSwashes {
-			get { return 0; }
-		}
+		public override int ContextualSwashes => 0;
 
 		/// <inheritdoc/>
-		public override bool ContextualLigatures {
-			get { return true; }
-		}
+		public override bool ContextualLigatures => true;
 
 		/// <inheritdoc/>
-		public override bool ContextualAlternates {
-			get { return true; }
-		}
+		public override bool ContextualAlternates => true;
 
 		/// <inheritdoc/>
-		public override bool CaseSensitiveForms {
-			get { return false; }
-		}
+		public override bool CaseSensitiveForms => false;
 
 		/// <inheritdoc/>
-		public override bool CapitalSpacing {
-			get { return false; }
-		}
+		public override bool CapitalSpacing => false;
 
 		/// <inheritdoc/>
-		public override FontCapitals Capitals {
-			get { return FontCapitals.Normal; }
-		}
+		public override FontCapitals Capitals => FontCapitals.Normal;
 
 		/// <inheritdoc/>
-		public override int AnnotationAlternates {
-			get { return 0; }
-		}
+		public override int AnnotationAlternates => 0;
 	}
 }

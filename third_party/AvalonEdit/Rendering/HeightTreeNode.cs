@@ -26,7 +26,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// <summary>
 	/// A node in the text view's height tree.
 	/// </summary>
-	sealed class HeightTreeNode
+	internal sealed class HeightTreeNode
 	{
 		internal readonly DocumentLine documentLine;
 		internal HeightTreeLineNode lineNode;
@@ -49,8 +49,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		internal HeightTreeNode LeftMost {
 			get {
 				HeightTreeNode node = this;
-				while (node.left != null)
+				while (node.left != null) {
 					node = node.left;
+				}
+
 				return node;
 			}
 		}
@@ -58,8 +60,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		internal HeightTreeNode RightMost {
 			get {
 				HeightTreeNode node = this;
-				while (node.right != null)
+				while (node.right != null) {
 					node = node.right;
+				}
+
 				return node;
 			}
 		}
@@ -113,16 +117,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		internal List<CollapsedLineSection> collapsedSections;
 
-		internal bool IsDirectlyCollapsed {
-			get {
-				return collapsedSections != null;
-			}
-		}
+		internal bool IsDirectlyCollapsed => collapsedSections != null;
 
 		internal void AddDirectlyCollapsed(CollapsedLineSection section)
 		{
 			if (collapsedSections == null) {
-				collapsedSections = new List<CollapsedLineSection>();
+				collapsedSections = [];
 				totalHeight = 0;
 			}
 			Debug.Assert(!collapsedSections.Contains(section));
@@ -137,10 +137,13 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			if (collapsedSections.Count == 0) {
 				collapsedSections = null;
 				totalHeight = lineNode.TotalHeight;
-				if (left != null)
+				if (left != null) {
 					totalHeight += left.totalHeight;
-				if (right != null)
+				}
+
+				if (right != null) {
 					totalHeight += right.totalHeight;
+				}
 			}
 		}
 
@@ -155,13 +158,15 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				+ "]";
 		}
 
-		static string GetCollapsedSections(List<CollapsedLineSection> list)
+		private static string GetCollapsedSections(List<CollapsedLineSection> list)
 		{
-			if (list == null)
+			if (list == null) {
 				return "{}";
+			}
+
 			return "{" +
 				string.Join(",",
-							list.ConvertAll(cs => cs.ID).ToArray())
+							[.. list.ConvertAll(cs => cs.ID)])
 				+ "}";
 		}
 #endif

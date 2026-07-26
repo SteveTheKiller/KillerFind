@@ -31,39 +31,41 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 		{
-			if (sourceType == typeof(string))
+			if (sourceType == typeof(string)) {
 				return true;
-			else
+			} else {
 				return base.CanConvertFrom(context, sourceType);
+			}
 		}
 
 		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			string definitionName = value as string;
-			if (definitionName != null)
+			if (value is string definitionName) {
 				return HighlightingManager.Instance.GetDefinition(definitionName);
-			else
+			} else {
 				return base.ConvertFrom(context, culture, value);
+			}
 		}
 
 		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 		{
-			if (destinationType == typeof(string))
+			if (destinationType == typeof(string)) {
 				return true;
-			else
+			} else {
 				return base.CanConvertTo(context, destinationType);
+			}
 		}
 
 		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			IHighlightingDefinition definition = value as IHighlightingDefinition;
-			if (definition != null && destinationType == typeof(string))
+			if (value is IHighlightingDefinition definition && destinationType == typeof(string)) {
 				return definition.Name;
-			else
+			} else {
 				return base.ConvertTo(context, culture, value, destinationType);
+			}
 		}
 	}
 }

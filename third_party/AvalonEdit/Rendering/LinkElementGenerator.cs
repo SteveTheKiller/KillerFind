@@ -36,12 +36,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	{
 		// a link starts with a protocol (or just with www), followed by 0 or more 'link characters', followed by a link end character
 		// (this allows accepting punctuation inside links but not at the end)
-		internal readonly static Regex defaultLinkRegex = new Regex(@"\b(https?://|ftp://|www\.)[\w\d\._/\-~%@()+:?&=#!]*[\w\d/]");
+		internal static readonly Regex defaultLinkRegex = new(@"\b(https?://|ftp://|www\.)[\w\d\._/\-~%@()+:?&=#!]*[\w\d/]");
 
 		// try to detect email addresses
-		internal readonly static Regex defaultMailRegex = new Regex(@"\b[\w\d\.\-]+\@[\w\d\.\-]+\.[a-z]{2,6}\b");
+		internal static readonly Regex defaultMailRegex = new(@"\b[\w\d\.\-]+\@[\w\d\.\-]+\.[a-z]{2,6}\b");
 
-		readonly Regex linkRegex;
+		private readonly Regex linkRegex;
 
 		/// <summary>
 		/// Gets/Sets whether the user needs to press Control to click the link.
@@ -63,9 +63,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		protected LinkElementGenerator(Regex regex) : this()
 		{
-			if (regex == null)
-				throw new ArgumentNullException("regex");
-			this.linkRegex = regex;
+			this.linkRegex = regex ?? throw new ArgumentNullException("regex");
 		}
 
 		void IBuiltinElementGenerator.FetchOptions(TextEditorOptions options)
@@ -73,7 +71,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			this.RequireControlModifierForClick = options.RequireControlModifierForHyperlinkClick;
 		}
 
-		Match GetMatch(int startOffset, out int matchOffset)
+		private Match GetMatch(int startOffset, out int matchOffset)
 		{
 			int endOffset = CurrentContext.VisualLine.LastDocumentLine.EndOffset;
 			StringSegment relevantText = CurrentContext.GetText(startOffset, endOffset - startOffset);
@@ -85,16 +83,14 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <inheritdoc/>
 		public override int GetFirstInterestedOffset(int startOffset)
 		{
-			int matchOffset;
-			GetMatch(startOffset, out matchOffset);
+			GetMatch(startOffset, out int matchOffset);
 			return matchOffset;
 		}
 
 		/// <inheritdoc/>
 		public override VisualLineElement ConstructElement(int offset)
 		{
-			int matchOffset;
-			Match m = GetMatch(offset, out matchOffset);
+			Match m = GetMatch(offset, out int matchOffset);
 			if (m.Success && matchOffset == offset) {
 				return ConstructElementFromMatch(m);
 			} else {
@@ -110,11 +106,14 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		protected virtual VisualLineElement ConstructElementFromMatch(Match m)
 		{
 			Uri uri = GetUriFromMatch(m);
-			if (uri == null)
+			if (uri == null) {
 				return null;
-			VisualLineLinkText linkText = new VisualLineLinkText(CurrentContext.VisualLine, m.Length);
-			linkText.NavigateUri = uri;
-			linkText.RequireControlModifierForClick = this.RequireControlModifierForClick;
+			}
+
+			VisualLineLinkText linkText = new(CurrentContext.VisualLine, m.Length) {
+				NavigateUri = uri,
+				RequireControlModifierForClick = this.RequireControlModifierForClick
+			};
 			return linkText;
 		}
 
@@ -124,10 +123,13 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		protected virtual Uri GetUriFromMatch(Match match)
 		{
 			string targetUrl = match.Value;
-			if (targetUrl.StartsWith("www.", StringComparison.Ordinal))
+			if (targetUrl.StartsWith("www.", StringComparison.Ordinal)) {
 				targetUrl = "http://" + targetUrl;
-			if (Uri.IsWellFormedUriString(targetUrl, UriKind.Absolute))
+			}
+
+			if (Uri.IsWellFormedUriString(targetUrl, UriKind.Absolute)) {
 				return new Uri(targetUrl);
+			}
 
 			return null;
 		}
@@ -142,7 +144,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// This element generator can be easily enabled and configured using the
 	/// <see cref="TextEditorOptions"/>.
 	/// </remarks>
-	sealed class MailLinkElementGenerator : LinkElementGenerator
+	internal sealed class MailLinkElementGenerator : LinkElementGenerator
 	{
 		/// <summary>
 		/// Creates a new MailLinkElementGenerator.
@@ -154,9 +156,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		protected override Uri GetUriFromMatch(Match match)
 		{
-			var targetUrl = "mailto:" + match.Value;
-			if (Uri.IsWellFormedUriString(targetUrl, UriKind.Absolute))
+			string targetUrl = "mailto:" + match.Value;
+			if (Uri.IsWellFormedUriString(targetUrl, UriKind.Absolute)) {
 				return new Uri(targetUrl);
+			}
 
 			return null;
 		}

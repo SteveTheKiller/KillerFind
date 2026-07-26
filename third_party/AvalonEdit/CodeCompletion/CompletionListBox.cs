@@ -38,9 +38,9 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			// Find the scroll viewer:
 			scrollViewer = null;
 			if (this.VisualChildrenCount > 0) {
-				Border border = this.GetVisualChild(0) as Border;
-				if (border != null)
+				if (this.GetVisualChild(0) is Border border) {
 					scrollViewer = border.Child as ScrollViewer;
+				}
 			}
 		}
 
@@ -57,9 +57,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			}
 			set {
 				value = value.CoerceValue(0, this.Items.Count - this.VisibleItemCount);
-				if (scrollViewer != null) {
-					scrollViewer.ScrollToVerticalOffset((double)value / this.Items.Count * scrollViewer.ExtentHeight);
-				}
+				scrollViewer?.ScrollToVerticalOffset((double)value / this.Items.Count * scrollViewer.ExtentHeight);
 			}
 		}
 
@@ -92,10 +90,14 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		/// </summary>
 		public void SelectIndex(int index)
 		{
-			if (index >= this.Items.Count)
+			if (index >= this.Items.Count) {
 				index = this.Items.Count - 1;
-			if (index < 0)
+			}
+
+			if (index < 0) {
 				index = 0;
+			}
+
 			this.SelectedIndex = index;
 			this.ScrollIntoView(this.SelectedItem);
 		}
@@ -105,7 +107,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		/// </summary>
 		public void CenterViewOn(int index)
 		{
-			this.FirstVisibleItem = index - VisibleItemCount / 2;
+			this.FirstVisibleItem = index - (VisibleItemCount / 2);
 		}
 	}
 }

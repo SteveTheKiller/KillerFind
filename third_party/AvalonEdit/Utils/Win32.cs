@@ -28,24 +28,23 @@ namespace ICSharpCode.AvalonEdit.Utils
 	/// <summary>
 	/// Wrapper around Win32 functions.
 	/// </summary>
-	static class Win32
+	internal static class Win32
 	{
 		/// <summary>
 		/// Gets the caret blink time.
 		/// </summary>
-		public static TimeSpan CaretBlinkTime {
-			get { return TimeSpan.FromMilliseconds(SafeNativeMethods.GetCaretBlinkTime()); }
-		}
+		public static TimeSpan CaretBlinkTime => TimeSpan.FromMilliseconds(SafeNativeMethods.GetCaretBlinkTime());
 
 		/// <summary>
 		/// Creates an invisible Win32 caret for the specified Visual with the specified size (coordinates local to the owner visual).
 		/// </summary>
 		public static bool CreateCaret(Visual owner, Size size)
 		{
-			if (owner == null)
+			if (owner == null) {
 				throw new ArgumentNullException("owner");
-			HwndSource source = PresentationSource.FromVisual(owner) as HwndSource;
-			if (source != null) {
+			}
+
+			if (PresentationSource.FromVisual(owner) is HwndSource source) {
 				Vector r = owner.PointToScreen(new Point(size.Width, size.Height)) - owner.PointToScreen(new Point(0, 0));
 				return SafeNativeMethods.CreateCaret(source.Handle, IntPtr.Zero, (int)Math.Ceiling(r.X), (int)Math.Ceiling(r.Y));
 			} else {
@@ -58,10 +57,11 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public static bool SetCaretPosition(Visual owner, Point position)
 		{
-			if (owner == null)
+			if (owner == null) {
 				throw new ArgumentNullException("owner");
-			HwndSource source = PresentationSource.FromVisual(owner) as HwndSource;
-			if (source != null) {
+			}
+
+			if (PresentationSource.FromVisual(owner) is HwndSource source) {
 				Point pointOnRootVisual = owner.TransformToAncestor(source.RootVisual).Transform(position);
 				Point pointOnHwnd = pointOnRootVisual.TransformToDevice(source.RootVisual);
 				return SafeNativeMethods.SetCaretPos((int)pointOnHwnd.X, (int)pointOnHwnd.Y);
@@ -79,7 +79,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		}
 
 		[SuppressUnmanagedCodeSecurity]
-		static class SafeNativeMethods
+		private static class SafeNativeMethods
 		{
 			[DllImport("user32.dll")]
 			public static extern int GetCaretBlinkTime();

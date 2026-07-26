@@ -40,8 +40,10 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		public HtmlOptions(TextEditorOptions options) : this()
 		{
-			if (options == null)
+			if (options == null) {
 				throw new ArgumentNullException("options");
+			}
+
 			this.TabSize = options.IndentationSize;
 		}
 
@@ -55,10 +57,14 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		public virtual void WriteStyleAttributeForColor(TextWriter writer, HighlightingColor color)
 		{
-			if (writer == null)
+			if (writer == null) {
 				throw new ArgumentNullException("writer");
-			if (color == null)
+			}
+
+			if (color == null) {
 				throw new ArgumentNullException("color");
+			}
+
 			writer.Write(" style=\"");
 			WebUtility.HtmlEncode(color.ToCss(), writer);
 			writer.Write('"');
@@ -69,8 +75,10 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		public virtual bool ColorNeedsSpanForStyling(HighlightingColor color)
 		{
-			if (color == null)
+			if (color == null) {
 				throw new ArgumentNullException("color");
+			}
+
 			return !string.IsNullOrEmpty(color.ToCss());
 		}
 	}

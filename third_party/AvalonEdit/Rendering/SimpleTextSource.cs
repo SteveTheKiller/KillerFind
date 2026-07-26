@@ -21,10 +21,10 @@ using System.Windows.Media.TextFormatting;
 
 namespace ICSharpCode.AvalonEdit.Rendering
 {
-	sealed class SimpleTextSource : TextSource
+	internal sealed class SimpleTextSource : TextSource
 	{
-		readonly string text;
-		readonly TextRunProperties properties;
+		private readonly string text;
+		private readonly TextRunProperties properties;
 
 		public SimpleTextSource(string text, TextRunProperties properties)
 		{
@@ -34,10 +34,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		public override TextRun GetTextRun(int textSourceCharacterIndex)
 		{
-			if (textSourceCharacterIndex < text.Length)
+			if (textSourceCharacterIndex < text.Length) {
 				return new TextCharacters(text, textSourceCharacterIndex, text.Length - textSourceCharacterIndex, properties);
-			else
+			} else {
 				return new TextEndOfParagraph(1);
+			}
 		}
 
 		public override int GetTextEffectCharacterIndexFromTextSourceCharacterIndex(int textSourceCharacterIndex)

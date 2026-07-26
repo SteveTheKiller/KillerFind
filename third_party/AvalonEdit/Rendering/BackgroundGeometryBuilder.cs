@@ -35,15 +35,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// </summary>
 	public sealed class BackgroundGeometryBuilder
 	{
-		double cornerRadius;
-
 		/// <summary>
 		/// Gets/sets the radius of the rounded corners.
 		/// </summary>
-		public double CornerRadius {
-			get { return cornerRadius; }
-			set { cornerRadius = value; }
-		}
+		public double CornerRadius { get; set; }
 
 		/// <summary>
 		/// Gets/Sets whether to align to whole pixels.
@@ -82,8 +77,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public void AddSegment(TextView textView, ISegment segment)
 		{
-			if (textView == null)
+			if (textView == null) {
 				throw new ArgumentNullException("textView");
+			}
+
 			Size pixelSize = PixelSnapHelpers.GetPixelSize(textView);
 			foreach (Rect r in GetRectsForSegment(textView, segment, ExtendToFullWidthAtLineEnd)) {
 				AddRectangle(pixelSize, r);
@@ -103,7 +100,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			AddRectangle(PixelSnapHelpers.GetPixelSize(textView), rectangle);
 		}
 
-		void AddRectangle(Size pixelSize, Rect r)
+		private void AddRectangle(Size pixelSize, Rect r)
 		{
 			if (AlignToWholePixels) {
 				double halfBorder = 0.5 * BorderThickness;
@@ -124,14 +121,18 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public static IEnumerable<Rect> GetRectsForSegment(TextView textView, ISegment segment, bool extendToFullWidthAtLineEnd = false)
 		{
-			if (textView == null)
+			if (textView == null) {
 				throw new ArgumentNullException("textView");
-			if (segment == null)
+			}
+
+			if (segment == null) {
 				throw new ArgumentNullException("segment");
+			}
+
 			return GetRectsForSegmentImpl(textView, segment, extendToFullWidthAtLineEnd);
 		}
 
-		static IEnumerable<Rect> GetRectsForSegmentImpl(TextView textView, ISegment segment, bool extendToFullWidthAtLineEnd)
+		private static IEnumerable<Rect> GetRectsForSegmentImpl(TextView textView, ISegment segment, bool extendToFullWidthAtLineEnd)
 		{
 			int segmentStart = segment.Offset;
 			int segmentEnd = segment.Offset + segment.Length;
@@ -142,8 +143,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			TextViewPosition start;
 			TextViewPosition end;
 
-			if (segment is SelectionSegment) {
-				SelectionSegment sel = (SelectionSegment)segment;
+			if (segment is SelectionSegment sel) {
 				start = new TextViewPosition(textView.Document.GetLocation(sel.StartOffset), sel.StartVisualColumn);
 				end = new TextViewPosition(textView.Document.GetLocation(sel.EndOffset), sel.EndVisualColumn);
 			} else {
@@ -153,26 +153,32 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 			foreach (VisualLine vl in textView.VisualLines) {
 				int vlStartOffset = vl.FirstDocumentLine.Offset;
-				if (vlStartOffset > segmentEnd)
+				if (vlStartOffset > segmentEnd) {
 					break;
+				}
+
 				int vlEndOffset = vl.LastDocumentLine.Offset + vl.LastDocumentLine.Length;
-				if (vlEndOffset < segmentStart)
+				if (vlEndOffset < segmentStart) {
 					continue;
+				}
 
 				int segmentStartVC;
-				if (segmentStart < vlStartOffset)
+				if (segmentStart < vlStartOffset) {
 					segmentStartVC = 0;
-				else
+				} else {
 					segmentStartVC = vl.ValidateVisualColumn(start, extendToFullWidthAtLineEnd);
+				}
 
 				int segmentEndVC;
-				if (segmentEnd > vlEndOffset)
+				if (segmentEnd > vlEndOffset) {
 					segmentEndVC = extendToFullWidthAtLineEnd ? int.MaxValue : vl.VisualLengthWithEndOfLineMarker;
-				else
+				} else {
 					segmentEndVC = vl.ValidateVisualColumn(end, extendToFullWidthAtLineEnd);
+				}
 
-				foreach (var rect in ProcessTextLines(textView, vl, segmentStartVC, segmentEndVC))
+				foreach (Rect rect in ProcessTextLines(textView, vl, segmentStartVC, segmentEndVC)) {
 					yield return rect;
+				}
 			}
 		}
 
@@ -182,14 +188,18 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public static IEnumerable<Rect> GetRectsFromVisualSegment(TextView textView, VisualLine line, int startVC, int endVC)
 		{
-			if (textView == null)
+			if (textView == null) {
 				throw new ArgumentNullException("textView");
-			if (line == null)
+			}
+
+			if (line == null) {
 				throw new ArgumentNullException("line");
+			}
+
 			return ProcessTextLines(textView, line, startVC, endVC);
 		}
 
-		static IEnumerable<Rect> ProcessTextLines(TextView textView, VisualLine visualLine, int segmentStartVC, int segmentEndVC)
+		private static IEnumerable<Rect> ProcessTextLines(TextView textView, VisualLine visualLine, int segmentStartVC, int segmentEndVC)
 		{
 			TextLine lastTextLine = visualLine.TextLines.Last();
 			Vector scrollOffset = textView.ScrollOffset;
@@ -199,15 +209,20 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				double y = visualLine.GetTextLineVisualYPosition(line, VisualYPosition.LineTop);
 				int visualStartCol = visualLine.GetTextLineVisualStartColumn(line);
 				int visualEndCol = visualStartCol + line.Length;
-				if (line == lastTextLine)
+				if (line == lastTextLine) {
 					visualEndCol -= 1; // 1 position for the TextEndOfParagraph
-				else
+				} else {
 					visualEndCol -= line.TrailingWhitespaceLength;
+				}
 
-				if (segmentEndVC < visualStartCol)
+				if (segmentEndVC < visualStartCol) {
 					break;
-				if (lastTextLine != line && segmentStartVC > visualEndCol)
+				}
+
+				if (lastTextLine != line && segmentStartVC > visualEndCol) {
 					continue;
+				}
+
 				int segmentStartVCInLine = Math.Max(segmentStartVC, visualStartCol);
 				int segmentEndVCInLine = Math.Min(segmentEndVC, visualEndCol);
 				y -= scrollOffset.Y;
@@ -220,18 +235,23 @@ namespace ICSharpCode.AvalonEdit.Rendering
 					// The following special cases are necessary to get rid of empty rectangles at the end of a TextLine if "Show Spaces" is active.
 					// If not excluded once, the same rectangle is calculated (and added) twice (since the offset could be mapped to two visual positions; end/start of line), if there is no trailing whitespace.
 					// Skip this TextLine segment, if it is at the end of this line and this line is not the last line of the VisualLine and the selection continues and there is no trailing whitespace.
-					if (segmentEndVCInLine == visualEndCol && i < visualLine.TextLines.Count - 1 && segmentEndVC > segmentEndVCInLine && line.TrailingWhitespaceLength == 0)
+					if (segmentEndVCInLine == visualEndCol && i < visualLine.TextLines.Count - 1 && segmentEndVC > segmentEndVCInLine && line.TrailingWhitespaceLength == 0) {
 						continue;
-					if (segmentStartVCInLine == visualStartCol && i > 0 && segmentStartVC < segmentStartVCInLine && visualLine.TextLines[i - 1].TrailingWhitespaceLength == 0)
+					}
+
+					if (segmentStartVCInLine == visualStartCol && i > 0 && segmentStartVC < segmentStartVCInLine && visualLine.TextLines[i - 1].TrailingWhitespaceLength == 0) {
 						continue;
+					}
+
 					lastRect = new Rect(pos, y, textView.EmptyLineSelectionWidth, line.Height);
 				} else {
 					if (segmentStartVCInLine <= visualEndCol) {
 						foreach (TextBounds b in line.GetTextBounds(segmentStartVCInLine, segmentEndVCInLine - segmentStartVCInLine)) {
 							double left = b.Rectangle.Left - scrollOffset.X;
 							double right = b.Rectangle.Right - scrollOffset.X;
-							if (!lastRect.IsEmpty)
+							if (!lastRect.IsEmpty) {
 								yield return lastRect;
+							}
 							// left>right is possible in RTL languages
 							lastRect = new Rect(Math.Min(left, right), y, Math.Abs(right - left), line.Height);
 						}
@@ -251,7 +271,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 						// For word-wrapped lines, visualEndCol doesn't include the whitespace hidden by the wrap,
 						// so we'll need to include it here.
 						// For the last line, visualEndCol already includes the whitespace.
-						left = (line == lastTextLine ? line.WidthIncludingTrailingWhitespace : line.Width);
+						left = line == lastTextLine ? line.WidthIncludingTrailingWhitespace : line.Width;
 					}
 					if (line != lastTextLine || segmentEndVC == int.MaxValue) {
 						// If word-wrap is enabled and the segment continues into the next line,
@@ -264,7 +284,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 					left -= scrollOffset.X;
 					right -= scrollOffset.X;
-					Rect extendSelection = new Rect(Math.Min(left, right), y, Math.Abs(right - left), line.Height);
+					Rect extendSelection = new(Math.Min(left, right), y, Math.Abs(right - left), line.Height);
 					if (!lastRect.IsEmpty) {
 						if (extendSelection.IntersectsWith(lastRect)) {
 							lastRect.Union(extendSelection);
@@ -274,18 +294,20 @@ namespace ICSharpCode.AvalonEdit.Rendering
 							yield return lastRect;
 							yield return extendSelection;
 						}
-					} else
+					} else {
 						yield return extendSelection;
-				} else
+					}
+				} else {
 					yield return lastRect;
+				}
 			}
 		}
 
-		PathFigureCollection figures = new PathFigureCollection();
-		PathFigure figure;
-		int insertionIndex;
-		double lastTop, lastBottom;
-		double lastLeft, lastRight;
+		private readonly PathFigureCollection figures = [];
+		private PathFigure figure;
+		private int insertionIndex;
+		private double lastTop, lastBottom;
+		private double lastLeft, lastRight;
 
 		/// <summary>
 		/// Adds a rectangle to the geometry.
@@ -301,32 +323,33 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				CloseFigure();
 			}
 			if (figure == null) {
-				figure = new PathFigure();
-				figure.StartPoint = new Point(left, top + cornerRadius);
-				if (Math.Abs(left - right) > cornerRadius) {
-					figure.Segments.Add(MakeArc(left + cornerRadius, top, SweepDirection.Clockwise));
-					figure.Segments.Add(MakeLineSegment(right - cornerRadius, top));
-					figure.Segments.Add(MakeArc(right, top + cornerRadius, SweepDirection.Clockwise));
+				figure = new PathFigure {
+					StartPoint = new Point(left, top + CornerRadius)
+				};
+				if (Math.Abs(left - right) > CornerRadius) {
+					figure.Segments.Add(MakeArc(left + CornerRadius, top, SweepDirection.Clockwise));
+					figure.Segments.Add(MakeLineSegment(right - CornerRadius, top));
+					figure.Segments.Add(MakeArc(right, top + CornerRadius, SweepDirection.Clockwise));
 				}
-				figure.Segments.Add(MakeLineSegment(right, bottom - cornerRadius));
+				figure.Segments.Add(MakeLineSegment(right, bottom - CornerRadius));
 				insertionIndex = figure.Segments.Count;
 				//figure.Segments.Add(MakeArc(left, bottom - cornerRadius, SweepDirection.Clockwise));
 			} else {
 				if (!lastRight.IsClose(right)) {
-					double cr = right < lastRight ? -cornerRadius : cornerRadius;
+					double cr = right < lastRight ? -CornerRadius : CornerRadius;
 					SweepDirection dir1 = right < lastRight ? SweepDirection.Clockwise : SweepDirection.Counterclockwise;
 					SweepDirection dir2 = right < lastRight ? SweepDirection.Counterclockwise : SweepDirection.Clockwise;
 					figure.Segments.Insert(insertionIndex++, MakeArc(lastRight + cr, lastBottom, dir1));
 					figure.Segments.Insert(insertionIndex++, MakeLineSegment(right - cr, top));
-					figure.Segments.Insert(insertionIndex++, MakeArc(right, top + cornerRadius, dir2));
+					figure.Segments.Insert(insertionIndex++, MakeArc(right, top + CornerRadius, dir2));
 				}
-				figure.Segments.Insert(insertionIndex++, MakeLineSegment(right, bottom - cornerRadius));
-				figure.Segments.Insert(insertionIndex, MakeLineSegment(lastLeft, lastTop + cornerRadius));
+				figure.Segments.Insert(insertionIndex++, MakeLineSegment(right, bottom - CornerRadius));
+				figure.Segments.Insert(insertionIndex, MakeLineSegment(lastLeft, lastTop + CornerRadius));
 				if (!lastLeft.IsClose(left)) {
-					double cr = left < lastLeft ? cornerRadius : -cornerRadius;
+					double cr = left < lastLeft ? CornerRadius : -CornerRadius;
 					SweepDirection dir1 = left < lastLeft ? SweepDirection.Counterclockwise : SweepDirection.Clockwise;
 					SweepDirection dir2 = left < lastLeft ? SweepDirection.Clockwise : SweepDirection.Counterclockwise;
-					figure.Segments.Insert(insertionIndex, MakeArc(lastLeft, lastBottom - cornerRadius, dir1));
+					figure.Segments.Insert(insertionIndex, MakeArc(lastLeft, lastBottom - CornerRadius, dir1));
 					figure.Segments.Insert(insertionIndex, MakeLineSegment(lastLeft - cr, lastBottom));
 					figure.Segments.Insert(insertionIndex, MakeArc(left + cr, lastBottom, dir2));
 				}
@@ -337,19 +360,19 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			this.lastRight = right;
 		}
 
-		ArcSegment MakeArc(double x, double y, SweepDirection dir)
+		private ArcSegment MakeArc(double x, double y, SweepDirection dir)
 		{
-			ArcSegment arc = new ArcSegment(
+			ArcSegment arc = new(
 				new Point(x, y),
-				new Size(cornerRadius, cornerRadius),
+				new Size(CornerRadius, CornerRadius),
 				0, false, dir, true);
 			arc.Freeze();
 			return arc;
 		}
 
-		static LineSegment MakeLineSegment(double x, double y)
+		private static LineSegment MakeLineSegment(double x, double y)
 		{
-			LineSegment ls = new LineSegment(new Point(x, y), true);
+			LineSegment ls = new(new Point(x, y), true);
 			ls.Freeze();
 			return ls;
 		}
@@ -360,11 +383,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public void CloseFigure()
 		{
 			if (figure != null) {
-				figure.Segments.Insert(insertionIndex, MakeLineSegment(lastLeft, lastTop + cornerRadius));
-				if (Math.Abs(lastLeft - lastRight) > cornerRadius) {
-					figure.Segments.Insert(insertionIndex, MakeArc(lastLeft, lastBottom - cornerRadius, SweepDirection.Clockwise));
-					figure.Segments.Insert(insertionIndex, MakeLineSegment(lastLeft + cornerRadius, lastBottom));
-					figure.Segments.Insert(insertionIndex, MakeArc(lastRight - cornerRadius, lastBottom, SweepDirection.Clockwise));
+				figure.Segments.Insert(insertionIndex, MakeLineSegment(lastLeft, lastTop + CornerRadius));
+				if (Math.Abs(lastLeft - lastRight) > CornerRadius) {
+					figure.Segments.Insert(insertionIndex, MakeArc(lastLeft, lastBottom - CornerRadius, SweepDirection.Clockwise));
+					figure.Segments.Insert(insertionIndex, MakeLineSegment(lastLeft + CornerRadius, lastBottom));
+					figure.Segments.Insert(insertionIndex, MakeArc(lastRight - CornerRadius, lastBottom, SweepDirection.Clockwise));
 				}
 
 				figure.IsClosed = true;
@@ -381,7 +404,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		{
 			CloseFigure();
 			if (figures.Count != 0) {
-				PathGeometry g = new PathGeometry(figures);
+				PathGeometry g = new(figures);
 				g.Freeze();
 				return g;
 			} else {

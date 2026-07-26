@@ -29,11 +29,11 @@ using ICSharpCode.AvalonEdit.Rendering;
 
 namespace ICSharpCode.AvalonEdit.Editing
 {
-	class TextRangeProvider : ITextRangeProvider
+	internal class TextRangeProvider : ITextRangeProvider
 	{
-		readonly TextArea textArea;
-		readonly TextDocument doc;
-		ISegment segment;
+		private readonly TextArea textArea;
+		private readonly TextDocument doc;
+		private ISegment segment;
 
 		public TextRangeProvider(TextArea textArea, TextDocument doc, ISegment segment)
 		{
@@ -49,14 +49,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 			this.segment = new AnchorSegment(doc, offset, length);
 		}
 
-		string ID {
-			get {
-				return string.Format("({0}: {1})", GetHashCode().ToString("x8"), segment);
-			}
-		}
+		private string ID => string.Format("({0}: {1})", GetHashCode().ToString("x8"), segment);
 
 		[Conditional("DEBUG")]
-		static void Log(string format, params object[] args)
+		private static void Log(string format, params object[] args)
 		{
 			Debug.WriteLine(string.Format(format, args));
 		}
@@ -68,7 +64,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		public ITextRangeProvider Clone()
 		{
-			var result = new TextRangeProvider(textArea, doc, segment);
+			TextRangeProvider result = new(textArea, doc, segment);
 			Log("{0}.Clone() = {1}", ID, result.ID);
 			return result;
 		}
@@ -83,16 +79,13 @@ namespace ICSharpCode.AvalonEdit.Editing
 			return result;
 		}
 
-		int GetEndpoint(TextPatternRangeEndpoint endpoint)
+		private int GetEndpoint(TextPatternRangeEndpoint endpoint)
 		{
-			switch (endpoint) {
-				case TextPatternRangeEndpoint.Start:
-					return segment.Offset;
-				case TextPatternRangeEndpoint.End:
-					return segment.EndOffset;
-				default:
-					throw new ArgumentOutOfRangeException("endpoint");
-			}
+			return endpoint switch {
+				TextPatternRangeEndpoint.Start => segment.Offset,
+				TextPatternRangeEndpoint.End => segment.EndOffset,
+				_ => throw new ArgumentOutOfRangeException("endpoint"),
+			};
 		}
 
 		public int CompareEndpoints(TextPatternRangeEndpoint endpoint, ITextRangeProvider targetRange, TextPatternRangeEndpoint targetEndpoint)
@@ -127,11 +120,15 @@ namespace ICSharpCode.AvalonEdit.Editing
 		private void ExpandToEnclosingUnit(CaretPositioningMode mode)
 		{
 			int start = TextUtilities.GetNextCaretPosition(doc, segment.Offset + 1, LogicalDirection.Backward, mode);
-			if (start < 0)
+			if (start < 0) {
 				return;
+			}
+
 			int end = TextUtilities.GetNextCaretPosition(doc, start, LogicalDirection.Forward, mode);
-			if (end < 0)
+			if (end < 0) {
 				return;
+			}
+
 			segment = new AnchorSegment(doc, start, end - start);
 		}
 
@@ -145,7 +142,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		{
 			Log("{0}.FindText({1}, {2}, {3})", ID, text, backward, ignoreCase);
 			string segmentText = doc.GetText(segment);
-			var comparison = ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+			StringComparison comparison = ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 			int pos = backward ? segmentText.LastIndexOf(text, comparison) : segmentText.IndexOf(text, comparison);
 			if (pos >= 0) {
 				return new TextRangeProvider(textArea, doc, segment.Offset + pos, text.Length);
@@ -162,42 +159,44 @@ namespace ICSharpCode.AvalonEdit.Editing
 		public double[] GetBoundingRectangles()
 		{
 			Log("{0}.GetBoundingRectangles()", ID);
-			var textView = textArea.TextView;
-			var source = PresentationSource.FromVisual(this.textArea);
-			var result = new List<double>();
-			foreach (var rect in BackgroundGeometryBuilder.GetRectsForSegment(textView, segment)) {
-				var tl = textView.PointToScreen(rect.TopLeft);
-				var br = textView.PointToScreen(rect.BottomRight);
+			TextView textView = textArea.TextView;
+			_ = PresentationSource.FromVisual(this.textArea);
+			List<double> result = [];
+			foreach (Rect rect in BackgroundGeometryBuilder.GetRectsForSegment(textView, segment)) {
+				Point tl = textView.PointToScreen(rect.TopLeft);
+				Point br = textView.PointToScreen(rect.BottomRight);
 				result.Add(tl.X);
 				result.Add(tl.Y);
 				result.Add(br.X - tl.X);
 				result.Add(br.Y - tl.Y);
 			}
-			return result.ToArray();
+			return [.. result];
 		}
 
 		public IRawElementProviderSimple[] GetChildren()
 		{
 			Log("{0}.GetChildren()", ID);
-			return new IRawElementProviderSimple[0];
+			return [];
 		}
 
 		public IRawElementProviderSimple GetEnclosingElement()
 		{
 			Log("{0}.GetEnclosingElement()", ID);
-			var peer = TextAreaAutomationPeer.FromElement(textArea) as TextAreaAutomationPeer;
-			if (peer == null)
+			if (TextAreaAutomationPeer.FromElement(textArea) is not TextAreaAutomationPeer peer) {
 				throw new NotSupportedException();
+			}
+
 			return peer.Provider;
 		}
 
 		public string GetText(int maxLength)
 		{
 			Log("{0}.GetText({1})", ID, maxLength);
-			if (maxLength < 0)
+			if (maxLength < 0) {
 				return doc.GetText(segment);
-			else
+			} else {
 				return doc.GetText(segment.Offset, Math.Min(segment.Length, maxLength));
+			}
 		}
 
 		public int Move(TextUnit unit, int count)
@@ -216,7 +215,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			SetEndpoint(endpoint, other.GetEndpoint(targetEndpoint));
 		}
 
-		void SetEndpoint(TextPatternRangeEndpoint endpoint, int targetOffset)
+		private void SetEndpoint(TextPatternRangeEndpoint endpoint, int targetOffset)
 		{
 			if (endpoint == TextPatternRangeEndpoint.Start) {
 				// set start of this range to targetOffset
@@ -256,12 +255,14 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		private int MoveOffset(int offset, CaretPositioningMode mode, int count)
 		{
-			var direction = count < 0 ? LogicalDirection.Backward : LogicalDirection.Forward;
+			LogicalDirection direction = count < 0 ? LogicalDirection.Backward : LogicalDirection.Forward;
 			count = Math.Abs(count);
 			for (int i = 0; i < count; i++) {
 				int newOffset = TextUtilities.GetNextCaretPosition(doc, offset, direction, mode);
-				if (newOffset == offset || newOffset < 0)
+				if (newOffset == offset || newOffset < 0) {
 					break;
+				}
+
 				offset = newOffset;
 			}
 			return offset;

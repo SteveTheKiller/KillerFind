@@ -37,9 +37,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public VisualLineConstructionStartEventArgs(DocumentLine firstLineInView)
 		{
-			if (firstLineInView == null)
-				throw new ArgumentNullException("firstLineInView");
-			this.FirstLineInView = firstLineInView;
+			this.FirstLineInView = firstLineInView ?? throw new ArgumentNullException("firstLineInView");
 		}
 	}
 }

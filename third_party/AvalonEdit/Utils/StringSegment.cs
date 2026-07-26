@@ -24,23 +24,29 @@ namespace ICSharpCode.AvalonEdit.Utils
 	/// Represents a string with a segment.
 	/// Similar to System.ArraySegment&lt;T&gt;, but for strings instead of arrays.
 	/// </summary>
-	public struct StringSegment : IEquatable<StringSegment>
+	public readonly struct StringSegment : IEquatable<StringSegment>
 	{
-		readonly string text;
-		readonly int offset;
-		readonly int count;
+		private readonly string text;
+		private readonly int offset;
+		private readonly int count;
 
 		/// <summary>
 		/// Creates a new StringSegment.
 		/// </summary>
 		public StringSegment(string text, int offset, int count)
 		{
-			if (text == null)
+			if (text == null) {
 				throw new ArgumentNullException("text");
-			if (offset < 0 || offset > text.Length)
+			}
+
+			if (offset < 0 || offset > text.Length) {
 				throw new ArgumentOutOfRangeException("offset");
-			if (offset + count > text.Length)
+			}
+
+			if (offset + count > text.Length) {
 				throw new ArgumentOutOfRangeException("count");
+			}
+
 			this.text = text;
 			this.offset = offset;
 			this.count = count;
@@ -51,9 +57,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public StringSegment(string text)
 		{
-			if (text == null)
-				throw new ArgumentNullException("text");
-			this.text = text;
+			this.text = text ?? throw new ArgumentNullException("text");
 			this.offset = 0;
 			this.count = text.Length;
 		}
@@ -61,43 +65,38 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <summary>
 		/// Gets the string used for this segment.
 		/// </summary>
-		public string Text {
-			get { return text; }
-		}
+		public readonly string Text => text;
 
 		/// <summary>
 		/// Gets the start offset of the segment with the text.
 		/// </summary>
-		public int Offset {
-			get { return offset; }
-		}
+		public readonly int Offset => offset;
 
 		/// <summary>
 		/// Gets the length of the segment.
 		/// </summary>
-		public int Count {
-			get { return count; }
-		}
+		public readonly int Count => count;
 
 		#region Equals and GetHashCode implementation
 		/// <inheritdoc/>
 		public override bool Equals(object obj)
 		{
-			if (obj is StringSegment)
+			if (obj is StringSegment) {
 				return Equals((StringSegment)obj); // use Equals method below
-			else
+			} else {
 				return false;
+			}
 		}
 
 		/// <inheritdoc/>
-		public bool Equals(StringSegment other)
+		public readonly bool Equals(StringSegment other)
 		{
 			// add comparisions for all members here
 			return object.ReferenceEquals(this.text, other.text) && offset == other.offset && count == other.count;
 		}
 
 		/// <inheritdoc/>
-		public override int GetHashCode()
+		public override readonly int GetHashCode()
 		{
 			return text.GetHashCode() ^ offset ^ count;
 		}

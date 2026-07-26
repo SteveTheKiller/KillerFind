@@ -26,12 +26,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// </summary>
 	public sealed class CollapsedLineSection
 	{
-		DocumentLine start, end;
-		HeightTree heightTree;
+		private readonly HeightTree heightTree;
 
 #if DEBUG
 		internal string ID;
-		static int nextId;
+		private static int nextId;
 #else
 		const string ID = "";
 #endif
@@ -39,11 +38,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		internal CollapsedLineSection(HeightTree heightTree, DocumentLine start, DocumentLine end)
 		{
 			this.heightTree = heightTree;
-			this.start = start;
-			this.end = end;
+			this.Start = start;
+			this.End = end;
 #if DEBUG
 			unchecked {
-				this.ID = " #" + (nextId++);
+				this.ID = " #" + nextId++;
 			}
 #endif
 		}
@@ -52,29 +51,21 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Gets if the document line is collapsed.
 		/// This property initially is true and turns to false when uncollapsing the section.
 		/// </summary>
-		public bool IsCollapsed {
-			get { return start != null; }
-		}
+		public bool IsCollapsed => Start != null;
 
 		/// <summary>
 		/// Gets the start line of the section.
 		/// When the section is uncollapsed or the text containing it is deleted,
 		/// this property returns null.
 		/// </summary>
-		public DocumentLine Start {
-			get { return start; }
-			internal set { start = value; }
-		}
+		public DocumentLine Start { get; internal set; }
 
 		/// <summary>
 		/// Gets the end line of the section.
 		/// When the section is uncollapsed or the text containing it is deleted,
 		/// this property returns null.
 		/// </summary>
-		public DocumentLine End {
-			get { return end; }
-			internal set { end = value; }
-		}
+		public DocumentLine End { get; internal set; }
 
 		/// <summary>
 		/// Uncollapses the section.
@@ -83,8 +74,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public void Uncollapse()
 		{
-			if (start == null)
+			if (Start == null) {
 				return;
+			}
 
 			if (!heightTree.IsDisposed) {
 				heightTree.Uncollapse(this);
@@ -93,8 +85,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 #endif
 			}
 
-			start = null;
-			end = null;
+			Start = null;
+			End = null;
 		}
 
 		/// <summary>
@@ -103,8 +95,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.Int32.ToString")]
 		public override string ToString()
 		{
-			return "[CollapsedSection" + ID + " Start=" + (start != null ? start.LineNumber.ToString() : "null")
-				+ " End=" + (end != null ? end.LineNumber.ToString() : "null") + "]";
+			return "[CollapsedSection" + ID + " Start=" + (Start != null ? Start.LineNumber.ToString() : "null")
+				+ " End=" + (End != null ? End.LineNumber.ToString() : "null") + "]";
 		}
 	}
 }

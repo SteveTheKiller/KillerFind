@@ -29,21 +29,17 @@ namespace ICSharpCode.AvalonEdit.Editing
 	/// </summary>
 	public class TextSegmentReadOnlySectionProvider<T> : IReadOnlySectionProvider where T : TextSegment
 	{
-		readonly TextSegmentCollection<T> segments;
-
 		/// <summary>
 		/// Gets the collection storing the read-only segments.
 		/// </summary>
-		public TextSegmentCollection<T> Segments {
-			get { return segments; }
-		}
+		public TextSegmentCollection<T> Segments { get; }
 
 		/// <summary>
 		/// Creates a new TextSegmentReadOnlySectionProvider instance for the specified document.
 		/// </summary>
 		public TextSegmentReadOnlySectionProvider(TextDocument textDocument)
 		{
-			segments = new TextSegmentCollection<T>(textDocument);
+			Segments = new TextSegmentCollection<T>(textDocument);
 		}
 
 		/// <summary>
@@ -51,9 +47,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		public TextSegmentReadOnlySectionProvider(TextSegmentCollection<T> segments)
 		{
-			if (segments == null)
-				throw new ArgumentNullException("segments");
-			this.segments = segments;
+			this.Segments = segments ?? throw new ArgumentNullException("segments");
 		}
 
 		/// <summary>
@@ -61,9 +55,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		public virtual bool CanInsert(int offset)
 		{
-			foreach (TextSegment segment in segments.FindSegmentsContaining(offset)) {
-				if (segment.StartOffset < offset && offset < segment.EndOffset)
+			foreach (TextSegment segment in Segments.FindSegmentsContaining(offset)) {
+				if (segment.StartOffset < offset && offset < segment.EndOffset) {
 					return false;
+				}
 			}
 			return true;
 		}
@@ -73,8 +68,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		public virtual IEnumerable<ISegment> GetDeletableSegments(ISegment segment)
 		{
-			if (segment == null)
+			if (segment == null) {
 				throw new ArgumentNullException("segment");
+			}
 
 			if (segment.Length == 0 && CanInsert(segment.Offset)) {
 				yield return segment;
@@ -82,7 +78,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 
 			int readonlyUntil = segment.Offset;
-			foreach (TextSegment ts in segments.FindOverlappingSegments(segment)) {
+			foreach (TextSegment ts in Segments.FindOverlappingSegments(segment)) {
 				int start = ts.StartOffset;
 				int end = start + ts.Length;
 				if (start > readonlyUntil) {

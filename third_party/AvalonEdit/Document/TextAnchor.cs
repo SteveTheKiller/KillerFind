@@ -51,20 +51,17 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// </example>
 	public sealed class TextAnchor : ITextAnchor
 	{
-		readonly TextDocument document;
 		internal TextAnchorNode node;
 
 		internal TextAnchor(TextDocument document)
 		{
-			this.document = document;
+			this.Document = document;
 		}
 
 		/// <summary>
 		/// Gets the document owning the anchor.
 		/// </summary>
-		public TextDocument Document {
-			get { return document; }
-		}
+		public TextDocument Document { get; }
 
 		/// <inheritdoc/>
 		public AnchorMovementType MovementType { get; set; }
@@ -75,7 +72,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <inheritdoc/>
 		public bool IsDeleted {
 			get {
-				document.DebugVerifyAccess();
+				Document.DebugVerifyAccess();
 				return node == null;
 			}
 		}
@@ -95,19 +92,20 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <exception cref="InvalidOperationException">Thrown when trying to get the Offset from a deleted anchor.</exception>
 		public int Offset {
 			get {
-				document.DebugVerifyAccess();
+				Document.DebugVerifyAccess();
 
-				TextAnchorNode n = this.node;
-				if (n == null)
-					throw new InvalidOperationException();
-
+				TextAnchorNode n = this.node ?? throw new InvalidOperationException();
 				int offset = n.length;
-				if (n.left != null)
+				if (n.left != null) {
 					offset += n.left.totalLength;
+				}
+
 				while (n.parent != null) {
 					if (n == n.parent.right) {
-						if (n.parent.left != null)
+						if (n.parent.left != null) {
 							offset += n.parent.left.totalLength;
+						}
+
 						offset += n.parent.length;
 					}
 					n = n.parent;
@@ -120,11 +118,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Gets the line number of the anchor.
 		/// </summary>
 		/// <exception cref="InvalidOperationException">Thrown when trying to get the Offset from a deleted anchor.</exception>
-		public int Line {
-			get {
-				return document.GetLineByOffset(this.Offset).LineNumber;
-			}
-		}
+		public int Line => Document.GetLineByOffset(this.Offset).LineNumber;
 
 		/// <summary>
 		/// Gets the column number of this anchor.
@@ -133,7 +127,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		public int Column {
 			get {
 				int offset = this.Offset;
-				return offset - document.GetLineByOffset(offset).Offset + 1;
+				return offset - Document.GetLineByOffset(offset).Offset + 1;
 			}
 		}
 
@@ -141,11 +135,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Gets the text location of this anchor.
 		/// </summary>
 		/// <exception cref="InvalidOperationException">Thrown when trying to get the Offset from a deleted anchor.</exception>
-		public TextLocation Location {
-			get {
-				return document.GetLocation(this.Offset);
-			}
-		}
+		public TextLocation Location => Document.GetLocation(this.Offset);
 
 		/// <inheritdoc/>
 		public override string ToString()

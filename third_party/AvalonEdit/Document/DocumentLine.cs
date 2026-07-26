@@ -43,7 +43,7 @@ namespace ICSharpCode.AvalonEdit.Document
 #if DEBUG
 		// Required for thread safety check which is done only in debug builds.
 		// To save space, we don't store the document reference in release builds as we don't need it there.
-		readonly TextDocument document;
+		private readonly TextDocument document;
 #endif
 
 		internal bool isDeleted;
@@ -57,7 +57,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		}
 
 		[Conditional("DEBUG")]
-		void DebugVerifyAccess()
+		private void DebugVerifyAccess()
 		{
 #if DEBUG
 			document.DebugVerifyAccess();
@@ -109,8 +109,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <exception cref="InvalidOperationException">The line was deleted.</exception>
 		public int LineNumber {
 			get {
-				if (IsDeleted)
+				if (IsDeleted) {
 					throw new InvalidOperationException();
+				}
+
 				return DocumentLineTree.GetIndexFromNode(this) + 1;
 			}
 		}
@@ -122,8 +124,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <exception cref="InvalidOperationException">The line was deleted.</exception>
 		public int Offset {
 			get {
-				if (IsDeleted)
+				if (IsDeleted) {
 					throw new InvalidOperationException();
+				}
+
 				return DocumentLineTree.GetOffsetFromNode(this);
 			}
 		}
@@ -134,14 +138,12 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		/// <exception cref="InvalidOperationException">The line was deleted.</exception>
 		/// <remarks>EndOffset = <see cref="Offset"/> + <see cref="Length"/>.</remarks>
-		public int EndOffset {
-			get { return this.Offset + this.Length; }
-		}
+		public int EndOffset => this.Offset + this.Length;
 		#endregion
 
 		#region Length
-		int totalLength;
-		byte delimiterLength;
+		private int totalLength;
+		private byte delimiterLength;
 
 		/// <summary>
 		/// Gets the length of this line. The length does not include the line delimiter. O(1)
@@ -165,10 +167,10 @@ namespace ICSharpCode.AvalonEdit.Document
 				DebugVerifyAccess();
 				return totalLength;
 			}
-			internal set {
+
+			internal set =>
 				// this is set by DocumentLineTree
 				totalLength = value;
-			}
 		}
 
 		/// <summary>
@@ -184,7 +186,7 @@ namespace ICSharpCode.AvalonEdit.Document
 				return delimiterLength;
 			}
 			internal set {
-				Debug.Assert(value >= 0 && value <= 2);
+				Debug.Assert(value is >= 0 and <= 2);
 				delimiterLength = (byte)value;
 			}
 		}
@@ -237,13 +239,9 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		IDocumentLine IDocumentLine.NextLine {
-			get { return this.NextLine; }
-		}
+		IDocumentLine IDocumentLine.NextLine => this.NextLine;
 
-		IDocumentLine IDocumentLine.PreviousLine {
-			get { return this.PreviousLine; }
-		}
+		IDocumentLine IDocumentLine.PreviousLine => this.PreviousLine;
 		#endregion
 
 		#region ToString
@@ -253,12 +251,13 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public override string ToString()
 		{
-			if (IsDeleted)
+			if (IsDeleted) {
 				return "[DocumentLine deleted]";
-			else
+			} else {
 				return string.Format(
 					CultureInfo.InvariantCulture,
 					"[DocumentLine Number={0} Offset={1} Length={2}]", LineNumber, Offset, Length);
+			}
 		}
 		#endregion
 	}

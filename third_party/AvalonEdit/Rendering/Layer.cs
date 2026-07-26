@@ -25,7 +25,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// <summary>
 	/// Base class for known layers.
 	/// </summary>
-	class Layer : UIElement
+	internal class Layer : UIElement
 	{
 		protected readonly TextView textView;
 		protected readonly KnownLayer knownLayer;

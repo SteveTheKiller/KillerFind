@@ -35,9 +35,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public virtual void StartGeneration(ITextRunConstructionContext context)
 		{
-			if (context == null)
-				throw new ArgumentNullException("context");
-			this.CurrentContext = context;
+			this.CurrentContext = context ?? throw new ArgumentNullException("context");
 		}
 
 		/// <summary>

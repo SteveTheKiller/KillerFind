@@ -28,7 +28,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 	/// </summary>
 	public class OverloadInsightWindow : InsightWindow
 	{
-		OverloadViewer overloadViewer = new OverloadViewer();
+		private readonly OverloadViewer overloadViewer = new();
 
 		/// <summary>
 		/// Creates a new OverloadInsightWindow.
@@ -43,8 +43,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		/// Gets/Sets the item provider.
 		/// </summary>
 		public IOverloadProvider Provider {
-			get { return overloadViewer.Provider; }
-			set { overloadViewer.Provider = value; }
+			get => overloadViewer.Provider; set => overloadViewer.Provider = value;
 		}
 
 		/// <inheritdoc/>

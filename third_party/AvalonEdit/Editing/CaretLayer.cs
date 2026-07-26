@@ -27,15 +27,15 @@ using ICSharpCode.AvalonEdit.Utils;
 
 namespace ICSharpCode.AvalonEdit.Editing
 {
-	sealed class CaretLayer : Layer
+	internal sealed class CaretLayer : Layer
 	{
-		TextArea textArea;
+		private readonly TextArea textArea;
 
-		bool isVisible;
-		Rect caretRectangle;
+		private bool isVisible;
+		private Rect caretRectangle;
 
-		DispatcherTimer caretBlinkTimer = new DispatcherTimer();
-		bool blink;
+		private readonly DispatcherTimer caretBlinkTimer = new();
+		private bool blink;
 
 		public CaretLayer(TextArea textArea) : base(textArea.TextView, KnownLayer.Caret)
 		{
@@ -44,7 +44,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			caretBlinkTimer.Tick += new EventHandler(caretBlinkTimer_Tick);
 		}
 
-		void caretBlinkTimer_Tick(object sender, EventArgs e)
+		private void caretBlinkTimer_Tick(object sender, EventArgs e)
 		{
 			blink = !blink;
 			InvalidateVisual();
@@ -67,7 +67,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		void StartBlinkAnimation()
+		private void StartBlinkAnimation()
 		{
 			TimeSpan blinkTime = Win32.CaretBlinkTime;
 			blink = true; // the caret should visible initially
@@ -78,7 +78,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		void StopBlinkAnimation()
+		private void StopBlinkAnimation()
 		{
 			caretBlinkTimer.Stop();
 		}
@@ -89,13 +89,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 		{
 			base.OnRender(drawingContext);
 			if (isVisible && blink) {
-				Brush caretBrush = this.CaretBrush;
-				if (caretBrush == null)
-					caretBrush = (Brush)textView.GetValue(TextBlock.ForegroundProperty);
-
+				Brush caretBrush = this.CaretBrush ?? (Brush)textView.GetValue(TextBlock.ForegroundProperty);
 				if (this.textArea.OverstrikeMode) {
-					SolidColorBrush scBrush = caretBrush as SolidColorBrush;
-					if (scBrush != null) {
+					if (caretBrush is SolidColorBrush scBrush) {
 						Color brushColor = scBrush.Color;
 						Color newColor = Color.FromArgb(100, brushColor.R, brushColor.G, brushColor.B);
 						caretBrush = new SolidColorBrush(newColor);
@@ -103,7 +99,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 					}
 				}
 
-				Rect r = new Rect(caretRectangle.X - textView.HorizontalOffset,
+				Rect r = new(caretRectangle.X - textView.HorizontalOffset,
 								  caretRectangle.Y - textView.VerticalOffset,
 								  caretRectangle.Width,
 								  caretRectangle.Height);

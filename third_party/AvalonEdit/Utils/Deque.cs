@@ -28,13 +28,11 @@ namespace ICSharpCode.AvalonEdit.Utils
 	[Serializable]
 	public sealed class Deque<T> : ICollection<T>
 	{
-		T[] arr = Empty<T>.Array;
-		int size, head, tail;
+		private T[] arr = Empty<T>.Array;
+		private int size, head, tail;
 
 		/// <inheritdoc/>
-		public int Count {
-			get { return size; }
-		}
+		public int Count => size;
 
 		/// <inheritdoc/>
 		public void Clear()
@@ -65,10 +63,15 @@ namespace ICSharpCode.AvalonEdit.Utils
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "PushBack")]
 		public void PushBack(T item)
 		{
-			if (size == arr.Length)
+			if (size == arr.Length) {
 				SetCapacity(Math.Max(4, arr.Length * 2));
+			}
+
 			arr[tail++] = item;
-			if (tail == arr.Length) tail = 0;
+			if (tail == arr.Length) {
+				tail = 0;
+			}
+
 			size++;
 		}
 
@@ -77,14 +80,18 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public T PopBack()
 		{
-			if (size == 0)
+			if (size == 0) {
 				throw new InvalidOperationException();
-			if (tail == 0)
+			}
+
+			if (tail == 0) {
 				tail = arr.Length - 1;
-			else
+			} else {
 				tail--;
+			}
+
 			T val = arr[tail];
-			arr[tail] = default(T); // allow GC to collect the element
+			arr[tail] = default; // allow GC to collect the element
 			size--;
 			return val;
 		}
@@ -94,12 +101,16 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public void PushFront(T item)
 		{
-			if (size == arr.Length)
+			if (size == arr.Length) {
 				SetCapacity(Math.Max(4, arr.Length * 2));
-			if (head == 0)
+			}
+
+			if (head == 0) {
 				head = arr.Length - 1;
-			else
+			} else {
 				head--;
+			}
+
 			arr[head] = item;
 			size++;
 		}
@@ -109,17 +120,22 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public T PopFront()
 		{
-			if (size == 0)
+			if (size == 0) {
 				throw new InvalidOperationException();
+			}
+
 			T val = arr[head];
-			arr[head] = default(T); // allow GC to collect the element
+			arr[head] = default; // allow GC to collect the element
 			head++;
-			if (head == arr.Length) head = 0;
+			if (head == arr.Length) {
+				head = 0;
+			}
+
 			size--;
 			return val;
 		}
 
-		void SetCapacity(int capacity)
+		private void SetCapacity(int capacity)
 		{
 			T[] newArr = new T[capacity];
 			CopyTo(newArr, 0);
@@ -132,13 +148,17 @@ namespace ICSharpCode.AvalonEdit.Utils
 		public IEnumerator<T> GetEnumerator()
 		{
 			if (head < tail) {
-				for (int i = head; i < tail; i++)
+				for (int i = head; i < tail; i++) {
 					yield return arr[i];
+				}
 			} else {
-				for (int i = head; i < arr.Length; i++)
+				for (int i = head; i < arr.Length; i++) {
 					yield return arr[i];
-				for (int i = 0; i < tail; i++)
+				}
+
+				for (int i = 0; i < tail; i++) {
 					yield return arr[i];
+				}
 			}
 		}
 
@@ -147,9 +167,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			return this.GetEnumerator();
 		}
 
-		bool ICollection<T>.IsReadOnly {
-			get { return false; }
-		}
+		bool ICollection<T>.IsReadOnly => false;
 
 		void ICollection<T>.Add(T item)
 		{
@@ -160,17 +178,22 @@ namespace ICSharpCode.AvalonEdit.Utils
 		public bool Contains(T item)
 		{
 			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
-			foreach (T element in this)
-				if (comparer.Equals(item, element))
+			foreach (T element in this) {
+				if (comparer.Equals(item, element)) {
 					return true;
+				}
+			}
+
 			return false;
 		}
 
 		/// <inheritdoc/>
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			if (array == null)
+			if (array == null) {
 				throw new ArgumentNullException("array");
+			}
+
 			if (head < tail) {
 				Array.Copy(arr, head, array, arrayIndex, tail - head);
 			} else {

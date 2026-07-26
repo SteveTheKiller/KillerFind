@@ -28,9 +28,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 	/// </summary>
 	public sealed class RopeTextReader : TextReader
 	{
-		Stack<RopeNode<char>> stack = new Stack<RopeNode<char>>();
-		RopeNode<char> currentNode;
-		int indexInsideNode;
+		private readonly Stack<RopeNode<char>> stack = new();
+		private RopeNode<char> currentNode;
+		private int indexInsideNode;
 
 		/// <summary>
 		/// Creates a new RopeTextReader.
@@ -39,8 +39,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public RopeTextReader(Rope<char> rope)
 		{
-			if (rope == null)
+			if (rope == null) {
 				throw new ArgumentNullException("rope");
+			}
 
 			// We force the user to iterate through a clone of the rope to keep the API contract of RopeTextReader simple
 			// (what happens when a rope is modified while iterating through it?)
@@ -54,7 +55,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			}
 		}
 
-		void GoToLeftMostLeaf()
+		private void GoToLeftMostLeaf()
 		{
 			while (currentNode.contents == null) {
 				if (currentNode.height == 0) {
@@ -72,23 +73,29 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <inheritdoc/>
 		public override int Peek()
 		{
-			if (currentNode == null)
+			if (currentNode == null) {
 				return -1;
+			}
+
 			return currentNode.contents[indexInsideNode];
 		}
 
 		/// <inheritdoc/>
 		public override int Read()
 		{
-			if (currentNode == null)
+			if (currentNode == null) {
 				return -1;
+			}
+
 			char result = currentNode.contents[indexInsideNode++];
-			if (indexInsideNode >= currentNode.length)
+			if (indexInsideNode >= currentNode.length) {
 				GoToNextNode();
+			}
+
 			return result;
 		}
 
-		void GoToNextNode()
+		private void GoToNextNode()
 		{
 			if (stack.Count == 0) {
 				currentNode = null;
@@ -102,8 +109,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <inheritdoc/>
 		public override int Read(char[] buffer, int index, int count)
 		{
-			if (currentNode == null)
+			if (currentNode == null) {
 				return 0;
+			}
+
 			int amountInCurrentNode = currentNode.length - indexInsideNode;
 			if (count < amountInCurrentNode) {
 				Array.Copy(currentNode.contents, indexInsideNode, buffer, index, count);

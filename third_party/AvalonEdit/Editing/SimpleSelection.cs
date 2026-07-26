@@ -27,10 +27,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 	/// <summary>
 	/// A simple selection.
 	/// </summary>
-	sealed class SimpleSelection : Selection
+	internal sealed class SimpleSelection : Selection
 	{
-		readonly TextViewPosition start, end;
-		readonly int startOffset, endOffset;
+		private readonly TextViewPosition start, end;
+		private readonly int startOffset, endOffset;
 
 		/// <summary>
 		/// Creates a new SimpleSelection instance.
@@ -45,24 +45,18 @@ namespace ICSharpCode.AvalonEdit.Editing
 		}
 
 		/// <inheritdoc/>
-		public override IEnumerable<SelectionSegment> Segments {
-			get {
-				return ExtensionMethods.Sequence<SelectionSegment>(new SelectionSegment(startOffset, start.VisualColumn, endOffset, end.VisualColumn));
-			}
-		}
+		public override IEnumerable<SelectionSegment> Segments => ExtensionMethods.Sequence<SelectionSegment>(new SelectionSegment(startOffset, start.VisualColumn, endOffset, end.VisualColumn));
 
 		/// <inheritdoc/>
-		public override ISegment SurroundingSegment {
-			get {
-				return new SelectionSegment(startOffset, endOffset);
-			}
-		}
+		public override ISegment SurroundingSegment => new SelectionSegment(startOffset, endOffset);
 
 		/// <inheritdoc/>
 		public override void ReplaceSelectionWithText(string newText)
 		{
-			if (newText == null)
+			if (newText == null) {
 				throw new ArgumentNullException("newText");
+			}
+
 			using (textArea.Document.RunUpdate()) {
 				ISegment[] segmentsToDelete = textArea.GetDeletableSegments(this.SurroundingSegment);
 				for (int i = segmentsToDelete.Length - 1; i >= 0; i--) {
@@ -72,10 +66,11 @@ namespace ICSharpCode.AvalonEdit.Editing
 						}
 						if (string.IsNullOrEmpty(newText)) {
 							// place caret at the beginning of the selection
-							if (start.CompareTo(end) <= 0)
+							if (start.CompareTo(end) <= 0) {
 								textArea.Caret.Position = start;
-							else
+							} else {
 								textArea.Caret.Position = end;
+							}
 						} else {
 							// place caret so that it ends up behind the new text
 							textArea.Caret.Offset = segmentsToDelete[i].EndOffset;
@@ -91,19 +86,17 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		public override TextViewPosition StartPosition {
-			get { return start; }
-		}
+		public override TextViewPosition StartPosition => start;
 
-		public override TextViewPosition EndPosition {
-			get { return end; }
-		}
+		public override TextViewPosition EndPosition => end;
 
 		/// <inheritdoc/>
 		public override Selection UpdateOnDocumentChange(DocumentChangeEventArgs e)
 		{
-			if (e == null)
+			if (e == null) {
 				throw new ArgumentNullException("e");
+			}
+
 			int newStartOffset, newEndOffset;
 			if (startOffset <= endOffset) {
 				newStartOffset = e.GetNewOffset(startOffset, AnchorMovementType.Default);
@@ -120,16 +113,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 		}
 
 		/// <inheritdoc/>
-		public override bool IsEmpty {
-			get { return startOffset == endOffset && start.VisualColumn == end.VisualColumn; }
-		}
+		public override bool IsEmpty => startOffset == endOffset && start.VisualColumn == end.VisualColumn;
 
 		/// <inheritdoc/>
-		public override int Length {
-			get {
-				return Math.Abs(endOffset - startOffset);
-			}
-		}
+		public override int Length => Math.Abs(endOffset - startOffset);
 
 		/// <inheritdoc/>
 		public override Selection SetEndpoint(TextViewPosition endPosition)
@@ -139,9 +126,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		public override Selection StartSelectionOrSetEndpoint(TextViewPosition startPosition, TextViewPosition endPosition)
 		{
-			var document = textArea.Document;
-			if (document == null)
-				throw ThrowUtil.NoDocumentAssigned();
+			_ = textArea.Document ?? throw ThrowUtil.NoDocumentAssigned();
 			return Create(textArea, start, endPosition);
 		}
 
@@ -149,15 +134,17 @@ namespace ICSharpCode.AvalonEdit.Editing
 		public override int GetHashCode()
 		{
 			unchecked {
-				return startOffset * 27811 + endOffset + textArea.GetHashCode();
+				return (startOffset * 27811) + endOffset + textArea.GetHashCode();
 			}
 		}
 
 		/// <inheritdoc/>
 		public override bool Equals(object obj)
 		{
-			SimpleSelection other = obj as SimpleSelection;
-			if (other == null) return false;
+			if (obj is not SimpleSelection other) {
+				return false;
+			}
+
 			return this.start.Equals(other.start) && this.end.Equals(other.end)
 				&& this.startOffset == other.startOffset && this.endOffset == other.endOffset
 				&& this.textArea == other.textArea;

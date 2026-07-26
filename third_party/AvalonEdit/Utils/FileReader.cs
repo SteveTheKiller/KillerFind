@@ -36,35 +36,30 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </remarks>
 		public static bool IsUnicode(Encoding encoding)
 		{
-			if (encoding == null)
+			if (encoding == null) {
 				throw new ArgumentNullException("encoding");
-			switch (encoding.CodePage) {
-				case 65000: // UTF-7
-				case 65001: // UTF-8
-				case 1200: // UTF-16 LE
-				case 1201: // UTF-16 BE
-				case 12000: // UTF-32 LE
-				case 12001: // UTF-32 BE
-					return true;
-				default:
-					return false;
 			}
+
+			return encoding.CodePage switch {
+				// UTF-7
+				65000 or 65001 or 1200 or 1201 or 12000 or 12001 => true,
+				_ => false,
+			};
 		}
 
-		static bool IsASCIICompatible(Encoding encoding)
+		private static bool IsASCIICompatible(Encoding encoding)
 		{
 			byte[] bytes = encoding.GetBytes("Az");
 			return bytes.Length == 2 && bytes[0] == 'A' && bytes[1] == 'z';
 		}
 
-		static Encoding RemoveBOM(Encoding encoding)
+		private static Encoding RemoveBOM(Encoding encoding)
 		{
-			switch (encoding.CodePage) {
-				case 65001: // UTF-8
-					return UTF8NoBOM;
-				default:
-					return encoding;
-			}
+			return encoding.CodePage switch {
+				// UTF-8
+				65001 => UTF8NoBOM,
+				_ => encoding,
+			};
 		}
 
 		/// <summary>
@@ -76,9 +71,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <returns>The file content as string.</returns>
 		public static string ReadFileContent(Stream stream, Encoding defaultEncoding)
 		{
-			using (StreamReader reader = OpenStream(stream, defaultEncoding)) {
-				return reader.ReadToEnd();
-			}
+			using StreamReader reader = OpenStream(stream, defaultEncoding);
+			return reader.ReadToEnd();
 		}
 
 		/// <summary>
@@ -89,9 +83,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <returns>The file content as string.</returns>
 		public static string ReadFileContent(string fileName, Encoding defaultEncoding)
 		{
-			using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read)) {
-				return ReadFileContent(fs, defaultEncoding);
-			}
+			using FileStream fs = new(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+			return ReadFileContent(fs, defaultEncoding);
 		}
 
 		/// <summary>
@@ -103,9 +96,11 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <see cref="StreamReader.CurrentEncoding"/> to get the encoding that was used.</returns>
 		public static StreamReader OpenFile(string fileName, Encoding defaultEncoding)
 		{
-			if (fileName == null)
+			if (fileName == null) {
 				throw new ArgumentNullException("fileName");
-			FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+			}
+
+			FileStream fs = new(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
 			try {
 				return OpenStream(fs, defaultEncoding);
 				// don't use finally: the stream must be kept open until the StreamReader closes it
@@ -124,12 +119,17 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <see cref="StreamReader.CurrentEncoding"/> to get the encoding that was used.</returns>
 		public static StreamReader OpenStream(Stream stream, Encoding defaultEncoding)
 		{
-			if (stream == null)
+			if (stream == null) {
 				throw new ArgumentNullException("stream");
-			if (stream.Position != 0)
+			}
+
+			if (stream.Position != 0) {
 				throw new ArgumentException("stream is not positioned at beginning.", "stream");
-			if (defaultEncoding == null)
+			}
+
+			if (defaultEncoding == null) {
 				throw new ArgumentNullException("defaultEncoding");
+			}
 
 			if (stream.Length >= 2) {
 				// the autodetection of StreamReader is not capable of detecting the difference
@@ -156,9 +156,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 			}
 		}
 
-		static readonly Encoding UTF8NoBOM = new UTF8Encoding(false);
+		private static readonly Encoding UTF8NoBOM = new UTF8Encoding(false);
 
-		static StreamReader AutoDetect(Stream fs, byte firstByte, byte secondByte, Encoding defaultEncoding)
+		private static StreamReader AutoDetect(Stream fs, byte firstByte, byte secondByte, Encoding defaultEncoding)
 		{
 			int max = (int)Math.Min(fs.Length, 500000); // look at max. 500 KB
 			const int ASCII = 0;
@@ -196,9 +196,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 						state = Error;
 						break;
 					}
-				} else if (b >= 0xc2 && b < 0xf5) {
+				} else if (b is >= 0xc2 and < 0xf5) {
 					// beginning of byte sequence
-					if (state == UTF8 || state == ASCII) {
+					if (state is UTF8 or ASCII) {
 						state = UTF8Sequence;
 						if (b < 0xe0) {
 							sequenceLength = 1; // one more byte following

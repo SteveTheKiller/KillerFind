@@ -31,10 +31,10 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 	/// </summary>
 	public class HighlightingColorizer : DocumentColorizingTransformer
 	{
-		readonly IHighlightingDefinition definition;
-		TextView textView;
-		IHighlighter highlighter;
-		bool isFixedHighlighter;
+		private readonly IHighlightingDefinition definition;
+		private TextView textView;
+		private IHighlighter highlighter;
+		private readonly bool isFixedHighlighter;
 
 		/// <summary>
 		/// Creates a new HighlightingColorizer instance.
@@ -42,9 +42,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <param name="definition">The highlighting definition.</param>
 		public HighlightingColorizer(IHighlightingDefinition definition)
 		{
-			if (definition == null)
-				throw new ArgumentNullException("definition");
-			this.definition = definition;
+			this.definition = definition ?? throw new ArgumentNullException("definition");
 		}
 
 		/// <summary>
@@ -55,9 +53,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <param name="highlighter">The highlighter to be used.</param>
 		public HighlightingColorizer(IHighlighter highlighter)
 		{
-			if (highlighter == null)
-				throw new ArgumentNullException("highlighter");
-			this.highlighter = highlighter;
+			this.highlighter = highlighter ?? throw new ArgumentNullException("highlighter");
 			this.isFixedHighlighter = true;
 		}
 
@@ -69,7 +65,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		{
 		}
 
-		void textView_DocumentChanged(object sender, EventArgs e)
+		private void textView_DocumentChanged(object sender, EventArgs e)
 		{
 			TextView textView = (TextView)sender;
 			DeregisterServices(textView);
@@ -89,11 +85,12 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 				}
 				highlighter.HighlightingStateChanged -= OnHighlightStateChanged;
 				// remove highlighter if it is registered
-				if (textView.Services.GetService(typeof(IHighlighter)) == highlighter)
+				if (textView.Services.GetService(typeof(IHighlighter)) == highlighter) {
 					textView.Services.RemoveService(typeof(IHighlighter));
+				}
+
 				if (!isFixedHighlighter) {
-					if (highlighter != null)
-						highlighter.Dispose();
+					highlighter?.Dispose();
 					highlighter = null;
 				}
 			}
@@ -106,8 +103,10 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		protected virtual void RegisterServices(TextView textView)
 		{
 			if (textView.Document != null) {
-				if (!isFixedHighlighter)
+				if (!isFixedHighlighter) {
 					highlighter = textView.Document != null ? CreateHighlighter(textView, textView.Document) : null;
+				}
+
 				if (highlighter != null && highlighter.Document == textView.Document) {
 					// add service only if it doesn't already exist
 					if (textView.Services.GetService(typeof(IHighlighter)) == null) {
@@ -123,10 +122,11 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		protected virtual IHighlighter CreateHighlighter(TextView textView, TextDocument document)
 		{
-			if (definition != null)
+			if (definition != null) {
 				return new DocumentHighlighter(document, definition);
-			else
+			} else {
 				throw new NotSupportedException("Cannot create a highlighter because no IHighlightingDefinition was specified, and the CreateHighlighter() method was not overridden.");
+			}
 		}
 
 		/// <inheritdoc/>
@@ -154,9 +154,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			this.textView = null;
 		}
 
-		bool isInHighlightingGroup;
+		private bool isInHighlightingGroup;
 
-		void textView_VisualLineConstructionStarting(object sender, VisualLineConstructionStartEventArgs e)
+		private void textView_VisualLineConstructionStarting(object sender, VisualLineConstructionStartEventArgs e)
 		{
 			if (highlighter != null) {
 				// Force update of highlighting state up to the position where we start generating visual lines.
@@ -176,7 +176,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			}
 		}
 
-		void textView_VisualLinesChanged(object sender, EventArgs e)
+		private void textView_VisualLinesChanged(object sender, EventArgs e)
 		{
 			if (highlighter != null && isInHighlightingGroup) {
 				highlighter.EndHighlighting();
@@ -184,7 +184,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			}
 		}
 
-		DocumentLine lastColorizedLine;
+		private DocumentLine lastColorizedLine;
 
 		/// <inheritdoc/>
 		protected override void Colorize(ITextRunConstructionContext context)
@@ -205,7 +205,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			this.lastColorizedLine = null;
 		}
 
-		int lineNumberBeingColorized;
+		private int lineNumberBeingColorized;
 
 		/// <inheritdoc/>
 		protected override void ColorizeLine(DocumentLine line)
@@ -215,8 +215,10 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 				HighlightedLine hl = highlighter.HighlightLine(lineNumberBeingColorized);
 				lineNumberBeingColorized = 0;
 				foreach (HighlightedSection section in hl.Sections) {
-					if (IsEmptyColor(section.Color))
+					if (IsEmptyColor(section.Color)) {
 						continue;
+					}
+
 					ChangeLinePart(section.Offset, section.Offset + section.Length,
 								   visualLineElement => ApplyColorToElement(visualLineElement, section.Color));
 				}
@@ -230,8 +232,10 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		internal static bool IsEmptyColor(HighlightingColor color)
 		{
-			if (color == null)
+			if (color == null) {
 				return true;
+			}
+
 			return color.Background == null && color.Foreground == null
 				&& color.FontStyle == null && color.FontWeight == null
 				&& color.Underline == null && color.Strikethrough == null;
@@ -249,13 +253,15 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		{
 			if (color.Foreground != null) {
 				Brush b = color.Foreground.GetBrush(context);
-				if (b != null)
+				if (b != null) {
 					element.TextRunProperties.SetForegroundBrush(b);
+				}
 			}
 			if (color.Background != null) {
 				Brush b = color.Background.GetBrush(context);
-				if (b != null)
+				if (b != null) {
 					element.BackgroundBrush = b;
+				}
 			}
 			if (color.FontStyle != null || color.FontWeight != null || color.FontFamily != null) {
 				Typeface tf = element.TextRunProperties.Typeface;
@@ -266,12 +272,17 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 					tf.Stretch
 				));
 			}
-			if (color.Underline ?? false)
+			if (color.Underline ?? false) {
 				element.TextRunProperties.SetTextDecorations(TextDecorations.Underline);
-			if (color.Strikethrough ?? false)
+			}
+
+			if (color.Strikethrough ?? false) {
 				element.TextRunProperties.SetTextDecorations(TextDecorations.Strikethrough);
-			if (color.FontSize.HasValue)
+			}
+
+			if (color.FontSize.HasValue) {
 				element.TextRunProperties.SetFontRenderingEmSize(color.FontSize.Value);
+			}
 		}
 
 		/// <summary>
@@ -282,7 +293,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// Hey, the user typed "/*". Don't just recreate that line, but also the next one
 		/// because my highlighting state (at end of line) changed!
 		/// </remarks>
-		void OnHighlightStateChanged(int fromLineNumber, int toLineNumber)
+		private void OnHighlightStateChanged(int fromLineNumber, int toLineNumber)
 		{
 			if (lineNumberBeingColorized != 0) {
 				// Ignore notifications for any line except the one we're interested in.
@@ -346,8 +357,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 				// for the highlighting during rendering.
 				// However this callback is also called outside of the rendering process, e.g. when a highlighter
 				// decides to re-highlight some section based on external feedback (e.g. semantic highlighting).
-				var fromLine = textView.Document.GetLineByNumber(fromLineNumber);
-				var toLine = textView.Document.GetLineByNumber(toLineNumber);
+				DocumentLine fromLine = textView.Document.GetLineByNumber(fromLineNumber);
+				DocumentLine toLine = textView.Document.GetLineByNumber(toLineNumber);
 				int startOffset = fromLine.Offset;
 				textView.Redraw(startOffset, toLine.EndOffset - startOffset);
 			}

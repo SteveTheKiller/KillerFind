@@ -25,7 +25,7 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// It describes a section of text with a text anchor at the end of the section.
 	/// A weak reference is used to refer to the TextAnchor. (to save memory, we derive from WeakReference instead of referencing it)
 	/// </summary>
-	sealed class TextAnchorNode : WeakReference
+	internal sealed class TextAnchorNode : WeakReference
 	{
 		internal TextAnchorNode left, right, parent;
 		internal bool color;
@@ -39,8 +39,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		internal TextAnchorNode LeftMost {
 			get {
 				TextAnchorNode node = this;
-				while (node.left != null)
+				while (node.left != null) {
 					node = node.left;
+				}
+
 				return node;
 			}
 		}
@@ -48,8 +50,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		internal TextAnchorNode RightMost {
 			get {
 				TextAnchorNode node = this;
-				while (node.right != null)
+				while (node.right != null) {
 					node = node.right;
+				}
+
 				return node;
 			}
 		}

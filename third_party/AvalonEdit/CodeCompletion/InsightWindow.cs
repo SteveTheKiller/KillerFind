@@ -67,11 +67,9 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		public bool CloseAutomatically { get; set; }
 
 		/// <inheritdoc/>
-		protected override bool CloseOnFocusLost {
-			get { return this.CloseAutomatically; }
-		}
+		protected override bool CloseOnFocusLost => this.CloseAutomatically;
 
-		void AttachEvents()
+		private void AttachEvents()
 		{
 			this.TextArea.Caret.PositionChanged += CaretPositionChanged;
 		}
@@ -83,7 +81,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			base.DetachEvents();
 		}
 
-		void CaretPositionChanged(object sender, EventArgs e)
+		private void CaretPositionChanged(object sender, EventArgs e)
 		{
 			if (this.CloseAutomatically) {
 				int offset = this.TextArea.Caret.Offset;
@@ -101,8 +99,9 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 	{
 		public override DataTemplate SelectTemplate(object item, DependencyObject container)
 		{
-			if (item is string)
+			if (item is string) {
 				return (DataTemplate)((FrameworkElement)container).FindResource("TextBlockTemplate");
+			}
 
 			return null;
 		}

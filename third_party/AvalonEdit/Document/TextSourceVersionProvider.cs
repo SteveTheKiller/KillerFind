@@ -30,7 +30,7 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// </summary>
 	public class TextSourceVersionProvider
 	{
-		Version currentVersion;
+		private Version currentVersion;
 
 		/// <summary>
 		/// Creates a new TextSourceVersionProvider instance.
@@ -43,9 +43,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// Gets the current version.
 		/// </summary>
-		public ITextSourceVersion CurrentVersion {
-			get { return currentVersion; }
-		}
+		public ITextSourceVersion CurrentVersion => currentVersion;
 
 		/// <summary>
 		/// Replaces the current version with a new version.
@@ -53,21 +51,19 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <param name="change">Change from current version to new version</param>
 		public void AppendChange(TextChangeEventArgs change)
 		{
-			if (change == null)
-				throw new ArgumentNullException("change");
-			currentVersion.change = change;
+			currentVersion.change = change ?? throw new ArgumentNullException("change");
 			currentVersion.next = new Version(currentVersion);
 			currentVersion = currentVersion.next;
 		}
 
 		[DebuggerDisplay("Version #{id}")]
-		sealed class Version : ITextSourceVersion
+		private sealed class Version : ITextSourceVersion
 		{
 			// Reference back to the provider.
 			// Used to determine if two checkpoints belong to the same document.
-			readonly TextSourceVersionProvider provider;
+			private readonly TextSourceVersionProvider provider;
 			// ID used for CompareAge()
-			readonly int id;
+			private readonly int id;
 
 			// the change from this version to the next version
 			internal TextChangeEventArgs change;
@@ -86,17 +82,18 @@ namespace ICSharpCode.AvalonEdit.Document
 
 			public bool BelongsToSameDocumentAs(ITextSourceVersion other)
 			{
-				Version o = other as Version;
-				return o != null && provider == o.provider;
+				return other is Version o && provider == o.provider;
 			}
 
 			public int CompareAge(ITextSourceVersion other)
 			{
-				if (other == null)
+				if (other == null) {
 					throw new ArgumentNullException("other");
-				Version o = other as Version;
-				if (o == null || provider != o.provider)
+				}
+
+				if (other is not Version o || provider != o.provider) {
 					throw new ArgumentException("Versions do not belong to the same document.");
+				}
 				// We will allow overflows, but assume that the maximum distance between checkpoints is 2^31-1.
 				// This is guaranteed on x86 because so many checkpoints don't fit into memory.
 				return Math.Sign(unchecked(this.id - o.id));
@@ -106,15 +103,16 @@ namespace ICSharpCode.AvalonEdit.Document
 			{
 				int result = CompareAge(other);
 				Version o = (Version)other;
-				if (result < 0)
+				if (result < 0) {
 					return GetForwardChanges(o);
-				else if (result > 0)
+				} else if (result > 0) {
 					return o.GetForwardChanges(this).Reverse().Select(change => change.Invert());
-				else
+				} else {
 					return Empty<TextChangeEventArgs>.Array;
+				}
 			}
 
-			IEnumerable<TextChangeEventArgs> GetForwardChanges(Version other)
+			private IEnumerable<TextChangeEventArgs> GetForwardChanges(Version other)
 			{
 				// Return changes from this(inclusive) to other(exclusive).
 				for (Version node = this; node != other; node = node.next) {
@@ -125,7 +123,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			public int MoveOffsetTo(ITextSourceVersion other, int oldOffset, AnchorMovementType movement)
 			{
 				int offset = oldOffset;
-				foreach (var e in GetChangesTo(other)) {
+				foreach (TextChangeEventArgs e in GetChangesTo(other)) {
 					offset = e.GetNewOffset(offset, movement);
 				}
 				return offset;

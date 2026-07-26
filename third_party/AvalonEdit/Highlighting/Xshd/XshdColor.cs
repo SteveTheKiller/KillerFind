@@ -92,24 +92,37 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		/// </summary>
 		protected XshdColor(SerializationInfo info, StreamingContext context)
 		{
-			if (info == null)
+			if (info == null) {
 				throw new ArgumentNullException("info");
+			}
+
 			this.Name = info.GetString("Name");
 			this.Foreground = (HighlightingBrush)info.GetValue("Foreground", typeof(HighlightingBrush));
 			this.Background = (HighlightingBrush)info.GetValue("Background", typeof(HighlightingBrush));
-			if (info.GetBoolean("HasWeight"))
+			if (info.GetBoolean("HasWeight")) {
 				this.FontWeight = System.Windows.FontWeight.FromOpenTypeWeight(info.GetInt32("Weight"));
-			if (info.GetBoolean("HasStyle"))
+			}
+
+			if (info.GetBoolean("HasStyle")) {
 				this.FontStyle = (FontStyle?)new FontStyleConverter().ConvertFromInvariantString(info.GetString("Style"));
+			}
+
 			this.ExampleText = info.GetString("ExampleText");
-			if (info.GetBoolean("HasUnderline"))
+			if (info.GetBoolean("HasUnderline")) {
 				this.Underline = info.GetBoolean("Underline");
-			if (info.GetBoolean("HasStrikethrough"))
+			}
+
+			if (info.GetBoolean("HasStrikethrough")) {
 				this.Strikethrough = info.GetBoolean("Strikethrough");
-			if (info.GetBoolean("HasFamily"))
+			}
+
+			if (info.GetBoolean("HasFamily")) {
 				this.FontFamily = new FontFamily(info.GetString("Family"));
-			if (info.GetBoolean("HasSize"))
+			}
+
+			if (info.GetBoolean("HasSize")) {
 				this.FontSize = info.GetInt32("Size");
+			}
 		}
 
 		/// <summary>
@@ -118,30 +131,43 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		[System.Security.SecurityCritical]
 		public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
 		{
-			if (info == null)
+			if (info == null) {
 				throw new ArgumentNullException("info");
+			}
+
 			info.AddValue("Name", this.Name);
 			info.AddValue("Foreground", this.Foreground);
 			info.AddValue("Background", this.Background);
 			info.AddValue("HasUnderline", this.Underline.HasValue);
-			if (this.Underline.HasValue)
+			if (this.Underline.HasValue) {
 				info.AddValue("Underline", this.Underline.Value);
+			}
+
 			info.AddValue("HasStrikethrough", this.Strikethrough.HasValue);
-			if (this.Strikethrough.HasValue)
+			if (this.Strikethrough.HasValue) {
 				info.AddValue("Strikethrough", this.Strikethrough.Value);
+			}
+
 			info.AddValue("HasWeight", this.FontWeight.HasValue);
-			if (this.FontWeight.HasValue)
+			if (this.FontWeight.HasValue) {
 				info.AddValue("Weight", this.FontWeight.Value.ToOpenTypeWeight());
+			}
+
 			info.AddValue("HasStyle", this.FontStyle.HasValue);
-			if (this.FontStyle.HasValue)
+			if (this.FontStyle.HasValue) {
 				info.AddValue("Style", this.FontStyle.Value.ToString());
+			}
+
 			info.AddValue("ExampleText", this.ExampleText);
 			info.AddValue("HasFamily", this.FontFamily != null);
-			if (this.FontFamily != null)
+			if (this.FontFamily != null) {
 				info.AddValue("Family", this.FontFamily.FamilyNames.FirstOrDefault());
+			}
+
 			info.AddValue("HasSize", this.FontSize.HasValue);
-			if (this.FontSize.HasValue)
+			if (this.FontSize.HasValue) {
 				info.AddValue("Size", this.FontSize.Value.ToString());
+			}
 		}
 
 		/// <inheritdoc/>

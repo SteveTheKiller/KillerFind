@@ -27,7 +27,7 @@ namespace ICSharpCode.AvalonEdit.Document
 	[Serializable]
 	public class DocumentChangeEventArgs : TextChangeEventArgs
 	{
-		volatile OffsetChangeMap offsetChangeMap;
+		private volatile OffsetChangeMap offsetChangeMap;
 
 		/// <summary>
 		/// Gets the OffsetChangeMap associated with this document change.
@@ -53,21 +53,18 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// Gets the OffsetChangeMap, or null if the default offset map (=single replacement) is being used.
 		/// </summary>
-		internal OffsetChangeMap OffsetChangeMapOrNull {
-			get {
-				return offsetChangeMap;
-			}
-		}
+		internal OffsetChangeMap OffsetChangeMapOrNull => offsetChangeMap;
 
 		/// <summary>
 		/// Gets the new offset where the specified offset moves after this document change.
 		/// </summary>
 		public override int GetNewOffset(int offset, AnchorMovementType movementType = AnchorMovementType.Default)
 		{
-			if (offsetChangeMap != null)
+			if (offsetChangeMap != null) {
 				return offsetChangeMap.GetNewOffset(offset, movementType);
-			else
+			} else {
 				return CreateSingleChangeMapEntry().GetNewOffset(offset, movementType);
+			}
 		}
 
 		/// <summary>
@@ -96,13 +93,17 @@ namespace ICSharpCode.AvalonEdit.Document
 			SetOffsetChangeMap(offsetChangeMap);
 		}
 
-		void SetOffsetChangeMap(OffsetChangeMap offsetChangeMap)
+		private void SetOffsetChangeMap(OffsetChangeMap offsetChangeMap)
 		{
 			if (offsetChangeMap != null) {
-				if (!offsetChangeMap.IsFrozen)
+				if (!offsetChangeMap.IsFrozen) {
 					throw new ArgumentException("The OffsetChangeMap must be frozen before it can be used in DocumentChangeEventArgs");
-				if (!offsetChangeMap.IsValidForDocumentChange(this.Offset, this.RemovalLength, this.InsertionLength))
+				}
+
+				if (!offsetChangeMap.IsValidForDocumentChange(this.Offset, this.RemovalLength, this.InsertionLength)) {
 					throw new ArgumentException("OffsetChangeMap is not valid for this document change", "offsetChangeMap");
+				}
+
 				this.offsetChangeMap = offsetChangeMap;
 			}
 		}

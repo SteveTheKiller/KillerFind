@@ -33,25 +33,25 @@ namespace ICSharpCode.AvalonEdit.Search
 		/// <summary>
 		/// Finds the next occurrence in the file.
 		/// </summary>
-		public static readonly RoutedCommand FindNext = new RoutedCommand(
+		public static readonly RoutedCommand FindNext = new(
 			"FindNext", typeof(SearchPanel),
-			new InputGestureCollection { new KeyGesture(Key.F3) }
+			[new KeyGesture(Key.F3)]
 		);
 
 		/// <summary>
 		/// Finds the previous occurrence in the file.
 		/// </summary>
-		public static readonly RoutedCommand FindPrevious = new RoutedCommand(
+		public static readonly RoutedCommand FindPrevious = new(
 			"FindPrevious", typeof(SearchPanel),
-			new InputGestureCollection { new KeyGesture(Key.F3, ModifierKeys.Shift) }
+			[new KeyGesture(Key.F3, ModifierKeys.Shift)]
 		);
 
 		/// <summary>
 		/// Closes the SearchPanel.
 		/// </summary>
-		public static readonly RoutedCommand CloseSearchPanel = new RoutedCommand(
+		public static readonly RoutedCommand CloseSearchPanel = new(
 			"CloseSearchPanel", typeof(SearchPanel),
-			new InputGestureCollection { new KeyGesture(Key.Escape) }
+			[new KeyGesture(Key.Escape)]
 		);
 	}
 
@@ -74,7 +74,7 @@ namespace ICSharpCode.AvalonEdit.Search
 			commandBindings.Add(new CommandBinding(SearchCommands.FindPrevious, ExecuteFindPrevious, CanExecuteWithOpenSearchPanel));
 		}
 
-		void RegisterCommands(ICollection<CommandBinding> commandBindings)
+		private void RegisterCommands(ICollection<CommandBinding> commandBindings)
 		{
 			commandBindings.Add(new CommandBinding(ApplicationCommands.Find, ExecuteFind));
 			commandBindings.Add(new CommandBinding(SearchCommands.FindNext, ExecuteFindNext, CanExecuteWithOpenSearchPanel));
@@ -82,17 +82,19 @@ namespace ICSharpCode.AvalonEdit.Search
 			commandBindings.Add(new CommandBinding(SearchCommands.CloseSearchPanel, ExecuteCloseSearchPanel, CanExecuteWithOpenSearchPanel));
 		}
 
-		SearchPanel panel;
+		private readonly SearchPanel panel;
 
-		void ExecuteFind(object sender, ExecutedRoutedEventArgs e)
+		private void ExecuteFind(object sender, ExecutedRoutedEventArgs e)
 		{
 			panel.Open();
-			if (!(TextArea.Selection.IsEmpty || TextArea.Selection.IsMultiline))
+			if (!(TextArea.Selection.IsEmpty || TextArea.Selection.IsMultiline)) {
 				panel.SearchPattern = TextArea.Selection.GetText();
+			}
+
 			Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Input, (Action)delegate { panel.Reactivate(); });
 		}
 
-		void CanExecuteWithOpenSearchPanel(object sender, CanExecuteRoutedEventArgs e)
+		private void CanExecuteWithOpenSearchPanel(object sender, CanExecuteRoutedEventArgs e)
 		{
 			if (panel.IsClosed) {
 				e.CanExecute = false;
@@ -104,7 +106,7 @@ namespace ICSharpCode.AvalonEdit.Search
 			}
 		}
 
-		void ExecuteFindNext(object sender, ExecutedRoutedEventArgs e)
+		private void ExecuteFindNext(object sender, ExecutedRoutedEventArgs e)
 		{
 			if (!panel.IsClosed) {
 				panel.FindNext();
@@ -112,7 +114,7 @@ namespace ICSharpCode.AvalonEdit.Search
 			}
 		}
 
-		void ExecuteFindPrevious(object sender, ExecutedRoutedEventArgs e)
+		private void ExecuteFindPrevious(object sender, ExecutedRoutedEventArgs e)
 		{
 			if (!panel.IsClosed) {
 				panel.FindPrevious();
@@ -120,7 +122,7 @@ namespace ICSharpCode.AvalonEdit.Search
 			}
 		}
 
-		void ExecuteCloseSearchPanel(object sender, ExecutedRoutedEventArgs e)
+		private void ExecuteCloseSearchPanel(object sender, ExecutedRoutedEventArgs e)
 		{
 			if (!panel.IsClosed) {
 				panel.Close();
@@ -132,8 +134,7 @@ namespace ICSharpCode.AvalonEdit.Search
 		/// Fired when SearchOptions are modified inside the SearchPanel.
 		/// </summary>
 		public event EventHandler<SearchOptionsChangedEventArgs> SearchOptionsChanged {
-			add { panel.SearchOptionsChanged += value; }
-			remove { panel.SearchOptionsChanged -= value; }
+			add => panel.SearchOptionsChanged += value; remove => panel.SearchOptionsChanged -= value;
 		}
 	}
 }

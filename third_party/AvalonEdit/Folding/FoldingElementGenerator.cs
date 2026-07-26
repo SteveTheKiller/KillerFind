@@ -33,27 +33,27 @@ namespace ICSharpCode.AvalonEdit.Folding
 	/// </summary>
 	public sealed class FoldingElementGenerator : VisualLineElementGenerator, ITextViewConnect
 	{
-		readonly List<TextView> textViews = new List<TextView>();
-		FoldingManager foldingManager;
+		private readonly List<TextView> textViews = [];
+		private FoldingManager foldingManager;
 
 		#region FoldingManager property / connecting with TextView
 		/// <summary>
 		/// Gets/Sets the folding manager from which the foldings should be shown.
 		/// </summary>
 		public FoldingManager FoldingManager {
-			get {
-				return foldingManager;
-			}
+			get => foldingManager;
 			set {
 				if (foldingManager != value) {
 					if (foldingManager != null) {
-						foreach (TextView v in textViews)
+						foreach (TextView v in textViews) {
 							foldingManager.RemoveFromTextView(v);
+						}
 					}
 					foldingManager = value;
 					if (foldingManager != null) {
-						foreach (TextView v in textViews)
+						foreach (TextView v in textViews) {
 							foldingManager.AddToTextView(v);
+						}
 					}
 				}
 			}
@@ -62,15 +62,13 @@ namespace ICSharpCode.AvalonEdit.Folding
 		void ITextViewConnect.AddToTextView(TextView textView)
 		{
 			textViews.Add(textView);
-			if (foldingManager != null)
-				foldingManager.AddToTextView(textView);
+			foldingManager?.AddToTextView(textView);
 		}
 
 		void ITextViewConnect.RemoveFromTextView(TextView textView)
 		{
 			textViews.Remove(textView);
-			if (foldingManager != null)
-				foldingManager.RemoveFromTextView(textView);
+			foldingManager?.RemoveFromTextView(textView);
 		}
 		#endregion
 
@@ -79,10 +77,13 @@ namespace ICSharpCode.AvalonEdit.Folding
 		{
 			base.StartGeneration(context);
 			if (foldingManager != null) {
-				if (!foldingManager.textViews.Contains(context.TextView))
+				if (!foldingManager.textViews.Contains(context.TextView)) {
 					throw new ArgumentException("Invalid TextView");
-				if (context.Document != foldingManager.document)
+				}
+
+				if (context.Document != foldingManager.document) {
 					throw new ArgumentException("Invalid document");
+				}
 			}
 		}
 
@@ -107,8 +108,10 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// <inheritdoc/>
 		public override VisualLineElement ConstructElement(int offset)
 		{
-			if (foldingManager == null)
+			if (foldingManager == null) {
 				return null;
+			}
+
 			int foldedUntil = -1;
 			FoldingSection foldingSection = null;
 			foreach (FoldingSection fs in foldingManager.GetFoldingsContaining(offset)) {
@@ -135,21 +138,23 @@ namespace ICSharpCode.AvalonEdit.Folding
 				} while (foundOverlappingFolding);
 
 				string title = foldingSection.Title;
-				if (string.IsNullOrEmpty(title))
+				if (string.IsNullOrEmpty(title)) {
 					title = "...";
-				var p = new VisualLineElementTextRunProperties(CurrentContext.GlobalTextRunProperties);
-				p.SetForegroundBrush(textBrush);
-				var textFormatter = TextFormatterFactory.Create(CurrentContext.TextView);
-				var text = FormattedTextElement.PrepareText(textFormatter, title, p);
-				return new FoldingLineElement(foldingSection, text, foldedUntil - offset) { textBrush = textBrush };
+				}
+
+				VisualLineElementTextRunProperties p = new(CurrentContext.GlobalTextRunProperties);
+				p.SetForegroundBrush(TextBrush);
+				TextFormatter textFormatter = TextFormatterFactory.Create(CurrentContext.TextView);
+				TextLine text = FormattedTextElement.PrepareText(textFormatter, title, p);
+				return new FoldingLineElement(foldingSection, text, foldedUntil - offset) { textBrush = TextBrush };
 			} else {
 				return null;
 			}
 		}
 
-		sealed class FoldingLineElement : FormattedTextElement
+		private sealed class FoldingLineElement : FormattedTextElement
 		{
-			readonly FoldingSection fs;
+			private readonly FoldingSection fs;
 
 			internal Brush textBrush;
 
@@ -174,7 +179,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 			}
 		}
 
-		sealed class FoldingLineTextRun : FormattedTextRun
+		private sealed class FoldingLineTextRun : FormattedTextRun
 		{
 			internal Brush textBrush;
 
@@ -185,8 +190,8 @@ namespace ICSharpCode.AvalonEdit.Folding
 
 			public override void Draw(DrawingContext drawingContext, Point origin, bool rightToLeft, bool sideways)
 			{
-				var metrics = Format(double.PositiveInfinity);
-				Rect r = new Rect(origin.X, origin.Y - metrics.Baseline, metrics.Width, metrics.Height);
+				TextEmbeddedObjectMetrics metrics = Format(double.PositiveInfinity);
+				Rect r = new(origin.X, origin.Y - metrics.Baseline, metrics.Width, metrics.Height);
 				drawingContext.DrawRectangle(null, new Pen(textBrush, 1), r);
 				base.Draw(drawingContext, origin, rightToLeft, sideways);
 			}
@@ -197,14 +202,9 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// </summary>
 		public static readonly Brush DefaultTextBrush = Brushes.Gray;
 
-		static Brush textBrush = DefaultTextBrush;
-
 		/// <summary>
 		/// Gets/sets the brush used for folding element text.
 		/// </summary>
-		public static Brush TextBrush {
-			get { return textBrush; }
-			set { textBrush = value; }
-		}
+		public static Brush TextBrush { get; set; } = DefaultTextBrush;
 	}
 }

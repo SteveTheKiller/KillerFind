@@ -62,8 +62,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		{
 			this.TextRunProperties.SetForegroundBrush(context.TextView.LinkTextForegroundBrush);
 			this.TextRunProperties.SetBackgroundBrush(context.TextView.LinkTextBackgroundBrush);
-			if (context.TextView.LinkTextUnderline)
+			if (context.TextView.LinkTextUnderline) {
 				this.TextRunProperties.SetTextDecorations(TextDecorations.Underline);
+			}
+
 			return base.CreateTextRun(startVisualColumn, context);
 		}
 
@@ -74,12 +76,15 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <see cref="RequireControlModifierForClick"/> is disabled.</remarks>
 		protected virtual bool LinkIsClickable()
 		{
-			if (NavigateUri == null)
+			if (NavigateUri == null) {
 				return false;
-			if (RequireControlModifierForClick)
+			}
+
+			if (RequireControlModifierForClick) {
 				return (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
-			else
+			} else {
 				return true;
+			}
 		}
 
 		/// <inheritdoc/>
@@ -97,13 +102,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		protected internal override void OnMouseDown(MouseButtonEventArgs e)
 		{
 			if (e.ChangedButton == MouseButton.Left && !e.Handled && LinkIsClickable()) {
-				RequestNavigateEventArgs args = new RequestNavigateEventArgs(this.NavigateUri, this.TargetName);
-				args.RoutedEvent = Hyperlink.RequestNavigateEvent;
+				RequestNavigateEventArgs args = new(this.NavigateUri, this.TargetName) {
+					RoutedEvent = Hyperlink.RequestNavigateEvent
+				};
 				FrameworkElement element = e.Source as FrameworkElement;
-				if (element != null) {
-					// allow user code to handle the navigation request
-					element.RaiseEvent(args);
-				}
+				// allow user code to handle the navigation request
+				element?.RaiseEvent(args);
 				if (!args.Handled) {
 					try {
 						Process.Start(new ProcessStartInfo { FileName = this.NavigateUri.ToString(), UseShellExecute = true });

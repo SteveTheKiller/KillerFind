@@ -24,21 +24,19 @@ using System.Windows.Interop;
 
 namespace ICSharpCode.AvalonEdit.Editing
 {
-	class ImeSupport
+	internal class ImeSupport
 	{
-		readonly TextArea textArea;
-		IntPtr currentContext;
-		IntPtr previousContext;
-		IntPtr defaultImeWnd;
-		HwndSource hwndSource;
-		EventHandler requerySuggestedHandler; // we need to keep the event handler instance alive because CommandManager.RequerySuggested uses weak references
-		bool isReadOnly;
+		private readonly TextArea textArea;
+		private IntPtr currentContext;
+		private IntPtr previousContext;
+		private IntPtr defaultImeWnd;
+		private HwndSource hwndSource;
+		private readonly EventHandler requerySuggestedHandler; // we need to keep the event handler instance alive because CommandManager.RequerySuggested uses weak references
+		private bool isReadOnly;
 
 		public ImeSupport(TextArea textArea)
 		{
-			if (textArea == null)
-				throw new ArgumentNullException("textArea");
-			this.textArea = textArea;
+			this.textArea = textArea ?? throw new ArgumentNullException("textArea");
 			InputMethod.SetIsInputMethodSuspended(this.textArea, textArea.Options.EnableImeSupport);
 			// We listen to CommandManager.RequerySuggested for both caret offset changes and changes to the set of read-only sections.
 			// This is because there's no dedicated event for read-only section changes; but RequerySuggested needs to be raised anyways
@@ -48,12 +46,12 @@ namespace ICSharpCode.AvalonEdit.Editing
 			textArea.OptionChanged += TextAreaOptionChanged;
 		}
 
-		void OnRequerySuggested(object sender, EventArgs e)
+		private void OnRequerySuggested(object sender, EventArgs e)
 		{
 			UpdateImeEnabled();
 		}
 
-		void TextAreaOptionChanged(object sender, PropertyChangedEventArgs e)
+		private void TextAreaOptionChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == "EnableImeSupport") {
 				InputMethod.SetIsInputMethodSuspended(this.textArea, textArea.Options.EnableImeSupport);
@@ -68,12 +66,14 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		public void OnLostKeyboardFocus(KeyboardFocusChangedEventArgs e)
 		{
-			if (e.OldFocus == textArea && currentContext != IntPtr.Zero)
+			if (e.OldFocus == textArea && currentContext != IntPtr.Zero) {
 				ImeNativeWrapper.NotifyIme(currentContext);
+			}
+
 			ClearContext();
 		}
 
-		void UpdateImeEnabled()
+		private void UpdateImeEnabled()
 		{
 			if (textArea.Options.EnableImeSupport && textArea.IsKeyboardFocused) {
 				bool newReadOnly = !textArea.ReadOnlySectionProvider.CanInsert(textArea.Caret.Offset);
@@ -87,7 +87,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		void ClearContext()
+		private void ClearContext()
 		{
 			if (hwndSource != null) {
 				ImeNativeWrapper.ImmAssociateContext(hwndSource.Handle, previousContext);
@@ -99,7 +99,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		void CreateContext()
+		private void CreateContext()
 		{
 			hwndSource = (HwndSource)PresentationSource.FromVisual(this.textArea);
 			if (hwndSource != null) {
@@ -114,16 +114,14 @@ namespace ICSharpCode.AvalonEdit.Editing
 				hwndSource.AddHook(WndProc);
 				// UpdateCompositionWindow() will be called by the caret becoming visible
 
-				var threadMgr = ImeNativeWrapper.GetTextFrameworkThreadManager();
-				if (threadMgr != null) {
-					// Even though the docs says passing null is invalid, this seems to help
-					// activating the IME on the default input context that is shared with WPF
-					threadMgr.SetFocus(IntPtr.Zero);
-				}
+				ITfThreadMgr threadMgr = ImeNativeWrapper.GetTextFrameworkThreadManager();
+				// Even though the docs says passing null is invalid, this seems to help
+				// activating the IME on the default input context that is shared with WPF
+				threadMgr?.SetFocus(IntPtr.Zero);
 			}
 		}
 
-		IntPtr WndProc(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+		private IntPtr WndProc(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
 		{
 			switch (msg) {
 				case ImeNativeWrapper.WM_INPUTLANGCHANGE:

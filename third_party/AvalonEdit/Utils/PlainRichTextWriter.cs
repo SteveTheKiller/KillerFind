@@ -26,37 +26,27 @@ namespace ICSharpCode.AvalonEdit.Utils
 	/// RichTextWriter implementation that writes plain text only
 	/// and ignores all formatted spans.
 	/// </summary>
-	class PlainRichTextWriter : RichTextWriter
+	internal class PlainRichTextWriter : RichTextWriter
 	{
 		/// <summary>
 		/// The text writer that was passed to the PlainRichTextWriter constructor.
 		/// </summary>
 		protected readonly TextWriter textWriter;
-		string indentationString = "\t";
-		int indentationLevel;
-		char prevChar;
+		private int indentationLevel;
+		private char prevChar;
 
 		/// <summary>
 		/// Creates a new PlainRichTextWriter instance that writes the text to the specified text writer.
 		/// </summary>
 		public PlainRichTextWriter(TextWriter textWriter)
 		{
-			if (textWriter == null)
-				throw new ArgumentNullException("textWriter");
-			this.textWriter = textWriter;
+			this.textWriter = textWriter ?? throw new ArgumentNullException("textWriter");
 		}
 
 		/// <summary>
 		/// Gets/Sets the string used to indent by one level.
 		/// </summary>
-		public string IndentationString {
-			get {
-				return indentationString;
-			}
-			set {
-				indentationString = value;
-			}
-		}
+		public string IndentationString { get; set; } = "\t";
 
 		/// <inheritdoc/>
 		protected override void BeginUnhandledSpan()
@@ -68,10 +58,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		{
 		}
 
-		void WriteIndentation()
+		private void WriteIndentation()
 		{
 			for (int i = 0; i < indentationLevel; i++) {
-				textWriter.Write(indentationString);
+				textWriter.Write(IndentationString);
 			}
 		}
 
@@ -96,8 +86,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <inheritdoc/>
 		public override void Write(char value)
 		{
-			if (prevChar == '\n')
+			if (prevChar == '\n') {
 				WriteIndentation();
+			}
+
 			textWriter.Write(value);
 			prevChar = value;
 			AfterWrite();
@@ -112,29 +104,22 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <inheritdoc/>
 		public override void Unindent()
 		{
-			if (indentationLevel == 0)
+			if (indentationLevel == 0) {
 				throw new NotSupportedException();
+			}
+
 			indentationLevel--;
 		}
 
 		/// <inheritdoc/>
-		public override Encoding Encoding {
-			get { return textWriter.Encoding; }
-		}
+		public override Encoding Encoding => textWriter.Encoding;
 
 		/// <inheritdoc/>
-		public override IFormatProvider FormatProvider {
-			get { return textWriter.FormatProvider; }
-		}
+		public override IFormatProvider FormatProvider => textWriter.FormatProvider;
 
 		/// <inheritdoc/>
 		public override string NewLine {
-			get {
-				return textWriter.NewLine;
-			}
-			set {
-				textWriter.NewLine = value;
-			}
+			get => textWriter.NewLine; set => textWriter.NewLine = value;
 		}
 	}
 }

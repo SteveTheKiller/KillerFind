@@ -39,27 +39,28 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 	[Obsolete("Use RichText / RichTextModel instead")]
 	public sealed class HighlightedInlineBuilder
 	{
-		static HighlightingBrush MakeBrush(Brush b)
+		private static HighlightingBrush MakeBrush(Brush b)
 		{
-			SolidColorBrush scb = b as SolidColorBrush;
-			if (scb != null)
+			if (b is SolidColorBrush scb) {
 				return new SimpleHighlightingBrush(scb);
-			else
+			} else {
 				return null;
+			}
 		}
 
-		readonly string text;
-		List<int> stateChangeOffsets = new List<int>();
-		List<HighlightingColor> stateChanges = new List<HighlightingColor>();
+		private readonly List<int> stateChangeOffsets = [];
+		private readonly List<HighlightingColor> stateChanges = [];
 
-		int GetIndexForOffset(int offset)
+		private int GetIndexForOffset(int offset)
 		{
-			if (offset < 0 || offset > text.Length)
+			if (offset < 0 || offset > Text.Length) {
 				throw new ArgumentOutOfRangeException("offset");
+			}
+
 			int index = stateChangeOffsets.BinarySearch(offset);
 			if (index < 0) {
 				index = ~index;
-				if (offset < text.Length) {
+				if (offset < Text.Length) {
 					stateChanges.Insert(index, stateChanges[index - 1].Clone());
 					stateChangeOffsets.Insert(index, offset);
 				}
@@ -72,9 +73,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		public HighlightedInlineBuilder(string text)
 		{
-			if (text == null)
-				throw new ArgumentNullException("text");
-			this.text = text;
+			this.Text = text ?? throw new ArgumentNullException("text");
 			stateChangeOffsets.Add(0);
 			stateChanges.Add(new HighlightingColor());
 		}
@@ -84,16 +83,18 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		public HighlightedInlineBuilder(RichText text)
 		{
-			if (text == null)
+			if (text == null) {
 				throw new ArgumentNullException("text");
-			this.text = text.Text;
+			}
+
+			this.Text = text.Text;
 			stateChangeOffsets.AddRange(text.stateChangeOffsets);
 			stateChanges.AddRange(text.stateChanges);
 		}
 
-		HighlightedInlineBuilder(string text, List<int> offsets, List<HighlightingColor> states)
+		private HighlightedInlineBuilder(string text, List<int> offsets, List<HighlightingColor> states)
 		{
-			this.text = text;
+			this.Text = text;
 			stateChangeOffsets = offsets;
 			stateChanges = states;
 		}
@@ -101,17 +102,17 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <summary>
 		/// Gets the text.
 		/// </summary>
-		public string Text {
-			get { return text; }
-		}
+		public string Text { get; }
 
 		/// <summary>
 		/// Applies the properties from the HighlightingColor to the specified text segment.
 		/// </summary>
 		public void SetHighlighting(int offset, int length, HighlightingColor color)
 		{
-			if (color == null)
+			if (color == null) {
 				throw new ArgumentNullException("color");
+			}
+
 			if (color.Foreground == null && color.Background == null && color.FontStyle == null && color.FontWeight == null && color.Underline == null) {
 				// Optimization: don't split the HighlightingState when we're not changing
 				// any property. For example, the "Punctuation" color in C# is
@@ -132,7 +133,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		{
 			int startIndex = GetIndexForOffset(offset);
 			int endIndex = GetIndexForOffset(offset + length);
-			var hbrush = MakeBrush(brush);
+			HighlightingBrush hbrush = MakeBrush(brush);
 			for (int i = startIndex; i < endIndex; i++) {
 				stateChanges[i].Foreground = hbrush;
 			}
@@ -145,7 +146,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		{
 			int startIndex = GetIndexForOffset(offset);
 			int endIndex = GetIndexForOffset(offset + length);
-			var hbrush = MakeBrush(brush);
+			HighlightingBrush hbrush = MakeBrush(brush);
 			for (int i = startIndex; i < endIndex; i++) {
 				stateChanges[i].Background = hbrush;
 			}
@@ -188,7 +189,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		public RichText ToRichText()
 		{
-			return new RichText(text, stateChangeOffsets.ToArray(), stateChanges.Select(FreezableHelper.GetFrozenClone).ToArray());
+			return new RichText(Text, [.. stateChangeOffsets], [.. stateChanges.Select(FreezableHelper.GetFrozenClone)]);
 		}
 
 		/// <summary>
@@ -196,9 +197,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		public HighlightedInlineBuilder Clone()
 		{
-			return new HighlightedInlineBuilder(this.text,
-												stateChangeOffsets.ToList(),
-												stateChanges.Select(sc => sc.Clone()).ToList());
+			return new HighlightedInlineBuilder(this.Text,
+												[.. stateChangeOffsets],
+												[.. stateChanges.Select(sc => sc.Clone())]);
 		}
 	}
 }

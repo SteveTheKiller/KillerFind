@@ -27,17 +27,15 @@ namespace ICSharpCode.AvalonEdit.Editing
 	/// </summary>
 	public class SelectionSegment : ISegment
 	{
-		readonly int startOffset, endOffset;
-		readonly int startVC, endVC;
 
 		/// <summary>
 		/// Creates a SelectionSegment from two offsets.
 		/// </summary>
 		public SelectionSegment(int startOffset, int endOffset)
 		{
-			this.startOffset = Math.Min(startOffset, endOffset);
-			this.endOffset = Math.Max(startOffset, endOffset);
-			this.startVC = this.endVC = -1;
+			this.StartOffset = Math.Min(startOffset, endOffset);
+			this.EndOffset = Math.Max(startOffset, endOffset);
+			this.StartVisualColumn = this.EndVisualColumn = -1;
 		}
 
 		/// <summary>
@@ -46,60 +44,48 @@ namespace ICSharpCode.AvalonEdit.Editing
 		public SelectionSegment(int startOffset, int startVC, int endOffset, int endVC)
 		{
 			if (startOffset < endOffset || (startOffset == endOffset && startVC <= endVC)) {
-				this.startOffset = startOffset;
-				this.startVC = startVC;
-				this.endOffset = endOffset;
-				this.endVC = endVC;
+				this.StartOffset = startOffset;
+				this.StartVisualColumn = startVC;
+				this.EndOffset = endOffset;
+				this.EndVisualColumn = endVC;
 			} else {
-				this.startOffset = endOffset;
-				this.startVC = endVC;
-				this.endOffset = startOffset;
-				this.endVC = startVC;
+				this.StartOffset = endOffset;
+				this.StartVisualColumn = endVC;
+				this.EndOffset = startOffset;
+				this.EndVisualColumn = startVC;
 			}
 		}
 
 		/// <summary>
 		/// Gets the start offset.
 		/// </summary>
-		public int StartOffset {
-			get { return startOffset; }
-		}
+		public int StartOffset { get; }
 
 		/// <summary>
 		/// Gets the end offset.
 		/// </summary>
-		public int EndOffset {
-			get { return endOffset; }
-		}
+		public int EndOffset { get; }
 
 		/// <summary>
 		/// Gets the start visual column.
 		/// </summary>
-		public int StartVisualColumn {
-			get { return startVC; }
-		}
+		public int StartVisualColumn { get; }
 
 		/// <summary>
 		/// Gets the end visual column.
 		/// </summary>
-		public int EndVisualColumn {
-			get { return endVC; }
-		}
+		public int EndVisualColumn { get; }
 
 		/// <inheritdoc/>
-		int ISegment.Offset {
-			get { return startOffset; }
-		}
+		int ISegment.Offset => StartOffset;
 
 		/// <inheritdoc/>
-		public int Length {
-			get { return endOffset - startOffset; }
-		}
+		public int Length => EndOffset - StartOffset;
 
 		/// <inheritdoc/>
 		public override string ToString()
 		{
-			return string.Format("[SelectionSegment StartOffset={0}, EndOffset={1}, StartVC={2}, EndVC={3}]", startOffset, endOffset, startVC, endVC);
+			return string.Format("[SelectionSegment StartOffset={0}, EndOffset={1}, StartVC={2}, EndVC={3}]", StartOffset, EndOffset, StartVisualColumn, EndVisualColumn);
 		}
 	}
 }

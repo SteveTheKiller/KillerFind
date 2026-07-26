@@ -35,10 +35,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 	/// </summary>
 	public sealed class Caret
 	{
-		readonly TextArea textArea;
-		readonly TextView textView;
-		readonly CaretLayer caretAdorner;
-		bool visible;
+		private readonly TextArea textArea;
+		private readonly TextView textView;
+		private readonly CaretLayer caretAdorner;
+		private bool visible;
 
 		internal Caret(TextArea textArea)
 		{
@@ -59,7 +59,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		void TextView_VisualLinesChanged(object sender, EventArgs e)
+		private void TextView_VisualLinesChanged(object sender, EventArgs e)
 		{
 			if (visible) {
 				Show();
@@ -70,15 +70,12 @@ namespace ICSharpCode.AvalonEdit.Editing
 			InvalidateVisualColumn();
 		}
 
-		void TextView_ScrollOffsetChanged(object sender, EventArgs e)
+		private void TextView_ScrollOffsetChanged(object sender, EventArgs e)
 		{
-			if (caretAdorner != null) {
-				caretAdorner.InvalidateVisual();
-			}
+			caretAdorner?.InvalidateVisual();
 		}
 
-		double desiredXPos = double.NaN;
-		TextViewPosition position;
+		private TextViewPosition position;
 
 		/// <summary>
 		/// Gets/Sets the position of the caret.
@@ -102,8 +99,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 					InvalidateVisualColumn();
 					RaisePositionChanged();
 					Log("Caret position changed to " + value);
-					if (visible)
+					if (visible) {
 						Show();
+					}
 				}
 			}
 		}
@@ -111,11 +109,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <summary>
 		/// Gets the caret position without validating it.
 		/// </summary>
-		internal TextViewPosition NonValidatedPosition {
-			get {
-				return position;
-			}
-		}
+		internal TextViewPosition NonValidatedPosition => position;
 
 		/// <summary>
 		/// Gets/Sets the location of the caret.
@@ -123,32 +117,21 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// to validate the visual column.
 		/// </summary>
 		public TextLocation Location {
-			get {
-				return position.Location;
-			}
-			set {
-				this.Position = new TextViewPosition(value);
-			}
+			get => position.Location; set => this.Position = new TextViewPosition(value);
 		}
 
 		/// <summary>
 		/// Gets/Sets the caret line.
 		/// </summary>
 		public int Line {
-			get { return position.Line; }
-			set {
-				this.Position = new TextViewPosition(value, position.Column);
-			}
+			get => position.Line; set => this.Position = new TextViewPosition(value, position.Column);
 		}
 
 		/// <summary>
 		/// Gets/Sets the caret column.
 		/// </summary>
 		public int Column {
-			get { return position.Column; }
-			set {
-				this.Position = new TextViewPosition(position.Line, value);
-			}
+			get => position.Column; set => this.Position = new TextViewPosition(position.Line, value);
 		}
 
 		/// <summary>
@@ -159,12 +142,11 @@ namespace ICSharpCode.AvalonEdit.Editing
 				ValidateVisualColumn();
 				return position.VisualColumn;
 			}
-			set {
-				this.Position = new TextViewPosition(position.Line, position.Column, value);
-			}
+
+			set => this.Position = new TextViewPosition(position.Line, position.Column, value);
 		}
 
-		bool isInVirtualSpace;
+		private bool isInVirtualSpace;
 
 		/// <summary>
 		/// Gets whether the caret is in virtual space.
@@ -176,7 +158,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		int storedCaretOffset;
+		private int storedCaretOffset;
 
 		internal void OnDocumentChanging()
 		{
@@ -191,10 +173,12 @@ namespace ICSharpCode.AvalonEdit.Editing
 				// If the caret is at the end of a selection, we don't expand the selection if something
 				// is inserted at the end. Thus we also need to keep the caret in front of the insertion.
 				AnchorMovementType caretMovementType;
-				if (!textArea.Selection.IsEmpty && storedCaretOffset == textArea.Selection.SurroundingSegment.EndOffset)
+				if (!textArea.Selection.IsEmpty && storedCaretOffset == textArea.Selection.SurroundingSegment.EndOffset) {
 					caretMovementType = AnchorMovementType.BeforeInsertion;
-				else
+				} else {
 					caretMovementType = AnchorMovementType.Default;
+				}
+
 				int newCaretOffset = e.GetNewOffset(storedCaretOffset, caretMovementType);
 				TextDocument document = textArea.Document;
 				if (document != null) {
@@ -231,19 +215,22 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// Gets/Sets the desired x-position of the caret, in device-independent pixels.
 		/// This property is NaN if the caret has no desired position.
 		/// </summary>
-		public double DesiredXPos {
-			get { return desiredXPos; }
-			set { desiredXPos = value; }
-		}
+		public double DesiredXPos { get; set; } = double.NaN;
 
-		void ValidatePosition()
+		private void ValidatePosition()
 		{
-			if (position.Line < 1)
+			if (position.Line < 1) {
 				position.Line = 1;
-			if (position.Column < 1)
+			}
+
+			if (position.Column < 1) {
 				position.Column = 1;
-			if (position.VisualColumn < -1)
+			}
+
+			if (position.VisualColumn < -1) {
 				position.VisualColumn = -1;
+			}
+
 			TextDocument document = textArea.Document;
 			if (document != null) {
 				if (position.Line > document.LineCount) {
@@ -267,43 +254,39 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		public event EventHandler PositionChanged;
 
-		bool raisePositionChangedOnUpdateFinished;
+		private bool raisePositionChangedOnUpdateFinished;
 
-		void RaisePositionChanged()
+		private void RaisePositionChanged()
 		{
 			if (textArea.Document != null && textArea.Document.IsInUpdate) {
 				raisePositionChangedOnUpdateFinished = true;
 			} else {
-				if (PositionChanged != null) {
-					PositionChanged(this, EventArgs.Empty);
-				}
+				PositionChanged?.Invoke(this, EventArgs.Empty);
 			}
 		}
 
 		internal void OnDocumentUpdateFinished()
 		{
 			if (raisePositionChangedOnUpdateFinished) {
-				if (PositionChanged != null) {
-					PositionChanged(this, EventArgs.Empty);
-				}
+				PositionChanged?.Invoke(this, EventArgs.Empty);
 			}
 		}
 
-		bool visualColumnValid;
+		private bool visualColumnValid;
 
-		void ValidateVisualColumn()
+		private void ValidateVisualColumn()
 		{
 			if (!visualColumnValid) {
 				TextDocument document = textArea.Document;
 				if (document != null) {
 					Debug.WriteLine("Explicit validation of caret column");
-					var documentLine = document.GetLineByNumber(position.Line);
+					DocumentLine documentLine = document.GetLineByNumber(position.Line);
 					RevalidateVisualColumn(textView.GetOrConstructVisualLine(documentLine));
 				}
 			}
 		}
 
-		void InvalidateVisualColumn()
+		private void InvalidateVisualColumn()
 		{
 			visualColumnValid = false;
 		}
@@ -312,10 +295,11 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// Validates the visual column of the caret using the specified visual line.
 		/// The visual line must contain the caret offset.
 		/// </summary>
-		void RevalidateVisualColumn(VisualLine visualLine)
+		private void RevalidateVisualColumn(VisualLine visualLine)
 		{
-			if (visualLine == null)
+			if (visualLine == null) {
 				throw new ArgumentNullException("visualLine");
+			}
 
 			// mark column as validated
 			visualColumnValid = true;
@@ -331,20 +315,24 @@ namespace ICSharpCode.AvalonEdit.Editing
 				// also search backwards so that we can pick the better match
 				int newVisualColumnBackwards = visualLine.GetNextCaretPosition(position.VisualColumn + 1, LogicalDirection.Backward, CaretPositioningMode.Normal, textArea.Selection.EnableVirtualSpace);
 
-				if (newVisualColumnForwards < 0 && newVisualColumnBackwards < 0)
+				if (newVisualColumnForwards < 0 && newVisualColumnBackwards < 0) {
 					throw ThrowUtil.NoValidCaretPosition();
+				}
 
 				// determine offsets for new visual column positions
 				int newOffsetForwards;
-				if (newVisualColumnForwards >= 0)
+				if (newVisualColumnForwards >= 0) {
 					newOffsetForwards = visualLine.GetRelativeOffset(newVisualColumnForwards) + firstDocumentLineOffset;
-				else
+				} else {
 					newOffsetForwards = -1;
+				}
+
 				int newOffsetBackwards;
-				if (newVisualColumnBackwards >= 0)
+				if (newVisualColumnBackwards >= 0) {
 					newOffsetBackwards = visualLine.GetRelativeOffset(newVisualColumnBackwards) + firstDocumentLineOffset;
-				else
+				} else {
 					newOffsetBackwards = -1;
+				}
 
 				int newVisualColumn, newOffset;
 				// if there's only one valid position, use it
@@ -368,10 +356,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 				}
 				this.Position = new TextViewPosition(textView.Document.GetLocation(newOffset), newVisualColumn);
 			}
-			isInVirtualSpace = (position.VisualColumn > visualLine.VisualLength);
+			isInVirtualSpace = position.VisualColumn > visualLine.VisualLength;
 		}
 
-		Rect CalcCaretRectangle(VisualLine visualLine)
+		private Rect CalcCaretRectangle(VisualLine visualLine)
 		{
 			if (!visualColumnValid) {
 				RevalidateVisualColumn(visualLine);
@@ -388,7 +376,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 							lineBottom - lineTop);
 		}
 
-		Rect CalcCaretOverstrikeRectangle(VisualLine visualLine)
+		private Rect CalcCaretOverstrikeRectangle(VisualLine visualLine)
 		{
 			if (!visualColumnValid) {
 				RevalidateVisualColumn(visualLine);
@@ -403,7 +391,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			if (currentPos < visualLine.VisualLength) {
 				// If the caret is within the text, use GetTextBounds() for the text being overwritten.
 				// This is necessary to ensure the rectangle is calculated correctly in bidirectional text.
-				var textBounds = textLine.GetTextBounds(currentPos, nextPos - currentPos)[0];
+				TextBounds textBounds = textLine.GetTextBounds(currentPos, nextPos - currentPos)[0];
 				r = textBounds.Rectangle;
 				r.Y += visualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.LineTop);
 			} else {
@@ -416,8 +404,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 				r = new Rect(xPos, lineTop, xPos2 - xPos, lineBottom - lineTop);
 			}
 			// If the caret is too small (e.g. in front of zero-width character), ensure it's still visible
-			if (r.Width < SystemParameters.CaretWidth)
+			if (r.Width < SystemParameters.CaretWidth) {
 				r.Width = SystemParameters.CaretWidth;
+			}
+
 			return r;
 		}
 
@@ -469,16 +459,17 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		bool showScheduled;
-		bool hasWin32Caret;
+		private bool showScheduled;
+		private bool hasWin32Caret;
 
-		void ShowInternal()
+		private void ShowInternal()
 		{
 			showScheduled = false;
 
 			// if show was scheduled but caret hidden in the meantime
-			if (!visible)
+			if (!visible) {
 				return;
+			}
 
 			if (caretAdorner != null && textView != null) {
 				VisualLine visualLine = textView.GetVisualLine(position.Line);
@@ -511,13 +502,11 @@ namespace ICSharpCode.AvalonEdit.Editing
 				Win32.DestroyCaret();
 				hasWin32Caret = false;
 			}
-			if (caretAdorner != null) {
-				caretAdorner.Hide();
-			}
+			caretAdorner?.Hide();
 		}
 
 		[Conditional("DEBUG")]
-		static void Log(string text)
+		private static void Log(string text)
 		{
 			// commented out to make debug output less noisy - add back if there are any problems with the caret
 			//Debug.WriteLine(text);
@@ -527,8 +516,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// Gets/Sets the color of the caret.
 		/// </summary>
 		public Brush CaretBrush {
-			get { return caretAdorner.CaretBrush; }
-			set { caretAdorner.CaretBrush = value; }
+			get => caretAdorner.CaretBrush; set => caretAdorner.CaretBrush = value;
 		}
 	}
 }

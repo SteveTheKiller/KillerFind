@@ -27,21 +27,21 @@ namespace ICSharpCode.AvalonEdit.Snippets
 	[Serializable]
 	public class SnippetTextElement : SnippetElement
 	{
-		string text;
+		private string text;
 
 		/// <summary>
 		/// The text to be inserted.
 		/// </summary>
 		public string Text {
-			get { return text; }
-			set { text = value; }
+			get => text; set => text = value;
 		}
 
 		/// <inheritdoc/>
 		public override void Insert(InsertionContext context)
 		{
-			if (text != null)
+			if (text != null) {
 				context.InsertText(text);
+			}
 		}
 
 		/// <inheritdoc/>

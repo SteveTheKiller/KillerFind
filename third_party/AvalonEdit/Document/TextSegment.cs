@@ -81,19 +81,13 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		internal int distanceToMaxEnd;
 
-		int ISegment.Offset {
-			get { return StartOffset; }
-		}
+		int ISegment.Offset => StartOffset;
 
 		/// <summary>
 		/// Gets whether this segment is connected to a TextSegmentCollection and will automatically
 		/// update its offsets.
 		/// </summary>
-		protected bool IsConnectedToCollection {
-			get {
-				return ownerTree != null;
-			}
-		}
+		protected bool IsConnectedToCollection => ownerTree != null;
 
 		/// <summary>
 		/// Gets/Sets the start offset of the segment.
@@ -110,12 +104,16 @@ namespace ICSharpCode.AvalonEdit.Document
 
 				TextSegment n = this;
 				int offset = n.nodeLength;
-				if (n.left != null)
+				if (n.left != null) {
 					offset += n.left.totalNodeLength;
+				}
+
 				while (n.parent != null) {
 					if (n == n.parent.right) {
-						if (n.parent.left != null)
+						if (n.parent.left != null) {
 							offset += n.parent.left.totalNodeLength;
+						}
+
 						offset += n.parent.nodeLength;
 					}
 					n = n.parent;
@@ -123,8 +121,10 @@ namespace ICSharpCode.AvalonEdit.Document
 				return offset;
 			}
 			set {
-				if (value < 0)
+				if (value < 0) {
 					throw new ArgumentOutOfRangeException("value", "Offset must not be negative");
+				}
+
 				if (this.StartOffset != value) {
 					// need a copy of the variable because ownerTree.Remove() sets this.ownerTree to null
 					ISegmentTree ownerTree = this.ownerTree;
@@ -147,13 +147,13 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Setting the end offset will change the length, the start offset will stay constant.
 		/// </remarks>
 		public int EndOffset {
-			get {
-				return StartOffset + Length;
-			}
+			get => StartOffset + Length;
 			set {
 				int newLength = value - StartOffset;
-				if (newLength < 0)
+				if (newLength < 0) {
 					throw new ArgumentOutOfRangeException("value", "EndOffset must be greater or equal to StartOffset");
+				}
+
 				Length = newLength;
 			}
 		}
@@ -165,16 +165,15 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Setting the length will change the end offset, the start offset will stay constant.
 		/// </remarks>
 		public int Length {
-			get {
-				return segmentLength;
-			}
+			get => segmentLength;
 			set {
-				if (value < 0)
+				if (value < 0) {
 					throw new ArgumentOutOfRangeException("value", "Length must not be negative");
+				}
+
 				if (segmentLength != value) {
 					segmentLength = value;
-					if (ownerTree != null)
-						ownerTree.UpdateAugmentedData(this);
+					ownerTree?.UpdateAugmentedData(this);
 					OnSegmentChanged();
 				}
 			}
@@ -191,8 +190,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		internal TextSegment LeftMost {
 			get {
 				TextSegment node = this;
-				while (node.left != null)
+				while (node.left != null) {
 					node = node.left;
+				}
+
 				return node;
 			}
 		}
@@ -200,8 +201,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		internal TextSegment RightMost {
 			get {
 				TextSegment node = this;
-				while (node.right != null)
+				while (node.right != null) {
 					node = node.right;
+				}
+
 				return node;
 			}
 		}

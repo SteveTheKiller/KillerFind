@@ -29,14 +29,13 @@ namespace ICSharpCode.AvalonEdit.Snippets
 	[Serializable]
 	public class SnippetBoundElement : SnippetElement
 	{
-		SnippetReplaceableTextElement targetElement;
+		private SnippetReplaceableTextElement targetElement;
 
 		/// <summary>
 		/// Gets/Sets the target element.
 		/// </summary>
 		public SnippetReplaceableTextElement TargetElement {
-			get { return targetElement; }
-			set { targetElement = value; }
+			get => targetElement; set => targetElement = value;
 		}
 
 		/// <summary>
@@ -61,7 +60,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 				TextAnchor end = context.Document.CreateAnchor(context.InsertionPosition);
 				end.MovementType = AnchorMovementType.BeforeInsertion;
 				end.SurviveDeletion = true;
-				AnchorSegment segment = new AnchorSegment(start, end);
+				AnchorSegment segment = new(start, end);
 				context.RegisterActiveElement(this, new BoundActiveElement(context, targetElement, this, segment));
 			}
 		}
@@ -79,13 +78,13 @@ namespace ICSharpCode.AvalonEdit.Snippets
 		}
 	}
 
-	sealed class BoundActiveElement : IActiveElement
+	internal sealed class BoundActiveElement : IActiveElement
 	{
-		InsertionContext context;
-		SnippetReplaceableTextElement targetSnippetElement;
-		SnippetBoundElement boundElement;
+		private readonly InsertionContext context;
+		private readonly SnippetReplaceableTextElement targetSnippetElement;
+		private readonly SnippetBoundElement boundElement;
 		internal IReplaceableActiveElement targetElement;
-		AnchorSegment segment;
+		private AnchorSegment segment;
 
 		public BoundActiveElement(InsertionContext context, SnippetReplaceableTextElement targetSnippetElement, SnippetBoundElement boundElement, AnchorSegment segment)
 		{
@@ -103,7 +102,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 			}
 		}
 
-		void targetElement_TextChanged(object sender, EventArgs e)
+		private void targetElement_TextChanged(object sender, EventArgs e)
 		{
 			// Don't copy text if the segments overlap (we would get an endless loop).
 			// This can happen if the user deletes the text between the replaceable element and the bound element.
@@ -127,12 +126,8 @@ namespace ICSharpCode.AvalonEdit.Snippets
 		{
 		}
 
-		public bool IsEditable {
-			get { return false; }
-		}
+		public bool IsEditable => false;
 
-		public ISegment Segment {
-			get { return segment; }
-		}
+		public ISegment Segment => segment;
 	}
 }

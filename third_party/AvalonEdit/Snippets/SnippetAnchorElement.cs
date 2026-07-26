@@ -44,7 +44,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 			TextAnchor start = context.Document.CreateAnchor(context.InsertionPosition);
 			start.MovementType = AnchorMovementType.BeforeInsertion;
 			start.SurviveDeletion = true;
-			AnchorSegment segment = new AnchorSegment(start, start);
+			AnchorSegment segment = new(start, start);
 			context.RegisterActiveElement(this, new AnchorElement(segment, Name, context));
 		}
 	}
@@ -55,17 +55,13 @@ namespace ICSharpCode.AvalonEdit.Snippets
 	public sealed class AnchorElement : IActiveElement
 	{
 		/// <inheritdoc />
-		public bool IsEditable {
-			get { return false; }
-		}
+		public bool IsEditable => false;
 
-		AnchorSegment segment;
-		InsertionContext context;
+		private AnchorSegment segment;
+		private readonly InsertionContext context;
 
 		/// <inheritdoc />
-		public ISegment Segment {
-			get { return segment; }
-		}
+		public ISegment Segment => segment;
 
 		/// <summary>
 		/// Creates a new AnchorElement.
@@ -81,7 +77,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 		/// Gets or sets the text at the anchor.
 		/// </summary>
 		public string Text {
-			get { return context.Document.GetText(segment); }
+			get => context.Document.GetText(segment);
 			set {
 				int offset = segment.Offset;
 				int length = segment.Length;

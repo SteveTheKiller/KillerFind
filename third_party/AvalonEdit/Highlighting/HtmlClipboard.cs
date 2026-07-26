@@ -34,9 +34,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <summary>
 		/// Builds a header for the CF_HTML clipboard format.
 		/// </summary>
-		static string BuildHeader(int startHTML, int endHTML, int startFragment, int endFragment)
+		private static string BuildHeader(int startHTML, int endHTML, int startFragment, int endFragment)
 		{
-			StringBuilder b = new StringBuilder();
+			StringBuilder b = new();
 			b.AppendLine("Version:0.9");
 			b.AppendLine("StartHTML:" + startHTML.ToString("d8", CultureInfo.InvariantCulture));
 			b.AppendLine("EndHTML:" + endHTML.ToString("d8", CultureInfo.InvariantCulture));
@@ -51,10 +51,13 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		public static void SetHtml(DataObject dataObject, string htmlFragment)
 		{
-			if (dataObject == null)
+			if (dataObject == null) {
 				throw new ArgumentNullException("dataObject");
-			if (htmlFragment == null)
+			}
+
+			if (htmlFragment == null) {
 				throw new ArgumentNullException("htmlFragment");
+			}
 
 			string htmlStart = @"<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.0 Transitional//EN"">" + Environment.NewLine
 				+ "<HTML>" + Environment.NewLine
@@ -82,27 +85,36 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <returns>HTML code for the document part.</returns>
 		public static string CreateHtmlFragment(IDocument document, IHighlighter highlighter, ISegment segment, HtmlOptions options)
 		{
-			if (document == null)
+			if (document == null) {
 				throw new ArgumentNullException("document");
-			if (options == null)
-				throw new ArgumentNullException("options");
-			if (highlighter != null && highlighter.Document != document)
-				throw new ArgumentException("Highlighter does not belong to the specified document.");
-			if (segment == null)
-				segment = new SimpleSegment(0, document.TextLength);
+			}
 
-			StringBuilder html = new StringBuilder();
+			if (options == null) {
+				throw new ArgumentNullException("options");
+			}
+
+			if (highlighter != null && highlighter.Document != document) {
+				throw new ArgumentException("Highlighter does not belong to the specified document.");
+			}
+
+			segment ??= new SimpleSegment(0, document.TextLength);
+
+			StringBuilder html = new();
 			int segmentEndOffset = segment.EndOffset;
 			IDocumentLine line = document.GetLineByOffset(segment.Offset);
 			while (line != null && line.Offset < segmentEndOffset) {
 				HighlightedLine highlightedLine;
-				if (highlighter != null)
+				if (highlighter != null) {
 					highlightedLine = highlighter.HighlightLine(line.LineNumber);
-				else
+				} else {
 					highlightedLine = new HighlightedLine(document, line);
+				}
+
 				SimpleSegment s = SimpleSegment.GetOverlap(segment, line);
-				if (html.Length > 0)
+				if (html.Length > 0) {
 					html.AppendLine("<br>");
+				}
+
 				html.Append(highlightedLine.ToHtml(s.Offset, s.EndOffset, options));
 				line = line.NextLine;
 			}

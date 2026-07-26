@@ -42,16 +42,18 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 			this.IndentationString = options.IndentationString;
 		}
 
-		string indentationString = "\t";
+		private string indentationString = "\t";
 
 		/// <summary>
 		/// Gets/Sets the indentation string.
 		/// </summary>
 		public string IndentationString {
-			get { return indentationString; }
+			get => indentationString;
 			set {
-				if (string.IsNullOrEmpty(value))
+				if (string.IsNullOrEmpty(value)) {
 					throw new ArgumentException("Indentation string must not be null or empty");
+				}
+
 				indentationString = value;
 			}
 		}
@@ -63,13 +65,16 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 		/// <param name="keepEmptyLines">Specifies whether empty lines should be kept</param>
 		public void Indent(IDocumentAccessor document, bool keepEmptyLines)
 		{
-			if (document == null)
+			if (document == null) {
 				throw new ArgumentNullException("document");
-			IndentationSettings settings = new IndentationSettings();
-			settings.IndentString = this.IndentationString;
-			settings.LeaveEmptyLines = keepEmptyLines;
+			}
 
-			IndentationReformatter r = new IndentationReformatter();
+			IndentationSettings settings = new() {
+				IndentString = this.IndentationString,
+				LeaveEmptyLines = keepEmptyLines
+			};
+
+			IndentationReformatter r = new();
 			r.Reformat(document, settings);
 		}
 
@@ -77,7 +82,7 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 		public override void IndentLine(TextDocument document, DocumentLine line)
 		{
 			int lineNr = line.LineNumber;
-			TextDocumentAccessor acc = new TextDocumentAccessor(document, lineNr, lineNr);
+			TextDocumentAccessor acc = new(document, lineNr, lineNr);
 			Indent(acc, false);
 
 			string t = acc.Text;

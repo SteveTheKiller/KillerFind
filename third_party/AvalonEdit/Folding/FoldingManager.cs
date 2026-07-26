@@ -36,9 +36,9 @@ namespace ICSharpCode.AvalonEdit.Folding
 	{
 		internal readonly TextDocument document;
 
-		internal readonly List<TextView> textViews = new List<TextView>();
-		readonly TextSegmentCollection<FoldingSection> foldings;
-		bool isFirstUpdate = true;
+		internal readonly List<TextView> textViews = [];
+		private readonly TextSegmentCollection<FoldingSection> foldings;
+		private bool isFirstUpdate = true;
 
 		#region Constructor
 		/// <summary>
@@ -46,10 +46,8 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// </summary>
 		public FoldingManager(TextDocument document)
 		{
-			if (document == null)
-				throw new ArgumentNullException("document");
-			this.document = document;
-			this.foldings = new TextSegmentCollection<FoldingSection>();
+			this.document = document ?? throw new ArgumentNullException("document");
+			this.foldings = [];
 			document.VerifyAccess();
 			TextDocumentWeakEventManager.Changed.AddListener(document, this);
 		}
@@ -71,14 +69,14 @@ namespace ICSharpCode.AvalonEdit.Folding
 			return ReceiveWeakEvent(managerType, sender, e);
 		}
 
-		void OnDocumentChanged(DocumentChangeEventArgs e)
+		private void OnDocumentChanged(DocumentChangeEventArgs e)
 		{
 			foldings.UpdateOffsets(e);
 			int newEndOffset = e.Offset + e.InsertionLength;
 			// extend end offset to the end of the line (including delimiter)
-			var endLine = document.GetLineByOffset(newEndOffset);
+			DocumentLine endLine = document.GetLineByOffset(newEndOffset);
 			newEndOffset = endLine.Offset + endLine.TotalLength;
-			foreach (var affectedFolding in foldings.FindOverlappingSegments(e.Offset, newEndOffset - e.Offset)) {
+			foreach (FoldingSection affectedFolding in foldings.FindOverlappingSegments(e.Offset, newEndOffset - e.Offset)) {
 				if (affectedFolding.Length == 0) {
 					RemoveFolding(affectedFolding);
 				} else {
@@ -91,8 +89,10 @@ namespace ICSharpCode.AvalonEdit.Folding
 		#region Manage TextViews
 		internal void AddToTextView(TextView textView)
 		{
-			if (textView == null || textViews.Contains(textView))
+			if (textView == null || textViews.Contains(textView)) {
 				throw new ArgumentException();
+			}
+
 			textViews.Add(textView);
 			foreach (FoldingSection fs in foldings) {
 				if (fs.collapsedSections != null) {
@@ -105,12 +105,14 @@ namespace ICSharpCode.AvalonEdit.Folding
 		internal void RemoveFromTextView(TextView textView)
 		{
 			int pos = textViews.IndexOf(textView);
-			if (pos < 0)
+			if (pos < 0) {
 				throw new ArgumentException();
+			}
+
 			textViews.RemoveAt(pos);
 			foreach (FoldingSection fs in foldings) {
 				if (fs.collapsedSections != null) {
-					var c = new CollapsedLineSection[textViews.Count];
+					CollapsedLineSection[] c = new CollapsedLineSection[textViews.Count];
 					Array.Copy(fs.collapsedSections, 0, c, 0, pos);
 					fs.collapsedSections[pos].Uncollapse();
 					Array.Copy(fs.collapsedSections, pos + 1, c, pos, c.Length - pos);
@@ -121,14 +123,16 @@ namespace ICSharpCode.AvalonEdit.Folding
 
 		internal void Redraw()
 		{
-			foreach (TextView textView in textViews)
+			foreach (TextView textView in textViews) {
 				textView.Redraw();
+			}
 		}
 
 		internal void Redraw(FoldingSection fs)
 		{
-			foreach (TextView textView in textViews)
+			foreach (TextView textView in textViews) {
 				textView.Redraw(fs);
+			}
 		}
 		#endregion
 
@@ -138,11 +142,15 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// </summary>
 		public FoldingSection CreateFolding(int startOffset, int endOffset)
 		{
-			if (startOffset >= endOffset)
+			if (startOffset >= endOffset) {
 				throw new ArgumentException("startOffset must be less than endOffset");
-			if (startOffset < 0 || endOffset > document.TextLength)
+			}
+
+			if (startOffset < 0 || endOffset > document.TextLength) {
 				throw new ArgumentException("Folding must be within document boundary");
-			FoldingSection fs = new FoldingSection(this, startOffset, endOffset);
+			}
+
+			FoldingSection fs = new(this, startOffset, endOffset);
 			foldings.Add(fs);
 			Redraw(fs);
 			return fs;
@@ -153,8 +161,10 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// </summary>
 		public void RemoveFolding(FoldingSection fs)
 		{
-			if (fs == null)
+			if (fs == null) {
 				throw new ArgumentNullException("fs");
+			}
+
 			fs.IsFolded = false;
 			foldings.Remove(fs);
 			Redraw(fs);
@@ -166,8 +176,10 @@ namespace ICSharpCode.AvalonEdit.Folding
 		public void Clear()
 		{
 			document.VerifyAccess();
-			foreach (FoldingSection s in foldings)
+			foreach (FoldingSection s in foldings) {
 				s.IsFolded = false;
+			}
+
 			foldings.Clear();
 			Redraw();
 		}
@@ -179,9 +191,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// The foldings are returned sorted by start offset;
 		/// for multiple foldings at the same offset the order is undefined.
 		/// </summary>
-		public IEnumerable<FoldingSection> AllFoldings {
-			get { return foldings; }
-		}
+		public IEnumerable<FoldingSection> AllFoldings => foldings;
 
 		/// <summary>
 		/// Gets the first offset greater or equal to <paramref name="startOffset"/> where a folded folding starts.
@@ -190,8 +200,10 @@ namespace ICSharpCode.AvalonEdit.Folding
 		public int GetNextFoldedFoldingStart(int startOffset)
 		{
 			FoldingSection fs = foldings.FindFirstSegmentWithStartAfter(startOffset);
-			while (fs != null && !fs.IsFolded)
+			while (fs != null && !fs.IsFolded) {
 				fs = foldings.GetNextSegment(fs);
+			}
+
 			return fs != null ? fs.StartOffset : -1;
 		}
 
@@ -211,7 +223,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// </summary>
 		public ReadOnlyCollection<FoldingSection> GetFoldingsAt(int startOffset)
 		{
-			List<FoldingSection> result = new List<FoldingSection>();
+			List<FoldingSection> result = [];
 			FoldingSection fs = foldings.FindFirstSegmentWithStartAfter(startOffset);
 			while (fs != null && fs.StartOffset == startOffset) {
 				result.Add(fs);
@@ -241,28 +253,33 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// Use -1 for this parameter if there were no parse errors.</param>
 		public void UpdateFoldings(IEnumerable<NewFolding> newFoldings, int firstErrorOffset)
 		{
-			if (newFoldings == null)
+			if (newFoldings == null) {
 				throw new ArgumentNullException("newFoldings");
+			}
 
-			if (firstErrorOffset < 0)
+			if (firstErrorOffset < 0) {
 				firstErrorOffset = int.MaxValue;
+			}
 
-			var oldFoldings = this.AllFoldings.ToArray();
+			FoldingSection[] oldFoldings = [.. this.AllFoldings];
 			int oldFoldingIndex = 0;
 			int previousStartOffset = 0;
 			// merge new foldings into old foldings so that sections keep being collapsed
 			// both oldFoldings and newFoldings are sorted by start offset
 			foreach (NewFolding newFolding in newFoldings) {
 				// ensure newFoldings are sorted correctly
-				if (newFolding.StartOffset < previousStartOffset)
+				if (newFolding.StartOffset < previousStartOffset) {
 					throw new ArgumentException("newFoldings must be sorted by start offset");
+				}
+
 				previousStartOffset = newFolding.StartOffset;
 
 				int startOffset = newFolding.StartOffset.CoerceValue(0, document.TextLength);
 				int endOffset = newFolding.EndOffset.CoerceValue(0, document.TextLength);
 
-				if (newFolding.StartOffset == newFolding.EndOffset)
+				if (newFolding.StartOffset == newFolding.EndOffset) {
 					continue; // ignore zero-length foldings
+				}
 
 				// remove old foldings that were skipped
 				while (oldFoldingIndex < oldFoldings.Length && newFolding.StartOffset > oldFoldings[oldFoldingIndex].StartOffset) {
@@ -288,8 +305,10 @@ namespace ICSharpCode.AvalonEdit.Folding
 			// remove all outstanding old foldings:
 			while (oldFoldingIndex < oldFoldings.Length) {
 				FoldingSection oldSection = oldFoldings[oldFoldingIndex++];
-				if (oldSection.StartOffset >= firstErrorOffset)
+				if (oldSection.StartOffset >= firstErrorOffset) {
 					break;
+				}
+
 				this.RemoveFolding(oldSection);
 			}
 		}
@@ -304,8 +323,10 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// <returns>The <see cref="FoldingManager"/> that manages the list of foldings inside the text area.</returns>
 		public static FoldingManager Install(TextArea textArea)
 		{
-			if (textArea == null)
+			if (textArea == null) {
 				throw new ArgumentNullException("textArea");
+			}
+
 			return new FoldingManagerInstallation(textArea);
 		}
 
@@ -315,21 +336,22 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// <exception cref="ArgumentException">The specified manager was not created using <see cref="Install"/>.</exception>
 		public static void Uninstall(FoldingManager manager)
 		{
-			if (manager == null)
+			if (manager == null) {
 				throw new ArgumentNullException("manager");
-			FoldingManagerInstallation installation = manager as FoldingManagerInstallation;
-			if (installation != null) {
+			}
+
+			if (manager is FoldingManagerInstallation installation) {
 				installation.Uninstall();
 			} else {
 				throw new ArgumentException("FoldingManager was not created using FoldingManager.Install");
 			}
 		}
 
-		sealed class FoldingManagerInstallation : FoldingManager
+		private sealed class FoldingManagerInstallation : FoldingManager
 		{
-			TextArea textArea;
-			FoldingMargin margin;
-			FoldingElementGenerator generator;
+			private TextArea textArea;
+			private FoldingMargin margin;
+			private FoldingElementGenerator generator;
 
 			public FoldingManagerInstallation(TextArea textArea) : base(textArea.Document)
 			{
@@ -381,7 +403,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 				}
 			}
 
-			void textArea_Caret_PositionChanged(object sender, EventArgs e)
+			private void textArea_Caret_PositionChanged(object sender, EventArgs e)
 			{
 				// Expand Foldings when Caret is moved into them.
 				int caretOffset = textArea.Caret.Offset;

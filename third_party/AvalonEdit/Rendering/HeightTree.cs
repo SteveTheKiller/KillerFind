@@ -29,7 +29,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// <summary>
 	/// Red-black tree similar to DocumentLineTree, augmented with collapsing and height data.
 	/// </summary>
-	sealed class HeightTree : ILineTracker, IDisposable
+	internal sealed class HeightTree : ILineTracker, IDisposable
 	{
 		// TODO: Optimize this. This tree takes a lot of memory.
 		// (56 bytes for HeightTreeNode
@@ -53,9 +53,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		 */
 
 		#region Constructor
-		readonly TextDocument document;
-		HeightTreeNode root;
-		WeakLineTracker weakLineTracker;
+		private readonly TextDocument document;
+		private HeightTreeNode root;
+		private WeakLineTracker weakLineTracker;
 
 		public HeightTree(TextDocument document, double defaultLineHeight)
 		{
@@ -67,29 +67,26 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		public void Dispose()
 		{
-			if (weakLineTracker != null)
-				weakLineTracker.Deregister();
+			weakLineTracker?.Deregister();
 			this.root = null;
 			this.weakLineTracker = null;
 		}
 
-		public bool IsDisposed {
-			get {
-				return root == null;
-			}
-		}
+		public bool IsDisposed => root == null;
 
-		double defaultLineHeight;
+		private double defaultLineHeight;
 
 		public double DefaultLineHeight {
-			get { return defaultLineHeight; }
+			get => defaultLineHeight;
 			set {
 				double oldValue = defaultLineHeight;
-				if (oldValue == value)
+				if (oldValue == value) {
 					return;
+				}
+
 				defaultLineHeight = value;
 				// update the stored value in all nodes:
-				foreach (var node in AllNodes) {
+				foreach (HeightTreeNode node in AllNodes) {
 					if (node.lineNode.height == oldValue) {
 						node.lineNode.height = value;
 						UpdateAugmentedData(node, UpdateAfterChildrenChangeRecursionMode.IfRequired);
@@ -98,7 +95,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		HeightTreeNode GetNode(DocumentLine ls)
+		private HeightTreeNode GetNode(DocumentLine ls)
 		{
 			return GetNodeByIndex(ls.LineNumber - 1);
 		}
@@ -142,7 +139,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// build a tree from a list of nodes
 		/// </summary>
-		HeightTreeNode BuildTree(HeightTreeNode[] nodes, int start, int end, int subtreeHeight)
+		private HeightTreeNode BuildTree(HeightTreeNode[] nodes, int start, int end, int subtreeHeight)
 		{
 			Debug.Assert(start <= end);
 			if (start == end) {
@@ -152,10 +149,18 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			HeightTreeNode node = nodes[middle];
 			node.left = BuildTree(nodes, start, middle, subtreeHeight - 1);
 			node.right = BuildTree(nodes, middle + 1, end, subtreeHeight - 1);
-			if (node.left != null) node.left.parent = node;
-			if (node.right != null) node.right.parent = node;
-			if (subtreeHeight == 1)
+			if (node.left != null) {
+				node.left.parent = node;
+			}
+
+			if (node.right != null) {
+				node.right.parent = node;
+			}
+
+			if (subtreeHeight == 1) {
 				node.color = RED;
+			}
+
 			UpdateAugmentedData(node, UpdateAfterChildrenChangeRecursionMode.None);
 			return node;
 		}
@@ -201,16 +206,17 @@ namespace ICSharpCode.AvalonEdit.Rendering
 #endif
 		}
 
-		HeightTreeNode InsertAfter(HeightTreeNode node, DocumentLine newLine)
+		private HeightTreeNode InsertAfter(HeightTreeNode node, DocumentLine newLine)
 		{
-			HeightTreeNode newNode = new HeightTreeNode(newLine, defaultLineHeight);
+			HeightTreeNode newNode = new(newLine, defaultLineHeight);
 			if (node.right == null) {
 				if (node.lineNode.collapsedSections != null) {
 					// we are inserting directly after node - so copy all collapsedSections
 					// that do not end at node.
 					foreach (CollapsedLineSection cs in node.lineNode.collapsedSections) {
-						if (cs.End != node.documentLine)
+						if (cs.End != node.documentLine) {
 							newNode.AddDirectlyCollapsed(cs);
+						}
 					}
 				}
 				InsertAsRight(node, newNode);
@@ -220,8 +226,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 					// we are inserting directly before node - so copy all collapsedSections
 					// that do not start at node.
 					foreach (CollapsedLineSection cs in node.lineNode.collapsedSections) {
-						if (cs.Start != node.documentLine)
+						if (cs.Start != node.documentLine) {
 							newNode.AddDirectlyCollapsed(cs);
+						}
 					}
 				}
 				InsertAsLeft(node, newNode);
@@ -231,19 +238,19 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		#endregion
 
 		#region Rotation callbacks
-		enum UpdateAfterChildrenChangeRecursionMode
+		private enum UpdateAfterChildrenChangeRecursionMode
 		{
 			None,
 			IfRequired,
 			WholeBranch
 		}
 
-		static void UpdateAfterChildrenChange(HeightTreeNode node)
+		private static void UpdateAfterChildrenChange(HeightTreeNode node)
 		{
 			UpdateAugmentedData(node, UpdateAfterChildrenChangeRecursionMode.IfRequired);
 		}
 
-		static void UpdateAugmentedData(HeightTreeNode node, UpdateAfterChildrenChangeRecursionMode mode)
+		private static void UpdateAugmentedData(HeightTreeNode node, UpdateAfterChildrenChangeRecursionMode mode)
 		{
 			int totalCount = 1;
 			double totalHeight = node.lineNode.TotalHeight;
@@ -255,35 +262,36 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				totalCount += node.right.totalCount;
 				totalHeight += node.right.totalHeight;
 			}
-			if (node.IsDirectlyCollapsed)
+			if (node.IsDirectlyCollapsed) {
 				totalHeight = 0;
+			}
+
 			if (totalCount != node.totalCount
 				|| !totalHeight.IsClose(node.totalHeight)
 				|| mode == UpdateAfterChildrenChangeRecursionMode.WholeBranch) {
 				node.totalCount = totalCount;
 				node.totalHeight = totalHeight;
-				if (node.parent != null && mode != UpdateAfterChildrenChangeRecursionMode.None)
+				if (node.parent != null && mode != UpdateAfterChildrenChangeRecursionMode.None) {
 					UpdateAugmentedData(node.parent, mode);
+				}
 			}
 		}
 
-		void UpdateAfterRotateLeft(HeightTreeNode node)
+		private void UpdateAfterRotateLeft(HeightTreeNode node)
 		{
 			// node = old parent
 			// node.parent = pivot, new parent
-			var collapsedP = node.parent.collapsedSections;
-			var collapsedQ = node.collapsedSections;
+			List<CollapsedLineSection> collapsedP = node.parent.collapsedSections;
+			List<CollapsedLineSection> collapsedQ = node.collapsedSections;
 			// move collapsedSections from old parent to new parent
 			node.parent.collapsedSections = collapsedQ;
 			node.collapsedSections = null;
 			// split the collapsedSections from the new parent into its old children:
 			if (collapsedP != null) {
 				foreach (CollapsedLineSection cs in collapsedP) {
-					if (node.parent.right != null)
-						node.parent.right.AddDirectlyCollapsed(cs);
+					node.parent.right?.AddDirectlyCollapsed(cs);
 					node.parent.lineNode.AddDirectlyCollapsed(cs);
-					if (node.right != null)
-						node.right.AddDirectlyCollapsed(cs);
+					node.right?.AddDirectlyCollapsed(cs);
 				}
 			}
 			MergeCollapsedSectionsIfPossible(node);
@@ -295,23 +303,21 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			//UpdateAfterChildrenChange(node.parent);
 		}
 
-		void UpdateAfterRotateRight(HeightTreeNode node)
+		private void UpdateAfterRotateRight(HeightTreeNode node)
 		{
 			// node = old parent
 			// node.parent = pivot, new parent
-			var collapsedP = node.parent.collapsedSections;
-			var collapsedQ = node.collapsedSections;
+			List<CollapsedLineSection> collapsedP = node.parent.collapsedSections;
+			List<CollapsedLineSection> collapsedQ = node.collapsedSections;
 			// move collapsedSections from old parent to new parent
 			node.parent.collapsedSections = collapsedQ;
 			node.collapsedSections = null;
 			// split the collapsedSections from the new parent into its old children:
 			if (collapsedP != null) {
 				foreach (CollapsedLineSection cs in collapsedP) {
-					if (node.parent.left != null)
-						node.parent.left.AddDirectlyCollapsed(cs);
+					node.parent.left?.AddDirectlyCollapsed(cs);
 					node.parent.lineNode.AddDirectlyCollapsed(cs);
-					if (node.left != null)
-						node.left.AddDirectlyCollapsed(cs);
+					node.left?.AddDirectlyCollapsed(cs);
 				}
 			}
 			MergeCollapsedSectionsIfPossible(node);
@@ -328,23 +334,25 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		//  its successor is removed
 		//  it is replaced with its successor
 
-		void BeforeNodeRemove(HeightTreeNode removedNode)
+		private void BeforeNodeRemove(HeightTreeNode removedNode)
 		{
 			Debug.Assert(removedNode.left == null || removedNode.right == null);
 
-			var collapsed = removedNode.collapsedSections;
+			List<CollapsedLineSection> collapsed = removedNode.collapsedSections;
 			if (collapsed != null) {
 				HeightTreeNode childNode = removedNode.left ?? removedNode.right;
 				if (childNode != null) {
-					foreach (CollapsedLineSection cs in collapsed)
+					foreach (CollapsedLineSection cs in collapsed) {
 						childNode.AddDirectlyCollapsed(cs);
+					}
 				}
 			}
-			if (removedNode.parent != null)
+			if (removedNode.parent != null) {
 				MergeCollapsedSectionsIfPossible(removedNode.parent);
+			}
 		}
 
-		void BeforeNodeReplace(HeightTreeNode removedNode, HeightTreeNode newNode, HeightTreeNode newNodeOldParent)
+		private void BeforeNodeReplace(HeightTreeNode removedNode, HeightTreeNode newNode, HeightTreeNode newNodeOldParent)
 		{
 			Debug.Assert(removedNode != null);
 			Debug.Assert(newNode != null);
@@ -365,19 +373,17 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			MergeCollapsedSectionsIfPossible(newNode);
 		}
 
-		bool inRemoval;
-		List<HeightTreeNode> nodesToCheckForMerging;
+		private bool inRemoval;
+		private List<HeightTreeNode> nodesToCheckForMerging;
 
-		void BeginRemoval()
+		private void BeginRemoval()
 		{
 			Debug.Assert(!inRemoval);
-			if (nodesToCheckForMerging == null) {
-				nodesToCheckForMerging = new List<HeightTreeNode>();
-			}
+			nodesToCheckForMerging ??= [];
 			inRemoval = true;
 		}
 
-		void EndRemoval()
+		private void EndRemoval()
 		{
 			Debug.Assert(inRemoval);
 			inRemoval = false;
@@ -387,7 +393,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			nodesToCheckForMerging.Clear();
 		}
 
-		void MergeCollapsedSectionsIfPossible(HeightTreeNode node)
+		private void MergeCollapsedSectionsIfPossible(HeightTreeNode node)
 		{
 			Debug.Assert(node != null);
 			if (inRemoval) {
@@ -396,27 +402,30 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 			// now check if we need to merge collapsedSections together
 			bool merged = false;
-			var collapsedL = node.lineNode.collapsedSections;
+			List<CollapsedLineSection> collapsedL = node.lineNode.collapsedSections;
 			if (collapsedL != null) {
 				for (int i = collapsedL.Count - 1; i >= 0; i--) {
 					CollapsedLineSection cs = collapsedL[i];
-					if (cs.Start == node.documentLine || cs.End == node.documentLine)
+					if (cs.Start == node.documentLine || cs.End == node.documentLine) {
 						continue;
+					}
+
 					if (node.left == null
 						|| (node.left.collapsedSections != null && node.left.collapsedSections.Contains(cs))) {
 						if (node.right == null
 							|| (node.right.collapsedSections != null && node.right.collapsedSections.Contains(cs))) {
 							// all children of node contain cs: -> merge!
-							if (node.left != null) node.left.RemoveDirectlyCollapsed(cs);
-							if (node.right != null) node.right.RemoveDirectlyCollapsed(cs);
+							node.left?.RemoveDirectlyCollapsed(cs);
+							node.right?.RemoveDirectlyCollapsed(cs);
 							collapsedL.RemoveAt(i);
 							node.AddDirectlyCollapsed(cs);
 							merged = true;
 						}
 					}
 				}
-				if (collapsedL.Count == 0)
+				if (collapsedL.Count == 0) {
 					node.lineNode.collapsedSections = null;
+				}
 			}
 			if (merged && node.parent != null) {
 				MergeCollapsedSectionsIfPossible(node.parent);
@@ -425,7 +434,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		#endregion
 
 		#region GetNodeBy... / Get...FromNode
-		HeightTreeNode GetNodeByIndex(int index)
+		private HeightTreeNode GetNodeByIndex(int index)
 		{
 			Debug.Assert(index >= 0);
 			Debug.Assert(index < root.totalCount);
@@ -437,15 +446,17 @@ namespace ICSharpCode.AvalonEdit.Rendering
 					if (node.left != null) {
 						index -= node.left.totalCount;
 					}
-					if (index == 0)
+					if (index == 0) {
 						return node;
+					}
+
 					index--;
 					node = node.right;
 				}
 			}
 		}
 
-		HeightTreeNode GetNodeByVisualPosition(double position)
+		private HeightTreeNode GetNodeByVisualPosition(double position)
 		{
 			HeightTreeNode node = root;
 			while (true) {
@@ -469,8 +480,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 					// If node.lineNode isn't collapsed, return that.
 					// Also return node.lineNode if there is no previous node that we could return instead.
-					if (node.lineNode.TotalHeight > 0 || node.left == null)
+					if (node.lineNode.TotalHeight > 0 || node.left == null) {
 						return node;
+					}
 					// Otherwise, descend into left (find the last non-collapsed node)
 					node = node.left;
 				} else {
@@ -481,15 +493,19 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		static double GetVisualPositionFromNode(HeightTreeNode node)
+		private static double GetVisualPositionFromNode(HeightTreeNode node)
 		{
 			double position = (node.left != null) ? node.left.totalHeight : 0;
 			while (node.parent != null) {
-				if (node.IsDirectlyCollapsed)
+				if (node.IsDirectlyCollapsed) {
 					position = 0;
+				}
+
 				if (node == node.parent.right) {
-					if (node.parent.left != null)
+					if (node.parent.left != null) {
 						position += node.parent.left.totalHeight;
+					}
+
 					position += node.parent.lineNode.TotalHeight;
 				}
 				node = node.parent;
@@ -521,14 +537,14 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		public void SetHeight(DocumentLine line, double val)
 		{
-			var node = GetNode(line);
+			HeightTreeNode node = GetNode(line);
 			node.lineNode.height = val;
 			UpdateAfterChildrenChange(node);
 		}
 
 		public bool GetIsCollapsed(int lineNumber)
 		{
-			var node = GetNodeByIndex(lineNumber - 1);
+			HeightTreeNode node = GetNodeByIndex(lineNumber - 1);
 			return node.lineNode.IsDirectlyCollapsed || GetIsCollapedFromNode(node);
 		}
 
@@ -538,14 +554,20 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public CollapsedLineSection CollapseText(DocumentLine start, DocumentLine end)
 		{
-			if (!document.Lines.Contains(start))
+			if (!document.Lines.Contains(start)) {
 				throw new ArgumentException("Line is not part of this document", "start");
-			if (!document.Lines.Contains(end))
+			}
+
+			if (!document.Lines.Contains(end)) {
 				throw new ArgumentException("Line is not part of this document", "end");
+			}
+
 			int length = end.LineNumber - start.LineNumber + 1;
-			if (length < 0)
+			if (length < 0) {
 				throw new ArgumentException("start must be a line before end");
-			CollapsedLineSection section = new CollapsedLineSection(this, start, end);
+			}
+
+			CollapsedLineSection section = new(this, start, end);
 			AddCollapsedSection(section, length);
 #if DEBUG
 			CheckProperties();
@@ -555,21 +577,13 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		#endregion
 
 		#region LineCount & TotalHeight
-		public int LineCount {
-			get {
-				return root.totalCount;
-			}
-		}
+		public int LineCount => root.totalCount;
 
-		public double TotalHeight {
-			get {
-				return root.totalHeight;
-			}
-		}
+		public double TotalHeight => root.totalHeight;
 		#endregion
 
 		#region GetAllCollapsedSections
-		IEnumerable<HeightTreeNode> AllNodes {
+		private IEnumerable<HeightTreeNode> AllNodes {
 			get {
 				if (root != null) {
 					HeightTreeNode node = root.LeftMost;
@@ -583,7 +597,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		internal IEnumerable<CollapsedLineSection> GetAllCollapsedSections()
 		{
-			List<CollapsedLineSection> emptyCSList = new List<CollapsedLineSection>();
+			List<CollapsedLineSection> emptyCSList = [];
 			return System.Linq.Enumerable.Distinct(
 				System.Linq.Enumerable.SelectMany(
 					AllNodes, node => System.Linq.Enumerable.Concat(node.lineNode.collapsedSections ?? emptyCSList,
@@ -613,25 +627,31 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			CheckNodeProperties(root, null, RED, 0, ref blackCount);
 		}
 
-		void CheckIsInSection(CollapsedLineSection cs, DocumentLine line)
+		private void CheckIsInSection(CollapsedLineSection cs, DocumentLine line)
 		{
 			HeightTreeNode node = GetNode(line);
-			if (node.lineNode.collapsedSections != null && node.lineNode.collapsedSections.Contains(cs))
+			if (node.lineNode.collapsedSections != null && node.lineNode.collapsedSections.Contains(cs)) {
 				return;
+			}
+
 			while (node != null) {
-				if (node.collapsedSections != null && node.collapsedSections.Contains(cs))
+				if (node.collapsedSections != null && node.collapsedSections.Contains(cs)) {
 					return;
+				}
+
 				node = node.parent;
 			}
 			throw new InvalidOperationException(cs + " not found for line " + line);
 		}
 
-		void CheckProperties(HeightTreeNode node)
+		private void CheckProperties(HeightTreeNode node)
 		{
 			int totalCount = 1;
 			double totalHeight = node.lineNode.TotalHeight;
-			if (node.lineNode.IsDirectlyCollapsed)
+			if (node.lineNode.IsDirectlyCollapsed) {
 				Debug.Assert(node.lineNode.collapsedSections.Count > 0);
+			}
+
 			if (node.left != null) {
 				CheckProperties(node.left);
 				totalCount += node.left.totalCount;
@@ -648,7 +668,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 			if (node.left != null && node.right != null) {
 				if (node.left.collapsedSections != null && node.right.collapsedSections != null) {
-					var intersection = System.Linq.Enumerable.Intersect(node.left.collapsedSections, node.right.collapsedSections);
+					IEnumerable<CollapsedLineSection> intersection = System.Linq.Enumerable.Intersect(node.left.collapsedSections, node.right.collapsedSections);
 					Debug.Assert(System.Linq.Enumerable.Count(intersection) == 0);
 				}
 			}
@@ -663,10 +683,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Checks that all elements in list1 are contained in list2.
 		/// </summary>
-		static void CheckAllContainedIn(IEnumerable<CollapsedLineSection> list1, ICollection<CollapsedLineSection> list2)
+		private static void CheckAllContainedIn(IEnumerable<CollapsedLineSection> list1, ICollection<CollapsedLineSection> list2)
 		{
-			if (list1 == null) list1 = new List<CollapsedLineSection>();
-			if (list2 == null) list2 = new List<CollapsedLineSection>();
+			list1 ??= [];
+
+			list2 ??= [];
+
 			foreach (CollapsedLineSection cs in list1) {
 				Debug.Assert(list2.Contains(cs));
 			}
@@ -679,9 +701,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		4. Both children of every red node are black. (So every red node must have a black parent.)
 		5. Every simple path from a node to a descendant leaf contains the same number of black nodes. (Not counting the leaf node.)
 		 */
-		void CheckNodeProperties(HeightTreeNode node, HeightTreeNode parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
+		private void CheckNodeProperties(HeightTreeNode node, HeightTreeNode parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
 		{
-			if (node == null) return;
+			if (node == null) {
+				return;
+			}
 
 			Debug.Assert(node.parent == parentNode);
 
@@ -693,10 +717,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 			if (node.left == null && node.right == null) {
 				// node is a leaf node:
-				if (expectedBlackCount == -1)
+				if (expectedBlackCount == -1) {
 					expectedBlackCount = blackCount;
-				else
+				} else {
 					Debug.Assert(expectedBlackCount == blackCount);
+				}
 			}
 			CheckNodeProperties(node.left, node, node.color, blackCount, ref expectedBlackCount);
 			CheckNodeProperties(node.right, node, node.color, blackCount, ref expectedBlackCount);
@@ -705,17 +730,19 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
 		public string GetTreeAsString()
 		{
-			StringBuilder b = new StringBuilder();
+			StringBuilder b = new();
 			AppendTreeToString(root, b, 0);
 			return b.ToString();
 		}
 
-		static void AppendTreeToString(HeightTreeNode node, StringBuilder b, int indent)
+		private static void AppendTreeToString(HeightTreeNode node, StringBuilder b, int indent)
 		{
-			if (node.color == RED)
+			if (node.color == RED) {
 				b.Append("RED   ");
-			else
+			} else {
 				b.Append("BLACK ");
+			}
+
 			b.AppendLine(node.ToString());
 			indent += 2;
 			if (node.left != null) {
@@ -733,10 +760,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		#endregion
 
 		#region Red/Black Tree
-		const bool RED = true;
-		const bool BLACK = false;
+		private const bool RED = true;
+		private const bool BLACK = false;
 
-		void InsertAsLeft(HeightTreeNode parentNode, HeightTreeNode newNode)
+		private void InsertAsLeft(HeightTreeNode parentNode, HeightTreeNode newNode)
 		{
 			Debug.Assert(parentNode.left == null);
 			parentNode.left = newNode;
@@ -746,7 +773,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			FixTreeOnInsert(newNode);
 		}
 
-		void InsertAsRight(HeightTreeNode parentNode, HeightTreeNode newNode)
+		private void InsertAsRight(HeightTreeNode parentNode, HeightTreeNode newNode)
 		{
 			Debug.Assert(parentNode.right == null);
 			parentNode.right = newNode;
@@ -756,7 +783,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			FixTreeOnInsert(newNode);
 		}
 
-		void FixTreeOnInsert(HeightTreeNode node)
+		private void FixTreeOnInsert(HeightTreeNode node)
 		{
 			Debug.Assert(node != null);
 			Debug.Assert(node.color == RED);
@@ -815,7 +842,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		void RemoveNode(HeightTreeNode removedNode)
+		private void RemoveNode(HeightTreeNode removedNode)
 		{
 			if (removedNode.left != null && removedNode.right != null) {
 				// replace removedNode with it's in-order successor
@@ -828,13 +855,22 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				// and overwrite the removedNode with it
 				ReplaceNode(removedNode, leftMost);
 				leftMost.left = removedNode.left;
-				if (leftMost.left != null) leftMost.left.parent = leftMost;
+				if (leftMost.left != null) {
+					leftMost.left.parent = leftMost;
+				}
+
 				leftMost.right = removedNode.right;
-				if (leftMost.right != null) leftMost.right.parent = leftMost;
+				if (leftMost.right != null) {
+					leftMost.right.parent = leftMost;
+				}
+
 				leftMost.color = removedNode.color;
 
 				UpdateAfterChildrenChange(leftMost);
-				if (leftMost.parent != null) UpdateAfterChildrenChange(leftMost.parent);
+				if (leftMost.parent != null) {
+					UpdateAfterChildrenChange(leftMost.parent);
+				}
+
 				return;
 			}
 
@@ -844,7 +880,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			HeightTreeNode childNode = removedNode.left ?? removedNode.right;
 			BeforeNodeRemove(removedNode);
 			ReplaceNode(removedNode, childNode);
-			if (parentNode != null) UpdateAfterChildrenChange(parentNode);
+			if (parentNode != null) {
+				UpdateAfterChildrenChange(parentNode);
+			}
+
 			if (removedNode.color == BLACK) {
 				if (childNode != null && childNode.color == RED) {
 					childNode.color = BLACK;
@@ -854,11 +893,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		void FixTreeOnDelete(HeightTreeNode node, HeightTreeNode parentNode)
+		private void FixTreeOnDelete(HeightTreeNode node, HeightTreeNode parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
-			if (parentNode == null)
+			if (parentNode == null) {
 				return;
+			}
 
 			// warning: node may be null
 			HeightTreeNode sibling = Sibling(node, parentNode);
@@ -926,16 +966,17 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		void ReplaceNode(HeightTreeNode replacedNode, HeightTreeNode newNode)
+		private void ReplaceNode(HeightTreeNode replacedNode, HeightTreeNode newNode)
 		{
 			if (replacedNode.parent == null) {
 				Debug.Assert(replacedNode == root);
 				root = newNode;
 			} else {
-				if (replacedNode.parent.left == replacedNode)
+				if (replacedNode.parent.left == replacedNode) {
 					replacedNode.parent.left = newNode;
-				else
+				} else {
 					replacedNode.parent.right = newNode;
+				}
 			}
 			if (newNode != null) {
 				newNode.parent = replacedNode.parent;
@@ -943,7 +984,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			replacedNode.parent = null;
 		}
 
-		void RotateLeft(HeightTreeNode p)
+		private void RotateLeft(HeightTreeNode p)
 		{
 			// let q be p's right child
 			HeightTreeNode q = p.right;
@@ -954,14 +995,16 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 			// set p's right child to be q's left child
 			p.right = q.left;
-			if (p.right != null) p.right.parent = p;
+			if (p.right != null) {
+				p.right.parent = p;
+			}
 			// set q's left child to be p
 			q.left = p;
 			p.parent = q;
 			UpdateAfterRotateLeft(p);
 		}
 
-		void RotateRight(HeightTreeNode p)
+		private void RotateRight(HeightTreeNode p)
 		{
 			// let q be p's left child
 			HeightTreeNode q = p.left;
@@ -972,42 +1015,48 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 			// set p's left child to be q's right child
 			p.left = q.right;
-			if (p.left != null) p.left.parent = p;
+			if (p.left != null) {
+				p.left.parent = p;
+			}
 			// set q's right child to be p
 			q.right = p;
 			p.parent = q;
 			UpdateAfterRotateRight(p);
 		}
 
-		static HeightTreeNode Sibling(HeightTreeNode node)
+		private static HeightTreeNode Sibling(HeightTreeNode node)
 		{
-			if (node == node.parent.left)
+			if (node == node.parent.left) {
 				return node.parent.right;
-			else
+			} else {
 				return node.parent.left;
+			}
 		}
 
-		static HeightTreeNode Sibling(HeightTreeNode node, HeightTreeNode parentNode)
+		private static HeightTreeNode Sibling(HeightTreeNode node, HeightTreeNode parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
-			if (node == parentNode.left)
+			if (node == parentNode.left) {
 				return parentNode.right;
-			else
+			} else {
 				return parentNode.left;
+			}
 		}
 
-		static bool GetColor(HeightTreeNode node)
+		private static bool GetColor(HeightTreeNode node)
 		{
-			return node != null ? node.color : BLACK;
+			return node != null && node.color;
 		}
 		#endregion
 
 		#region Collapsing support
-		static bool GetIsCollapedFromNode(HeightTreeNode node)
+		private static bool GetIsCollapedFromNode(HeightTreeNode node)
 		{
 			while (node != null) {
-				if (node.IsDirectlyCollapsed)
+				if (node.IsDirectlyCollapsed) {
 					return true;
+				}
+
 				node = node.parent;
 			}
 			return false;
@@ -1018,7 +1067,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			AddRemoveCollapsedSection(section, sectionLength, true);
 		}
 
-		void AddRemoveCollapsedSection(CollapsedLineSection section, int sectionLength, bool add)
+		private void AddRemoveCollapsedSection(CollapsedLineSection section, int sectionLength, bool add)
 		{
 			Debug.Assert(sectionLength > 0);
 
@@ -1026,10 +1075,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			// Go up in the tree.
 			while (true) {
 				// Mark all middle nodes as collapsed
-				if (add)
+				if (add) {
 					node.lineNode.AddDirectlyCollapsed(section);
-				else
+				} else {
 					node.lineNode.RemoveDirectlyCollapsed(section);
+				}
+
 				sectionLength -= 1;
 				if (sectionLength == 0) {
 					// we are done!
@@ -1039,10 +1090,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				// Mark all right subtrees as collapsed.
 				if (node.right != null) {
 					if (node.right.totalCount < sectionLength) {
-						if (add)
+						if (add) {
 							node.right.AddDirectlyCollapsed(section);
-						else
+						} else {
 							node.right.RemoveDirectlyCollapsed(section);
+						}
+
 						sectionLength -= node.right.totalCount;
 					} else {
 						// mark partially into the right subtree: go down the right subtree.
@@ -1064,16 +1117,18 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			UpdateAugmentedData(GetNode(section.End), UpdateAfterChildrenChangeRecursionMode.WholeBranch);
 		}
 
-		static void AddRemoveCollapsedSectionDown(CollapsedLineSection section, HeightTreeNode node, int sectionLength, bool add)
+		private static void AddRemoveCollapsedSectionDown(CollapsedLineSection section, HeightTreeNode node, int sectionLength, bool add)
 		{
 			while (true) {
 				if (node.left != null) {
 					if (node.left.totalCount < sectionLength) {
 						// mark left subtree
-						if (add)
+						if (add) {
 							node.left.AddDirectlyCollapsed(section);
-						else
+						} else {
 							node.left.RemoveDirectlyCollapsed(section);
+						}
+
 						sectionLength -= node.left.totalCount;
 					} else {
 						// mark only inside the left subtree
@@ -1082,10 +1137,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 						continue;
 					}
 				}
-				if (add)
+				if (add) {
 					node.lineNode.AddDirectlyCollapsed(section);
-				else
+				} else {
 					node.lineNode.RemoveDirectlyCollapsed(section);
+				}
+
 				sectionLength -= 1;
 				if (sectionLength == 0) {
 					// done!

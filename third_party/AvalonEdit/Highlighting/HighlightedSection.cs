@@ -35,9 +35,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		public int Length { get; set; }
 
-		int ISegment.EndOffset {
-			get { return this.Offset + this.Length; }
-		}
+		int ISegment.EndOffset => this.Offset + this.Length;
 
 		/// <summary>
 		/// Gets the highlighting color associated with the highlighted section.

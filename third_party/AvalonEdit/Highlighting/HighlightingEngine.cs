@@ -34,41 +34,36 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 	/// </summary>
 	public class HighlightingEngine
 	{
-		readonly HighlightingRuleSet mainRuleSet;
-		SpanStack spanStack = SpanStack.Empty;
+		private readonly HighlightingRuleSet mainRuleSet;
+		private SpanStack spanStack = SpanStack.Empty;
 
 		/// <summary>
 		/// Creates a new HighlightingEngine instance.
 		/// </summary>
 		public HighlightingEngine(HighlightingRuleSet mainRuleSet)
 		{
-			if (mainRuleSet == null)
-				throw new ArgumentNullException("mainRuleSet");
-			this.mainRuleSet = mainRuleSet;
+			this.mainRuleSet = mainRuleSet ?? throw new ArgumentNullException("mainRuleSet");
 		}
 
 		/// <summary>
 		/// Gets/sets the current span stack.
 		/// </summary>
 		public SpanStack CurrentSpanStack {
-			get { return spanStack; }
-			set {
-				spanStack = value ?? SpanStack.Empty;
-			}
+			get => spanStack; set => spanStack = value ?? SpanStack.Empty;
 		}
 
 		#region Highlighting Engine
 
 		// local variables from HighlightLineInternal (are member because they are accessed by HighlighLine helper methods)
-		string lineText;
-		int lineStartOffset;
-		int position;
+		private string lineText;
+		private int lineStartOffset;
+		private int position;
 
 		/// <summary>
 		/// the HighlightedLine where highlighting output is being written to.
 		/// if this variable is null, nothing is highlighted and only the span state is updated
 		/// </summary>
-		HighlightedLine highlightedLine;
+		private HighlightedLine highlightedLine;
 
 		/// <summary>
 		/// Highlights the specified line in the specified document.
@@ -111,26 +106,29 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			}
 		}
 
-		void HighlightLineInternal()
+		private void HighlightLineInternal()
 		{
 			position = 0;
 			ResetColorStack();
 			HighlightingRuleSet currentRuleSet = this.CurrentRuleSet;
-			Stack<Match[]> storedMatchArrays = new Stack<Match[]>();
+			Stack<Match[]> storedMatchArrays = new();
 			Match[] matches = AllocateMatchArray(currentRuleSet.Spans.Count);
 			Match endSpanMatch = null;
 
 			while (true) {
 				for (int i = 0; i < matches.Length; i++) {
-					if (matches[i] == null || (matches[i].Success && matches[i].Index < position))
+					if (matches[i] == null || (matches[i].Success && matches[i].Index < position)) {
 						matches[i] = currentRuleSet.Spans[i].StartExpression.Match(lineText, position);
+					}
 				}
-				if (endSpanMatch == null && !spanStack.IsEmpty)
+				if (endSpanMatch == null && !spanStack.IsEmpty) {
 					endSpanMatch = spanStack.Peek().EndExpression.Match(lineText, position);
+				}
 
 				Match firstMatch = Minimum(matches, endSpanMatch);
-				if (firstMatch == null)
+				if (firstMatch == null) {
 					break;
+				}
 
 				HighlightNonSpans(firstMatch.Index);
 
@@ -138,13 +136,17 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 
 				if (firstMatch == endSpanMatch) {
 					HighlightingSpan poppedSpan = spanStack.Peek();
-					if (!poppedSpan.SpanColorIncludesEnd)
+					if (!poppedSpan.SpanColorIncludesEnd) {
 						PopColor(); // pop SpanColor
+					}
+
 					PushColor(poppedSpan.EndColor);
 					position = firstMatch.Index + firstMatch.Length;
 					PopColor(); // pop EndColor
-					if (poppedSpan.SpanColorIncludesEnd)
+					if (poppedSpan.SpanColorIncludesEnd) {
 						PopColor(); // pop SpanColor
+					}
+
 					spanStack = spanStack.Pop();
 					currentRuleSet = this.CurrentRuleSet;
 					//FreeMatchArray(matches);
@@ -170,13 +172,16 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 					currentRuleSet = this.CurrentRuleSet;
 					storedMatchArrays.Push(matches);
 					matches = AllocateMatchArray(currentRuleSet.Spans.Count);
-					if (newSpan.SpanColorIncludesStart)
+					if (newSpan.SpanColorIncludesStart) {
 						PushColor(newSpan.SpanColor);
+					}
+
 					PushColor(newSpan.StartColor);
 					position = firstMatch.Index + firstMatch.Length;
 					PopColor();
-					if (!newSpan.SpanColorIncludesStart)
+					if (!newSpan.SpanColorIncludesStart) {
 						PushColor(newSpan.SpanColor);
+					}
 				}
 				endSpanMatch = null;
 			}
@@ -185,22 +190,26 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			PopAllColors();
 		}
 
-		void HighlightNonSpans(int until)
+		private void HighlightNonSpans(int until)
 		{
 			Debug.Assert(position <= until);
-			if (position == until)
+			if (position == until) {
 				return;
+			}
+
 			if (highlightedLine != null) {
 				IList<HighlightingRule> rules = CurrentRuleSet.Rules;
 				Match[] matches = AllocateMatchArray(rules.Count);
 				while (true) {
 					for (int i = 0; i < matches.Length; i++) {
-						if (matches[i] == null || (matches[i].Success && matches[i].Index < position))
+						if (matches[i] == null || (matches[i].Success && matches[i].Index < position)) {
 							matches[i] = rules[i].Regex.Match(lineText, position, until - position);
+						}
 					}
 					Match firstMatch = Minimum(matches, null);
-					if (firstMatch == null)
+					if (firstMatch == null) {
 						break;
+					}
 
 					position = firstMatch.Index;
 					int ruleIndex = Array.IndexOf(matches, firstMatch);
@@ -219,23 +228,24 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			position = until;
 		}
 
-		static readonly HighlightingRuleSet emptyRuleSet = new HighlightingRuleSet() { Name = "EmptyRuleSet" };
+		private static readonly HighlightingRuleSet emptyRuleSet = new() { Name = "EmptyRuleSet" };
 
-		HighlightingRuleSet CurrentRuleSet {
+		private HighlightingRuleSet CurrentRuleSet {
 			get {
-				if (spanStack.IsEmpty)
+				if (spanStack.IsEmpty) {
 					return mainRuleSet;
-				else
+				} else {
 					return spanStack.Peek().RuleSet ?? emptyRuleSet;
+				}
 			}
 		}
 		#endregion
 
 		#region Color Stack Management
-		Stack<HighlightedSection> highlightedSectionStack;
-		HighlightedSection lastPoppedSection;
+		private Stack<HighlightedSection> highlightedSectionStack;
+		private HighlightedSection lastPoppedSection;
 
-		void ResetColorStack()
+		private void ResetColorStack()
 		{
 			Debug.Assert(position == 0);
 			lastPoppedSection = null;
@@ -249,10 +259,12 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			}
 		}
 
-		void PushColor(HighlightingColor color)
+		private void PushColor(HighlightingColor color)
 		{
-			if (highlightedLine == null)
+			if (highlightedLine == null) {
 				return;
+			}
+
 			if (color == null) {
 				highlightedSectionStack.Push(null);
 			} else if (lastPoppedSection != null && lastPoppedSection.Color == color
@@ -260,7 +272,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 				highlightedSectionStack.Push(lastPoppedSection);
 				lastPoppedSection = null;
 			} else {
-				HighlightedSection hs = new HighlightedSection {
+				HighlightedSection hs = new() {
 					Offset = position + lineStartOffset,
 					Color = color
 				};
@@ -270,25 +282,29 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			}
 		}
 
-		void PopColor()
+		private void PopColor()
 		{
-			if (highlightedLine == null)
+			if (highlightedLine == null) {
 				return;
+			}
+
 			HighlightedSection s = highlightedSectionStack.Pop();
 			if (s != null) {
-				s.Length = (position + lineStartOffset) - s.Offset;
-				if (s.Length == 0)
+				s.Length = position + lineStartOffset - s.Offset;
+				if (s.Length == 0) {
 					highlightedLine.Sections.Remove(s);
-				else
+				} else {
 					lastPoppedSection = s;
+				}
 			}
 		}
 
-		void PopAllColors()
+		private void PopAllColors()
 		{
 			if (highlightedSectionStack != null) {
-				while (highlightedSectionStack.Count > 0)
+				while (highlightedSectionStack.Count > 0) {
 					PopColor();
+				}
 			}
 		}
 		#endregion
@@ -297,25 +313,28 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <summary>
 		/// Returns the first match from the array or endSpanMatch.
 		/// </summary>
-		static Match Minimum(Match[] arr, Match endSpanMatch)
+		private static Match Minimum(Match[] arr, Match endSpanMatch)
 		{
 			Match min = null;
 			foreach (Match v in arr) {
-				if (v.Success && (min == null || v.Index < min.Index))
+				if (v.Success && (min == null || v.Index < min.Index)) {
 					min = v;
+				}
 			}
-			if (endSpanMatch != null && endSpanMatch.Success && (min == null || endSpanMatch.Index < min.Index))
+			if (endSpanMatch != null && endSpanMatch.Success && (min == null || endSpanMatch.Index < min.Index)) {
 				return endSpanMatch;
-			else
+			} else {
 				return min;
+			}
 		}
 
-		static Match[] AllocateMatchArray(int count)
+		private static Match[] AllocateMatchArray(int count)
 		{
-			if (count == 0)
+			if (count == 0) {
 				return Empty<Match>.Array;
-			else
+			} else {
 				return new Match[count];
+			}
 		}
 		#endregion
 	}

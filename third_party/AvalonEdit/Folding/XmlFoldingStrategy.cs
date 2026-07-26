@@ -29,7 +29,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 	/// <summary>
 	/// Holds information about the start of a fold in an xml string.
 	/// </summary>
-	sealed class XmlFoldStart : NewFolding
+	internal sealed class XmlFoldStart : NewFolding
 	{
 		internal int StartLine;
 	}
@@ -50,8 +50,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// </summary>
 		public void UpdateFoldings(FoldingManager manager, TextDocument document)
 		{
-			int firstErrorOffset;
-			IEnumerable<NewFolding> foldings = CreateNewFoldings(document, out firstErrorOffset);
+			IEnumerable<NewFolding> foldings = CreateNewFoldings(document, out int firstErrorOffset);
 			manager.UpdateFoldings(foldings, firstErrorOffset);
 		}
 
@@ -61,12 +60,13 @@ namespace ICSharpCode.AvalonEdit.Folding
 		public IEnumerable<NewFolding> CreateNewFoldings(TextDocument document, out int firstErrorOffset)
 		{
 			try {
-				XmlTextReader reader = new XmlTextReader(document.CreateReader());
-				reader.XmlResolver = null; // don't resolve DTDs
+				XmlTextReader reader = new(document.CreateReader()) {
+					XmlResolver = null // don't resolve DTDs
+				};
 				return CreateNewFoldings(document, reader, out firstErrorOffset);
 			} catch (XmlException) {
 				firstErrorOffset = 0;
-				return Enumerable.Empty<NewFolding>();
+				return [];
 			}
 		}
 
@@ -75,8 +75,8 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// </summary>
 		public IEnumerable<NewFolding> CreateNewFoldings(TextDocument document, XmlReader reader, out int firstErrorOffset)
 		{
-			Stack<XmlFoldStart> stack = new Stack<XmlFoldStart>();
-			List<NewFolding> foldMarkers = new List<NewFolding>();
+			Stack<XmlFoldStart> stack = new();
+			List<NewFolding> foldMarkers = [];
 			try {
 				while (reader.Read()) {
 					switch (reader.NodeType) {
@@ -100,19 +100,19 @@ namespace ICSharpCode.AvalonEdit.Folding
 				firstErrorOffset = -1;
 			} catch (XmlException ex) {
 				// ignore errors at invalid positions (prevent ArgumentOutOfRangeException)
-				if (ex.LineNumber >= 1 && ex.LineNumber <= document.LineCount)
+				if (ex.LineNumber >= 1 && ex.LineNumber <= document.LineCount) {
 					firstErrorOffset = document.GetOffset(ex.LineNumber, ex.LinePosition);
-				else
+				} else {
 					firstErrorOffset = 0;
+				}
 			}
 			foldMarkers.Sort((a, b) => a.StartOffset.CompareTo(b.StartOffset));
 			return foldMarkers;
 		}
 
-		static int GetOffset(TextDocument document, XmlReader reader)
+		private static int GetOffset(TextDocument document, XmlReader reader)
 		{
-			IXmlLineInfo info = reader as IXmlLineInfo;
-			if (info != null && info.HasLineInfo()) {
+			if (reader is IXmlLineInfo info && info.HasLineInfo()) {
 				return document.GetOffset(info.LineNumber, info.LinePosition);
 			} else {
 				throw new ArgumentException("XmlReader does not have positioning information.");
@@ -124,7 +124,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// </summary>
 		/// <remarks>The text displayed when the comment is folded is the first
 		/// line of the comment.</remarks>
-		static void CreateCommentFold(TextDocument document, List<NewFolding> foldMarkers, XmlReader reader)
+		private static void CreateCommentFold(TextDocument document, List<NewFolding> foldMarkers, XmlReader reader)
 		{
 			string comment = reader.Value;
 			if (comment != null) {
@@ -137,7 +137,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 					int startOffset = GetOffset(document, reader) - 4;
 					int endOffset = startOffset + comment.Length + 7;
 
-					string foldText = String.Concat("<!--", comment.Substring(0, firstNewLine).TrimEnd('\r'), "-->");
+					string foldText = String.Concat("<!--", comment[..firstNewLine].TrimEnd('\r'), "-->");
 					foldMarkers.Add(new NewFolding(startOffset, endOffset) { Name = foldText });
 				}
 			}
@@ -146,14 +146,14 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// <summary>
 		/// Creates an XmlFoldStart for the start tag of an element.
 		/// </summary>
-		XmlFoldStart CreateElementFoldStart(TextDocument document, XmlReader reader)
+		private XmlFoldStart CreateElementFoldStart(TextDocument document, XmlReader reader)
 		{
 			// Take off 1 from the offset returned
 			// from the xml since it points to the start
 			// of the element name and not the beginning
 			// tag.
 			//XmlFoldStart newFoldStart = new XmlFoldStart(reader.Prefix, reader.LocalName, reader.LineNumber - 1, reader.LinePosition - 2);
-			XmlFoldStart newFoldStart = new XmlFoldStart();
+			XmlFoldStart newFoldStart = new();
 
 			IXmlLineInfo lineInfo = (IXmlLineInfo)reader;
 			newFoldStart.StartLine = lineInfo.LineNumber;
@@ -172,7 +172,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// Create an element fold if the start and end tag are on
 		/// different lines.
 		/// </summary>
-		static void CreateElementFold(TextDocument document, List<NewFolding> foldMarkers, XmlReader reader, XmlFoldStart foldStart)
+		private static void CreateElementFold(TextDocument document, List<NewFolding> foldMarkers, XmlReader reader, XmlFoldStart foldStart)
 		{
 			IXmlLineInfo lineInfo = (IXmlLineInfo)reader;
 			int endLine = lineInfo.LineNumber;
@@ -192,9 +192,9 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// line of the start tag.  It does not cater for elements where attributes
 		/// are not on the same line as the start tag.
 		/// </remarks>
-		static string GetAttributeFoldText(XmlReader reader)
+		private static string GetAttributeFoldText(XmlReader reader)
 		{
-			StringBuilder text = new StringBuilder();
+			StringBuilder text = new();
 
 			for (int i = 0; i < reader.AttributeCount; ++i) {
 				reader.MoveToAttribute(i);
@@ -220,9 +220,9 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// the XmlTextReader is the plain unencoded string and .NET
 		/// does not provide us with an xml encode method.
 		/// </summary>
-		static string XmlEncodeAttributeValue(string attributeValue, char quoteChar)
+		private static string XmlEncodeAttributeValue(string attributeValue, char quoteChar)
 		{
-			StringBuilder encodedValue = new StringBuilder(attributeValue);
+			StringBuilder encodedValue = new(attributeValue);
 
 			encodedValue.Replace("&", "&amp;");
 			encodedValue.Replace("<", "&lt;");

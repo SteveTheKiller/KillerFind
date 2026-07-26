@@ -28,14 +28,14 @@ namespace ICSharpCode.AvalonEdit.Editing
 	/// </summary>
 	public static class DottedLineMargin
 	{
-		static readonly object tag = new object();
+		private static readonly object tag = new();
 
 		/// <summary>
 		/// Creates a vertical dotted line to separate the line numbers from the text view.
 		/// </summary>
 		public static UIElement Create()
 		{
-			Line line = new Line {
+			Line line = new() {
 				X1 = 0,
 				Y1 = 0,
 				X2 = 0,
@@ -56,8 +56,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		public static bool IsDottedLineMargin(UIElement element)
 		{
-			Line l = element as Line;
-			return l != null && l.Tag == tag;
+			return element is Line l && l.Tag == tag;
 		}
 	}
 }

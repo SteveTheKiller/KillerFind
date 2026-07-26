@@ -32,11 +32,14 @@ namespace ICSharpCode.AvalonEdit.Search
 		/// </summary>
 		public static ISearchStrategy Create(string searchPattern, bool ignoreCase, bool matchWholeWords, SearchMode mode)
 		{
-			if (searchPattern == null)
+			if (searchPattern == null) {
 				throw new ArgumentNullException("searchPattern");
+			}
+
 			RegexOptions options = RegexOptions.Compiled | RegexOptions.Multiline;
-			if (ignoreCase)
+			if (ignoreCase) {
 				options |= RegexOptions.IgnoreCase;
+			}
 
 			switch (mode) {
 				case SearchMode.Normal:
@@ -47,19 +50,20 @@ namespace ICSharpCode.AvalonEdit.Search
 					break;
 			}
 			try {
-				Regex pattern = new Regex(searchPattern, options);
+				Regex pattern = new(searchPattern, options);
 				return new RegexSearchStrategy(pattern, matchWholeWords);
 			} catch (ArgumentException ex) {
 				throw new SearchPatternException(ex.Message, ex);
 			}
 		}
 
-		static string ConvertWildcardsToRegex(string searchPattern)
+		private static string ConvertWildcardsToRegex(string searchPattern)
 		{
-			if (string.IsNullOrEmpty(searchPattern))
+			if (string.IsNullOrEmpty(searchPattern)) {
 				return "";
+			}
 
-			StringBuilder builder = new StringBuilder();
+			StringBuilder builder = new();
 
 			foreach (char ch in searchPattern) {
 				switch (ch) {

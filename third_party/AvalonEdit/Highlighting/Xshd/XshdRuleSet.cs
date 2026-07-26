@@ -39,14 +39,12 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		/// </summary>
 		public bool? IgnoreCase { get; set; }
 
-		readonly NullSafeCollection<XshdElement> elements = new NullSafeCollection<XshdElement>();
+		private readonly NullSafeCollection<XshdElement> elements = [];
 
 		/// <summary>
 		/// Gets the collection of elements.
 		/// </summary>
-		public IList<XshdElement> Elements {
-			get { return elements; }
-		}
+		public IList<XshdElement> Elements => elements;
 
 		/// <summary>
 		/// Applies the visitor to all elements.

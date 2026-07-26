@@ -37,24 +37,30 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		public static Selection Create(TextArea textArea, int startOffset, int endOffset)
 		{
-			if (textArea == null)
+			if (textArea == null) {
 				throw new ArgumentNullException("textArea");
-			if (startOffset == endOffset)
+			}
+
+			if (startOffset == endOffset) {
 				return textArea.emptySelection;
-			else
+			} else {
 				return new SimpleSelection(textArea,
 										   new TextViewPosition(textArea.Document.GetLocation(startOffset)),
 										   new TextViewPosition(textArea.Document.GetLocation(endOffset)));
+			}
 		}
 
 		internal static Selection Create(TextArea textArea, TextViewPosition start, TextViewPosition end)
 		{
-			if (textArea == null)
+			if (textArea == null) {
 				throw new ArgumentNullException("textArea");
-			if (textArea.Document.GetOffset(start.Location) == textArea.Document.GetOffset(end.Location) && start.VisualColumn == end.VisualColumn)
+			}
+
+			if (textArea.Document.GetOffset(start.Location) == textArea.Document.GetOffset(end.Location) && start.VisualColumn == end.VisualColumn) {
 				return textArea.emptySelection;
-			else
+			} else {
 				return new SimpleSelection(textArea, start, end);
+			}
 		}
 
 		/// <summary>
@@ -62,8 +68,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		public static Selection Create(TextArea textArea, ISegment segment)
 		{
-			if (segment == null)
+			if (segment == null) {
 				throw new ArgumentNullException("segment");
+			}
+
 			return Create(textArea, segment.Offset, segment.EndOffset);
 		}
 
@@ -74,9 +82,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		protected Selection(TextArea textArea)
 		{
-			if (textArea == null)
-				throw new ArgumentNullException("textArea");
-			this.textArea = textArea;
+			this.textArea = textArea ?? throw new ArgumentNullException("textArea");
 		}
 
 		/// <summary>
@@ -108,14 +114,14 @@ namespace ICSharpCode.AvalonEdit.Editing
 		internal string AddSpacesIfRequired(string newText, TextViewPosition start, TextViewPosition end)
 		{
 			if (EnableVirtualSpace && InsertVirtualSpaces(newText, start, end)) {
-				var line = textArea.Document.GetLineByNumber(start.Line);
+				DocumentLine line = textArea.Document.GetLineByNumber(start.Line);
 				string lineText = textArea.Document.GetText(line);
-				var vLine = textArea.TextView.GetOrConstructVisualLine(line);
+				Rendering.VisualLine vLine = textArea.TextView.GetOrConstructVisualLine(line);
 				int colDiff = start.VisualColumn - vLine.VisualLengthWithEndOfLineMarker;
 				if (colDiff > 0) {
 					string additionalSpaces = "";
 					if (!textArea.Options.ConvertTabsToSpaces && lineText.Trim('\t').Length == 0) {
-						int tabCount = (int)(colDiff / textArea.Options.IndentationSize);
+						int tabCount = colDiff / textArea.Options.IndentationSize;
 						additionalSpaces = new string('\t', tabCount);
 						colDiff -= tabCount * textArea.Options.IndentationSize;
 					}
@@ -126,7 +132,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			return newText;
 		}
 
-		bool InsertVirtualSpaces(string newText, TextViewPosition start, TextViewPosition end)
+		private bool InsertVirtualSpaces(string newText, TextViewPosition start, TextViewPosition end)
 		{
 			return (!string.IsNullOrEmpty(newText) || !(IsInVirtualSpace(start) && IsInVirtualSpace(end)))
 				&& newText != "\r\n"
@@ -134,7 +140,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 				&& newText != "\r";
 		}
 
-		bool IsInVirtualSpace(TextViewPosition pos)
+		private bool IsInVirtualSpace(TextViewPosition pos)
 		{
 			return pos.VisualColumn > textArea.TextView.GetOrConstructVisualLine(textArea.Document.GetLineByNumber(pos.Line)).VisualLength;
 		}
@@ -147,16 +153,12 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <summary>
 		/// Gets whether the selection is empty.
 		/// </summary>
-		public virtual bool IsEmpty {
-			get { return Length == 0; }
-		}
+		public virtual bool IsEmpty => Length == 0;
 
 		/// <summary>
 		/// Gets whether virtual space is enabled for this selection.
 		/// </summary>
-		public virtual bool EnableVirtualSpace {
-			get { return textArea.Options.EnableVirtualSpace; }
-		}
+		public virtual bool EnableVirtualSpace => textArea.Options.EnableVirtualSpace;
 
 		/// <summary>
 		/// Gets the selection length.
@@ -181,13 +183,13 @@ namespace ICSharpCode.AvalonEdit.Editing
 		public virtual bool IsMultiline {
 			get {
 				ISegment surroundingSegment = this.SurroundingSegment;
-				if (surroundingSegment == null)
+				if (surroundingSegment == null) {
 					return false;
+				}
+
 				int start = surroundingSegment.Offset;
 				int end = start + surroundingSegment.Length;
-				var document = textArea.Document;
-				if (document == null)
-					throw ThrowUtil.NoDocumentAssigned();
+				TextDocument document = textArea.Document ?? throw ThrowUtil.NoDocumentAssigned();
 				return document.GetLineByOffset(start) != document.GetLineByOffset(end);
 			}
 		}
@@ -197,22 +199,24 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		public virtual string GetText()
 		{
-			var document = textArea.Document;
-			if (document == null)
-				throw ThrowUtil.NoDocumentAssigned();
+			TextDocument document = textArea.Document ?? throw ThrowUtil.NoDocumentAssigned();
 			StringBuilder b = null;
 			string text = null;
 			foreach (ISegment s in Segments) {
 				if (text != null) {
-					if (b == null)
+					if (b == null) {
 						b = new StringBuilder(text);
-					else
+					} else {
 						b.Append(text);
+					}
 				}
 				text = document.GetText(s);
 			}
 			if (b != null) {
-				if (text != null) b.Append(text);
+				if (text != null) {
+					b.Append(text);
+				}
+
 				return b.ToString();
 			} else {
 				return text ?? string.Empty;
@@ -224,16 +228,20 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		public string CreateHtmlFragment(HtmlOptions options)
 		{
-			if (options == null)
+			if (options == null) {
 				throw new ArgumentNullException("options");
+			}
+
 			IHighlighter highlighter = textArea.GetService(typeof(IHighlighter)) as IHighlighter;
-			StringBuilder html = new StringBuilder();
+			StringBuilder html = new();
 			bool first = true;
 			foreach (ISegment selectedSegment in this.Segments) {
-				if (first)
+				if (first) {
 					first = false;
-				else
+				} else {
 					html.AppendLine("<br>");
+				}
+
 				html.Append(HtmlClipboard.CreateHtmlFragment(textArea.Document, highlighter, selectedSegment, options));
 			}
 			return html.ToString();
@@ -252,8 +260,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// otherwise, false.</returns>
 		public virtual bool Contains(int offset)
 		{
-			if (this.IsEmpty)
+			if (this.IsEmpty) {
 				return false;
+			}
+
 			if (this.SurroundingSegment.Contains(offset, 0)) {
 				foreach (ISegment s in this.Segments) {
 					if (s.Contains(offset, 0)) {
@@ -269,7 +279,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		public virtual DataObject CreateDataObject(TextArea textArea)
 		{
-			DataObject data = new DataObject();
+			DataObject data = new();
 
 			// Ensure we use the appropriate newline sequence for the OS
 			string text = TextUtilities.NormalizeNewLines(GetText(), Environment.NewLine);

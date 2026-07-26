@@ -26,7 +26,7 @@ using System.Xml;
 
 namespace ICSharpCode.AvalonEdit.Utils
 {
-	static class ExtensionMethods
+	internal static class ExtensionMethods
 	{
 		#region Epsilon / IsClose / CoerceValue
 		/// <summary>
@@ -45,7 +45,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		public static bool IsClose(this double d1, double d2)
 		{
 			if (d1 == d2) // required for infinities
+{
 				return true;
+			}
+
 			return Math.Abs(d1 - d2) < Epsilon;
 		}
 
@@ -104,8 +107,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 		#region AddRange / Sequence
 		public static void AddRange<T>(this ICollection<T> collection, IEnumerable<T> elements)
 		{
-			foreach (T e in elements)
+			foreach (T e in elements) {
 				collection.Add(e);
+			}
 		}
 
 		/// <summary>
@@ -124,7 +128,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		public static string GetAttributeOrNull(this XmlElement element, string attributeName)
 		{
 			XmlAttribute attr = element.GetAttributeNode(attributeName);
-			return attr != null ? attr.Value : null;
+			return attr?.Value;
 		}
 
 		/// <summary>
@@ -133,7 +137,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		public static bool? GetBoolAttribute(this XmlElement element, string attributeName)
 		{
 			XmlAttribute attr = element.GetAttributeNode(attributeName);
-			return attr != null ? (bool?)XmlConvert.ToBoolean(attr.Value) : null;
+			return attr != null ? XmlConvert.ToBoolean(attr.Value) : null;
 		}
 
 		/// <summary>
@@ -142,10 +146,11 @@ namespace ICSharpCode.AvalonEdit.Utils
 		public static bool? GetBoolAttribute(this XmlReader reader, string attributeName)
 		{
 			string attributeValue = reader.GetAttribute(attributeName);
-			if (attributeValue == null)
+			if (attributeValue == null) {
 				return null;
-			else
+			} else {
 				return XmlConvert.ToBoolean(attributeValue);
+			}
 		}
 		#endregion
 
@@ -213,7 +218,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		{
 			while (obj != null) {
 				yield return obj;
-				if (obj is Visual || obj is System.Windows.Media.Media3D.Visual3D) {
+				if (obj is Visual or System.Windows.Media.Media3D.Visual3D) {
 					obj = VisualTreeHelper.GetParent(obj);
 				} else if (obj is FrameworkContentElement) {
 					// When called with a non-visual such as a TextElement, walk up the
@@ -228,8 +233,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 		[Conditional("DEBUG")]
 		public static void CheckIsFrozen(Freezable f)
 		{
-			if (f != null && !f.IsFrozen)
+			if (f != null && !f.IsFrozen) {
 				Debug.WriteLine("Performance warning: Not frozen: " + f.ToString());
+			}
 		}
 
 		[Conditional("DEBUG")]

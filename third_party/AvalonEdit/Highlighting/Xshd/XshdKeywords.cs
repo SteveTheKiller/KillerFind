@@ -34,14 +34,12 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		/// </summary>
 		public XshdReference<XshdColor> ColorReference { get; set; }
 
-		readonly NullSafeCollection<string> words = new NullSafeCollection<string>();
+		private readonly NullSafeCollection<string> words = [];
 
 		/// <summary>
 		/// Gets the list of key words.
 		/// </summary>
-		public IList<string> Words {
-			get { return words; }
-		}
+		public IList<string> Words => words;
 
 		/// <inheritdoc/>
 		public override object AcceptVisitor(IXshdVisitor visitor)

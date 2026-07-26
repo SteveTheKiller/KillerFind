@@ -69,9 +69,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		protected TextArea(TextView textView)
 		{
-			if (textView == null)
-				throw new ArgumentNullException("textView");
-			this.textView = textView;
+			this.TextView = textView ?? throw new ArgumentNullException("textView");
 			this.Options = textView.Options;
 
 			selection = emptySelection = new EmptySelection(this);
@@ -81,13 +79,13 @@ namespace ICSharpCode.AvalonEdit.Editing
 			textView.LineTransformers.Add(new SelectionColorizer(this));
 			textView.InsertLayer(new SelectionLayer(this), KnownLayer.Selection, LayerInsertionPosition.Replace);
 
-			caret = new Caret(this);
-			caret.PositionChanged += (sender, e) => RequestSelectionValidation();
-			caret.PositionChanged += CaretPositionChanged;
+			Caret = new Caret(this);
+			Caret.PositionChanged += (sender, e) => RequestSelectionValidation();
+			Caret.PositionChanged += CaretPositionChanged;
 			AttachTypingEvents();
 			ime = new ImeSupport(this);
 
-			leftMargins.CollectionChanged += leftMargins_CollectionChanged;
+			LeftMargins.CollectionChanged += leftMargins_CollectionChanged;
 
 			this.DefaultInputHandler = new TextAreaDefaultInputHandler(this);
 			this.ActiveInputHandler = this.DefaultInputHandler;
@@ -101,8 +99,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <remarks><inheritdoc cref="ITextAreaInputHandler"/></remarks>
 		public TextAreaDefaultInputHandler DefaultInputHandler { get; private set; }
 
-		ITextAreaInputHandler activeInputHandler;
-		bool isChangingInputHandler;
+		private ITextAreaInputHandler activeInputHandler;
+		private bool isChangingInputHandler;
 
 		/// <summary>
 		/// Gets/Sets the active input handler.
@@ -110,29 +108,30 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		/// <remarks><inheritdoc cref="ITextAreaInputHandler"/></remarks>
 		public ITextAreaInputHandler ActiveInputHandler {
-			get { return activeInputHandler; }
+			get => activeInputHandler;
 			set {
-				if (value != null && value.TextArea != this)
+				if (value != null && value.TextArea != this) {
 					throw new ArgumentException("The input handler was created for a different text area than this one.");
-				if (isChangingInputHandler)
+				}
+
+				if (isChangingInputHandler) {
 					throw new InvalidOperationException("Cannot set ActiveInputHandler recursively");
+				}
+
 				if (activeInputHandler != value) {
 					isChangingInputHandler = true;
 					try {
 						// pop the whole stack
-						PopStackedInputHandler(stackedInputHandlers.LastOrDefault());
-						Debug.Assert(stackedInputHandlers.IsEmpty);
+						PopStackedInputHandler(StackedInputHandlers.LastOrDefault());
+						Debug.Assert(StackedInputHandlers.IsEmpty);
 
-						if (activeInputHandler != null)
-							activeInputHandler.Detach();
+						activeInputHandler?.Detach();
 						activeInputHandler = value;
-						if (value != null)
-							value.Attach();
+						value?.Attach();
 					} finally {
 						isChangingInputHandler = false;
 					}
-					if (ActiveInputHandlerChanged != null)
-						ActiveInputHandlerChanged(this, EventArgs.Empty);
+					ActiveInputHandlerChanged?.Invoke(this, EventArgs.Empty);
 				}
 			}
 		}
@@ -142,15 +141,11 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		public event EventHandler ActiveInputHandlerChanged;
 
-		ImmutableStack<TextAreaStackedInputHandler> stackedInputHandlers = ImmutableStack<TextAreaStackedInputHandler>.Empty;
-
 		/// <summary>
 		/// Gets the list of currently active stacked input handlers.
 		/// </summary>
 		/// <remarks><inheritdoc cref="ITextAreaInputHandler"/></remarks>
-		public ImmutableStack<TextAreaStackedInputHandler> StackedInputHandlers {
-			get { return stackedInputHandlers; }
-		}
+		public ImmutableStack<TextAreaStackedInputHandler> StackedInputHandlers { get; private set; } = ImmutableStack<TextAreaStackedInputHandler>.Empty;
 
 		/// <summary>
 		/// Pushes an input handler onto the list of stacked input handlers.
@@ -158,9 +153,11 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <remarks><inheritdoc cref="ITextAreaInputHandler"/></remarks>
 		public void PushStackedInputHandler(TextAreaStackedInputHandler inputHandler)
 		{
-			if (inputHandler == null)
+			if (inputHandler == null) {
 				throw new ArgumentNullException("inputHandler");
-			stackedInputHandlers = stackedInputHandlers.Push(inputHandler);
+			}
+
+			StackedInputHandlers = StackedInputHandlers.Push(inputHandler);
 			inputHandler.Attach();
 		}
 
@@ -172,11 +169,11 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <remarks><inheritdoc cref="ITextAreaInputHandler"/></remarks>
 		public void PopStackedInputHandler(TextAreaStackedInputHandler inputHandler)
 		{
-			if (stackedInputHandlers.Any(i => i == inputHandler)) {
+			if (StackedInputHandlers.Any(i => i == inputHandler)) {
 				ITextAreaInputHandler oldHandler;
 				do {
-					oldHandler = stackedInputHandlers.Peek();
-					stackedInputHandlers = stackedInputHandlers.Pop();
+					oldHandler = StackedInputHandlers.Peek();
+					StackedInputHandlers = StackedInputHandlers.Pop();
 					oldHandler.Detach();
 				} while (oldHandler != inputHandler);
 			}
@@ -194,19 +191,18 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// Gets/Sets the document displayed by the text editor.
 		/// </summary>
 		public TextDocument Document {
-			get { return (TextDocument)GetValue(DocumentProperty); }
-			set { SetValue(DocumentProperty, value); }
+			get => (TextDocument)GetValue(DocumentProperty); set => SetValue(DocumentProperty, value);
 		}
 
 		/// <inheritdoc/>
 		public event EventHandler DocumentChanged;
 
-		static void OnDocumentChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
+		private static void OnDocumentChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
 		{
 			((TextArea)dp).OnDocumentChanged((TextDocument)e.OldValue, (TextDocument)e.NewValue);
 		}
 
-		void OnDocumentChanged(TextDocument oldValue, TextDocument newValue)
+		private void OnDocumentChanged(TextDocument oldValue, TextDocument newValue)
 		{
 			if (oldValue != null) {
 				TextDocumentWeakEventManager.Changing.RemoveListener(oldValue, this);
@@ -214,7 +210,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 				TextDocumentWeakEventManager.UpdateStarted.RemoveListener(oldValue, this);
 				TextDocumentWeakEventManager.UpdateFinished.RemoveListener(oldValue, this);
 			}
-			textView.Document = newValue;
+			TextView.Document = newValue;
 			if (newValue != null) {
 				TextDocumentWeakEventManager.Changing.AddListener(newValue, this);
 				TextDocumentWeakEventManager.Changed.AddListener(newValue, this);
@@ -223,10 +219,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 			// Reset caret location and selection: this is necessary because the caret/selection might be invalid
 			// in the new document (e.g. if new document is shorter than the old document).
-			caret.Location = new TextLocation(1, 1);
+			Caret.Location = new TextLocation(1, 1);
 			this.ClearSelection();
-			if (DocumentChanged != null)
-				DocumentChanged(this, EventArgs.Empty);
+			DocumentChanged?.Invoke(this, EventArgs.Empty);
+
 			CommandManager.InvalidateRequerySuggested();
 		}
 		#endregion
@@ -242,8 +238,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// Gets/Sets the document displayed by the text editor.
 		/// </summary>
 		public TextEditorOptions Options {
-			get { return (TextEditorOptions)GetValue(OptionsProperty); }
-			set { SetValue(OptionsProperty, value); }
+			get => (TextEditorOptions)GetValue(OptionsProperty); set => SetValue(OptionsProperty, value);
 		}
 
 		/// <summary>
@@ -256,22 +251,20 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		protected virtual void OnOptionChanged(PropertyChangedEventArgs e)
 		{
-			if (OptionChanged != null) {
-				OptionChanged(this, e);
-			}
+			OptionChanged?.Invoke(this, e);
 		}
 
-		static void OnOptionsChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
+		private static void OnOptionsChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
 		{
 			((TextArea)dp).OnOptionsChanged((TextEditorOptions)e.OldValue, (TextEditorOptions)e.NewValue);
 		}
 
-		void OnOptionsChanged(TextEditorOptions oldValue, TextEditorOptions newValue)
+		private void OnOptionsChanged(TextEditorOptions oldValue, TextEditorOptions newValue)
 		{
 			if (oldValue != null) {
 				PropertyChangedWeakEventManager.RemoveListener(oldValue, this);
 			}
-			textView.Options = newValue;
+			TextView.Options = newValue;
 			if (newValue != null) {
 				PropertyChangedWeakEventManager.AddListener(newValue, this);
 			}
@@ -309,33 +302,33 @@ namespace ICSharpCode.AvalonEdit.Editing
 		#endregion
 
 		#region Caret handling on document changes
-		void OnDocumentChanging()
+		private void OnDocumentChanging()
 		{
-			caret.OnDocumentChanging();
+			Caret.OnDocumentChanging();
 		}
 
-		void OnDocumentChanged(DocumentChangeEventArgs e)
+		private void OnDocumentChanged(DocumentChangeEventArgs e)
 		{
-			caret.OnDocumentChanged(e);
+			Caret.OnDocumentChanged(e);
 			this.Selection = selection.UpdateOnDocumentChange(e);
 		}
 
-		void OnUpdateStarted()
+		private void OnUpdateStarted()
 		{
 			Document.UndoStack.PushOptional(new RestoreCaretAndSelectionUndoAction(this));
 		}
 
-		void OnUpdateFinished()
+		private void OnUpdateFinished()
 		{
-			caret.OnDocumentUpdateFinished();
+			Caret.OnDocumentUpdateFinished();
 		}
 
-		sealed class RestoreCaretAndSelectionUndoAction : IUndoableOperation
+		private sealed class RestoreCaretAndSelectionUndoAction : IUndoableOperation
 		{
 			// keep textarea in weak reference because the IUndoableOperation is stored with the document
-			WeakReference textAreaReference;
-			TextViewPosition caretPosition;
-			Selection selection;
+			private readonly WeakReference textAreaReference;
+			private TextViewPosition caretPosition;
+			private readonly Selection selection;
 
 			public RestoreCaretAndSelectionUndoAction(TextArea textArea)
 			{
@@ -364,29 +357,24 @@ namespace ICSharpCode.AvalonEdit.Editing
 		#endregion
 
 		#region TextView property
-		readonly TextView textView;
-		IScrollInfo scrollInfo;
+		private IScrollInfo scrollInfo;
 
 		/// <summary>
 		/// Gets the text view used to display text in this text area.
 		/// </summary>
-		public TextView TextView {
-			get {
-				return textView;
-			}
-		}
+		public TextView TextView { get; }
 		/// <inheritdoc/>
 		public override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
-			scrollInfo = textView;
+			scrollInfo = TextView;
 			ApplyScrollInfo();
 		}
 		#endregion
 
 		#region Selection property
 		internal readonly Selection emptySelection;
-		Selection selection;
+		private Selection selection;
 
 		/// <summary>
 		/// Occurs when the selection has changed.
@@ -397,42 +385,45 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// Gets/Sets the selection in this text area.
 		/// </summary>
 		public Selection Selection {
-			get { return selection; }
+			get => selection;
 			set {
-				if (value == null)
+				if (value == null) {
 					throw new ArgumentNullException("value");
-				if (value.textArea != this)
+				}
+
+				if (value.textArea != this) {
 					throw new ArgumentException("Cannot use a Selection instance that belongs to another text area.");
+				}
+
 				if (!object.Equals(selection, value)) {
 					//					Debug.WriteLine("Selection change from " + selection + " to " + value);
-					if (textView != null) {
+					if (TextView != null) {
 						ISegment oldSegment = selection.SurroundingSegment;
 						ISegment newSegment = value.SurroundingSegment;
-						if (!Selection.EnableVirtualSpace && (selection is SimpleSelection && value is SimpleSelection && oldSegment != null && newSegment != null)) {
+						if (!Selection.EnableVirtualSpace && selection is SimpleSelection && value is SimpleSelection && oldSegment != null && newSegment != null) {
 							// perf optimization:
 							// When a simple selection changes, don't redraw the whole selection, but only the changed parts.
 							int oldSegmentOffset = oldSegment.Offset;
 							int newSegmentOffset = newSegment.Offset;
 							if (oldSegmentOffset != newSegmentOffset) {
-								textView.Redraw(Math.Min(oldSegmentOffset, newSegmentOffset),
+								TextView.Redraw(Math.Min(oldSegmentOffset, newSegmentOffset),
 												Math.Abs(oldSegmentOffset - newSegmentOffset),
 												DispatcherPriority.Render);
 							}
 							int oldSegmentEndOffset = oldSegment.EndOffset;
 							int newSegmentEndOffset = newSegment.EndOffset;
 							if (oldSegmentEndOffset != newSegmentEndOffset) {
-								textView.Redraw(Math.Min(oldSegmentEndOffset, newSegmentEndOffset),
+								TextView.Redraw(Math.Min(oldSegmentEndOffset, newSegmentEndOffset),
 												Math.Abs(oldSegmentEndOffset - newSegmentEndOffset),
 												DispatcherPriority.Render);
 							}
 						} else {
-							textView.Redraw(oldSegment, DispatcherPriority.Render);
-							textView.Redraw(newSegment, DispatcherPriority.Render);
+							TextView.Redraw(oldSegment, DispatcherPriority.Render);
+							TextView.Redraw(newSegment, DispatcherPriority.Render);
 						}
 					}
 					selection = value;
-					if (SelectionChanged != null)
-						SelectionChanged(this, EventArgs.Empty);
+					SelectionChanged?.Invoke(this, EventArgs.Empty);
 					// a selection change causes commands like copy/paste/etc. to change status
 					CommandManager.InvalidateRequerySuggested();
 				}
@@ -457,8 +448,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// Gets/Sets the background brush used for the selection.
 		/// </summary>
 		public Brush SelectionBrush {
-			get { return (Brush)GetValue(SelectionBrushProperty); }
-			set { SetValue(SelectionBrushProperty, value); }
+			get => (Brush)GetValue(SelectionBrushProperty); set => SetValue(SelectionBrushProperty, value);
 		}
 
 		/// <summary>
@@ -471,8 +461,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// Gets/Sets the foreground brush used for selected text.
 		/// </summary>
 		public Brush SelectionForeground {
-			get { return (Brush)GetValue(SelectionForegroundProperty); }
-			set { SetValue(SelectionForegroundProperty, value); }
+			get => (Brush)GetValue(SelectionForegroundProperty); set => SetValue(SelectionForegroundProperty, value);
 		}
 
 		/// <summary>
@@ -485,8 +474,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// Gets/Sets the pen used for the border of the selection.
 		/// </summary>
 		public Pen SelectionBorder {
-			get { return (Pen)GetValue(SelectionBorderProperty); }
-			set { SetValue(SelectionBorderProperty, value); }
+			get => (Pen)GetValue(SelectionBorderProperty); set => SetValue(SelectionBorderProperty, value);
 		}
 
 		/// <summary>
@@ -500,8 +488,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// Gets/Sets the corner radius of the selection.
 		/// </summary>
 		public double SelectionCornerRadius {
-			get { return (double)GetValue(SelectionCornerRadiusProperty); }
-			set { SetValue(SelectionCornerRadiusProperty, value); }
+			get => (double)GetValue(SelectionCornerRadiusProperty); set => SetValue(SelectionCornerRadiusProperty, value);
 		}
 
 		/// <summary>
@@ -519,16 +506,14 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		public MouseSelectionMode MouseSelectionMode {
 			get {
-				var mouseHandler = DefaultInputHandler.MouseSelection as SelectionMouseHandler;
-				if (mouseHandler != null) {
+				if (DefaultInputHandler.MouseSelection is SelectionMouseHandler mouseHandler) {
 					return mouseHandler.MouseSelectionMode;
 				} else {
 					return MouseSelectionMode.None;
 				}
 			}
 			set {
-				var mouseHandler = DefaultInputHandler.MouseSelection as SelectionMouseHandler;
-				if (mouseHandler != null) {
+				if (DefaultInputHandler.MouseSelection is SelectionMouseHandler mouseHandler) {
 					mouseHandler.MouseSelectionMode = value;
 				}
 			}
@@ -536,10 +521,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 		#endregion
 
 		#region Force caret to stay inside selection
-		bool ensureSelectionValidRequested;
-		int allowCaretOutsideSelection;
+		private bool ensureSelectionValidRequested;
+		private int allowCaretOutsideSelection;
 
-		void RequestSelectionValidation()
+		private void RequestSelectionValidation()
 		{
 			if (!ensureSelectionValidRequested && allowCaretOutsideSelection == 0) {
 				ensureSelectionValidRequested = true;
@@ -559,11 +544,11 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// (e.g. most 'extend selection' methods work by first setting the caret, then the selection),
 		/// it's sufficient to fix it after any event handlers have run.
 		/// </summary>
-		void EnsureSelectionValid()
+		private void EnsureSelectionValid()
 		{
 			ensureSelectionValidRequested = false;
 			if (allowCaretOutsideSelection == 0) {
-				if (!selection.IsEmpty && !selection.Contains(caret.Offset)) {
+				if (!selection.IsEmpty && !selection.Contains(Caret.Offset)) {
 					Debug.WriteLine("Resetting selection because caret is outside");
 					this.ClearSelection();
 				}
@@ -595,69 +580,59 @@ namespace ICSharpCode.AvalonEdit.Editing
 		#endregion
 
 		#region Properties
-		readonly Caret caret;
 
 		/// <summary>
 		/// Gets the Caret used for this text area.
 		/// </summary>
-		public Caret Caret {
-			get { return caret; }
-		}
+		public Caret Caret { get; }
 
-		void CaretPositionChanged(object sender, EventArgs e)
+		private void CaretPositionChanged(object sender, EventArgs e)
 		{
-			if (textView == null)
+			if (TextView == null) {
 				return;
+			}
 
-			this.textView.HighlightedLine = this.Caret.Line;
+			this.TextView.HighlightedLine = this.Caret.Line;
 		}
-
-		ObservableCollection<UIElement> leftMargins = new ObservableCollection<UIElement>();
 
 		/// <summary>
 		/// Gets the collection of margins displayed to the left of the text view.
 		/// </summary>
-		public ObservableCollection<UIElement> LeftMargins {
-			get {
-				return leftMargins;
-			}
-		}
+		public ObservableCollection<UIElement> LeftMargins { get; } = [];
 
-		void leftMargins_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		private void leftMargins_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			if (e.OldItems != null) {
 				foreach (ITextViewConnect c in e.OldItems.OfType<ITextViewConnect>()) {
-					c.RemoveFromTextView(textView);
+					c.RemoveFromTextView(TextView);
 				}
 			}
 			if (e.NewItems != null) {
 				foreach (ITextViewConnect c in e.NewItems.OfType<ITextViewConnect>()) {
-					c.AddToTextView(textView);
+					c.AddToTextView(TextView);
 				}
 			}
 		}
 
-		IReadOnlySectionProvider readOnlySectionProvider = NoReadOnlySections.Instance;
+		private IReadOnlySectionProvider readOnlySectionProvider = NoReadOnlySections.Instance;
 
 		/// <summary>
 		/// Gets/Sets an object that provides read-only sections for the text area.
 		/// </summary>
 		public IReadOnlySectionProvider ReadOnlySectionProvider {
-			get { return readOnlySectionProvider; }
+			get => readOnlySectionProvider;
 			set {
-				if (value == null)
-					throw new ArgumentNullException("value");
-				readOnlySectionProvider = value;
+				readOnlySectionProvider = value ?? throw new ArgumentNullException("value");
 				CommandManager.InvalidateRequerySuggested(); // the read-only status effects Paste.CanExecute and the IME
 			}
 		}
 		#endregion
 
 		#region IScrollInfo implementation
-		ScrollViewer scrollOwner;
-		bool canVerticallyScroll, canHorizontallyScroll;
+		private ScrollViewer scrollOwner;
+		private bool canVerticallyScroll, canHorizontallyScroll;
 
-		void ApplyScrollInfo()
+		private void ApplyScrollInfo()
 		{
 			if (scrollInfo != null) {
 				scrollInfo.ScrollOwner = scrollOwner;
@@ -668,133 +643,125 @@ namespace ICSharpCode.AvalonEdit.Editing
 		}
 
 		bool IScrollInfo.CanVerticallyScroll {
-			get { return scrollInfo != null ? scrollInfo.CanVerticallyScroll : false; }
+			get => scrollInfo != null && scrollInfo.CanVerticallyScroll;
 			set {
 				canVerticallyScroll = value;
-				if (scrollInfo != null)
+				if (scrollInfo != null) {
 					scrollInfo.CanVerticallyScroll = value;
+				}
 			}
 		}
 
 		bool IScrollInfo.CanHorizontallyScroll {
-			get { return scrollInfo != null ? scrollInfo.CanHorizontallyScroll : false; }
+			get => scrollInfo != null && scrollInfo.CanHorizontallyScroll;
 			set {
 				canHorizontallyScroll = value;
-				if (scrollInfo != null)
+				if (scrollInfo != null) {
 					scrollInfo.CanHorizontallyScroll = value;
+				}
 			}
 		}
 
-		double IScrollInfo.ExtentWidth {
-			get { return scrollInfo != null ? scrollInfo.ExtentWidth : 0; }
-		}
+		double IScrollInfo.ExtentWidth => scrollInfo != null ? scrollInfo.ExtentWidth : 0;
 
-		double IScrollInfo.ExtentHeight {
-			get { return scrollInfo != null ? scrollInfo.ExtentHeight : 0; }
-		}
+		double IScrollInfo.ExtentHeight => scrollInfo != null ? scrollInfo.ExtentHeight : 0;
 
-		double IScrollInfo.ViewportWidth {
-			get { return scrollInfo != null ? scrollInfo.ViewportWidth : 0; }
-		}
+		double IScrollInfo.ViewportWidth => scrollInfo != null ? scrollInfo.ViewportWidth : 0;
 
-		double IScrollInfo.ViewportHeight {
-			get { return scrollInfo != null ? scrollInfo.ViewportHeight : 0; }
-		}
+		double IScrollInfo.ViewportHeight => scrollInfo != null ? scrollInfo.ViewportHeight : 0;
 
-		double IScrollInfo.HorizontalOffset {
-			get { return scrollInfo != null ? scrollInfo.HorizontalOffset : 0; }
-		}
+		double IScrollInfo.HorizontalOffset => scrollInfo != null ? scrollInfo.HorizontalOffset : 0;
 
-		double IScrollInfo.VerticalOffset {
-			get { return scrollInfo != null ? scrollInfo.VerticalOffset : 0; }
-		}
+		double IScrollInfo.VerticalOffset => scrollInfo != null ? scrollInfo.VerticalOffset : 0;
 
 		ScrollViewer IScrollInfo.ScrollOwner {
-			get { return scrollInfo != null ? scrollInfo.ScrollOwner : null; }
+			get => scrollInfo?.ScrollOwner;
 			set {
-				if (scrollInfo != null)
+				if (scrollInfo != null) {
 					scrollInfo.ScrollOwner = value;
-				else
+				} else {
 					scrollOwner = value;
+				}
 			}
 		}
 
 		void IScrollInfo.LineUp()
 		{
-			if (scrollInfo != null) scrollInfo.LineUp();
+			scrollInfo?.LineUp();
 		}
 
 		void IScrollInfo.LineDown()
 		{
-			if (scrollInfo != null) scrollInfo.LineDown();
+			scrollInfo?.LineDown();
 		}
 
 		void IScrollInfo.LineLeft()
 		{
-			if (scrollInfo != null) scrollInfo.LineLeft();
+			scrollInfo?.LineLeft();
 		}
 
 		void IScrollInfo.LineRight()
 		{
-			if (scrollInfo != null) scrollInfo.LineRight();
+			scrollInfo?.LineRight();
 		}
 
 		void IScrollInfo.PageUp()
 		{
-			if (scrollInfo != null) scrollInfo.PageUp();
+			scrollInfo?.PageUp();
 		}
 
 		void IScrollInfo.PageDown()
 		{
-			if (scrollInfo != null) scrollInfo.PageDown();
+			scrollInfo?.PageDown();
 		}
 
 		void IScrollInfo.PageLeft()
 		{
-			if (scrollInfo != null) scrollInfo.PageLeft();
+			scrollInfo?.PageLeft();
 		}
 
 		void IScrollInfo.PageRight()
 		{
-			if (scrollInfo != null) scrollInfo.PageRight();
+			scrollInfo?.PageRight();
 		}
 
 		void IScrollInfo.MouseWheelUp()
 		{
-			if (scrollInfo != null) scrollInfo.MouseWheelUp();
+			scrollInfo?.MouseWheelUp();
 		}
 
 		void IScrollInfo.MouseWheelDown()
 		{
-			if (scrollInfo != null) scrollInfo.MouseWheelDown();
+			scrollInfo?.MouseWheelDown();
 		}
 
 		void IScrollInfo.MouseWheelLeft()
 		{
-			if (scrollInfo != null) scrollInfo.MouseWheelLeft();
+			scrollInfo?.MouseWheelLeft();
 		}
 
 		void IScrollInfo.MouseWheelRight()
 		{
-			if (scrollInfo != null) scrollInfo.MouseWheelRight();
+			scrollInfo?.MouseWheelRight();
 		}
 
 		void IScrollInfo.SetHorizontalOffset(double offset)
 		{
-			if (scrollInfo != null) scrollInfo.SetHorizontalOffset(offset);
+			scrollInfo?.SetHorizontalOffset(offset);
 		}
 
 		void IScrollInfo.SetVerticalOffset(double offset)
 		{
-			if (scrollInfo != null) scrollInfo.SetVerticalOffset(offset);
+			scrollInfo?.SetVerticalOffset(offset);
 		}
 
 		Rect IScrollInfo.MakeVisible(System.Windows.Media.Visual visual, Rect rectangle)
 		{
-			if (scrollInfo != null)
+			if (scrollInfo != null) {
 				return scrollInfo.MakeVisible(visual, rectangle);
-			else
+			} else {
 				return Rect.Empty;
+			}
 		}
 		#endregion
 
@@ -812,14 +779,14 @@ namespace ICSharpCode.AvalonEdit.Editing
 			base.OnGotKeyboardFocus(e);
 			// First activate IME, then show caret
 			ime.OnGotKeyboardFocus(e);
-			caret.Show();
+			Caret.Show();
 		}
 
 		/// <inheritdoc/>
 		protected override void OnLostKeyboardFocus(KeyboardFocusChangedEventArgs e)
 		{
 			base.OnLostKeyboardFocus(e);
-			caret.Hide();
+			Caret.Hide();
 			ime.OnLostKeyboardFocus(e);
 		}
 		#endregion
@@ -844,9 +811,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		protected virtual void OnTextEntering(TextCompositionEventArgs e)
 		{
-			if (TextEntering != null) {
-				TextEntering(this, e);
-			}
+			TextEntering?.Invoke(this, e);
 		}
 
 		/// <summary>
@@ -854,9 +819,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		protected virtual void OnTextEntered(TextCompositionEventArgs e)
 		{
-			if (TextEntered != null) {
-				TextEntered(this, e);
-			}
+			TextEntered?.Invoke(this, e);
 		}
 
 		/// <inheritdoc/>
@@ -889,9 +852,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		public void PerformTextInput(string text)
 		{
-			TextComposition textComposition = new TextComposition(InputManager.Current, this, text);
-			TextCompositionEventArgs e = new TextCompositionEventArgs(Keyboard.PrimaryDevice, textComposition);
-			e.RoutedEvent = TextInputEvent;
+			TextComposition textComposition = new(InputManager.Current, this, text);
+			TextCompositionEventArgs e = new(Keyboard.PrimaryDevice, textComposition) {
+				RoutedEvent = TextInputEvent
+			};
 			PerformTextInput(e);
 		}
 
@@ -902,25 +866,31 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		public void PerformTextInput(TextCompositionEventArgs e)
 		{
-			if (e == null)
+			if (e == null) {
 				throw new ArgumentNullException("e");
-			if (this.Document == null)
+			}
+
+			if (this.Document == null) {
 				throw ThrowUtil.NoDocumentAssigned();
+			}
+
 			OnTextEntering(e);
 			if (!e.Handled) {
-				if (e.Text == "\n" || e.Text == "\r" || e.Text == "\r\n")
+				if (e.Text is "\n" or "\r" or "\r\n") {
 					ReplaceSelectionWithNewLine();
-				else {
-					if (OverstrikeMode && Selection.IsEmpty && Document.GetLineByNumber(Caret.Line).EndOffset > Caret.Offset)
+				} else {
+					if (OverstrikeMode && Selection.IsEmpty && Document.GetLineByNumber(Caret.Line).EndOffset > Caret.Offset) {
 						EditingCommands.SelectRightByCharacter.Execute(null, this);
+					}
+
 					ReplaceSelectionWithText(e.Text);
 				}
 				OnTextEntered(e);
-				caret.BringCaretToView();
+				Caret.BringCaretToView();
 			}
 		}
 
-		void ReplaceSelectionWithNewLine()
+		private void ReplaceSelectionWithNewLine()
 		{
 			string newLine = TextUtilities.GetNewLineFromDocument(this.Document, this.Caret.Line);
 			using (this.Document.RunUpdate()) {
@@ -938,8 +908,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		internal void RemoveSelectedText()
 		{
-			if (this.Document == null)
+			if (this.Document == null) {
 				throw ThrowUtil.NoDocumentAssigned();
+			}
+
 			selection.ReplaceSelectionWithText(string.Empty);
 #if DEBUG
 			if (!selection.IsEmpty) {
@@ -952,27 +924,33 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		internal void ReplaceSelectionWithText(string newText)
 		{
-			if (newText == null)
+			if (newText == null) {
 				throw new ArgumentNullException("newText");
-			if (this.Document == null)
+			}
+
+			if (this.Document == null) {
 				throw ThrowUtil.NoDocumentAssigned();
+			}
+
 			selection.ReplaceSelectionWithText(newText);
 		}
 
 		internal ISegment[] GetDeletableSegments(ISegment segment)
 		{
-			var deletableSegments = this.ReadOnlySectionProvider.GetDeletableSegments(segment);
-			if (deletableSegments == null)
-				throw new InvalidOperationException("ReadOnlySectionProvider.GetDeletableSegments returned null");
-			var array = deletableSegments.ToArray();
+			System.Collections.Generic.IEnumerable<ISegment> deletableSegments = this.ReadOnlySectionProvider.GetDeletableSegments(segment) ?? throw new InvalidOperationException("ReadOnlySectionProvider.GetDeletableSegments returned null");
+			ISegment[] array = [.. deletableSegments];
 			int lastIndex = segment.Offset;
 			for (int i = 0; i < array.Length; i++) {
-				if (array[i].Offset < lastIndex)
+				if (array[i].Offset < lastIndex) {
 					throw new InvalidOperationException("ReadOnlySectionProvider returned incorrect segments (outside of input segment / wrong order)");
+				}
+
 				lastIndex = array[i].EndOffset;
 			}
-			if (lastIndex > segment.EndOffset)
+			if (lastIndex > segment.EndOffset) {
 				throw new InvalidOperationException("ReadOnlySectionProvider returned incorrect segments (outside of input segment / wrong order)");
+			}
+
 			return array;
 		}
 		#endregion
@@ -989,8 +967,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// Gets/Sets the indentation strategy used when inserting new lines.
 		/// </summary>
 		public IIndentationStrategy IndentationStrategy {
-			get { return (IIndentationStrategy)GetValue(IndentationStrategyProperty); }
-			set { SetValue(IndentationStrategyProperty, value); }
+			get => (IIndentationStrategy)GetValue(IndentationStrategyProperty); set => SetValue(IndentationStrategyProperty, value);
 		}
 		#endregion
 
@@ -999,9 +976,11 @@ namespace ICSharpCode.AvalonEdit.Editing
 		protected override void OnPreviewKeyDown(KeyEventArgs e)
 		{
 			base.OnPreviewKeyDown(e);
-			foreach (TextAreaStackedInputHandler h in stackedInputHandlers) {
-				if (e.Handled)
+			foreach (TextAreaStackedInputHandler h in StackedInputHandlers) {
+				if (e.Handled) {
 					break;
+				}
+
 				h.OnPreviewKeyDown(e);
 			}
 		}
@@ -1010,9 +989,11 @@ namespace ICSharpCode.AvalonEdit.Editing
 		protected override void OnPreviewKeyUp(KeyEventArgs e)
 		{
 			base.OnPreviewKeyUp(e);
-			foreach (TextAreaStackedInputHandler h in stackedInputHandlers) {
-				if (e.Handled)
+			foreach (TextAreaStackedInputHandler h in StackedInputHandlers) {
+				if (e.Handled) {
 					break;
+				}
+
 				h.OnPreviewKeyUp(e);
 			}
 		}
@@ -1035,9 +1016,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		#region Hide Mouse Cursor While Typing
 
-		bool isMouseCursorHidden;
+		private bool isMouseCursorHidden;
 
-		void AttachTypingEvents()
+		private void AttachTypingEvents()
 		{
 			// Use the PreviewMouseMove event in case some other editor layer consumes the MouseMove event (e.g. SD's InsertionCursorLayer)
 			this.MouseEnter += delegate { ShowMouseCursor(); };
@@ -1048,7 +1029,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			this.PreviewTouchMove += delegate { ShowMouseCursor(); };
 		}
 
-		void ShowMouseCursor()
+		private void ShowMouseCursor()
 		{
 			if (this.isMouseCursorHidden) {
 				System.Windows.Forms.Cursor.Show();
@@ -1056,7 +1037,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		void HideMouseCursor()
+		private void HideMouseCursor()
 		{
 			if (Options.HideCursorWhileTyping && !this.isMouseCursorHidden && this.IsMouseOver) {
 				this.isMouseCursorHidden = true;
@@ -1079,8 +1060,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// Gets/Sets whether overstrike mode is active.
 		/// </summary>
 		public bool OverstrikeMode {
-			get { return (bool)GetValue(OverstrikeModeProperty); }
-			set { SetValue(OverstrikeModeProperty, value); }
+			get => (bool)GetValue(OverstrikeModeProperty); set => SetValue(OverstrikeModeProperty, value);
 		}
 
 		#endregion
@@ -1106,9 +1086,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 				|| e.Property == SelectionBorderProperty
 				|| e.Property == SelectionForegroundProperty
 				|| e.Property == SelectionCornerRadiusProperty) {
-				textView.Redraw();
+				TextView.Redraw();
 			} else if (e.Property == OverstrikeModeProperty) {
-				caret.UpdateIfVisible();
+				Caret.UpdateIfVisible();
 			}
 		}
 
@@ -1118,7 +1098,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <returns>Returns the requested service instance, or null if the service cannot be found.</returns>
 		public virtual object GetService(Type serviceType)
 		{
-			return textView.GetService(serviceType);
+			return TextView.GetService(serviceType);
 		}
 
 		/// <summary>
@@ -1128,8 +1108,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		internal void OnTextCopied(TextEventArgs e)
 		{
-			if (TextCopied != null)
-				TextCopied(this, e);
+			TextCopied?.Invoke(this, e);
 		}
 	}
 
@@ -1139,25 +1118,19 @@ namespace ICSharpCode.AvalonEdit.Editing
 	[Serializable]
 	public class TextEventArgs : EventArgs
 	{
-		string text;
+		private readonly string text;
 
 		/// <summary>
 		/// Gets the text.
 		/// </summary>
-		public string Text {
-			get {
-				return text;
-			}
-		}
+		public string Text => text;
 
 		/// <summary>
 		/// Creates a new TextEventArgs instance.
 		/// </summary>
 		public TextEventArgs(string text)
 		{
-			if (text == null)
-				throw new ArgumentNullException("text");
-			this.text = text;
+			this.text = text ?? throw new ArgumentNullException("text");
 		}
 	}
 }

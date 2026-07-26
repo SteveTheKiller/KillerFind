@@ -24,7 +24,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 	/// <summary>
 	/// Contains exception-throwing helper methods.
 	/// </summary>
-	static class ThrowUtil
+	internal static class ThrowUtil
 	{
 		/// <summary>
 		/// Throws an ArgumentNullException if <paramref name="val"/> is null; otherwise
@@ -39,22 +39,28 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </example>
 		public static T CheckNotNull<T>(T val, string parameterName) where T : class
 		{
-			if (val == null)
+			if (val == null) {
 				throw new ArgumentNullException(parameterName);
+			}
+
 			return val;
 		}
 
 		public static int CheckNotNegative(int val, string parameterName)
 		{
-			if (val < 0)
+			if (val < 0) {
 				throw new ArgumentOutOfRangeException(parameterName, val, "value must not be negative");
+			}
+
 			return val;
 		}
 
 		public static int CheckInRangeInclusive(int val, string parameterName, int lower, int upper)
 		{
-			if (val < lower || val > upper)
+			if (val < lower || val > upper) {
 				throw new ArgumentOutOfRangeException(parameterName, val, "Expected: " + lower.ToString(CultureInfo.InvariantCulture) + " <= " + parameterName + " <= " + upper.ToString(CultureInfo.InvariantCulture));
+			}
+
 			return val;
 		}
 

@@ -39,10 +39,14 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <param name="documentLength">The length of the element in the document. Must be non-negative.</param>
 		protected VisualLineElement(int visualLength, int documentLength)
 		{
-			if (visualLength < 1)
+			if (visualLength < 1) {
 				throw new ArgumentOutOfRangeException("visualLength", visualLength, "Value must be at least 1");
-			if (documentLength < 0)
+			}
+
+			if (documentLength < 0) {
 				throw new ArgumentOutOfRangeException("documentLength", documentLength, "Value must be at least 0");
+			}
+
 			this.VisualLength = visualLength;
 			this.DocumentLength = documentLength;
 		}
@@ -113,9 +117,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Gets if this VisualLineElement can be split.
 		/// </summary>
-		public virtual bool CanSplit {
-			get { return false; }
-		}
+		public virtual bool CanSplit => false;
 
 		/// <summary>
 		/// Splits the element.
@@ -139,17 +141,25 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <param name="splitRelativeTextOffset">The split position as text offset.</param>
 		protected void SplitHelper(VisualLineElement firstPart, VisualLineElement secondPart, int splitVisualColumn, int splitRelativeTextOffset)
 		{
-			if (firstPart == null)
+			if (firstPart == null) {
 				throw new ArgumentNullException("firstPart");
-			if (secondPart == null)
+			}
+
+			if (secondPart == null) {
 				throw new ArgumentNullException("secondPart");
+			}
+
 			int relativeSplitVisualColumn = splitVisualColumn - VisualColumn;
 			int relativeSplitRelativeTextOffset = splitRelativeTextOffset - RelativeTextOffset;
 
-			if (relativeSplitVisualColumn <= 0 || relativeSplitVisualColumn >= VisualLength)
+			if (relativeSplitVisualColumn <= 0 || relativeSplitVisualColumn >= VisualLength) {
 				throw new ArgumentOutOfRangeException("splitVisualColumn", splitVisualColumn, "Value must be between " + (VisualColumn + 1) + " and " + (VisualColumn + VisualLength - 1));
-			if (relativeSplitRelativeTextOffset < 0 || relativeSplitRelativeTextOffset > DocumentLength)
-				throw new ArgumentOutOfRangeException("splitRelativeTextOffset", splitRelativeTextOffset, "Value must be between " + (RelativeTextOffset) + " and " + (RelativeTextOffset + DocumentLength));
+			}
+
+			if (relativeSplitRelativeTextOffset < 0 || relativeSplitRelativeTextOffset > DocumentLength) {
+				throw new ArgumentOutOfRangeException("splitRelativeTextOffset", splitRelativeTextOffset, "Value must be between " + RelativeTextOffset + " and " + (RelativeTextOffset + DocumentLength));
+			}
+
 			int oldVisualLength = VisualLength;
 			int oldDocumentLength = DocumentLength;
 			int oldVisualColumn = VisualColumn;
@@ -162,10 +172,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			secondPart.VisualLength = oldVisualLength - relativeSplitVisualColumn;
 			firstPart.DocumentLength = relativeSplitRelativeTextOffset;
 			secondPart.DocumentLength = oldDocumentLength - relativeSplitRelativeTextOffset;
-			if (firstPart.TextRunProperties == null)
-				firstPart.TextRunProperties = TextRunProperties.Clone();
-			if (secondPart.TextRunProperties == null)
-				secondPart.TextRunProperties = TextRunProperties.Clone();
+			firstPart.TextRunProperties ??= TextRunProperties.Clone();
+
+			secondPart.TextRunProperties ??= TextRunProperties.Clone();
+
 			firstPart.BackgroundBrush = BackgroundBrush;
 			secondPart.BackgroundBrush = BackgroundBrush;
 		}
@@ -176,10 +186,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public virtual int GetVisualColumn(int relativeTextOffset)
 		{
-			if (relativeTextOffset >= this.RelativeTextOffset + DocumentLength)
+			if (relativeTextOffset >= this.RelativeTextOffset + DocumentLength) {
 				return VisualColumn + VisualLength;
-			else
+			} else {
 				return VisualColumn;
+			}
 		}
 
 		/// <summary>
@@ -188,10 +199,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <returns>A text offset relative to the visual line start.</returns>
 		public virtual int GetRelativeOffset(int visualColumn)
 		{
-			if (visualColumn >= this.VisualColumn + VisualLength)
+			if (visualColumn >= this.VisualColumn + VisualLength) {
 				return RelativeTextOffset + DocumentLength;
-			else
+			} else {
 				return RelativeTextOffset;
+			}
 		}
 
 		/// <summary>
@@ -210,15 +222,17 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			int stop1 = this.VisualColumn;
 			int stop2 = this.VisualColumn + this.VisualLength;
 			if (direction == LogicalDirection.Backward) {
-				if (visualColumn > stop2 && mode != CaretPositioningMode.WordStart && mode != CaretPositioningMode.WordStartOrSymbol)
+				if (visualColumn > stop2 && mode != CaretPositioningMode.WordStart && mode != CaretPositioningMode.WordStartOrSymbol) {
 					return stop2;
-				else if (visualColumn > stop1)
+				} else if (visualColumn > stop1) {
 					return stop1;
+				}
 			} else {
-				if (visualColumn < stop1)
+				if (visualColumn < stop1) {
 					return stop1;
-				else if (visualColumn < stop2 && mode != CaretPositioningMode.WordStart && mode != CaretPositioningMode.WordStartOrSymbol)
+				} else if (visualColumn < stop2 && mode != CaretPositioningMode.WordStart && mode != CaretPositioningMode.WordStartOrSymbol) {
 					return stop2;
+				}
 			}
 			return -1;
 		}
@@ -238,9 +252,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// This property has an effect only for VisualLineElements that are at the start or end of a
 		/// <see cref="VisualLine"/>.
 		/// </summary>
-		public virtual bool HandlesLineBorders {
-			get { return false; }
-		}
+		public virtual bool HandlesLineBorders => false;
 
 		/// <summary>
 		/// Queries the cursor over the visual line element.

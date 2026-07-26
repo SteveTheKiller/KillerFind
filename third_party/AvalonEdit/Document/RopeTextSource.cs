@@ -29,16 +29,18 @@ namespace ICSharpCode.AvalonEdit.Document
 	[Serializable]
 	public sealed class RopeTextSource : ITextSource
 	{
-		readonly Rope<char> rope;
-		readonly ITextSourceVersion version;
+		private readonly Rope<char> rope;
+		private readonly ITextSourceVersion version;
 
 		/// <summary>
 		/// Creates a new RopeTextSource.
 		/// </summary>
 		public RopeTextSource(Rope<char> rope)
 		{
-			if (rope == null)
+			if (rope == null) {
 				throw new ArgumentNullException("rope");
+			}
+
 			this.rope = rope.Clone();
 		}
 
@@ -47,8 +49,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public RopeTextSource(Rope<char> rope, ITextSourceVersion version)
 		{
-			if (rope == null)
+			if (rope == null) {
 				throw new ArgumentNullException("rope");
+			}
+
 			this.rope = rope.Clone();
 			this.version = version;
 		}
@@ -66,14 +70,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		}
 
 		/// <inheritdoc/>
-		public string Text {
-			get { return rope.ToString(); }
-		}
+		public string Text => rope.ToString();
 
 		/// <inheritdoc/>
-		public int TextLength {
-			get { return rope.Length; }
-		}
+		public int TextLength => rope.Length;
 
 		/// <inheritdoc/>
 		public char GetCharAt(int offset)
@@ -136,9 +136,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		}
 
 		/// <inheritdoc/>
-		public ITextSourceVersion Version {
-			get { return version; }
-		}
+		public ITextSourceVersion Version => version;
 
 		/// <inheritdoc/>
 		public int IndexOf(string searchText, int startIndex, int count, StringComparison comparisonType)

@@ -85,19 +85,19 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		public static readonly RoutedUICommand BoxSelectToLineEnd = Command("BoxSelectToLineEnd");
 
-		static RoutedUICommand Command(string name)
+		private static RoutedUICommand Command(string name)
 		{
 			return new RoutedUICommand(name, name, typeof(RectangleSelection));
 		}
 		#endregion
 
-		TextDocument document;
-		readonly int startLine, endLine;
-		readonly double startXPos, endXPos;
-		readonly int topLeftOffset, bottomRightOffset;
-		readonly TextViewPosition start, end;
+		private TextDocument document;
+		private readonly int startLine, endLine;
+		private readonly double startXPos, endXPos;
+		private readonly int topLeftOffset, bottomRightOffset;
+		private readonly TextViewPosition start, end;
 
-		readonly List<SelectionSegment> segments = new List<SelectionSegment>();
+		private readonly List<SelectionSegment> segments = [];
 
 		#region Constructors
 		/// <summary>
@@ -151,14 +151,15 @@ namespace ICSharpCode.AvalonEdit.Editing
 			this.end = GetEnd();
 		}
 
-		void InitDocument()
+		private void InitDocument()
 		{
 			document = textArea.Document;
-			if (document == null)
+			if (document == null) {
 				throw ThrowUtil.NoDocumentAssigned();
+			}
 		}
 
-		static double GetXPos(TextArea textArea, TextViewPosition pos)
+		private static double GetXPos(TextArea textArea, TextViewPosition pos)
 		{
 			DocumentLine documentLine = textArea.Document.GetLineByNumber(pos.Line);
 			VisualLine visualLine = textArea.TextView.GetOrConstructVisualLine(documentLine);
@@ -167,7 +168,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			return visualLine.GetTextLineVisualXPosition(textLine, vc);
 		}
 
-		void CalculateSegments()
+		private void CalculateSegments()
 		{
 			DocumentLine nextLine = document.GetLineByNumber(Math.Min(startLine, endLine));
 			do {
@@ -184,9 +185,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 			} while (nextLine != null && nextLine.LineNumber <= Math.Max(startLine, endLine));
 		}
 
-		TextViewPosition GetStart()
+		private TextViewPosition GetStart()
 		{
-			SelectionSegment segment = (startLine < endLine ? segments.First() : segments.Last());
+			SelectionSegment segment = startLine < endLine ? segments.First() : segments.Last();
 			if (startXPos < endXPos) {
 				return new TextViewPosition(document.GetLocation(segment.StartOffset), segment.StartVisualColumn);
 			} else {
@@ -194,9 +195,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		TextViewPosition GetEnd()
+		private TextViewPosition GetEnd()
 		{
-			SelectionSegment segment = (startLine < endLine ? segments.Last() : segments.First());
+			SelectionSegment segment = startLine < endLine ? segments.Last() : segments.First();
 			if (startXPos < endXPos) {
 				return new TextViewPosition(document.GetLocation(segment.EndOffset), segment.EndVisualColumn);
 			} else {
@@ -208,10 +209,12 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <inheritdoc/>
 		public override string GetText()
 		{
-			StringBuilder b = new StringBuilder();
+			StringBuilder b = new();
 			foreach (ISegment s in this.Segments) {
-				if (b.Length > 0)
+				if (b.Length > 0) {
 					b.AppendLine();
+				}
+
 				b.Append(document.GetText(s));
 			}
 			return b.ToString();
@@ -224,44 +227,27 @@ namespace ICSharpCode.AvalonEdit.Editing
 		}
 
 		/// <inheritdoc/>
-		public override int Length {
-			get {
-				return this.Segments.Sum(s => s.Length);
-			}
-		}
+		public override int Length => this.Segments.Sum(s => s.Length);
 
 		/// <inheritdoc/>
-		public override bool EnableVirtualSpace {
-			get { return true; }
-		}
+		public override bool EnableVirtualSpace => true;
 
 		/// <inheritdoc/>
-		public override ISegment SurroundingSegment {
-			get {
-				return new SimpleSegment(topLeftOffset, bottomRightOffset - topLeftOffset);
-			}
-		}
+		public override ISegment SurroundingSegment => new SimpleSegment(topLeftOffset, bottomRightOffset - topLeftOffset);
 
 		/// <inheritdoc/>
-		public override IEnumerable<SelectionSegment> Segments {
-			get { return segments; }
-		}
+		public override IEnumerable<SelectionSegment> Segments => segments;
 
 		/// <inheritdoc/>
-		public override TextViewPosition StartPosition {
-			get { return start; }
-		}
+		public override TextViewPosition StartPosition => start;
 
 		/// <inheritdoc/>
-		public override TextViewPosition EndPosition {
-			get { return end; }
-		}
+		public override TextViewPosition EndPosition => end;
 
 		/// <inheritdoc/>
 		public override bool Equals(object obj)
 		{
-			RectangleSelection r = obj as RectangleSelection;
-			return r != null && r.textArea == this.textArea
+			return obj is RectangleSelection r && r.textArea == this.textArea
 				&& r.topLeftOffset == this.topLeftOffset && r.bottomRightOffset == this.bottomRightOffset
 				&& r.startLine == this.startLine && r.endLine == this.endLine
 				&& r.startXPos == this.startXPos && r.endXPos == this.endXPos;
@@ -279,9 +265,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 			return new RectangleSelection(textArea, startLine, startXPos, endPosition);
 		}
 
-		int GetVisualColumnFromXPos(int line, double xPos)
+		private int GetVisualColumnFromXPos(int line, double xPos)
 		{
-			var vl = textArea.TextView.GetOrConstructVisualLine(textArea.Document.GetLineByNumber(line));
+			VisualLine vl = textArea.TextView.GetOrConstructVisualLine(textArea.Document.GetLineByNumber(line));
 			return vl.GetVisualColumn(new Point(xPos, 0), true);
 		}
 
@@ -299,11 +285,13 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <inheritdoc/>
 		public override void ReplaceSelectionWithText(string newText)
 		{
-			if (newText == null)
+			if (newText == null) {
 				throw new ArgumentNullException("newText");
+			}
+
 			using (textArea.Document.RunUpdate()) {
-				TextViewPosition start = new TextViewPosition(document.GetLocation(topLeftOffset), GetVisualColumnFromXPos(startLine, startXPos));
-				TextViewPosition end = new TextViewPosition(document.GetLocation(bottomRightOffset), GetVisualColumnFromXPos(endLine, endXPos));
+				TextViewPosition start = new(document.GetLocation(topLeftOffset), GetVisualColumnFromXPos(startLine, startXPos));
+				TextViewPosition end = new(document.GetLocation(bottomRightOffset), GetVisualColumnFromXPos(endLine, endXPos));
 				int insertionLength;
 				int totalInsertionLength = 0;
 				int firstInsertionLength = 0;
@@ -317,13 +305,13 @@ namespace ICSharpCode.AvalonEdit.Editing
 						firstInsertionLength = insertionLength;
 					}
 
-					int newEndOffset = editOffset + totalInsertionLength;
+					_ = editOffset + totalInsertionLength;
 					pos = new TextViewPosition(document.GetLocation(editOffset + firstInsertionLength));
 
 					textArea.Selection = new RectangleSelection(textArea, pos, Math.Max(startLine, endLine), GetXPos(textArea, pos));
 				} else {
 					string[] lines = newText.Split(NewLineFinder.NewlineStrings, segments.Count, StringSplitOptions.None);
-					int line = Math.Min(startLine, endLine);
+					_ = Math.Min(startLine, endLine);
 					for (int i = lines.Length - 1; i >= 0; i--) {
 						ReplaceSingleLineText(textArea, segments[i], lines[i], out insertionLength);
 						firstInsertionLength = insertionLength;
@@ -335,7 +323,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		void ReplaceSingleLineText(TextArea textArea, SelectionSegment lineSegment, string newText, out int insertionLength)
+		private void ReplaceSingleLineText(TextArea textArea, SelectionSegment lineSegment, string newText, out int insertionLength)
 		{
 			if (lineSegment.Length == 0) {
 				if (newText.Length > 0 && textArea.ReadOnlySectionProvider.CanInsert(lineSegment.StartOffset)) {
@@ -363,16 +351,20 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		public static bool PerformRectangularPaste(TextArea textArea, TextViewPosition startPosition, string text, bool selectInsertedText)
 		{
-			if (textArea == null)
+			if (textArea == null) {
 				throw new ArgumentNullException("textArea");
-			if (text == null)
+			}
+
+			if (text == null) {
 				throw new ArgumentNullException("text");
+			}
+
 			int newLineCount = text.Count(c => c == '\n'); // TODO might not work in all cases, but single \r line endings are really rare today.
-			TextLocation endLocation = new TextLocation(startPosition.Line + newLineCount, startPosition.Column);
+			TextLocation endLocation = new(startPosition.Line + newLineCount, startPosition.Column);
 			if (endLocation.Line <= textArea.Document.LineCount) {
 				int endOffset = textArea.Document.GetOffset(endLocation);
 				if (textArea.Selection.EnableVirtualSpace || textArea.Document.GetLocation(endOffset) == endLocation) {
-					RectangleSelection rsel = new RectangleSelection(textArea, startPosition, endLocation.Line, GetXPos(textArea, startPosition));
+					RectangleSelection rsel = new(textArea, startPosition, endLocation.Line, GetXPos(textArea, startPosition));
 					rsel.ReplaceSelectionWithText(text);
 					if (selectInsertedText && textArea.Selection is RectangleSelection) {
 						RectangleSelection sel = (RectangleSelection)textArea.Selection;
@@ -392,10 +384,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <inheritdoc/>
 		public override System.Windows.DataObject CreateDataObject(TextArea textArea)
 		{
-			var data = base.CreateDataObject(textArea);
+			DataObject data = base.CreateDataObject(textArea);
 
 			if (EditingCommandHandler.ConfirmDataFormat(textArea, data, RectangularSelectionDataType)) {
-				MemoryStream isRectangle = new MemoryStream(1);
+				MemoryStream isRectangle = new(1);
 				isRectangle.WriteByte(1);
 				data.SetData(RectangularSelectionDataType, isRectangle, false);
 			}

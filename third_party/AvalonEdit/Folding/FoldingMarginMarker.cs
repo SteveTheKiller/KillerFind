@@ -26,22 +26,23 @@ using ICSharpCode.AvalonEdit.Utils;
 
 namespace ICSharpCode.AvalonEdit.Folding
 {
-	sealed class FoldingMarginMarker : UIElement
+	internal sealed class FoldingMarginMarker : UIElement
 	{
 		internal VisualLine VisualLine;
 		internal FoldingSection FoldingSection;
 
-		bool isExpanded;
+		private bool isExpanded;
 
 		public bool IsExpanded {
-			get { return isExpanded; }
+			get => isExpanded;
 			set {
 				if (isExpanded != value) {
 					isExpanded = value;
 					InvalidateVisual();
 				}
-				if (FoldingSection != null)
+				if (FoldingSection != null) {
 					FoldingSection.IsFolded = !value;
+				}
 			}
 		}
 
@@ -56,7 +57,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 			}
 		}
 
-		const double MarginSizeFactor = 0.7;
+		private const double MarginSizeFactor = 0.7;
 
 		protected override Size MeasureCore(Size availableSize)
 		{
@@ -67,24 +68,23 @@ namespace ICSharpCode.AvalonEdit.Folding
 
 		protected override void OnRender(DrawingContext drawingContext)
 		{
-			FoldingMargin margin = VisualParent as FoldingMargin;
-			if (margin == null) {
+			if (VisualParent is not FoldingMargin margin) {
 				return;
 			}
-			Pen activePen = new Pen(margin.SelectedFoldingMarkerBrush, 1);
-			Pen inactivePen = new Pen(margin.FoldingMarkerBrush, 1);
+			Pen activePen = new(margin.SelectedFoldingMarkerBrush, 1);
+			Pen inactivePen = new(margin.FoldingMarkerBrush, 1);
 			activePen.StartLineCap = inactivePen.StartLineCap = PenLineCap.Square;
 			activePen.EndLineCap = inactivePen.EndLineCap = PenLineCap.Square;
 			Size pixelSize = PixelSnapHelpers.GetPixelSize(this);
-			Rect rect = new Rect(pixelSize.Width / 2,
+			Rect rect = new(pixelSize.Width / 2,
 								 pixelSize.Height / 2,
 								 this.RenderSize.Width - pixelSize.Width,
 								 this.RenderSize.Height - pixelSize.Height);
 			drawingContext.DrawRectangle(
 				IsMouseDirectlyOver ? margin.SelectedFoldingMarkerBackgroundBrush : margin.FoldingMarkerBackgroundBrush,
 				IsMouseDirectlyOver ? activePen : inactivePen, rect);
-			double middleX = rect.Left + rect.Width / 2;
-			double middleY = rect.Top + rect.Height / 2;
+			double middleX = rect.Left + (rect.Width / 2);
+			double middleY = rect.Top + (rect.Height / 2);
 			double space = PixelSnapHelpers.Round(rect.Width / 8, pixelSize.Width) + pixelSize.Width;
 			drawingContext.DrawLine(activePen,
 									new Point(rect.Left + space, middleY),

@@ -28,9 +28,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 	/// <summary>
 	/// <see cref="IReadOnlySectionProvider"/> that has no read-only sections; all text is editable.
 	/// </summary>
-	sealed class NoReadOnlySections : IReadOnlySectionProvider
+	internal sealed class NoReadOnlySections : IReadOnlySectionProvider
 	{
-		public static readonly NoReadOnlySections Instance = new NoReadOnlySections();
+		public static readonly NoReadOnlySections Instance = new();
 
 		public bool CanInsert(int offset)
 		{
@@ -39,8 +39,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		public IEnumerable<ISegment> GetDeletableSegments(ISegment segment)
 		{
-			if (segment == null)
+			if (segment == null) {
 				throw new ArgumentNullException("segment");
+			}
 			// the segment is always deletable
 			return ExtensionMethods.Sequence(segment);
 		}
@@ -49,9 +50,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 	/// <summary>
 	/// <see cref="IReadOnlySectionProvider"/> that completely disables editing.
 	/// </summary>
-	sealed class ReadOnlySectionDocument : IReadOnlySectionProvider
+	internal sealed class ReadOnlySectionDocument : IReadOnlySectionProvider
 	{
-		public static readonly ReadOnlySectionDocument Instance = new ReadOnlySectionDocument();
+		public static readonly ReadOnlySectionDocument Instance = new();
 
 		public bool CanInsert(int offset)
 		{
@@ -60,7 +61,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		public IEnumerable<ISegment> GetDeletableSegments(ISegment segment)
 		{
-			return Enumerable.Empty<ISegment>();
+			return [];
 		}
 	}
 }
