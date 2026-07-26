@@ -29,8 +29,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 	{
 		/// <summary>
 		/// Gets the name of the highlighting definition.
+		/// Null for a definition loaded from an .xshd file that carries no name attribute.
 		/// </summary>
-		string Name { get; }
+		string? Name { get; }
 
 		/// <summary>
 		/// Gets the main rule set.
@@ -41,13 +42,13 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// Gets a rule set by name.
 		/// </summary>
 		/// <returns>The rule set, or null if it is not found.</returns>
-		HighlightingRuleSet GetNamedRuleSet(string name);
+		HighlightingRuleSet? GetNamedRuleSet(string name);
 
 		/// <summary>
 		/// Gets a named highlighting color.
 		/// </summary>
 		/// <returns>The highlighting color, or null if it is not found.</returns>
-		HighlightingColor GetNamedColor(string name);
+		HighlightingColor? GetNamedColor(string name);
 
 		/// <summary>
 		/// Gets the list of named highlighting colors.

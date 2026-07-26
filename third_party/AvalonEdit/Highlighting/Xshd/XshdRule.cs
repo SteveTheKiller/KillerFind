@@ -29,7 +29,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		/// <summary>
 		/// Gets/sets the rule regex.
 		/// </summary>
-		public string Regex { get; set; }
+		// Null on a freshly constructed rule; the loaders fill it in from the .xshd file.
+		public string? Regex { get; set; }
 
 		/// <summary>
 		/// Gets/sets the rule regex type.
@@ -42,7 +43,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		public XshdReference<XshdColor> ColorReference { get; set; }
 
 		/// <inheritdoc/>
-		public override object AcceptVisitor(IXshdVisitor visitor)
+		public override object? AcceptVisitor(IXshdVisitor visitor)
 		{
 			return visitor.VisitRule(this);
 		}

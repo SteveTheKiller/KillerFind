@@ -40,8 +40,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 
 		/// <summary>
 		/// Gets/Sets the name of the rule set.
+		/// Null for the main rule set, which is the nameless one in the .xshd file.
 		/// </summary>
-		public string Name { get; set; }
+		public string? Name { get; set; }
 
 		/// <summary>
 		/// Gets the list of spans.

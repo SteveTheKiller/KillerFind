@@ -46,7 +46,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		/// <summary>
 		/// Gets/sets the begin regex.
 		/// </summary>
-		public string BeginRegex { get; set; }
+		// Both regexes are optional: a span with no end regex runs to end of line, and one with no
+		// begin regex is the whole-line form.
+		public string? BeginRegex { get; set; }
 
 		/// <summary>
 		/// Gets/sets the begin regex type.
@@ -56,7 +58,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		/// <summary>
 		/// Gets/sets the end regex.
 		/// </summary>
-		public string EndRegex { get; set; }
+		public string? EndRegex { get; set; }
 
 		/// <summary>
 		/// Gets/sets the end regex type.
@@ -89,7 +91,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		public XshdReference<XshdColor> EndColorReference { get; set; }
 
 		/// <inheritdoc/>
-		public override object AcceptVisitor(IXshdVisitor visitor)
+		public override object? AcceptVisitor(IXshdVisitor visitor)
 		{
 			return visitor.VisitSpan(this);
 		}

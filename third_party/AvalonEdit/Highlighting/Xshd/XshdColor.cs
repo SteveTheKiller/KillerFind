@@ -30,15 +30,18 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 	[Serializable]
 	public class XshdColor : XshdElement, ISerializable
 	{
+		// Every property here is optional in an .xshd file - a color may set only a foreground,
+		// only a weight, or nothing at all - so all of them are nullable.
+
 		/// <summary>
 		/// Gets/sets the name.
 		/// </summary>
-		public string Name { get; set; }
+		public string? Name { get; set; }
 
 		/// <summary>
 		/// Gets/sets the font family
 		/// </summary>
-		public FontFamily FontFamily { get; set; }
+		public FontFamily? FontFamily { get; set; }
 
 		/// <summary>
 		/// Gets/sets the font size.
@@ -48,12 +51,12 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		/// <summary>
 		/// Gets/sets the foreground brush.
 		/// </summary>
-		public HighlightingBrush Foreground { get; set; }
+		public HighlightingBrush? Foreground { get; set; }
 
 		/// <summary>
 		/// Gets/sets the background brush.
 		/// </summary>
-		public HighlightingBrush Background { get; set; }
+		public HighlightingBrush? Background { get; set; }
 
 		/// <summary>
 		/// Gets/sets the font weight.
@@ -78,7 +81,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		/// <summary>
 		/// Gets/Sets the example text that demonstrates where the color is used.
 		/// </summary>
-		public string ExampleText { get; set; }
+		public string? ExampleText { get; set; }
 
 		/// <summary>
 		/// Creates a new XshdColor instance.
@@ -97,8 +100,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			}
 
 			this.Name = info.GetString("Name");
-			this.Foreground = (HighlightingBrush)info.GetValue("Foreground", typeof(HighlightingBrush));
-			this.Background = (HighlightingBrush)info.GetValue("Background", typeof(HighlightingBrush));
+			this.Foreground = (HighlightingBrush?)info.GetValue("Foreground", typeof(HighlightingBrush));
+			this.Background = (HighlightingBrush?)info.GetValue("Background", typeof(HighlightingBrush));
 			if (info.GetBoolean("HasWeight")) {
 				this.FontWeight = System.Windows.FontWeight.FromOpenTypeWeight(info.GetInt32("Weight"));
 			}
@@ -171,7 +174,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		}
 
 		/// <inheritdoc/>
-		public override object AcceptVisitor(IXshdVisitor visitor)
+		public override object? AcceptVisitor(IXshdVisitor visitor)
 		{
 			return visitor.VisitColor(this);
 		}

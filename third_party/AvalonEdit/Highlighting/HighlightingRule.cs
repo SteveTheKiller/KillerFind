@@ -30,12 +30,13 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <summary>
 		/// Gets/Sets the regular expression for the rule.
 		/// </summary>
-		public Regex Regex { get; set; }
+		public Regex? Regex { get; set; }
 
 		/// <summary>
 		/// Gets/Sets the highlighting color.
 		/// </summary>
-		public HighlightingColor Color { get; set; }
+		// Null for a rule whose .xshd entry names no color; the engine skips those.
+		public HighlightingColor? Color { get; set; }
 
 		/// <inheritdoc/>
 		public override string ToString()

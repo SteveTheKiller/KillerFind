@@ -31,7 +31,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 	[Serializable]
 	internal sealed class XmlHighlightingDefinition : IHighlightingDefinition
 	{
-		public string Name { get; private set; }
+		// Carries the .xshd's own name, which may be absent - see XshdSyntaxDefinition.Name.
+		public string? Name { get; private set; }
 
 		public XmlHighlightingDefinition(XshdSyntaxDefinition xshd, IHighlightingDefinitionReferenceResolver resolver)
 		{
@@ -72,7 +73,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 				this.def = def;
 			}
 
-			public object VisitRuleSet(XshdRuleSet ruleSet)
+			// This visitor only registers names; nothing it visits produces a value, so every
+			// method returns null (or forwards a reference's null).
+			public object? VisitRuleSet(XshdRuleSet ruleSet)
 			{
 				HighlightingRuleSet hrs = new();
 				ruleSets.Add(ruleSet, hrs);
@@ -91,7 +94,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 				return null;
 			}
 
-			public object VisitColor(XshdColor color)
+			public object? VisitColor(XshdColor color)
 			{
 				if (color.Name != null) {
 					if (color.Name.Length == 0) {
@@ -107,12 +110,12 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 				return null;
 			}
 
-			public object VisitKeywords(XshdKeywords keywords)
+			public object? VisitKeywords(XshdKeywords keywords)
 			{
 				return keywords.ColorReference.AcceptVisitor(this);
 			}
 
-			public object VisitSpan(XshdSpan span)
+			public object? VisitSpan(XshdSpan span)
 			{
 				span.BeginColorReference.AcceptVisitor(this);
 				span.SpanColorReference.AcceptVisitor(this);
@@ -120,12 +123,12 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 				return span.RuleSetReference.AcceptVisitor(this);
 			}
 
-			public object VisitImport(XshdImport import)
+			public object? VisitImport(XshdImport import)
 			{
 				return import.RuleSetReference.AcceptVisitor(this);
 			}
 
-			public object VisitRule(XshdRule rule)
+			public object? VisitRule(XshdRule rule)
 			{
 				return rule.ColorReference.AcceptVisitor(this);
 			}
@@ -143,10 +146,10 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			private readonly HashSet<XshdRuleSet> processedRuleSets = [];
 			private bool ignoreCase;
 
+			// The two null asserts that used to be here are gone: the parameter types state them,
+			// and asserting made every later use of def and ruleSetDict read as possibly-null.
 			public TranslateElementVisitor(XmlHighlightingDefinition def, Dictionary<XshdRuleSet, HighlightingRuleSet> ruleSetDict, IHighlightingDefinitionReferenceResolver resolver)
 			{
-				Debug.Assert(def != null);
-				Debug.Assert(ruleSetDict != null);
 				this.def = def;
 				this.ruleSetDict = ruleSetDict;
 				this.resolver = resolver;
@@ -156,7 +159,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 				}
 			}
 
-			public object VisitRuleSet(XshdRuleSet ruleSet)
+			// Returns the translated element, or null where an element produces nothing (an empty
+			// color, for instance), which is why the interface return type is nullable.
+			public object? VisitRuleSet(XshdRuleSet ruleSet)
 			{
 				HighlightingRuleSet rs = ruleSetDict[ruleSet];
 				if (processedRuleSets.Contains(ruleSet)) {
@@ -175,7 +180,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 				rs.Name = ruleSet.Name;
 
 				foreach (XshdElement element in ruleSet.Elements) {
-					object o = element.AcceptVisitor(this);
+					object? o = element.AcceptVisitor(this);
 					if (o is HighlightingRuleSet elementRuleSet) {
 						Merge(rs, elementRuleSet);
 					} else {
@@ -201,7 +206,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 				target.Spans.AddRange(source.Spans);
 			}
 
-			public object VisitColor(XshdColor color)
+			public object? VisitColor(XshdColor color)
 			{
 				HighlightingColor c;
 				if (color.Name != null) {
@@ -224,7 +229,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 				return c;
 			}
 
-			public object VisitKeywords(XshdKeywords keywords)
+			public object? VisitKeywords(XshdKeywords keywords)
 			{
 				if (keywords.Words.Count == 0) {
 					return Error(keywords, "Keyword group must not be empty.");
@@ -284,7 +289,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 				return char.IsLetterOrDigit(word[0]) && char.IsLetterOrDigit(word, word.Length - 1);
 			}
 
-			private Regex CreateRegex(XshdElement position, string regex, XshdRegexType regexType)
+			// Nullable in, never null out: a missing regex is a definition error, reported with the
+			// element's line number rather than left to fail later.
+			private Regex CreateRegex(XshdElement position, string? regex, XshdRegexType regexType)
 			{
 				if (regex == null) {
 					throw Error(position, "Regex missing");
@@ -306,10 +313,12 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 				}
 			}
 
-			private HighlightingColor GetColor(XshdElement position, XshdReference<XshdColor> colorReference)
+			// Null when the reference is empty, which is the ordinary case for a rule that sets no
+			// color of its own.
+			private HighlightingColor? GetColor(XshdElement position, XshdReference<XshdColor> colorReference)
 			{
 				if (colorReference.InlineElement != null) {
-					return (HighlightingColor)colorReference.InlineElement.AcceptVisitor(this);
+					return (HighlightingColor?)colorReference.InlineElement.AcceptVisitor(this);
 				} else if (colorReference.ReferencedElement != null) {
 					IHighlightingDefinition definition = GetDefinition(position, colorReference.ReferencedDefinition);
 					HighlightingColor color = definition.GetNamedColor(colorReference.ReferencedElement) ?? throw Error(position, "Could not find color named '" + colorReference.ReferencedElement + "'.");
@@ -319,7 +328,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 				}
 			}
 
-			private IHighlightingDefinition GetDefinition(XshdElement position, string definitionName)
+			// A null definitionName means "this definition", which is how an unqualified reference
+			// is written in the .xshd file.
+			private IHighlightingDefinition GetDefinition(XshdElement position, string? definitionName)
 			{
 				if (definitionName == null) {
 					return def;
@@ -333,10 +344,12 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 				return d;
 			}
 
-			private HighlightingRuleSet GetRuleSet(XshdElement position, XshdReference<XshdRuleSet> ruleSetReference)
+			// Null when the reference is empty - a span with no ruleSet attribute highlights
+			// nothing inside itself, which is a legitimate thing to write.
+			private HighlightingRuleSet? GetRuleSet(XshdElement position, XshdReference<XshdRuleSet> ruleSetReference)
 			{
 				if (ruleSetReference.InlineElement != null) {
-					return (HighlightingRuleSet)ruleSetReference.InlineElement.AcceptVisitor(this);
+					return (HighlightingRuleSet?)ruleSetReference.InlineElement.AcceptVisitor(this);
 				} else if (ruleSetReference.ReferencedElement != null) {
 					IHighlightingDefinition definition = GetDefinition(position, ruleSetReference.ReferencedDefinition);
 					HighlightingRuleSet ruleSet = definition.GetNamedRuleSet(ruleSetReference.ReferencedElement) ?? throw Error(position, "Could not find rule set named '" + ruleSetReference.ReferencedElement + "'.");
@@ -346,9 +359,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 				}
 			}
 
-			public object VisitSpan(XshdSpan span)
+			public object? VisitSpan(XshdSpan span)
 			{
-				string endRegex = span.EndRegex;
+				string? endRegex = span.EndRegex;
 				if (string.IsNullOrEmpty(span.BeginRegex) && string.IsNullOrEmpty(span.EndRegex)) {
 					throw Error(span, "Span has no start/end regex.");
 				}
@@ -375,10 +388,11 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 				};
 			}
 
-			public object VisitImport(XshdImport import)
+			public object? VisitImport(XshdImport import)
 			{
-				HighlightingRuleSet hrs = GetRuleSet(import, import.RuleSetReference);
-				if (reverseRuleSetDict.TryGetValue(hrs, out XshdRuleSet inputRuleSet)) {
+				HighlightingRuleSet? hrs = GetRuleSet(import, import.RuleSetReference);
+				// An <Import> with no rule set imports nothing, so there is nothing to look up.
+				if (hrs != null && reverseRuleSetDict.TryGetValue(hrs, out XshdRuleSet inputRuleSet)) {
 					// ensure the ruleset is processed before importing its members
 					if (VisitRuleSet(inputRuleSet) != hrs) {
 						Debug.Fail("this shouldn't happen");
@@ -387,7 +401,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 				return hrs;
 			}
 
-			public object VisitRule(XshdRule rule)
+			public object? VisitRule(XshdRule rule)
 			{
 				return new HighlightingRule {
 					Color = GetColor(rule, rule.ColorReference),
@@ -412,9 +426,11 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		[OptionalField]
 		private readonly Dictionary<string, string> propDict = [];
 
-		public HighlightingRuleSet MainRuleSet { get; private set; }
+		// Set in the constructor, which throws if the .xshd has no nameless rule set, so by the
+		// time anyone can reach this it is there.
+		public HighlightingRuleSet MainRuleSet { get; private set; } = null!;
 
-		public HighlightingRuleSet GetNamedRuleSet(string name)
+		public HighlightingRuleSet? GetNamedRuleSet(string name)
 		{
 			if (string.IsNullOrEmpty(name)) {
 				return MainRuleSet;
@@ -427,7 +443,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			}
 		}
 
-		public HighlightingColor GetNamedColor(string name)
+		public HighlightingColor? GetNamedColor(string name)
 		{
 			if (colorDict.TryGetValue(name, out HighlightingColor c)) {
 				return c;
@@ -440,7 +456,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 
 		public override string ToString()
 		{
-			return this.Name;
+			return this.Name ?? string.Empty;
 		}
 
 		public IDictionary<string, string> Properties => propDict;

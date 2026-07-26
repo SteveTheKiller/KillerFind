@@ -36,21 +36,24 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 	{
 		internal static readonly HighlightingColor Empty = FreezableHelper.FreezeAndReturn(new HighlightingColor());
 
-		private string name;
-		private FontFamily fontFamily = null;
+		// Every field here is "unset" by default and stays that way unless the .xshd says
+		// otherwise - a color that only changes the foreground leaves the rest null, and merging
+		// (MergeWith) relies on null meaning "do not touch".
+		private string? name;
+		private FontFamily? fontFamily;
 		private int? fontSize;
 		private FontWeight? fontWeight;
 		private FontStyle? fontStyle;
 		private bool? underline;
 		private bool? strikethrough;
-		private HighlightingBrush foreground;
-		private HighlightingBrush background;
+		private HighlightingBrush? foreground;
+		private HighlightingBrush? background;
 		private bool frozen;
 
 		/// <summary>
 		/// Gets/Sets the name of the color.
 		/// </summary>
-		public string Name {
+		public string? Name {
 			get => name;
 			set {
 				if (frozen) {
@@ -64,7 +67,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <summary>
 		/// Gets/sets the font family. Null if the highlighting color does not change the font style.
 		/// </summary>
-		public FontFamily FontFamily {
+		public FontFamily? FontFamily {
 			get => fontFamily;
 			set {
 				if (frozen) {
@@ -148,7 +151,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <summary>
 		/// Gets/sets the foreground color applied by the highlighting.
 		/// </summary>
-		public HighlightingBrush Foreground {
+		public HighlightingBrush? Foreground {
 			get => foreground;
 			set {
 				if (frozen) {
@@ -162,7 +165,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <summary>
 		/// Gets/sets the background color applied by the highlighting.
 		/// </summary>
-		public HighlightingBrush Background {
+		public HighlightingBrush? Background {
 			get => background;
 			set {
 				if (frozen) {
@@ -206,8 +209,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 				this.Strikethrough = info.GetBoolean("Strikethrough");
 			}
 
-			this.Foreground = (HighlightingBrush)info.GetValue("Foreground", typeof(SimpleHighlightingBrush));
-			this.Background = (HighlightingBrush)info.GetValue("Background", typeof(SimpleHighlightingBrush));
+			this.Foreground = (HighlightingBrush?)info.GetValue("Foreground", typeof(SimpleHighlightingBrush));
+			this.Background = (HighlightingBrush?)info.GetValue("Background", typeof(SimpleHighlightingBrush));
 			if (info.GetBoolean("HasFamily")) {
 				this.FontFamily = new FontFamily(info.GetString("Family"));
 			}
@@ -343,13 +346,13 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		}
 
 		/// <inheritdoc/>
-		public sealed override bool Equals(object obj)
+		public sealed override bool Equals(object? obj)
 		{
 			return Equals(obj as HighlightingColor);
 		}
 
 		/// <inheritdoc/>
-		public virtual bool Equals(HighlightingColor other)
+		public virtual bool Equals(HighlightingColor? other)
 		{
 			if (other == null) {
 				return false;

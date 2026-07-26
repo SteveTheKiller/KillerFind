@@ -29,12 +29,12 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		/// <summary>
 		/// Gets/sets the name.
 		/// </summary>
-		public string Name { get; set; }
+		public string? Name { get; set; }
 
 		/// <summary>
 		/// Gets/sets the value.
 		/// </summary>
-		public string Value { get; set; }
+		public string? Value { get; set; }
 
 		/// <summary>
 		/// Creates a new XshdColor instance.
@@ -44,7 +44,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		}
 
 		/// <inheritdoc/>
-		public override object AcceptVisitor(IXshdVisitor visitor)
+		public override object? AcceptVisitor(IXshdVisitor visitor)
 		{
 			return null;
 			//			return visitor.VisitProperty(this);

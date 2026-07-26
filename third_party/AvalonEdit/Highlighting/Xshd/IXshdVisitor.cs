@@ -21,24 +21,29 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 	/// <summary>
 	/// A visitor over the XSHD element tree.
 	/// </summary>
+	/// <remarks>
+	/// Every visit method returns a nullable object: the two shipped visitors (SaveXshdVisitor and
+	/// the definition builder) use the return value only where they need one and return null
+	/// elsewhere, so a non-nullable return would be a lie at nearly every implementation.
+	/// </remarks>
 	public interface IXshdVisitor
 	{
 		/// <summary>Visit method for XshdRuleSet</summary>
-		object VisitRuleSet(XshdRuleSet ruleSet);
+		object? VisitRuleSet(XshdRuleSet ruleSet);
 
 		/// <summary>Visit method for XshdColor</summary>
-		object VisitColor(XshdColor color);
+		object? VisitColor(XshdColor color);
 
 		/// <summary>Visit method for XshdKeywords</summary>
-		object VisitKeywords(XshdKeywords keywords);
+		object? VisitKeywords(XshdKeywords keywords);
 
 		/// <summary>Visit method for XshdSpan</summary>
-		object VisitSpan(XshdSpan span);
+		object? VisitSpan(XshdSpan span);
 
 		/// <summary>Visit method for XshdImport</summary>
-		object VisitImport(XshdImport import);
+		object? VisitImport(XshdImport import);
 
 		/// <summary>Visit method for XshdRule</summary>
-		object VisitRule(XshdRule rule);
+		object? VisitRule(XshdRule rule);
 	}
 }

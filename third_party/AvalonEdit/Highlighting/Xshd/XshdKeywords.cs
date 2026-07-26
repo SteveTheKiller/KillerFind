@@ -42,7 +42,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		public IList<string> Words => words;
 
 		/// <inheritdoc/>
-		public override object AcceptVisitor(IXshdVisitor visitor)
+		public override object? AcceptVisitor(IXshdVisitor visitor)
 		{
 			return visitor.VisitKeywords(this);
 		}

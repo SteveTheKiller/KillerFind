@@ -32,7 +32,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		/// <summary>
 		/// Gets/Sets the name of the rule set.
 		/// </summary>
-		public string Name { get; set; }
+		// Null for the main rule set, which is the one with no name attribute.
+		public string? Name { get; set; }
 
 		/// <summary>
 		/// Gets/sets whether the case is ignored in expressions inside this rule set.
@@ -57,7 +58,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		}
 
 		/// <inheritdoc/>
-		public override object AcceptVisitor(IXshdVisitor visitor)
+		public override object? AcceptVisitor(IXshdVisitor visitor)
 		{
 			return visitor.VisitRuleSet(this);
 		}

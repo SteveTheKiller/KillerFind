@@ -32,7 +32,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		public XshdReference<XshdRuleSet> RuleSetReference { get; set; }
 
 		/// <inheritdoc/>
-		public override object AcceptVisitor(IXshdVisitor visitor)
+		public override object? AcceptVisitor(IXshdVisitor visitor)
 		{
 			return visitor.VisitImport(this);
 		}

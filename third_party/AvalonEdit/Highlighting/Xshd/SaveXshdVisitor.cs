@@ -65,7 +65,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			writer.WriteEndElement();
 		}
 
-		object IXshdVisitor.VisitRuleSet(XshdRuleSet ruleSet)
+		// Every visit method here writes XML and has nothing to hand back, so all of them return
+		// null - which is exactly why IXshdVisitor's return type is nullable.
+		object? IXshdVisitor.VisitRuleSet(XshdRuleSet ruleSet)
 		{
 			writer.WriteStartElement("RuleSet", Namespace);
 
@@ -132,7 +134,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			}
 		}
 
-		object IXshdVisitor.VisitColor(XshdColor color)
+		object? IXshdVisitor.VisitColor(XshdColor color)
 		{
 			writer.WriteStartElement("Color", Namespace);
 			if (color.Name != null) {
@@ -148,7 +150,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			return null;
 		}
 
-		object IXshdVisitor.VisitKeywords(XshdKeywords keywords)
+		object? IXshdVisitor.VisitKeywords(XshdKeywords keywords)
 		{
 			writer.WriteStartElement("Keywords", Namespace);
 			WriteColorReference(keywords.ColorReference);
@@ -159,7 +161,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			return null;
 		}
 
-		object IXshdVisitor.VisitSpan(XshdSpan span)
+		object? IXshdVisitor.VisitSpan(XshdSpan span)
 		{
 			writer.WriteStartElement("Span", Namespace);
 			WriteColorReference(span.SpanColorReference);
@@ -190,7 +192,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			return null;
 		}
 
-		private void WriteBeginEndElement(string elementName, string regex, XshdReference<XshdColor> colorReference)
+		// regex is null when the span has no begin (or no end) pattern, which is the whole reason
+		// for the null check below.
+		private void WriteBeginEndElement(string elementName, string? regex, XshdReference<XshdColor> colorReference)
 		{
 			if (regex != null) {
 				writer.WriteStartElement(elementName, Namespace);
@@ -200,7 +204,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			}
 		}
 
-		object IXshdVisitor.VisitImport(XshdImport import)
+		object? IXshdVisitor.VisitImport(XshdImport import)
 		{
 			writer.WriteStartElement("Import", Namespace);
 			WriteRuleSetReference(import.RuleSetReference);
@@ -208,7 +212,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			return null;
 		}
 
-		object IXshdVisitor.VisitRule(XshdRule rule)
+		object? IXshdVisitor.VisitRule(XshdRule rule)
 		{
 			writer.WriteStartElement("Rule", Namespace);
 			WriteColorReference(rule.ColorReference);

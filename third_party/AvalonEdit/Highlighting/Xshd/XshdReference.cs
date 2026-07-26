@@ -26,29 +26,31 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 	[Serializable]
 	public readonly struct XshdReference<T> : IEquatable<XshdReference<T>> where T : XshdElement
 	{
-		private readonly string referencedDefinition;
-		private readonly string referencedElement;
-		private readonly T inlineElement;
+		// A reference is EITHER a name pair or an inline element, never both, so whichever half is
+		// not in use is null. The default struct value has all three null and means "no color".
+		private readonly string? referencedDefinition;
+		private readonly string? referencedElement;
+		private readonly T? inlineElement;
 
 		/// <summary>
 		/// Gets the reference.
 		/// </summary>
-		public readonly string ReferencedDefinition => referencedDefinition;
+		public readonly string? ReferencedDefinition => referencedDefinition;
 
 		/// <summary>
 		/// Gets the reference.
 		/// </summary>
-		public readonly string ReferencedElement => referencedElement;
+		public readonly string? ReferencedElement => referencedElement;
 
 		/// <summary>
 		/// Gets the inline element.
 		/// </summary>
-		public readonly T InlineElement => inlineElement;
+		public readonly T? InlineElement => inlineElement;
 
 		/// <summary>
 		/// Creates a new XshdReference instance.
 		/// </summary>
-		public XshdReference(string referencedDefinition, string referencedElement)
+		public XshdReference(string? referencedDefinition, string referencedElement)
 		{
 			this.referencedDefinition = referencedDefinition;
 			this.referencedElement = referencedElement ?? throw new ArgumentNullException("referencedElement");
@@ -68,7 +70,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		/// <summary>
 		/// Applies the visitor to the inline element, if there is any.
 		/// </summary>
-		public readonly object AcceptVisitor(IXshdVisitor visitor)
+		public readonly object? AcceptVisitor(IXshdVisitor visitor)
 		{
 			if (inlineElement != null) {
 				return inlineElement.AcceptVisitor(visitor);
@@ -82,7 +84,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		// If you don't need it, you can just remove the region and the ": IEquatable<XshdColorReference>" declaration.
 
 		/// <inheritdoc/>
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (obj is XshdReference<T>) {
 				return Equals((XshdReference<T>)obj); // use Equals method below
@@ -109,7 +111,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			return GetHashCode(referencedDefinition) ^ GetHashCode(referencedElement) ^ GetHashCode(inlineElement);
 		}
 
-		private static int GetHashCode(object o)
+		private static int GetHashCode(object? o)
 		{
 			return o != null ? o.GetHashCode() : 0;
 		}

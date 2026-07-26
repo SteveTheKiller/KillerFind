@@ -41,7 +41,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		/// <summary>
 		/// Gets/sets the definition name
 		/// </summary>
-		public string Name { get; set; }
+		// Null until a loader reads the name attribute; a definition may legitimately have none.
+		public string? Name { get; set; }
 
 		/// <summary>
 		/// Gets the associated extensions.

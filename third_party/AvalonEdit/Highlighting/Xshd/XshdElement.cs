@@ -39,6 +39,6 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		/// <summary>
 		/// Applies the visitor to this element.
 		/// </summary>
-		public abstract object AcceptVisitor(IXshdVisitor visitor);
+		public abstract object? AcceptVisitor(IXshdVisitor visitor);
 	}
 }

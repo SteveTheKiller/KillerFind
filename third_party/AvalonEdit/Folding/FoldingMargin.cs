@@ -237,7 +237,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 			InvalidateVisual();
 			if (TextView != null && FoldingManager != null && TextView.VisualLinesValid) {
 				foreach (VisualLine line in TextView.VisualLines) {
-					FoldingSection fs = FoldingManager.GetNextFolding(line.FirstDocumentLine.Offset);
+					FoldingSection? fs = FoldingManager.GetNextFolding(line.FirstDocumentLine.Offset);
 					if (fs == null) {
 						continue;
 					}
