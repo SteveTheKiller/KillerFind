@@ -91,7 +91,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			}
 
 			T val = arr[tail];
-			arr[tail] = default; // allow GC to collect the element
+			arr[tail] = default!; // allow GC to collect the element
 			size--;
 			return val;
 		}
@@ -125,7 +125,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			}
 
 			T val = arr[head];
-			arr[head] = default; // allow GC to collect the element
+			arr[head] = default!; // allow GC to collect the element
 			head++;
 			if (head == arr.Length) {
 				head = 0;

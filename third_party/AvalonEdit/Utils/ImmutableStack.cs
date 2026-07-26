@@ -39,8 +39,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes")]
 		public static readonly ImmutableStack<T> Empty = new();
 
-		private readonly T value;
-		private readonly ImmutableStack<T> next;
+		// The Empty instance uses the parameterless constructor and leaves both unset by design:
+		// it is the sentinel at the bottom of every stack and neither field is ever read on it.
+		private readonly T value = default!;
+		private readonly ImmutableStack<T> next = null!;
 
 		private ImmutableStack()
 		{

@@ -70,9 +70,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 			}
 		}
 
-		public static void Freeze(object item)
+		public static void Freeze(object? item)
 		{
-			IFreezable f = item as IFreezable;
+			IFreezable? f = item as IFreezable;
 			f?.Freeze();
 		}
 

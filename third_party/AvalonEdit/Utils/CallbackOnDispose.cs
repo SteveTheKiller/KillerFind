@@ -31,7 +31,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 	/// </remarks>
 	internal sealed class CallbackOnDispose : IDisposable
 	{
-		private Action action;
+		// Swapped to null by the first Dispose; the ctor rejects a null to begin with, so this is
+		// nullable to represent "already disposed", not "never set".
+		private Action? action;
 
 		public CallbackOnDispose(Action action)
 		{
@@ -40,7 +42,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 
 		public void Dispose()
 		{
-			Action a = Interlocked.Exchange(ref action, null);
+			Action? a = Interlocked.Exchange(ref action, null);
 			a?.Invoke();
 		}
 	}
@@ -60,9 +62,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		{
 			public static readonly BusyLock Failed = new(null);
 
-			private readonly List<object> objectList;
+			// Null is what makes a BusyLock a failed one: see Failed above and Success below.
+			private readonly List<object>? objectList;
 
-			internal BusyLock(List<object> objectList)
+			internal BusyLock(List<object>? objectList)
 			{
 				this.objectList = objectList;
 			}
@@ -75,7 +78,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 			}
 		}
 
-		[ThreadStatic] private static List<object> _activeObjects;
+		// ThreadStatic, so it starts null on every thread until Enter creates it.
+		[ThreadStatic] private static List<object>? _activeObjects;
 
 		public static BusyLock Enter(object obj)
 		{

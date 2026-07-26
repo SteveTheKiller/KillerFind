@@ -125,9 +125,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <summary>
 		/// Gets the value of the attribute, or null if the attribute does not exist.
 		/// </summary>
-		public static string GetAttributeOrNull(this XmlElement element, string attributeName)
+		public static string? GetAttributeOrNull(this XmlElement element, string attributeName)
 		{
-			XmlAttribute attr = element.GetAttributeNode(attributeName);
+			XmlAttribute? attr = element.GetAttributeNode(attributeName);
 			return attr?.Value;
 		}
 

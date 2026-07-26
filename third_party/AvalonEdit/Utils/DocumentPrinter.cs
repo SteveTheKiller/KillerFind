@@ -90,7 +90,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// </summary>
 		public static FlowDocument CreateFlowDocumentForEditor(TextEditor editor)
 		{
-			IHighlighter highlighter = editor.TextArea.GetService(typeof(IHighlighter)) as IHighlighter;
+			IHighlighter? highlighter = editor.TextArea.GetService(typeof(IHighlighter)) as IHighlighter;
 			FlowDocument doc = new(ConvertTextDocumentToBlock(editor.Document, highlighter)) {
 				FontFamily = editor.FontFamily,
 				FontSize = editor.FontSize
