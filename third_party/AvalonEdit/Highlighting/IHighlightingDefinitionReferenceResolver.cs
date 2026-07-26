@@ -26,6 +26,6 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <summary>
 		/// Gets the highlighting definition by name, or null if it is not found.
 		/// </summary>
-		IHighlightingDefinition GetDefinition(string name);
+		IHighlightingDefinition? GetDefinition(string name);
 	}
 }

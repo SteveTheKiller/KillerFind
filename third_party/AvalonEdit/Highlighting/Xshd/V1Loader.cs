@@ -34,7 +34,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 	/// </summary>
 	internal sealed class V1Loader
 	{
-		private static XmlSchemaSet schemaSet;
+		// Null until the schema is first needed; the property below loads it on demand.
+		private static XmlSchemaSet? schemaSet;
 
 		private static XmlSchemaSet SchemaSet {
 			get {
@@ -50,7 +51,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			XmlDocument document = new();
 			document.Load(reader);
 			V1Loader loader = new();
-			return loader.ParseDefinition(document.DocumentElement);
+			// The document has just been loaded and validated, so it has a root element.
+			return loader.ParseDefinition(document.DocumentElement!);
 		}
 
 		private XshdSyntaxDefinition ParseDefinition(XmlElement syntaxDefinition)
@@ -62,7 +64,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 				def.Extensions.AddRange(syntaxDefinition.GetAttribute("extensions").Split(';', '|'));
 			}
 
-			XshdRuleSet mainRuleSetElement = null;
+			// Null until the nameless rule set turns up, which every valid v1 file has.
+			XshdRuleSet? mainRuleSetElement = null;
 			foreach (XmlElement element in syntaxDefinition.GetElementsByTagName("RuleSet")) {
 				XshdRuleSet ruleSet = ImportRuleSet(element);
 				def.Elements.Add(ruleSet);
@@ -100,7 +103,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			return def;
 		}
 
-		private static XshdColor GetColorFromElement(XmlElement element)
+		// Null when the element sets none of the four attributes, which means "no color here".
+		private static XshdColor? GetColorFromElement(XmlElement element)
 		{
 			if (!element.HasAttribute("bold") && !element.HasAttribute("italic") && !element.HasAttribute("color") && !element.HasAttribute("bgcolor")) {
 				return null;
@@ -128,7 +132,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 
 		private static XshdReference<XshdColor> GetColorReference(XmlElement element)
 		{
-			XshdColor color = GetColorFromElement(element);
+			XshdColor? color = GetColorFromElement(element);
 			if (color != null) {
 				return new XshdReference<XshdColor>(color);
 			} else {
@@ -153,7 +157,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			} else if (c.StartsWith("SystemColors.", StringComparison.Ordinal)) {
 				return V2Loader.GetSystemColorBrush(null, c);
 			} else {
-				return new SimpleHighlightingBrush((Color)V2Loader.ColorConverter.ConvertFromInvariantString(c));
+				// The schema restricts this attribute to a valid color name, so the convert lands.
+				return new SimpleHighlightingBrush((Color)V2Loader.ColorConverter.ConvertFromInvariantString(c)!);
 			}
 		}
 

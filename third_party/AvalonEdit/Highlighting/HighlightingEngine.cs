@@ -55,7 +55,11 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		#region Highlighting Engine
 
 		// local variables from HighlightLineInternal (are member because they are accessed by HighlighLine helper methods)
-		private string lineText;
+		// lineText is set for the duration of a HighlightLine/ScanLine call and cleared after.
+		// It stays non-nullable with a null-forgiving reset because every method that reads it
+		// runs only inside that window; making it nullable would scatter a ! over a dozen call
+		// sites and say nothing the comment does not.
+		private string lineText = null!;
 		private int lineStartOffset;
 		private int position;
 
@@ -63,7 +67,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// the HighlightedLine where highlighting output is being written to.
 		/// if this variable is null, nothing is highlighted and only the span state is updated
 		/// </summary>
-		private HighlightedLine highlightedLine;
+		private HighlightedLine? highlightedLine;
 
 		/// <summary>
 		/// Highlights the specified line in the specified document.
@@ -82,7 +86,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 				return this.highlightedLine;
 			} finally {
 				this.highlightedLine = null;
-				this.lineText = null;
+				this.lineText = null!;
 				this.lineStartOffset = 0;
 			}
 		}
@@ -102,7 +106,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 				Debug.Assert(highlightedLine == null);
 				HighlightLineInternal();
 			} finally {
-				this.lineText = null;
+				this.lineText = null!;
 			}
 		}
 
@@ -113,19 +117,21 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			HighlightingRuleSet currentRuleSet = this.CurrentRuleSet;
 			Stack<Match[]> storedMatchArrays = new();
 			Match[] matches = AllocateMatchArray(currentRuleSet.Spans.Count);
-			Match endSpanMatch = null;
+			Match? endSpanMatch = null;
 
 			while (true) {
+				// A span that reached the engine always has both expressions: the loader builds
+				// them with CreateRegex, which throws on a missing pattern rather than storing null.
 				for (int i = 0; i < matches.Length; i++) {
 					if (matches[i] == null || (matches[i].Success && matches[i].Index < position)) {
-						matches[i] = currentRuleSet.Spans[i].StartExpression.Match(lineText, position);
+						matches[i] = currentRuleSet.Spans[i].StartExpression!.Match(lineText, position);
 					}
 				}
 				if (endSpanMatch == null && !spanStack.IsEmpty) {
-					endSpanMatch = spanStack.Peek().EndExpression.Match(lineText, position);
+					endSpanMatch = spanStack.Peek().EndExpression!.Match(lineText, position);
 				}
 
-				Match firstMatch = Minimum(matches, endSpanMatch);
+				Match? firstMatch = Minimum(matches, endSpanMatch);
 				if (firstMatch == null) {
 					break;
 				}
@@ -202,11 +208,12 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 				Match[] matches = AllocateMatchArray(rules.Count);
 				while (true) {
 					for (int i = 0; i < matches.Length; i++) {
+						// Same as for spans: a rule without a regex never reaches the engine.
 						if (matches[i] == null || (matches[i].Success && matches[i].Index < position)) {
-							matches[i] = rules[i].Regex.Match(lineText, position, until - position);
+							matches[i] = rules[i].Regex!.Match(lineText, position, until - position);
 						}
 					}
-					Match firstMatch = Minimum(matches, null);
+					Match? firstMatch = Minimum(matches, null);
 					if (firstMatch == null) {
 						break;
 					}
@@ -242,8 +249,12 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		#endregion
 
 		#region Color Stack Management
-		private Stack<HighlightedSection> highlightedSectionStack;
-		private HighlightedSection lastPoppedSection;
+		// Both null while only the span state is being scanned (highlightedLine == null); every
+		// method below returns early in that case before touching them.
+		// The stack element type is nullable too: a null color is pushed as a placeholder so the
+		// stack depth keeps matching the pops (PopColor skips those).
+		private Stack<HighlightedSection?>? highlightedSectionStack;
+		private HighlightedSection? lastPoppedSection;
 
 		private void ResetColorStack()
 		{
@@ -252,24 +263,26 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			if (highlightedLine == null) {
 				highlightedSectionStack = null;
 			} else {
-				highlightedSectionStack = new Stack<HighlightedSection>();
+				highlightedSectionStack = new Stack<HighlightedSection?>();
 				foreach (HighlightingSpan span in spanStack.Reverse()) {
 					PushColor(span.SpanColor);
 				}
 			}
 		}
 
-		private void PushColor(HighlightingColor color)
+		private void PushColor(HighlightingColor? color)
 		{
+			// highlightedLine and highlightedSectionStack are set and cleared together, so the
+			// early return above covers the stack too.
 			if (highlightedLine == null) {
 				return;
 			}
 
 			if (color == null) {
-				highlightedSectionStack.Push(null);
+				highlightedSectionStack!.Push(null);
 			} else if (lastPoppedSection != null && lastPoppedSection.Color == color
 					   && lastPoppedSection.Offset + lastPoppedSection.Length == position + lineStartOffset) {
-				highlightedSectionStack.Push(lastPoppedSection);
+				highlightedSectionStack!.Push(lastPoppedSection);
 				lastPoppedSection = null;
 			} else {
 				HighlightedSection hs = new() {
@@ -277,7 +290,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 					Color = color
 				};
 				highlightedLine.Sections.Add(hs);
-				highlightedSectionStack.Push(hs);
+				highlightedSectionStack!.Push(hs);
 				lastPoppedSection = null;
 			}
 		}
@@ -288,7 +301,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 				return;
 			}
 
-			HighlightedSection s = highlightedSectionStack.Pop();
+			HighlightedSection? s = highlightedSectionStack!.Pop();
 			if (s != null) {
 				s.Length = position + lineStartOffset - s.Offset;
 				if (s.Length == 0) {
@@ -313,9 +326,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <summary>
 		/// Returns the first match from the array or endSpanMatch.
 		/// </summary>
-		private static Match Minimum(Match[] arr, Match endSpanMatch)
+		private static Match? Minimum(Match[] arr, Match? endSpanMatch)
 		{
-			Match min = null;
+			Match? min = null;
 			foreach (Match v in arr) {
 				if (v.Success && (min == null || v.Index < min.Index)) {
 					min = v;

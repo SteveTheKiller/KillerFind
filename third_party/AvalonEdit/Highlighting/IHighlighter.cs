@@ -108,12 +108,12 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <summary>
 		/// Retrieves the HighlightingColor with the specified name. Returns null if no color matching the name is found.
 		/// </summary>
-		HighlightingColor GetNamedColor(string name);
+		HighlightingColor? GetNamedColor(string name);
 
 		/// <summary>
-		/// Gets the default text color.
+		/// Gets the default text color, or null when the highlighter does not impose one.
 		/// </summary>
-		HighlightingColor DefaultTextColor { get; }
+		HighlightingColor? DefaultTextColor { get; }
 	}
 
 	/// <summary>

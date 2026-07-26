@@ -36,7 +36,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 	{
 		public const string Namespace = "http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008";
 
-		private static XmlSchemaSet schemaSet;
+		// Null until the schema is first needed; the property below loads it on demand.
+		private static XmlSchemaSet? schemaSet;
 
 		private static XmlSchemaSet SchemaSet {
 			get {
@@ -59,7 +60,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			XshdSyntaxDefinition def = new() {
 				Name = reader.GetAttribute("name")
 			};
-			string extensions = reader.GetAttribute("extensions");
+			string? extensions = reader.GetAttribute("extensions");
 			if (extensions != null) {
 				def.Extensions.AddRange(extensions.Split(';'));
 			}
@@ -227,7 +228,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			return Error(reader as IXmlLineInfo, message);
 		}
 
-		private static Exception Error(IXmlLineInfo lineInfo, string message)
+		// lineInfo is null when the reader does not carry position information, in which case the
+		// message goes out without a line number rather than not at all.
+		private static Exception Error(IXmlLineInfo? lineInfo, string message)
 		{
 			if (lineInfo != null) {
 				return new HighlightingDefinitionInvalidException(HighlightingLoader.FormatExceptionMessage(message, lineInfo.LineNumber, lineInfo.LinePosition));
@@ -308,7 +311,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		{
 			XshdColor color = new();
 			SetPosition(color, reader);
-			IXmlLineInfo position = reader as IXmlLineInfo;
+			// Null for a reader without position info; the parse helpers below all take it nullable.
+			IXmlLineInfo? position = reader as IXmlLineInfo;
 			color.Foreground = ParseColor(position, reader.GetAttribute("foreground"));
 			color.Background = ParseColor(position, reader.GetAttribute("background"));
 			color.FontWeight = ParseFontWeight(reader.GetAttribute("fontWeight"));
@@ -324,7 +328,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		internal static readonly FontWeightConverter FontWeightConverter = new();
 		internal static readonly FontStyleConverter FontStyleConverter = new();
 
-		private static HighlightingBrush ParseColor(IXmlLineInfo lineInfo, string color)
+		// All four parse helpers take the attribute value straight from GetAttribute, which returns
+		// null for an attribute the file does not set, and answer null for "not specified".
+		private static HighlightingBrush? ParseColor(IXmlLineInfo? lineInfo, string? color)
 		{
 			if (string.IsNullOrEmpty(color)) {
 				return null;
@@ -337,14 +343,14 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			}
 		}
 
-		private static int? ParseFontSize(IXmlLineInfo lineInfo, string size)
+		private static int? ParseFontSize(IXmlLineInfo? lineInfo, string? size)
 		{
 			return int.TryParse(size, out int value)
 				? value
 				: null;
 		}
 
-		private static FontFamily ParseFontFamily(IXmlLineInfo lineInfo, string family)
+		private static FontFamily? ParseFontFamily(IXmlLineInfo? lineInfo, string? family)
 		{
 			if (!string.IsNullOrEmpty(family)) {
 				return new FontFamily(family);
@@ -353,7 +359,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			}
 		}
 
-		internal static SystemColorHighlightingBrush GetSystemColorBrush(IXmlLineInfo lineInfo, string name)
+		internal static SystemColorHighlightingBrush GetSystemColorBrush(IXmlLineInfo? lineInfo, string name)
 		{
 			Debug.Assert(name.StartsWith("SystemColors.", StringComparison.Ordinal));
 			string shortName = name[13..];
@@ -361,7 +367,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			return new SystemColorHighlightingBrush(property);
 		}
 
-		private static HighlightingBrush FixedColorHighlightingBrush(Color? color)
+		private static HighlightingBrush? FixedColorHighlightingBrush(Color? color)
 		{
 			if (color == null) {
 				return null;
@@ -370,7 +376,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			return new SimpleHighlightingBrush(color.Value);
 		}
 
-		private static FontWeight? ParseFontWeight(string fontWeight)
+		private static FontWeight? ParseFontWeight(string? fontWeight)
 		{
 			if (string.IsNullOrEmpty(fontWeight)) {
 				return null;
@@ -379,7 +385,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			return (FontWeight?)FontWeightConverter.ConvertFromInvariantString(fontWeight);
 		}
 
-		private static FontStyle? ParseFontStyle(string fontStyle)
+		private static FontStyle? ParseFontStyle(string? fontStyle)
 		{
 			if (string.IsNullOrEmpty(fontStyle)) {
 				return null;
