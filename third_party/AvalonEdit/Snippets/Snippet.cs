@@ -38,7 +38,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 				throw new ArgumentNullException("textArea");
 			}
 
-			ISegment selection = textArea.Selection.SurroundingSegment;
+			ISegment? selection = textArea.Selection.SurroundingSegment;
 			int insertionPosition = textArea.Caret.Offset;
 
 			if (selection != null) // if something is selected

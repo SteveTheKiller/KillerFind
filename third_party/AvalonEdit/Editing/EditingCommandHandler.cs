@@ -113,7 +113,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		private static void TransformSelectedLines(Action<TextArea, DocumentLine> transformLine, object target, ExecutedRoutedEventArgs args, DefaultSegmentType defaultSegmentType)
 		{
-			TextArea textArea = GetTextArea(target);
+			TextArea? textArea = GetTextArea(target);
 			if (textArea != null && textArea.Document != null) {
 				using (textArea.Document.RunUpdate()) {
 					DocumentLine start, end;
@@ -124,10 +124,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 							start = textArea.Document.Lines.First();
 							end = textArea.Document.Lines.Last();
 						} else {
-							start = end = null;
+							start = end = null!;
 						}
 					} else {
-						ISegment segment = textArea.Selection.SurroundingSegment;
+						ISegment segment = textArea.Selection.SurroundingSegment!;
 						start = textArea.Document.GetLineByOffset(segment.Offset);
 						end = textArea.Document.GetLineByOffset(segment.EndOffset);
 						// don't include the last line if no characters on it are selected
@@ -153,7 +153,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		private static void TransformSelectedSegments(Action<TextArea, ISegment> transformSegment, object target, ExecutedRoutedEventArgs args, DefaultSegmentType defaultSegmentType)
 		{
-			TextArea textArea = GetTextArea(target);
+			TextArea? textArea = GetTextArea(target);
 			if (textArea != null && textArea.Document != null) {
 				using (textArea.Document.RunUpdate()) {
 					IEnumerable<ISegment> segments;
@@ -185,7 +185,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		#region EnterLineBreak
 		private static void OnEnter(object target, ExecutedRoutedEventArgs args)
 		{
-			TextArea textArea = GetTextArea(target);
+			TextArea? textArea = GetTextArea(target);
 			if (textArea != null && textArea.IsKeyboardFocused) {
 				textArea.PerformTextInput("\n");
 				args.Handled = true;
@@ -196,11 +196,12 @@ namespace ICSharpCode.AvalonEdit.Editing
 		#region Tab
 		private static void OnTab(object target, ExecutedRoutedEventArgs args)
 		{
-			TextArea textArea = GetTextArea(target);
+			TextArea? textArea = GetTextArea(target);
 			if (textArea != null && textArea.Document != null) {
 				using (textArea.Document.RunUpdate()) {
 					if (textArea.Selection.IsMultiline) {
-						ISegment segment = textArea.Selection.SurroundingSegment;
+						// IsMultiline is false for an empty selection, so the segment is there.
+						ISegment segment = textArea.Selection.SurroundingSegment!;
 						DocumentLine start = textArea.Document.GetLineByOffset(segment.Offset);
 						DocumentLine end = textArea.Document.GetLineByOffset(segment.EndOffset);
 						// don't include the last line if no characters on it are selected
@@ -251,7 +252,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		private static ExecutedRoutedEventHandler OnDelete(CaretMovementType caretMovement)
 		{
 			return (target, args) => {
-				TextArea textArea = GetTextArea(target);
+				TextArea? textArea = GetTextArea(target);
 				if (textArea != null && textArea.Document != null) {
 					if (textArea.Selection.IsEmpty) {
 						TextViewPosition startPos = textArea.Caret.Position;
@@ -289,7 +290,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		private static void CanDelete(object target, CanExecuteRoutedEventArgs args)
 		{
 			// HasSomethingSelected for delete command
-			TextArea textArea = GetTextArea(target);
+			TextArea? textArea = GetTextArea(target);
 			if (textArea != null && textArea.Document != null) {
 				args.CanExecute = !textArea.Selection.IsEmpty;
 				args.Handled = true;
@@ -301,7 +302,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		private static void CanCutOrCopy(object target, CanExecuteRoutedEventArgs args)
 		{
 			// HasSomethingSelected for copy and cut commands
-			TextArea textArea = GetTextArea(target);
+			TextArea? textArea = GetTextArea(target);
 			if (textArea != null && textArea.Document != null) {
 				args.CanExecute = textArea.Options.CutCopyWholeLine || !textArea.Selection.IsEmpty;
 				args.Handled = true;
@@ -310,7 +311,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		private static void OnCopy(object target, ExecutedRoutedEventArgs args)
 		{
-			TextArea textArea = GetTextArea(target);
+			TextArea? textArea = GetTextArea(target);
 			if (textArea != null && textArea.Document != null) {
 				if (textArea.Selection.IsEmpty && textArea.Options.CutCopyWholeLine) {
 					DocumentLine currentLine = textArea.Document.GetLineByNumber(textArea.Caret.Line);
@@ -324,7 +325,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		private static void OnCut(object target, ExecutedRoutedEventArgs args)
 		{
-			TextArea textArea = GetTextArea(target);
+			TextArea? textArea = GetTextArea(target);
 			if (textArea != null && textArea.Document != null) {
 				if (textArea.Selection.IsEmpty && textArea.Options.CutCopyWholeLine) {
 					DocumentLine currentLine = textArea.Document.GetLineByNumber(textArea.Caret.Line);
@@ -418,7 +419,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		private static void CanPaste(object target, CanExecuteRoutedEventArgs args)
 		{
-			TextArea textArea = GetTextArea(target);
+			TextArea? textArea = GetTextArea(target);
 			if (textArea != null && textArea.Document != null) {
 				args.CanExecute = textArea.ReadOnlySectionProvider.CanInsert(textArea.Caret.Offset)
 					&& Clipboard.ContainsText();
@@ -430,7 +431,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		private static void OnPaste(object target, ExecutedRoutedEventArgs args)
 		{
-			TextArea textArea = GetTextArea(target);
+			TextArea? textArea = GetTextArea(target);
 			if (textArea != null && textArea.Document != null) {
 				IDataObject dataObject;
 				try {
@@ -514,7 +515,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		#region Toggle Overstrike
 		private static void OnToggleOverstrike(object target, ExecutedRoutedEventArgs args)
 		{
-			TextArea textArea = GetTextArea(target);
+			TextArea? textArea = GetTextArea(target);
 			if (textArea != null && textArea.Options.AllowToggleOverstrikeMode) {
 				textArea.OverstrikeMode = !textArea.OverstrikeMode;
 			}
@@ -524,7 +525,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		#region DeleteLine
 		private static void OnDeleteLine(object target, ExecutedRoutedEventArgs args)
 		{
-			TextArea textArea = GetTextArea(target);
+			TextArea? textArea = GetTextArea(target);
 			if (textArea != null && textArea.Document != null) {
 				int firstLineIndex, lastLineIndex;
 				if (textArea.Selection.Length == 0) {
@@ -667,7 +668,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		private static void OnIndentSelection(object target, ExecutedRoutedEventArgs args)
 		{
-			TextArea textArea = GetTextArea(target);
+			TextArea? textArea = GetTextArea(target);
 			if (textArea != null && textArea.Document != null && textArea.IndentationStrategy != null) {
 				using (textArea.Document.RunUpdate()) {
 					int start, end;

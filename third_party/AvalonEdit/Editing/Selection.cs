@@ -184,7 +184,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// </summary>
 		public virtual bool IsMultiline {
 			get {
-				ISegment surroundingSegment = this.SurroundingSegment;
+				ISegment? surroundingSegment = this.SurroundingSegment;
 				if (surroundingSegment == null) {
 					return false;
 				}
@@ -268,7 +268,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 				return false;
 			}
 
-			if (this.SurroundingSegment.Contains(offset, 0)) {
+			if (this.SurroundingSegment!.Contains(offset, 0)) {
 				foreach (ISegment s in this.Segments) {
 					if (s.Contains(offset, 0)) {
 						return true;

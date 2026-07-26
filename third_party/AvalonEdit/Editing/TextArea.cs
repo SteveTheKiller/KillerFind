@@ -398,8 +398,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 				if (!object.Equals(selection, value)) {
 					//					Debug.WriteLine("Selection change from " + selection + " to " + value);
 					if (TextView != null) {
-						ISegment oldSegment = selection.SurroundingSegment;
-						ISegment newSegment = value.SurroundingSegment;
+						ISegment? oldSegment = selection.SurroundingSegment;
+						ISegment? newSegment = value.SurroundingSegment;
 						if (!Selection.EnableVirtualSpace && selection is SimpleSelection && value is SimpleSelection && oldSegment != null && newSegment != null) {
 							// perf optimization:
 							// When a simple selection changes, don't redraw the whole selection, but only the changed parts.

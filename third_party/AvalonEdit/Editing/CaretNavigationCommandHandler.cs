@@ -122,7 +122,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		private static void OnSelectAll(object target, ExecutedRoutedEventArgs args)
 		{
-			TextArea textArea = GetTextArea(target);
+			TextArea? textArea = GetTextArea(target);
 			if (textArea != null && textArea.Document != null) {
 				args.Handled = true;
 				textArea.Caret.Offset = textArea.Document.TextLength;
@@ -140,7 +140,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		private static ExecutedRoutedEventHandler OnMoveCaret(CaretMovementType direction)
 		{
 			return (target, args) => {
-				TextArea textArea = GetTextArea(target);
+				TextArea? textArea = GetTextArea(target);
 				if (textArea != null && textArea.Document != null) {
 					args.Handled = true;
 					textArea.ClearSelection();
@@ -153,7 +153,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		private static ExecutedRoutedEventHandler OnMoveCaretExtendSelection(CaretMovementType direction)
 		{
 			return (target, args) => {
-				TextArea textArea = GetTextArea(target);
+				TextArea? textArea = GetTextArea(target);
 				if (textArea != null && textArea.Document != null) {
 					args.Handled = true;
 					TextViewPosition oldPosition = textArea.Caret.Position;
@@ -167,7 +167,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		private static ExecutedRoutedEventHandler OnMoveCaretBoxSelection(CaretMovementType direction)
 		{
 			return (target, args) => {
-				TextArea textArea = GetTextArea(target);
+				TextArea? textArea = GetTextArea(target);
 				if (textArea != null && textArea.Document != null) {
 					args.Handled = true;
 					// First, convert the selection into a rectangle selection

@@ -40,7 +40,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 		private readonly TextArea textArea;
 
 		private MouseSelectionMode mode;
-		private AnchorSegment startWord;
+		// Null except while a word or line drag-selection is in progress.
+		private AnchorSegment? startWord;
 		private Point possibleDragStartMousePos;
 
 		#region Constructor + Attach + Detach
@@ -289,7 +290,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 		#endregion
 
 		#region Start Drag
-		private object currentDragDescriptor;
+		// Null except while this text area is the source of an in-flight drag.
+		private object? currentDragDescriptor;
 
 		private void StartDrag()
 		{

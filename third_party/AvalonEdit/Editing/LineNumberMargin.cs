@@ -178,7 +178,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 			InvalidateVisual();
 		}
 
-		private AnchorSegment selectionStart;
+		// Null except while a drag-select from the line number margin is in progress.
+		private AnchorSegment? selectionStart;
 		private bool selecting;
 
 		/// <inheritdoc/>
