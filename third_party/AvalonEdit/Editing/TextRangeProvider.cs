@@ -132,13 +132,15 @@ namespace ICSharpCode.AvalonEdit.Editing
 			segment = new AnchorSegment(doc, start, end - start);
 		}
 
-		public ITextRangeProvider FindAttribute(int attribute, object value, bool backward)
+		// Nullable: returning null is how a range provider reports "no match", which is what both
+		// of these do unconditionally in this implementation.
+		public ITextRangeProvider? FindAttribute(int attribute, object value, bool backward)
 		{
 			Log("{0}.FindAttribute({1}, {2}, {3})", ID, attribute, value, backward);
 			return null;
 		}
 
-		public ITextRangeProvider FindText(string text, bool backward, bool ignoreCase)
+		public ITextRangeProvider? FindText(string text, bool backward, bool ignoreCase)
 		{
 			Log("{0}.FindText({1}, {2}, {3})", ID, text, backward, ignoreCase);
 			string segmentText = doc.GetText(segment);
@@ -179,7 +181,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			return [];
 		}
 
-		public IRawElementProviderSimple GetEnclosingElement()
+		public IRawElementProviderSimple? GetEnclosingElement()
 		{
 			Log("{0}.GetEnclosingElement()", ID);
 			if (TextAreaAutomationPeer.FromElement(textArea) is not TextAreaAutomationPeer peer) {

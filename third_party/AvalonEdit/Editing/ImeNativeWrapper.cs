@@ -114,7 +114,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 		// where the Text Services Framework is not available.
 		[ThreadStatic] private static ITfThreadMgr? textFrameworkThreadMgr;
 
-		public static ITfThreadMgr GetTextFrameworkThreadManager()
+		// Nullable: TF_CreateThreadMgr is wrapped in a try/catch because the call fails outright
+		// on a runtime without COM interop, which leaves the manager null for that thread.
+		public static ITfThreadMgr? GetTextFrameworkThreadManager()
 		{
 			if (!textFrameworkThreadMgrInitialized) {
 				textFrameworkThreadMgrInitialized = true;

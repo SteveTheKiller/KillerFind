@@ -239,7 +239,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		private void ExtendSelection(SimpleSegment currentSeg)
 		{
-			if (currentSeg.Offset < selectionStart.Offset) {
+			// selectionStart is set when the drag begins and only cleared when it ends.
+			if (currentSeg.Offset < selectionStart!.Offset) {
 				textArea.Caret.Offset = currentSeg.Offset;
 				textArea.Selection = Selection.Create(textArea, currentSeg.Offset, selectionStart.Offset + selectionStart.Length);
 			} else {

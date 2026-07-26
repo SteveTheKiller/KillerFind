@@ -474,7 +474,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		internal static string GetTextToPaste(DataObjectPastingEventArgs pastingEventArgs, TextArea textArea)
+		// Nullable: null is this method's "nothing pasteable here" answer, returned for a missing
+		// data object, an unusable format, an out-of-memory on a huge paste, and bad clipboard
+		// data. Its caller tests the result before using it.
+		internal static string? GetTextToPaste(DataObjectPastingEventArgs pastingEventArgs, TextArea textArea)
 		{
 			IDataObject dataObject = pastingEventArgs.DataObject;
 			if (dataObject == null) {
@@ -676,7 +679,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 						start = 1;
 						end = textArea.Document.LineCount;
 					} else {
-						start = textArea.Document.GetLineByOffset(textArea.Selection.SurroundingSegment.Offset).LineNumber;
+						// Non-empty branch, so the surrounding segment is there.
+						start = textArea.Document.GetLineByOffset(textArea.Selection.SurroundingSegment!.Offset).LineNumber;
 						end = textArea.Document.GetLineByOffset(textArea.Selection.SurroundingSegment.EndOffset).LineNumber;
 					}
 					textArea.IndentationStrategy.IndentLines(textArea.Document, start, end);

@@ -452,7 +452,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 							} else if (startWord.EndOffset > textArea.Selection.SurroundingSegment.EndOffset) {
 								textArea.Selection = textArea.Selection.SetEndpoint(new TextViewPosition(textArea.Document.GetLocation(startWord.EndOffset)));
 							}
-							this.startWord = new AnchorSegment(textArea.Document, textArea.Selection.SurroundingSegment);
+							this.startWord = new AnchorSegment(textArea.Document, textArea.Selection.SurroundingSegment!);
 						} else {
 							textArea.Selection = Selection.Create(textArea, startWord.Offset, startWord.EndOffset);
 							this.startWord = new AnchorSegment(textArea.Document, startWord.Offset, startWord.Length);
@@ -675,7 +675,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 				SimpleSegment newWord = (mode == MouseSelectionMode.WholeLine) ? GetLineAtMousePosition(e) : GetWordAtMousePosition(e);
 				if (newWord != SimpleSegment.Invalid) {
 					textArea.Selection = Selection.Create(textArea,
-														  Math.Min(newWord.Offset, startWord.Offset),
+														  Math.Min(newWord.Offset, startWord!.Offset),
 														  Math.Max(newWord.EndOffset, startWord.EndOffset));
 					// moves caret to start or end of selection
 					if (newWord.Offset < startWord.Offset) {

@@ -78,7 +78,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 		}
 
 		#region Undo / Redo
-		private UndoStack GetUndoStack()
+		// Nullable: a text area with no document has no undo stack, which every caller tests for.
+		private UndoStack? GetUndoStack()
 		{
 			TextDocument document = this.TextArea.Document;
 			if (document != null) {
