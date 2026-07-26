@@ -40,7 +40,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// <summary>
 		/// Gets/Sets the name displayed for the folding.
 		/// </summary>
-		public string Name { get; set; }
+		public string? Name { get; set; }
 
 		/// <summary>
 		/// Gets/Sets whether the folding is closed by default.

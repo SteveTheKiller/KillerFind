@@ -16,6 +16,7 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+using System;
 using System.Diagnostics;
 
 using ICSharpCode.AvalonEdit.Document;
@@ -31,8 +32,9 @@ namespace ICSharpCode.AvalonEdit.Folding
 	{
 		private readonly FoldingManager manager;
 		private bool isFolded;
-		internal CollapsedLineSection[] collapsedSections;
-		private string title;
+		// Null whenever the section is not folded; RemoveCollapsedLineSection clears it back.
+		internal CollapsedLineSection[]? collapsedSections;
+		private string? title;
 
 		/// <summary>
 		/// Gets/sets if the section is folded.
@@ -112,12 +114,13 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// <summary>
 		/// Gets/Sets an additional object associated with this folding section.
 		/// </summary>
-		public object Tag { get; set; }
+		public object? Tag { get; set; }
 
 		internal FoldingSection(FoldingManager manager, int startOffset, int endOffset)
 		{
-			Debug.Assert(manager != null);
-			this.manager = manager;
+			// Was Debug.Assert, which compiles away in release. A FoldingSection without its
+			// manager is unusable, so the guard belongs in the build that ships.
+			this.manager = manager ?? throw new ArgumentNullException(nameof(manager));
 			this.StartOffset = startOffset;
 			this.Length = endOffset - startOffset;
 		}

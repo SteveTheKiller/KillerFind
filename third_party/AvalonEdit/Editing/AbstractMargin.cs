@@ -85,7 +85,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <summary>
 		/// Called when the <see cref="TextView"/> is changing.
 		/// </summary>
-		protected virtual void OnTextViewChanged(TextView oldTextView, TextView newTextView)
+		// Nullable both ways: the first attach passes null as the old view, and a margin is
+		// detached by having its TextView set back to null.
+		protected virtual void OnTextViewChanged(TextView? oldTextView, TextView? newTextView)
 		{
 			if (oldTextView != null) {
 				oldTextView.DocumentChanged -= TextViewDocumentChanged;

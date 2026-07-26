@@ -397,9 +397,12 @@ namespace ICSharpCode.AvalonEdit.Folding
 					textArea.LeftMargins.Remove(margin);
 					textArea.TextView.ElementGenerators.Remove(generator);
 					textArea.TextView.Services.RemoveService(typeof(FoldingManager));
-					margin = null;
-					generator = null;
-					textArea = null;
+					// null! rather than nullable fields: these are only cleared here, on uninstall,
+					// and every other member runs while the manager is installed. Nullable would
+					// push a null check into code that cannot reach a null.
+					margin = null!;
+					generator = null!;
+					textArea = null!;
 				}
 			}
 

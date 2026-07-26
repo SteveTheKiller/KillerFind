@@ -28,8 +28,9 @@ namespace ICSharpCode.AvalonEdit.Folding
 {
 	internal sealed class FoldingMarginMarker : UIElement
 	{
-		internal VisualLine VisualLine;
-		internal FoldingSection FoldingSection;
+		// Both are filled in by FoldingMargin the moment it builds a marker, never observed unset.
+		internal VisualLine VisualLine = null!;
+		internal FoldingSection FoldingSection = null!;
 
 		private bool isExpanded;
 

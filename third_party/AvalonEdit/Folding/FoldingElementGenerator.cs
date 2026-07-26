@@ -34,13 +34,14 @@ namespace ICSharpCode.AvalonEdit.Folding
 	public sealed class FoldingElementGenerator : VisualLineElementGenerator, ITextViewConnect
 	{
 		private readonly List<TextView> textViews = [];
-		private FoldingManager foldingManager;
+		// Null until a FoldingManager is installed, which ConstructElement tests for on entry.
+		private FoldingManager? foldingManager;
 
 		#region FoldingManager property / connecting with TextView
 		/// <summary>
 		/// Gets/Sets the folding manager from which the foldings should be shown.
 		/// </summary>
-		public FoldingManager FoldingManager {
+		public FoldingManager? FoldingManager {
 			get => foldingManager;
 			set {
 				if (foldingManager != value) {
@@ -106,14 +107,14 @@ namespace ICSharpCode.AvalonEdit.Folding
 		}
 
 		/// <inheritdoc/>
-		public override VisualLineElement ConstructElement(int offset)
+		public override VisualLineElement? ConstructElement(int offset)
 		{
 			if (foldingManager == null) {
 				return null;
 			}
 
 			int foldedUntil = -1;
-			FoldingSection foldingSection = null;
+			FoldingSection? foldingSection = null;
 			foreach (FoldingSection fs in foldingManager.GetFoldingsContaining(offset)) {
 				if (fs.IsFolded) {
 					if (fs.EndOffset > foldedUntil) {
@@ -156,7 +157,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 		{
 			private readonly FoldingSection fs;
 
-			internal Brush textBrush;
+			internal Brush textBrush = null!;
 
 			public FoldingLineElement(FoldingSection fs, TextLine text, int documentLength) : base(text, documentLength)
 			{
@@ -181,7 +182,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 
 		private sealed class FoldingLineTextRun : FormattedTextRun
 		{
-			internal Brush textBrush;
+			internal Brush textBrush = null!;
 
 			public FoldingLineTextRun(FormattedTextElement element, TextRunProperties properties)
 				: base(element, properties)

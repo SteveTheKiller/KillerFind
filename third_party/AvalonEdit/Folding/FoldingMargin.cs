@@ -38,7 +38,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// <summary>
 		/// Gets/Sets the folding manager from which the foldings should be shown.
 		/// </summary>
-		public FoldingManager FoldingManager { get; set; }
+		public FoldingManager? FoldingManager { get; set; }
 
 		internal const double SizeFactor = Constants.PixelPerPoint;
 
@@ -165,7 +165,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 
 		private static void OnUpdateBrushes(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			FoldingMargin m = null;
+			FoldingMargin? m = null;
 			if (d is FoldingMargin) {
 				m = (FoldingMargin)d;
 			} else if (d is TextEditor) {
@@ -212,7 +212,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 		}
 
 		/// <inheritdoc/>
-		protected override void OnTextViewChanged(TextView oldTextView, TextView newTextView)
+		protected override void OnTextViewChanged(TextView? oldTextView, TextView? newTextView)
 		{
 			if (oldTextView != null) {
 				oldTextView.VisualLinesChanged -= TextViewVisualLinesChanged;
@@ -221,7 +221,9 @@ namespace ICSharpCode.AvalonEdit.Folding
 			if (newTextView != null) {
 				newTextView.VisualLinesChanged += TextViewVisualLinesChanged;
 			}
-			TextViewVisualLinesChanged(null, null);
+			// Was (null, null): the handler ignores both, but a null sender misreports where the
+			// call came from, and EventArgs.Empty is the shape every other synthetic raise uses.
+			TextViewVisualLinesChanged(this, EventArgs.Empty);
 		}
 
 		private readonly List<FoldingMarginMarker> markers = [];
