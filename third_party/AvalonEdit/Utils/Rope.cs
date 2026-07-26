@@ -135,7 +135,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 
 		private static T[] ToArray(IEnumerable<T> input)
 		{
-			T[] arr = input as T[];
+			T[]? arr = input as T[];
 			return arr ?? [.. input];
 		}
 

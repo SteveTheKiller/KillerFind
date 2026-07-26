@@ -312,12 +312,12 @@ namespace ICSharpCode.AvalonEdit.Utils
 				// concat node:
 				if (index + count <= result.left!.length) {
 					result.left = result.left.StoreElements(index, array, arrayIndex, count);
-				} else if (index >= this.left.length) {
-					result.right = result.right.StoreElements(index - result.left.length, array, arrayIndex, count);
+				} else if (index >= this.left!.length) {
+					result.right = result.right!.StoreElements(index - result.left.length, array, arrayIndex, count);
 				} else {
 					int amountInLeft = result.left.length - index;
 					result.left = result.left.StoreElements(index, array, arrayIndex, amountInLeft);
-					result.right = result.right.StoreElements(0, array, arrayIndex + amountInLeft, count - amountInLeft);
+					result.right = result.right!.StoreElements(0, array, arrayIndex + amountInLeft, count - amountInLeft);
 				}
 				result.Rebalance(); // tree layout might have changed if function nodes were replaced with their content
 			}
@@ -342,11 +342,11 @@ namespace ICSharpCode.AvalonEdit.Utils
 				if (index + count <= this.left!.length) {
 					this.left.CopyTo(index, array, arrayIndex, count);
 				} else if (index >= this.left.length) {
-					this.right.CopyTo(index - this.left.length, array, arrayIndex, count);
+					this.right!.CopyTo(index - this.left.length, array, arrayIndex, count);
 				} else {
 					int amountInLeft = this.left.length - index;
 					this.left.CopyTo(index, array, arrayIndex, amountInLeft);
-					this.right.CopyTo(0, array, arrayIndex + amountInLeft, count - amountInLeft);
+					this.right!.CopyTo(0, array, arrayIndex + amountInLeft, count - amountInLeft);
 				}
 			}
 		}
@@ -356,12 +356,12 @@ namespace ICSharpCode.AvalonEdit.Utils
 			RopeNode<T> result = CloneIfShared();
 			// result of CloneIfShared() is leaf or concat node
 			if (result.height == 0) {
-				result.contents[offset] = value;
+				result.contents![offset] = value;
 			} else {
-				if (offset < result.left.length) {
+				if (offset < result.left!.length) {
 					result.left = result.left.SetElement(offset, value);
 				} else {
-					result.right = result.right.SetElement(offset - result.left.length, value);
+					result.right = result.right!.SetElement(offset - result.left.length, value);
 				}
 				result.Rebalance(); // tree layout might have changed if function nodes were replaced with their content
 			}
@@ -383,7 +383,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 				// left is guaranteed to be leaf node after cloning:
 				// - it cannot be function node (due to clone)
 				// - it cannot be concat node (too short)
-				right.CopyTo(0, left.contents, left.length, right.length);
+				right.CopyTo(0, left.contents!, left.length, right.length);
 				left.length += right.length;
 				return left;
 			} else {
@@ -429,10 +429,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 				return Concat(Concat(left, newElements), right);
 			} else {
 				// concat node
-				if (offset < result.left.length) {
+				if (offset < result.left!.length) {
 					result.left = result.left.Insert(offset, newElements);
 				} else {
-					result.right = result.right.Insert(offset - result.left.length, newElements);
+					result.right = result.right!.Insert(offset - result.left.length, newElements);
 				}
 				result.length += newElements.length;
 				result.Rebalance();
@@ -461,10 +461,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 			} else {
 				// this is a concat node (both leafs and function nodes are handled by the case above)
 				RopeNode<T> result = CloneIfShared();
-				if (offset < result.left.length) {
+				if (offset < result.left!.length) {
 					result.left = result.left.Insert(offset, array, arrayIndex, count);
 				} else {
-					result.right = result.right.Insert(offset - result.left.length, array, arrayIndex, count);
+					result.right = result.right!.Insert(offset - result.left.length, array, arrayIndex, count);
 				}
 				result.length += count;
 				result.Rebalance();
@@ -486,28 +486,28 @@ namespace ICSharpCode.AvalonEdit.Utils
 			if (result.height == 0) {
 				int remainingAfterEnd = result.length - endIndex;
 				for (int i = 0; i < remainingAfterEnd; i++) {
-					result.contents[index + i] = result.contents[endIndex + i];
+					result.contents![index + i] = result.contents[endIndex + i];
 				}
 				result.length -= count;
 			} else {
-				if (endIndex <= result.left.length) {
+				if (endIndex <= result.left!.length) {
 					// deletion is only within the left part
 					result.left = result.left.RemoveRange(index, count);
 				} else if (index >= result.left.length) {
 					// deletion is only within the right part
-					result.right = result.right.RemoveRange(index - result.left.length, count);
+					result.right = result.right!.RemoveRange(index - result.left.length, count);
 				} else {
 					// deletion overlaps both parts
 					int deletionAmountOnLeftSide = result.left.length - index;
 					result.left = result.left.RemoveRange(index, deletionAmountOnLeftSide);
-					result.right = result.right.RemoveRange(0, count - deletionAmountOnLeftSide);
+					result.right = result.right!.RemoveRange(0, count - deletionAmountOnLeftSide);
 				}
 				// The deletion might have introduced empty nodes. Those must be removed.
 				if (result.left.length == 0) {
-					return result.right;
+					return result.right!;
 				}
 
-				if (result.right.length == 0) {
+				if (result.right!.length == 0) {
 					return result.left;
 				}
 

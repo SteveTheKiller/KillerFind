@@ -58,14 +58,16 @@ namespace ICSharpCode.AvalonEdit.Utils
 
 		private void GoToLeftMostLeaf()
 		{
-			while (currentNode.contents == null) {
+			// currentNode is only null once the reader has run off the end, and every caller of
+			// this checks for that before walking down again.
+			while (currentNode!.contents == null) {
 				if (currentNode.height == 0) {
 					// this is a function node - move to its contained rope
 					currentNode = currentNode.GetContentNode();
 					continue;
 				}
 				Debug.Assert(currentNode.right != null);
-				stack.Push(currentNode.right);
+				stack.Push(currentNode.right!);
 				currentNode = currentNode.left;
 			}
 			Debug.Assert(currentNode.height == 0);
