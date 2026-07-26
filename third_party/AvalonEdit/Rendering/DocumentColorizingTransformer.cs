@@ -30,14 +30,15 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// </summary>
 	public abstract class DocumentColorizingTransformer : ColorizingTransformer
 	{
-		private DocumentLine currentDocumentLine;
+		// Both are set for the duration of a Colorize call and cleared afterwards.
+		private DocumentLine? currentDocumentLine;
 		private int firstLineStart;
 		private int currentDocumentLineStartOffset, currentDocumentLineEndOffset;
 
 		/// <summary>
 		/// Gets the current ITextRunConstructionContext.
 		/// </summary>
-		protected ITextRunConstructionContext CurrentContext { get; private set; }
+		protected ITextRunConstructionContext? CurrentContext { get; private set; }
 
 		/// <inheritdoc/>
 		protected override void Colorize(ITextRunConstructionContext context)
@@ -90,7 +91,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				throw new ArgumentOutOfRangeException("endOffset", endOffset, "Value must be between " + startOffset + " and " + currentDocumentLineEndOffset);
 			}
 
-			VisualLine vl = this.CurrentContext.VisualLine;
+			// Only callable from ColorizeLine, which runs inside a Colorize call.
+			VisualLine vl = this.CurrentContext!.VisualLine;
 			int visualStart = vl.GetVisualColumn(startOffset - firstLineStart);
 			int visualEnd = vl.GetVisualColumn(endOffset - firstLineStart);
 			if (visualStart < visualEnd) {

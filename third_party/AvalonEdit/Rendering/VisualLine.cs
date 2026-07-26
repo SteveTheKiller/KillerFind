@@ -47,7 +47,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		}
 
 		private readonly TextView textView;
-		private List<VisualLineElement> elements;
+		// Built by ConstructVisualElements, which runs before the line leaves the Generating phase.
+		private List<VisualLineElement> elements = null!;
 		internal bool hasInlineObjects;
 		private LifetimePhase phase;
 
@@ -64,14 +65,16 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Gets the last document line displayed by this visual line.
 		/// </summary>
-		public DocumentLine LastDocumentLine { get; private set; }
+		public DocumentLine LastDocumentLine { get; private set; } = null!;
 
 		/// <summary>
 		/// Gets a read-only collection of line elements.
 		/// </summary>
-		public ReadOnlyCollection<VisualLineElement> Elements { get; private set; }
+		// Set at the end of ConstructVisualElements, alongside the elements list above.
+		public ReadOnlyCollection<VisualLineElement> Elements { get; private set; } = null!;
 
-		private ReadOnlyCollection<TextLine> textLines;
+		// Set when the line goes Live; the TextLines property below refuses to hand it out before.
+		private ReadOnlyCollection<TextLine>? textLines;
 
 		/// <summary>
 		/// Gets a read-only collection of text lines.
@@ -82,7 +85,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 					throw new InvalidOperationException();
 				}
 
-				return textLines;
+				// Live implies SetTextLines has run.
+				return textLines!;
 			}
 		}
 
@@ -123,8 +127,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		internal VisualLine(TextView textView, DocumentLine firstDocumentLine)
 		{
-			Debug.Assert(textView != null);
-			Debug.Assert(firstDocumentLine != null);
+			// No null asserts: the parameter types state them, and asserting made all three field
+			// assignments below read as possibly-null.
 			this.textView = textView;
 			this.Document = textView.Document;
 			this.FirstDocumentLine = firstDocumentLine;
@@ -185,7 +189,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				askInterestOffset = 1;
 				foreach (VisualLineElementGenerator g in generators) {
 					if (g.cachedInterest == offset) {
-						VisualLineElement element = g.ConstructElement(offset);
+						// A generator may signal interest and then decline to build anything.
+						VisualLineElement? element = g.ConstructElement(offset);
 						if (element != null) {
 							elements.Add(element);
 							if (element.DocumentLength > 0) {
@@ -786,12 +791,13 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			drawingContext.Close();
 		}
 
-		protected override GeometryHitTestResult HitTestCore(GeometryHitTestParameters hitTestParameters)
+		// Not hit-testable, same as Layer: null tells WPF to look past this visual.
+		protected override GeometryHitTestResult? HitTestCore(GeometryHitTestParameters hitTestParameters)
 		{
 			return null;
 		}
 
-		protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters)
+		protected override HitTestResult? HitTestCore(PointHitTestParameters hitTestParameters)
 		{
 			return null;
 		}

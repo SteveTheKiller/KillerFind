@@ -23,7 +23,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 {
 	internal sealed class VisualLineTextParagraphProperties : TextParagraphProperties
 	{
-		internal TextRunProperties defaultTextRunProperties;
+		// Assigned by VisualLineTextSource before the properties are handed to the formatter; the
+		// instance is never published before that happens.
+		internal TextRunProperties defaultTextRunProperties = null!;
 		internal TextWrapping textWrapping;
 		internal double tabSize;
 		internal double indent;
@@ -37,7 +39,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public override bool FirstLineInParagraph => firstLineInParagraph;
 		public override TextRunProperties DefaultTextRunProperties => defaultTextRunProperties;
 		public override TextWrapping TextWrapping => textWrapping;
-		public override TextMarkerProperties TextMarkerProperties => null;
+		// No list markers in a code editor; null is how the formatter is told there are none.
+		public override TextMarkerProperties? TextMarkerProperties => null;
 		public override double Indent => indent;
 	}
 }

@@ -73,7 +73,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		private Match GetMatch(int startOffset, out int matchOffset)
 		{
-			int endOffset = CurrentContext.VisualLine.LastDocumentLine.EndOffset;
+			// Only reached from the two generation entry points, so the context is set.
+			int endOffset = CurrentContext!.VisualLine.LastDocumentLine.EndOffset;
 			StringSegment relevantText = CurrentContext.GetText(startOffset, endOffset - startOffset);
 			Match m = linkRegex.Match(relevantText.Text, relevantText.Offset, relevantText.Count);
 			matchOffset = m.Success ? m.Index - relevantText.Offset + startOffset : -1;
@@ -88,7 +89,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		}
 
 		/// <inheritdoc/>
-		public override VisualLineElement ConstructElement(int offset)
+		public override VisualLineElement? ConstructElement(int offset)
 		{
 			Match m = GetMatch(offset, out int matchOffset);
 			if (m.Success && matchOffset == offset) {
@@ -103,14 +104,16 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// The default implementation will create a <see cref="VisualLineLinkText"/>
 		/// based on the URI provided by <see cref="GetUriFromMatch"/>.
 		/// </summary>
-		protected virtual VisualLineElement ConstructElementFromMatch(Match m)
+		// Null when the match does not yield a usable URI, which leaves the text unlinked.
+		protected virtual VisualLineElement? ConstructElementFromMatch(Match m)
 		{
-			Uri uri = GetUriFromMatch(m);
+			Uri? uri = GetUriFromMatch(m);
 			if (uri == null) {
 				return null;
 			}
 
-			VisualLineLinkText linkText = new(CurrentContext.VisualLine, m.Length) {
+			// Only ever called from ConstructElement, which runs inside a generation pass.
+			VisualLineLinkText linkText = new(CurrentContext!.VisualLine, m.Length) {
 				NavigateUri = uri,
 				RequireControlModifierForClick = this.RequireControlModifierForClick
 			};
@@ -120,7 +123,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Fetches the URI from the regex match. Returns null if the URI format is invalid.
 		/// </summary>
-		protected virtual Uri GetUriFromMatch(Match match)
+		protected virtual Uri? GetUriFromMatch(Match match)
 		{
 			string targetUrl = match.Value;
 			if (targetUrl.StartsWith("www.", StringComparison.Ordinal)) {
@@ -154,7 +157,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		{
 		}
 
-		protected override Uri GetUriFromMatch(Match match)
+		protected override Uri? GetUriFromMatch(Match match)
 		{
 			string targetUrl = "mailto:" + match.Value;
 			if (Uri.IsWellFormedUriString(targetUrl, UriKind.Absolute)) {

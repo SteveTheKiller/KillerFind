@@ -32,9 +32,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// </summary>
 	public class FormattedTextElement : VisualLineElement
 	{
-		internal readonly FormattedText formattedText;
-		internal string text;
-		internal TextLine textLine;
+		// Exactly one of the three constructors below fills one of these in; the other two stay
+		// null. text is additionally dropped once CreateTextRun has turned it into a textLine.
+		internal readonly FormattedText? formattedText;
+		internal string? text;
+		internal TextLine? textLine;
 
 		/// <summary>
 		/// Creates a new FormattedTextElement that displays the specified text
@@ -86,7 +88,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		{
 			if (textLine == null) {
 				TextFormatter formatter = TextFormatterFactory.Create(context.TextView);
-				textLine = PrepareText(formatter, this.text, this.TextRunProperties);
+				// No textLine means this element was built from a string, so text is set.
+				textLine = PrepareText(formatter, this.text!, this.TextRunProperties);
 				this.text = null;
 			}
 			return new FormattedTextRun(this, this.TextRunProperties);

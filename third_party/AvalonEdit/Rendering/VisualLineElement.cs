@@ -80,12 +80,15 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <see cref="VisualLineElementTextRunProperties"/> will affect only this
 		/// <see cref="VisualLineElement"/>.
 		/// </summary>
-		public VisualLineElementTextRunProperties TextRunProperties { get; private set; }
+		// Assigned by VisualLine.ConstructVisualElements right after the element is created, via
+		// SetTextRunProperties below; no element reaches user code without it.
+		public VisualLineElementTextRunProperties TextRunProperties { get; private set; } = null!;
 
 		/// <summary>
 		/// Gets/sets the brush used for the background of this <see cref="VisualLineElement" />.
+		/// Null means the element paints no background of its own.
 		/// </summary>
-		public Brush BackgroundBrush { get; set; }
+		public Brush? BackgroundBrush { get; set; }
 
 		internal void SetTextRunProperties(VisualLineElementTextRunProperties p)
 		{
@@ -109,7 +112,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Retrieves the text span immediately before the visual column.
 		/// </summary>
 		/// <remarks>This method is used for word-wrapping in bidirectional text.</remarks>
-		public virtual TextSpan<CultureSpecificCharacterBufferRange> GetPrecedingText(int visualColumnLimit, ITextRunConstructionContext context)
+		// Null means "no preceding text to report", which is the default for every element that
+		// does not take part in bidirectional word-wrapping.
+		public virtual TextSpan<CultureSpecificCharacterBufferRange>? GetPrecedingText(int visualColumnLimit, ITextRunConstructionContext context)
 		{
 			return null;
 		}

@@ -30,9 +30,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	{
 		private readonly UIElement target;
 
-		private DispatcherTimer mouseHoverTimer;
+		// The timer exists only while a hover is pending, and the event args only from the first
+		// mouse move onwards - both are null before the pointer has ever entered the target.
+		private DispatcherTimer? mouseHoverTimer;
 		private Point mouseHoverStartPoint;
-		private MouseEventArgs mouseHoverLastEventArgs;
+		private MouseEventArgs? mouseHoverLastEventArgs;
 		private bool mouseHovering;
 
 		/// <summary>
@@ -83,25 +85,29 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				mouseHoverTimer.Stop();
 				mouseHoverTimer = null;
 			}
+			// mouseHovering only becomes true in OnMouseHoverTimerElapsed, which cannot run before
+			// StartHovering has recorded the event args - so they are there whenever this fires.
 			if (mouseHovering) {
 				mouseHovering = false;
-				OnMouseHoverStopped(mouseHoverLastEventArgs);
+				OnMouseHoverStopped(mouseHoverLastEventArgs!);
 			}
 		}
 
 		private void OnMouseHoverTimerElapsed(object sender, EventArgs e)
 		{
-			mouseHoverTimer.Stop();
+			// This is the timer's own callback, so the timer and the args StartHovering set are
+			// both still here.
+			mouseHoverTimer!.Stop();
 			mouseHoverTimer = null;
 
 			mouseHovering = true;
-			OnMouseHover(mouseHoverLastEventArgs);
+			OnMouseHover(mouseHoverLastEventArgs!);
 		}
 
 		/// <summary>
 		/// Occurs when the mouse starts hovering over a certain location.
 		/// </summary>
-		public event EventHandler<MouseEventArgs> MouseHover;
+		public event EventHandler<MouseEventArgs>? MouseHover;
 
 		/// <summary>
 		/// Raises the <see cref="MouseHover"/> event.
@@ -114,7 +120,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Occurs when the mouse stops hovering over a certain location.
 		/// </summary>
-		public event EventHandler<MouseEventArgs> MouseHoverStopped;
+		public event EventHandler<MouseEventArgs>? MouseHoverStopped;
 
 		/// <summary>
 		/// Raises the <see cref="MouseHoverStopped"/> event.

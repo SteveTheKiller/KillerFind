@@ -73,7 +73,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		public override int GetFirstInterestedOffset(int startOffset)
 		{
-			DocumentLine endLine = CurrentContext.VisualLine.LastDocumentLine;
+			// Both generation entry points run inside a pass, so the context is set.
+			DocumentLine endLine = CurrentContext!.VisualLine.LastDocumentLine;
 			StringSegment relevantText = CurrentContext.GetText(startOffset, endLine.EndOffset - startOffset);
 
 			for (int i = 0; i < relevantText.Count; i++) {
@@ -101,9 +102,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			return -1;
 		}
 
-		public override VisualLineElement ConstructElement(int offset)
+		public override VisualLineElement? ConstructElement(int offset)
 		{
-			char c = CurrentContext.Document.GetCharAt(offset);
+			char c = CurrentContext!.Document.GetCharAt(offset);
 			if (ShowSpaces && c == ' ') {
 				return new SpaceTextElement(CurrentContext.TextView.cachedElements.GetTextForNonPrintableCharacter("\u00B7", CurrentContext));
 			} else if (ShowTabs && c == '\t') {

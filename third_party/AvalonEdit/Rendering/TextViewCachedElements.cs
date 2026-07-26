@@ -26,8 +26,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 {
 	internal sealed class TextViewCachedElements : IDisposable
 	{
-		private TextFormatter formatter;
-		private Dictionary<string, TextLine> nonPrintableCharacterTexts;
+		// Both are built on first use and stay null for a text view that never renders a
+		// non-printable character, which is the common case.
+		private TextFormatter? formatter;
+		private Dictionary<string, TextLine>? nonPrintableCharacterTexts;
 
 		public TextLine GetTextForNonPrintableCharacter(string text, ITextRunConstructionContext context)
 		{

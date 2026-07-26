@@ -252,7 +252,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		protected virtual void ApplyColorToElement(VisualLineElement element, HighlightingColor color)
 		{
-			ApplyColorToElement(element, color, CurrentContext);
+			// Only called from ColorizeLine, which runs inside a Colorize call.
+			ApplyColorToElement(element, color, CurrentContext!);
 		}
 
 		internal static void ApplyColorToElement(VisualLineElement element, HighlightingColor color, ITextRunConstructionContext context)

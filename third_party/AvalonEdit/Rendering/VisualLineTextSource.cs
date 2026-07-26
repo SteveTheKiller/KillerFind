@@ -35,10 +35,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			this.VisualLine = visualLine;
 		}
 
+		// All three are filled in by VisualLine.RunTextFormatter right after construction; the
+		// instance is never handed to the formatter before that.
 		public VisualLine VisualLine { get; private set; }
-		public TextView TextView { get; set; }
-		public TextDocument Document { get; set; }
-		public TextRunProperties GlobalTextRunProperties { get; set; }
+		public TextView TextView { get; set; } = null!;
+		public TextDocument Document { get; set; } = null!;
+		public TextRunProperties GlobalTextRunProperties { get; set; } = null!;
 
 		public override TextRun GetTextRun(int textSourceCharacterIndex)
 		{
@@ -99,7 +101,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				foreach (VisualLineElement element in VisualLine.Elements) {
 					if (textSourceCharacterIndexLimit > element.VisualColumn
 						&& textSourceCharacterIndexLimit <= element.VisualColumn + element.VisualLength) {
-						TextSpan<CultureSpecificCharacterBufferRange> span = element.GetPrecedingText(textSourceCharacterIndexLimit, this);
+						TextSpan<CultureSpecificCharacterBufferRange>? span = element.GetPrecedingText(textSourceCharacterIndexLimit, this);
 						if (span == null) {
 							break;
 						}
@@ -125,7 +127,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			throw new NotSupportedException();
 		}
 
-		private string cachedString;
+		// Null until the first GetText call fills it.
+		private string? cachedString;
 		private int cachedStringOffset;
 
 		public StringSegment GetText(int offset, int length)

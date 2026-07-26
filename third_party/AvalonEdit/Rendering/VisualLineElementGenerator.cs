@@ -28,7 +28,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Gets the text run construction context.
 		/// </summary>
-		protected ITextRunConstructionContext CurrentContext { get; private set; }
+		// Null outside a generation pass: StartGeneration sets it, FinishGeneration clears it.
+		protected ITextRunConstructionContext? CurrentContext { get; private set; }
 
 		/// <summary>
 		/// Initializes the generator for the <see cref="ITextRunConstructionContext"/>

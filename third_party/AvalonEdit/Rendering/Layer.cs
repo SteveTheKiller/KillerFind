@@ -32,18 +32,21 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		public Layer(TextView textView, KnownLayer knownLayer)
 		{
-			Debug.Assert(textView != null);
+			// No null assert: the parameter type states it, and asserting made the field
+			// assignment below read as possibly-null.
 			this.textView = textView;
 			this.knownLayer = knownLayer;
 			this.Focusable = false;
 		}
 
-		protected override GeometryHitTestResult HitTestCore(GeometryHitTestParameters hitTestParameters)
+		// A layer is not hit-testable: returning null is how WPF is told to look past it, which is
+		// what keeps clicks reaching the text below.
+		protected override GeometryHitTestResult? HitTestCore(GeometryHitTestParameters hitTestParameters)
 		{
 			return null;
 		}
 
-		protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters)
+		protected override HitTestResult? HitTestCore(PointHitTestParameters hitTestParameters)
 		{
 			return null;
 		}

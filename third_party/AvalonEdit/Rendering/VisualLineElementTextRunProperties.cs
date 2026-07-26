@@ -34,17 +34,20 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// </summary>
 	public class VisualLineElementTextRunProperties : TextRunProperties, ICloneable
 	{
-		private Brush backgroundBrush;
+		// All of these mirror TextRunProperties, whose own members are nullable: a run that sets no
+		// background, no decorations and so on leaves them unset. typeface is the one exception -
+		// the constructor always copies one across, and SetTypeface rejects null.
+		private Brush? backgroundBrush;
 		private BaselineAlignment baselineAlignment;
-		private CultureInfo cultureInfo;
+		private CultureInfo? cultureInfo;
 		private double fontHintingEmSize;
 		private double fontRenderingEmSize;
-		private Brush foregroundBrush;
+		private Brush? foregroundBrush;
 		private Typeface typeface;
-		private TextDecorationCollection textDecorations;
-		private TextEffectCollection textEffects;
-		private TextRunTypographyProperties typographyProperties;
-		private NumberSubstitution numberSubstitution;
+		private TextDecorationCollection? textDecorations;
+		private TextEffectCollection? textEffects;
+		private TextRunTypographyProperties? typographyProperties;
+		private NumberSubstitution? numberSubstitution;
 
 		/// <summary>
 		/// Creates a new VisualLineElementTextRunProperties instance that copies its values
@@ -91,7 +94,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		}
 
 		/// <inheritdoc/>
-		public override Brush BackgroundBrush => backgroundBrush;
+		public override Brush? BackgroundBrush => backgroundBrush;
 
 		/// <summary>
 		/// Sets the <see cref="BackgroundBrush"/>.
@@ -147,7 +150,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		}
 
 		/// <inheritdoc/>
-		public override Brush ForegroundBrush => foregroundBrush;
+		public override Brush? ForegroundBrush => foregroundBrush;
 
 		/// <summary>
 		/// Sets the <see cref="ForegroundBrush"/>.
@@ -176,7 +179,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// collection instance is only used for this <see cref="TextRunProperties"/> instance and it is safe
 		/// to add <see cref="TextDecoration"/>s.
 		/// </summary>
-		public override TextDecorationCollection TextDecorations => textDecorations;
+		public override TextDecorationCollection? TextDecorations => textDecorations;
 
 		/// <summary>
 		/// Sets the <see cref="TextDecorations"/>.
@@ -198,7 +201,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// collection instance is only used for this <see cref="TextRunProperties"/> instance and it is safe
 		/// to add <see cref="TextEffect"/>s.
 		/// </summary>
-		public override TextEffectCollection TextEffects => textEffects;
+		public override TextEffectCollection? TextEffects => textEffects;
 
 		/// <summary>
 		/// Sets the <see cref="TextEffects"/>.
@@ -212,7 +215,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Gets the typography properties for the text run.
 		/// </summary>
-		public override TextRunTypographyProperties TypographyProperties => typographyProperties;
+		public override TextRunTypographyProperties? TypographyProperties => typographyProperties;
 
 		/// <summary>
 		/// Sets the <see cref="TypographyProperties"/>.
@@ -225,7 +228,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Gets the number substitution settings for the text run.
 		/// </summary>
-		public override NumberSubstitution NumberSubstitution => numberSubstitution;
+		public override NumberSubstitution? NumberSubstitution => numberSubstitution;
 
 		/// <summary>
 		/// Sets the <see cref="NumberSubstitution"/>.

@@ -31,7 +31,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Gets the list of elements currently being transformed.
 		/// </summary>
-		protected IList<VisualLineElement> CurrentElements { get; private set; }
+		// Null outside a Transform call; the recursion guard below is exactly that test.
+		protected IList<VisualLineElement>? CurrentElements { get; private set; }
 
 		/// <summary>
 		/// <see cref="IVisualLineTransformer.Transform"/> implementation.
@@ -73,7 +74,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				throw new ArgumentNullException("action");
 			}
 
-			for (int i = 0; i < CurrentElements.Count; i++) {
+			// Documented as callable only during a Transform call, which is when it is set.
+			for (int i = 0; i < CurrentElements!.Count; i++) {
 				VisualLineElement e = CurrentElements[i];
 				if (e.VisualColumn > visualEndColumn) {
 					break;

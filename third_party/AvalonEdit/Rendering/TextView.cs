@@ -92,8 +92,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			DependencyProperty.Register("Document", typeof(TextDocument), typeof(TextView),
 										new FrameworkPropertyMetadata(OnDocumentChanged));
 
-		private TextDocument document;
-		private HeightTree heightTree;
+		// Both are null while no document is set, which is the state of a freshly constructed
+		// TextView and of one whose Document has been set back to null.
+		private TextDocument? document;
+		private HeightTree? heightTree;
 
 		/// <summary>
 		/// Gets/Sets the document displayed by the text editor.
@@ -112,16 +114,19 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Occurs when the document property has changed.
 		/// </summary>
-		public event EventHandler DocumentChanged;
+		public event EventHandler? DocumentChanged;
 
-		private void OnDocumentChanged(TextDocument oldValue, TextDocument newValue)
+		// Both are null when there is no document: oldValue on the first assignment, newValue when
+		// the Document property is cleared.
+		private void OnDocumentChanged(TextDocument? oldValue, TextDocument? newValue)
 		{
+			// An old document means the three were created alongside it.
 			if (oldValue != null) {
-				heightTree.Dispose();
+				heightTree!.Dispose();
 				heightTree = null;
-				formatter.Dispose();
+				formatter!.Dispose();
 				formatter = null;
-				cachedElements.Dispose();
+				cachedElements!.Dispose();
 				cachedElements = null;
 				TextDocumentWeakEventManager.Changing.RemoveListener(oldValue, this);
 			}

@@ -147,7 +147,8 @@ namespace ICSharpCode.AvalonEdit.Folding
 					title = "...";
 				}
 
-				VisualLineElementTextRunProperties p = new(CurrentContext.GlobalTextRunProperties);
+				// Only reached during a generation pass, so the context is set.
+				VisualLineElementTextRunProperties p = new(CurrentContext!.GlobalTextRunProperties);
 				p.SetForegroundBrush(TextBrush);
 				TextFormatter textFormatter = TextFormatterFactory.Create(CurrentContext.TextView);
 				TextLine text = FormattedTextElement.PrepareText(textFormatter, title, p);
