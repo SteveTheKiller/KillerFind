@@ -96,7 +96,10 @@ namespace ICSharpCode.AvalonEdit.Snippets
 		public int InsertionPosition { get; set; }
 
 		private readonly int startPosition;
-		private ICSharpCode.AvalonEdit.Document.AnchorSegment wholeSnippetAnchor;
+		// Assigned by InsertionCompleted. Left non-nullable because Deactivate reads .Length off
+		// it without a guard; the one place that does test it for null is being defensive about
+		// a snippet that was never inserted. Worth a second look if that path ever throws.
+		private ICSharpCode.AvalonEdit.Document.AnchorSegment wholeSnippetAnchor = null!;
 		private bool deactivateIfSnippetEmpty;
 
 		/// <summary>
@@ -175,7 +178,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 		/// <summary>
 		/// Returns the active element belonging to the specified snippet element, or null if no such active element is found.
 		/// </summary>
-		public IActiveElement GetActiveElement(SnippetElement owner)
+		public IActiveElement? GetActiveElement(SnippetElement owner)
 		{
 			if (owner == null) {
 				throw new ArgumentNullException("owner");
@@ -235,12 +238,12 @@ namespace ICSharpCode.AvalonEdit.Snippets
 			}
 		}
 
-		private SnippetInputHandler myInputHandler;
+		private SnippetInputHandler myInputHandler = null!;
 
 		/// <summary>
 		/// Occurs when the all snippet elements have been inserted.
 		/// </summary>
-		public event EventHandler InsertionCompleted;
+		public event EventHandler? InsertionCompleted;
 
 		/// <summary>
 		/// Calls the <see cref="IActiveElement.Deactivate"/> method on all registered active elements.
@@ -272,7 +275,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 		/// <summary>
 		/// Occurs when the interactive mode is deactivated.
 		/// </summary>
-		public event EventHandler<SnippetEventArgs> Deactivated;
+		public event EventHandler<SnippetEventArgs>? Deactivated;
 
 		bool IWeakEventListener.ReceiveWeakEvent(Type managerType, object sender, EventArgs e)
 		{

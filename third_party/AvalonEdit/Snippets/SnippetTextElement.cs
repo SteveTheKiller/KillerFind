@@ -27,12 +27,14 @@ namespace ICSharpCode.AvalonEdit.Snippets
 	[Serializable]
 	public class SnippetTextElement : SnippetElement
 	{
-		private string text;
+		// Insert() tests this for null before using it, so an unset SnippetTextElement is a
+		// supported state rather than an accident.
+		private string? text;
 
 		/// <summary>
 		/// The text to be inserted.
 		/// </summary>
-		public string Text {
+		public string? Text {
 			get => text; set => text = value;
 		}
 

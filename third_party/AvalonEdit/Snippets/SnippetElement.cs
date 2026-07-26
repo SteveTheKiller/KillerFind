@@ -35,7 +35,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 		/// <summary>
 		/// Converts the snippet to text, with replaceable fields in italic.
 		/// </summary>
-		public virtual Inline ToTextRun()
+		public virtual Inline? ToTextRun()
 		{
 			return null;
 		}

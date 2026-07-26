@@ -70,7 +70,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 	{
 		private readonly InsertionContext context;
 		private readonly int startOffset, endOffset;
-		private TextAnchor start, end;
+		private TextAnchor start = null!, end = null!;
 
 		public ReplaceableActiveElement(InsertionContext context, int startOffset, int endOffset)
 		{
@@ -105,7 +105,10 @@ namespace ICSharpCode.AvalonEdit.Snippets
 			context.TextArea.TextView.BackgroundRenderers.Add(background);
 			context.TextArea.TextView.BackgroundRenderers.Add(foreground);
 			context.TextArea.Caret.PositionChanged += Caret_PositionChanged;
-			Caret_PositionChanged(null, null);
+			// Was Caret_PositionChanged(null, null). The handler ignores both arguments, but a
+			// null sender is a lie about where the call came from, and EventArgs.Empty is what
+			// every other synthetic raise in this codebase passes.
+			Caret_PositionChanged(this, EventArgs.Empty);
 
 			this.Text = GetText();
 		}
@@ -132,9 +135,9 @@ namespace ICSharpCode.AvalonEdit.Snippets
 			}
 		}
 
-		private Renderer background, foreground;
+		private Renderer background = null!, foreground = null!;
 
-		public string Text { get; private set; }
+		public string Text { get; private set; } = null!;
 
 		private string GetText()
 		{
@@ -145,7 +148,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 			}
 		}
 
-		public event EventHandler TextChanged;
+		public event EventHandler? TextChanged;
 
 		bool IWeakEventListener.ReceiveWeakEvent(Type managerType, object sender, EventArgs e)
 		{
@@ -162,7 +165,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 
 		public bool IsEditable => true;
 
-		public ISegment Segment {
+		public ISegment? Segment {
 			get {
 				if (start.IsDeleted || end.IsDeleted) {
 					return null;
@@ -195,7 +198,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 				return p;
 			}
 
-			internal ReplaceableActiveElement element;
+			internal ReplaceableActiveElement element = null!;
 
 			public KnownLayer Layer { get; set; }
 

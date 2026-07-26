@@ -43,6 +43,8 @@ namespace ICSharpCode.AvalonEdit.Snippets
 		/// <summary>
 		/// Gets the segment associated with this element. May be null.
 		/// </summary>
-		ISegment Segment { get; }
+		// Nullable: ReplaceableActiveElement returns null once either of its anchors is deleted,
+		// which is the normal end of a snippet's life rather than an error.
+		ISegment? Segment { get; }
 	}
 }

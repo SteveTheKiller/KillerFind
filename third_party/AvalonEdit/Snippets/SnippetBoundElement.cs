@@ -29,7 +29,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 	[Serializable]
 	public class SnippetBoundElement : SnippetElement
 	{
-		private SnippetReplaceableTextElement targetElement;
+		private SnippetReplaceableTextElement targetElement = null!;
 
 		/// <summary>
 		/// Gets/Sets the target element.
@@ -83,7 +83,9 @@ namespace ICSharpCode.AvalonEdit.Snippets
 		private readonly InsertionContext context;
 		private readonly SnippetReplaceableTextElement targetSnippetElement;
 		private readonly SnippetBoundElement boundElement;
-		internal IReplaceableActiveElement targetElement;
+		// Comes out of an "as" cast in OnInsertionCompleted and is tested for null right after,
+		// so the element this one binds to may legitimately not be there.
+		internal IReplaceableActiveElement? targetElement;
 		private AnchorSegment segment;
 
 		public BoundActiveElement(InsertionContext context, SnippetReplaceableTextElement targetSnippetElement, SnippetBoundElement boundElement, AnchorSegment segment)
