@@ -112,7 +112,7 @@ namespace ICSharpCode.AvalonEdit
 		/// <summary>
 		/// Occurs when the document property has changed.
 		/// </summary>
-		public event EventHandler DocumentChanged;
+		public event EventHandler? DocumentChanged;
 
 		/// <summary>
 		/// Raises the <see cref="DocumentChanged"/> event.
@@ -160,7 +160,7 @@ namespace ICSharpCode.AvalonEdit
 		/// <summary>
 		/// Occurs when a text editor option has changed.
 		/// </summary>
-		public event PropertyChangedEventHandler OptionChanged;
+		public event PropertyChangedEventHandler? OptionChanged;
 
 		/// <summary>
 		/// Raises the <see cref="OptionChanged"/> event.
@@ -237,7 +237,7 @@ namespace ICSharpCode.AvalonEdit
 		/// <summary>
 		/// Occurs when the Text property changes.
 		/// </summary>
-		public event EventHandler TextChanged;
+		public event EventHandler? TextChanged;
 
 		/// <summary>
 		/// Raises the <see cref="TextChanged"/> event.
@@ -268,7 +268,7 @@ namespace ICSharpCode.AvalonEdit
 		/// Gets the scroll viewer used by the text editor.
 		/// This property can return null if the template has not been applied / does not contain a scroll viewer.
 		/// </summary>
-		internal ScrollViewer ScrollViewer { get; private set; }
+		internal ScrollViewer ScrollViewer { get; private set; } = null!;
 
 		private bool CanExecute(RoutedUICommand command)
 		{
@@ -297,14 +297,18 @@ namespace ICSharpCode.AvalonEdit
 			get => (IHighlightingDefinition)GetValue(SyntaxHighlightingProperty); set => SetValue(SyntaxHighlightingProperty, value);
 		}
 
-		private IVisualLineTransformer colorizer;
+		// Null whenever no syntax highlighting is set, which is the default and is set explicitly
+		// when the SyntaxHighlighting property is cleared.
+		private IVisualLineTransformer? colorizer;
 
 		private static void OnSyntaxHighlightingChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 			((TextEditor)d).OnSyntaxHighlightingChanged(e.NewValue as IHighlightingDefinition);
 		}
 
-		private void OnSyntaxHighlightingChanged(IHighlightingDefinition newValue)
+		// Nullable: the caller passes "e.NewValue as IHighlightingDefinition", and clearing the
+		// SyntaxHighlighting property is how you turn highlighting off.
+		private void OnSyntaxHighlightingChanged(IHighlightingDefinition? newValue)
 		{
 			if (colorizer != null) {
 				TextArea.TextView.LineTransformers.Remove(colorizer);
@@ -379,7 +383,7 @@ namespace ICSharpCode.AvalonEdit
 					editor.TextArea.ReadOnlySectionProvider = NoReadOnlySections.Instance;
 				}
 
-				TextEditorAutomationPeer peer = TextEditorAutomationPeer.FromElement(editor) as TextEditorAutomationPeer;
+				TextEditorAutomationPeer? peer = TextEditorAutomationPeer.FromElement(editor) as TextEditorAutomationPeer;
 				peer?.RaiseIsReadOnlyChanged((bool)e.OldValue, (bool)e.NewValue);
 			}
 		}

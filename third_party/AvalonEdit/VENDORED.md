@@ -25,7 +25,10 @@ Keep this list current. An upgrade is a fresh extract of the new tag with these 
    arrived with 2142 warnings under KillerFind's `<Nullable>enable</Nullable>`. Every one is being
    annotated rather than suppressed: `?` where null is real and the code already tests for it,
    `= null!` where a field is genuinely assigned before any caller can see it, and a real fix
-   wherever the compiler found an actual hole. Folders finished so far: **Indentation, Search**.
+   wherever the compiler found an actual hole. Note that the count does not fall linearly:
+   annotating a type correctly surfaces every call site that was quietly assuming it non-null,
+   so a folder often nets close to zero on its first pass and collapses on the second.
+   Folders finished so far: **Indentation, Search, Snippets, and the root files**.
 
 3. **Whitespace normalized to their own convention.** `third_party/.editorconfig` declares the
    style this tree is actually written in (tabs, LF, Allman on types and methods only), which is

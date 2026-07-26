@@ -64,27 +64,31 @@ namespace ICSharpCode.AvalonEdit.Snippets
 			}
 		}
 
-		private void SelectElement(IActiveElement element)
+		// Nullable in and nullable out: FindNextEditableElement returns FirstOrDefault, so there
+		// may be no next element, and this method already tested for exactly that.
+		private void SelectElement(IActiveElement? element)
 		{
 			if (element != null) {
-				TextArea.Selection = Selection.Create(TextArea, element.Segment);
-				TextArea.Caret.Offset = element.Segment.EndOffset;
+				// Segment cannot be null here: every element this can be handed came out of the
+				// Where(e => e.Segment != null) filter below, which the compiler cannot see through.
+				TextArea.Selection = Selection.Create(TextArea, element.Segment!);
+				TextArea.Caret.Offset = element.Segment!.EndOffset;
 			}
 		}
 
-		private IActiveElement FindNextEditableElement(int offset, bool backwards)
+		private IActiveElement? FindNextEditableElement(int offset, bool backwards)
 		{
 			IEnumerable<IActiveElement> elements = context.ActiveElements.Where(e => e.IsEditable && e.Segment != null);
 			if (backwards) {
 				elements = elements.Reverse();
 				foreach (IActiveElement element in elements) {
-					if (offset > element.Segment.EndOffset) {
+					if (offset > element.Segment!.EndOffset) {
 						return element;
 					}
 				}
 			} else {
 				foreach (IActiveElement element in elements) {
-					if (offset < element.Segment.Offset) {
+					if (offset < element.Segment!.Offset) {
 						return element;
 					}
 				}

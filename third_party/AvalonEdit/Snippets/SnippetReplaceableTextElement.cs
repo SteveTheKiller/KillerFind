@@ -125,7 +125,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 
 		private void Caret_PositionChanged(object sender, EventArgs e)
 		{
-			ISegment s = this.Segment;
+			ISegment? s = this.Segment;
 			if (s != null) {
 				bool newIsCaretInside = s.Contains(context.TextArea.Caret.Offset, 0);
 				if (newIsCaretInside != isCaretInside) {
@@ -204,7 +204,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 
 			public void Draw(TextView textView, System.Windows.Media.DrawingContext drawingContext)
 			{
-				ISegment s = element.Segment;
+				ISegment? s = element.Segment;
 				if (s != null) {
 					BackgroundGeometryBuilder geoBuilder = new() {
 						AlignToWholePixels = true,

@@ -50,7 +50,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 		{
 			Span span = new();
 			foreach (SnippetElement e in this.Elements) {
-				Inline r = e.ToTextRun();
+				Inline? r = e.ToTextRun();
 				if (r != null) {
 					span.Inlines.Add(r);
 				}

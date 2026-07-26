@@ -57,7 +57,7 @@ namespace ICSharpCode.AvalonEdit
 		#region PropertyChanged handling
 		/// <inheritdoc/>
 		[field: NonSerialized]
-		public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler? PropertyChanged;
 
 		/// <summary>
 		/// Raises the PropertyChanged event.

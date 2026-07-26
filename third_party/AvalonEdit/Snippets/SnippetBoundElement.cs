@@ -53,7 +53,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 				TextAnchor start = context.Document.CreateAnchor(context.InsertionPosition);
 				start.MovementType = AnchorMovementType.BeforeInsertion;
 				start.SurviveDeletion = true;
-				string inputText = targetElement.Text;
+				string? inputText = targetElement.Text;
 				if (inputText != null) {
 					context.InsertText(ConvertText(inputText));
 				}
@@ -66,10 +66,10 @@ namespace ICSharpCode.AvalonEdit.Snippets
 		}
 
 		/// <inheritdoc/>
-		public override Inline ToTextRun()
+		public override Inline? ToTextRun()
 		{
 			if (targetElement != null) {
-				string inputText = targetElement.Text;
+				string? inputText = targetElement.Text;
 				if (inputText != null) {
 					return new Italic(new Run(ConvertText(inputText)));
 				}
@@ -108,7 +108,13 @@ namespace ICSharpCode.AvalonEdit.Snippets
 		{
 			// Don't copy text if the segments overlap (we would get an endless loop).
 			// This can happen if the user deletes the text between the replaceable element and the bound element.
-			if (SimpleSegment.GetOverlap(segment, targetElement.Segment) == SimpleSegment.Invalid) {
+			// This handler is only ever subscribed inside the targetElement != null branch of
+			// OnInsertionCompleted, and an active element only loses its Segment once its anchors
+			// are deleted, at which point the snippet is being torn down anyway.
+			if (targetElement == null) {
+				return;
+			}
+			if (SimpleSegment.GetOverlap(segment, targetElement.Segment!) == SimpleSegment.Invalid) {
 				int offset = segment.Offset;
 				int length = segment.Length;
 				string text = boundElement.ConvertText(targetElement.Text);
