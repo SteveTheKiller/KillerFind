@@ -203,7 +203,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 			foreach (FoldingMarginMarker m in markers) {
 				int visualColumn = m.VisualLine.GetVisualColumn(m.FoldingSection.StartOffset - m.VisualLine.FirstDocumentLine.Offset);
 				TextLine textLine = m.VisualLine.GetTextLine(visualColumn);
-				double yPos = m.VisualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.TextMiddle) - TextView.VerticalOffset;
+				double yPos = m.VisualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.TextMiddle) - TextView!.VerticalOffset;
 				yPos -= m.DesiredSize.Height / 2;
 				double xPos = (finalSize.Width - m.DesiredSize.Width) / 2;
 				m.Arrange(new Rect(PixelSnapHelpers.Round(new Point(xPos, yPos), pixelSize), m.DesiredSize));
@@ -315,7 +315,9 @@ namespace ICSharpCode.AvalonEdit.Folding
 				return;
 			}
 
-			int viewStartOffset = TextView.VisualLines[0].FirstDocumentLine.Offset;
+			// Only reached from OnRender, which returns early unless TextView is attached and its
+			// visual lines are valid.
+			int viewStartOffset = TextView!.VisualLines[0].FirstDocumentLine.Offset;
 			int viewEndOffset = TextView.VisualLines.Last().LastDocumentLine.EndOffset;
 			System.Collections.ObjectModel.ReadOnlyCollection<FoldingSection> foldings = FoldingManager.GetFoldingsContaining(viewStartOffset);
 			int maxEndOffset = 0;
@@ -387,7 +389,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 			double startY = 0;
 			Pen currentPen = colors[0];
 			int tlNumber = 0;
-			foreach (VisualLine vl in TextView.VisualLines) {
+			foreach (VisualLine vl in TextView!.VisualLines) {
 				foreach (TextLine tl in vl.TextLines) {
 					if (endMarker[tlNumber] != null) {
 						double visualPos = GetVisualPos(vl, tl, pixelSize.Height);
@@ -411,13 +413,13 @@ namespace ICSharpCode.AvalonEdit.Folding
 
 		private double GetVisualPos(VisualLine vl, TextLine tl, double pixelHeight)
 		{
-			double pos = vl.GetTextLineVisualYPosition(tl, VisualYPosition.TextMiddle) - TextView.VerticalOffset;
+			double pos = vl.GetTextLineVisualYPosition(tl, VisualYPosition.TextMiddle) - TextView!.VerticalOffset;
 			return PixelSnapHelpers.PixelAlign(pos, pixelHeight);
 		}
 
 		private int GetTextLineIndexFromOffset(List<TextLine> textLines, int offset)
 		{
-			int lineNumber = TextView.Document.GetLineByOffset(offset).LineNumber;
+			int lineNumber = TextView!.Document.GetLineByOffset(offset).LineNumber;
 			VisualLine vl = TextView.GetVisualLine(lineNumber);
 			if (vl != null) {
 				int relOffset = offset - vl.FirstDocumentLine.Offset;

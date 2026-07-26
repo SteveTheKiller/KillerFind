@@ -83,7 +83,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <param name="segment">The part of the document to create HTML for. You can pass <c>null</c> to create HTML for the whole document.</param>
 		/// <param name="options">The options for the HTML creation.</param>
 		/// <returns>HTML code for the document part.</returns>
-		public static string CreateHtmlFragment(IDocument document, IHighlighter highlighter, ISegment segment, HtmlOptions options)
+		// The highlighter is optional: both call sites obtain it with "as IHighlighter" from a
+		// service lookup, and an editor with no syntax highlighting installed simply has none.
+		public static string CreateHtmlFragment(IDocument document, IHighlighter? highlighter, ISegment segment, HtmlOptions options)
 		{
 			if (document == null) {
 				throw new ArgumentNullException("document");

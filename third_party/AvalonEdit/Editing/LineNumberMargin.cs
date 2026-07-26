@@ -88,7 +88,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <inheritdoc/>
 		protected override void OnRender(DrawingContext drawingContext)
 		{
-			TextView textView = this.TextView;
+			TextView? textView = this.TextView;
 			Size renderSize = this.RenderSize;
 			if (textView != null && textView.VisualLinesValid) {
 				Brush foreground = (Brush)GetValue(Control.ForegroundProperty);
@@ -217,7 +217,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		{
 			Point pos = e.GetPosition(TextView);
 			pos.X = 0;
-			pos.Y = pos.Y.CoerceValue(0, TextView.ActualHeight);
+			pos.Y = pos.Y.CoerceValue(0, TextView!.ActualHeight);
 			pos.Y += TextView.VerticalOffset;
 			VisualLine vl = TextView.GetVisualLineFromVisualTop(pos.Y);
 			if (vl == null) {
