@@ -91,7 +91,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 		}
 		#endregion
 
-		private TextDocument document;
+		// Assigned by InitDocument, which every constructor calls and which throws when the text
+		// area has no document, so it is never observed unset.
+		private TextDocument document = null!;
 		private readonly int startLine, endLine;
 		private readonly double startXPos, endXPos;
 		private readonly int topLeftOffset, bottomRightOffset;

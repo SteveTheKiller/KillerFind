@@ -99,7 +99,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <remarks><inheritdoc cref="ITextAreaInputHandler"/></remarks>
 		public TextAreaDefaultInputHandler DefaultInputHandler { get; private set; }
 
-		private ITextAreaInputHandler activeInputHandler;
+		// Null until an input handler is installed, and settable back to null to detach the
+		// current one; the property setter and every use test for it.
+		private ITextAreaInputHandler? activeInputHandler;
 		private bool isChangingInputHandler;
 
 		/// <summary>
@@ -139,7 +141,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <summary>
 		/// Occurs when the ActiveInputHandler property changes.
 		/// </summary>
-		public event EventHandler ActiveInputHandlerChanged;
+		public event EventHandler? ActiveInputHandlerChanged;
 
 		/// <summary>
 		/// Gets the list of currently active stacked input handlers.
@@ -195,7 +197,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		}
 
 		/// <inheritdoc/>
-		public event EventHandler DocumentChanged;
+		public event EventHandler? DocumentChanged;
 
 		private static void OnDocumentChanged(DependencyObject dp, DependencyPropertyChangedEventArgs e)
 		{
@@ -244,7 +246,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <summary>
 		/// Occurs when a text editor option has changed.
 		/// </summary>
-		public event PropertyChangedEventHandler OptionChanged;
+		public event PropertyChangedEventHandler? OptionChanged;
 
 		/// <summary>
 		/// Raises the <see cref="OptionChanged"/> event.
@@ -357,7 +359,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 		#endregion
 
 		#region TextView property
-		private IScrollInfo scrollInfo;
+		// Null until the text view supplies one; every member of the IScrollInfo implementation
+		// below already reads it as "scrollInfo != null ? ... : 0".
+		private IScrollInfo? scrollInfo;
 
 		/// <summary>
 		/// Gets the text view used to display text in this text area.
@@ -379,7 +383,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <summary>
 		/// Occurs when the selection has changed.
 		/// </summary>
-		public event EventHandler SelectionChanged;
+		public event EventHandler? SelectionChanged;
 
 		/// <summary>
 		/// Gets/Sets the selection in this text area.
@@ -798,14 +802,14 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// This is like the <see cref="UIElement.TextInput"/> event,
 		/// but occurs immediately before the TextArea handles the TextInput event.
 		/// </summary>
-		public event TextCompositionEventHandler TextEntering;
+		public event TextCompositionEventHandler? TextEntering;
 
 		/// <summary>
 		/// Occurs when the TextArea receives text input.
 		/// This is like the <see cref="UIElement.TextInput"/> event,
 		/// but occurs immediately after the TextArea handles the TextInput event.
 		/// </summary>
-		public event TextCompositionEventHandler TextEntered;
+		public event TextCompositionEventHandler? TextEntered;
 
 		/// <summary>
 		/// Raises the TextEntering event.
@@ -1105,7 +1109,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <summary>
 		/// Occurs when text inside the TextArea was copied.
 		/// </summary>
-		public event EventHandler<TextEventArgs> TextCopied;
+		public event EventHandler<TextEventArgs>? TextCopied;
 
 		internal void OnTextCopied(TextEventArgs e)
 		{

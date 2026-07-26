@@ -61,7 +61,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// The typeface used for rendering the line number margin.
 		/// This field is calculated in MeasureOverride() based on the FontFamily etc. properties.
 		/// </summary>
-		protected Typeface typeface;
+		protected Typeface typeface = null!;
 
 		/// <summary>
 		/// The font size used for rendering the line number margin.

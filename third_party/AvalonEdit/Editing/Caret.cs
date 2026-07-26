@@ -252,7 +252,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// If the caret position is changed inside a document update (between BeginUpdate/EndUpdate calls),
 		/// the PositionChanged event is raised only once at the end of the document update.
 		/// </summary>
-		public event EventHandler PositionChanged;
+		public event EventHandler? PositionChanged;
 
 		private bool raisePositionChangedOnUpdateFinished;
 

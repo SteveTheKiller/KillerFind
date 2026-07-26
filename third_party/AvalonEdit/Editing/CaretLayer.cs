@@ -83,7 +83,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 			caretBlinkTimer.Stop();
 		}
 
-		internal Brush CaretBrush;
+		// Null means "no explicit brush", which is what the next use of it falls back from:
+		// CaretBrush ?? textView.GetValue(TextBlock.ForegroundProperty).
+		internal Brush? CaretBrush;
 
 		protected override void OnRender(DrawingContext drawingContext)
 		{
