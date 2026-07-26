@@ -129,7 +129,7 @@ namespace ICSharpCode.AvalonEdit
 		// If you don't need it, you can just remove the region and the ": IEquatable<Struct1>" declaration.
 
 		/// <inheritdoc/>
-		public override bool Equals(object obj)
+		public override readonly bool Equals(object obj)
 		{
 			if (obj is TextViewPosition) {
 				return Equals((TextViewPosition)obj); // use Equals method below

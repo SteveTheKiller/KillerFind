@@ -403,7 +403,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 								layers[i] = layer;
 								return;
 						}
-					} else if (p.KnownLayer == referencedLayer && p.Position == LayerInsertionPosition.Above
+					} else if ((p.KnownLayer == referencedLayer && p.Position == LayerInsertionPosition.Above)
 							   || p.KnownLayer > referencedLayer) {
 						// we skipped the insertion position (referenced layer does not exist?)
 						layers.Insert(i, layer);
@@ -1016,7 +1016,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 			allVisualLines = newVisualLines;
 			// visibleVisualLines = readonly copy of visual lines
-			visibleVisualLines = new ReadOnlyCollection<VisualLine>(newVisualLines.ToArray());
+			visibleVisualLines = new ReadOnlyCollection<VisualLine>([.. newVisualLines]);
 			newVisualLines = null;
 
 			if (allVisualLines.Any(line => line.IsDisposed)) {

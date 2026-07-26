@@ -75,7 +75,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 				anchor.SurviveDeletion = true;
 				return [new TextRangeProvider(TextArea, TextArea.Document, new AnchorSegment(anchor, anchor))];
 			}
-			return TextArea.Selection.Segments.Select(s => new TextRangeProvider(TextArea, TextArea.Document, s)).ToArray();
+			return [.. TextArea.Selection.Segments.Select(s => new TextRangeProvider(TextArea, TextArea.Document, s))];
 		}
 
 		public ITextRangeProvider[] GetVisibleRanges()

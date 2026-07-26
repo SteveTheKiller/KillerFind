@@ -52,6 +52,33 @@ Keep this list current. An upgrade is a fresh extract of the new tag with these 
    their declaration. `Init()` assigned them and `Reformat` calls `Init` first, but `Step` is
    public and reachable without it, which was a null dereference waiting for a caller.
 
+## The style audit
+
+The IDE analyzers were turned up to warning for this tree (`third_party/.editorconfig`) so that
+nothing could hide at suggestion severity, which is where Visual Studio's blue squiggles live and
+where MSBuild never looks. That surfaced 129,102 findings. They came down like this:
+
+| pass | findings left |
+|---|---|
+| starting point, everything elevated | 129,102 |
+| declared their formatting convention, LF and tabs | 16,530 |
+| `dotnet format whitespace`, 19 inconsistent files | 16,530 |
+| `dotnet format style`, braces and accessibility modifiers | 6,501 |
+| `dotnet format style`, expression bodies, `var`, conditional delegate calls | 4,074 |
+| remaining mechanical rules | 3,252 |
+| audited exceptions recorded below | 1,632 |
+
+Everything mechanical was fixed, not muted. Seven rules were turned down, each read site by site
+first and each recorded with its reasoning in `third_party/.editorconfig`: IDE0058 (240 sites, all
+idiomatic discards, no defect found), IDE0046 and IDE0045, IDE0290, IDE1006, IDE0010, IDE0060 and
+IDE0130. Two findings from that audit are worth knowing even though nothing was changed:
+
+- `Rendering/TextView.cs` `InvalidateLayer(KnownLayer)` ignores its parameter, so it invalidates
+  every layer whatever you pass it. Upstream behavior, left alone deliberately.
+- `Folding/XmlFoldingStrategy.XmlEncodeAttributeValue` calls `Replace` five times and discards
+  every result, which would be a silent no-op on a `string`. It is a `StringBuilder`, so it is
+  correct. Worth re-checking if upstream ever changes that local.
+
 ## How it is wired into the build
 
 `KillerFind.csproj` removes `third_party\**` from every default glob and then adds it back

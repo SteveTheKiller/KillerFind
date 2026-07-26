@@ -37,6 +37,43 @@ csharp_new_line_before_members_in_object_initializers = false
 csharp_new_line_before_members_in_anonymous_types = false
 
 # ---- documented exceptions ----
+# Every one of these was audited site by site before being turned down, and each is recorded in
+# AvalonEdit/VENDORED.md with the same reasoning. None of them is "too many to fix".
+
+# IDE0058, expression value never used. All 240 sites read: 109 are StringBuilder.Append, the
+# rest are ICollection.Remove returning bool, WPF CommandBindings.Add returning an index, and
+# P/Invoke return codes. No defect among them. The fix is to spray "_ =" across 240 idiomatic
+# calls, which makes the code worse to read for nothing. Microsoft ships this rule silent by
+# default; it only speaks here because this file turns everything up to warning.
+dotnet_diagnostic.IDE0058.severity = none
+
+# IDE0046 and IDE0045, collapse if/else into a conditional expression. 609 sites in a text
+# rendering engine, where being able to put a breakpoint on a branch is worth more than the
+# line saved. Preference, not defect - the same call as IDE0055 above.
+dotnet_diagnostic.IDE0046.severity = none
+dotnet_diagnostic.IDE0045.severity = none
+
+# IDE0290, use a primary constructor. 141 constructors of a WPF library rewritten into a C# 12
+# shape for no correctness gain, on a project targeting net48.
+dotnet_diagnostic.IDE0290.severity = none
+
+# IDE1006, naming. All 30 are private: event handlers following the sender_Event convention
+# (textArea_MouseMove and friends) plus two private event fields. Renaming them is safe, since
+# nothing here is public, but it is 30 more divergences from upstream in the merge list to
+# rename a convention that is consistent across the tree and instantly readable. Say the word
+# and this becomes a rename pass instead of an exception.
+dotnet_diagnostic.IDE1006.severity = none
+
+# IDE0010, populate switch. 14 partial switches that deliberately handle a few keys or enum
+# members and let everything else fall through. Filling them in would add arms nobody wrote.
+dotnet_diagnostic.IDE0010.severity = none
+
+# IDE0060, unused parameter. 6 sites, four of them public API, so the parameter cannot be
+# removed without changing the surface of the vendored library. Worth knowing about rather than
+# fixing: TextView.InvalidateLayer takes a KnownLayer and ignores it, which means it invalidates
+# every layer regardless of what you pass. That is upstream behavior and not ours to change.
+dotnet_diagnostic.IDE0060.severity = none
+
 # IDE0130 wants the namespace to match the folder. The folder is third_party\AvalonEdit and the
 # namespace is ICSharpCode.AvalonEdit; satisfying it would mean renaming the namespace of every
 # file, breaking every using in the tree and changing the API of the code we vendored. This is

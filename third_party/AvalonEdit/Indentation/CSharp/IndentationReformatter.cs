@@ -211,8 +211,6 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 			}
 
 			lastRealChar = '\n';
-
-			char lastchar = ' ';
 			char c = ' ';
 			char nextchar = line[0];
 			for (int i = 0; i < line.Length; i++) {
@@ -220,7 +218,7 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 					break; // cancel parsing current line
 				}
 
-				lastchar = c;
+				char lastchar = c;
 				c = nextchar;
 				if (i + 1 < line.Length) {
 					nextchar = line[i + 1];
