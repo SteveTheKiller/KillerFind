@@ -136,8 +136,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 			if (node.contents != null) {
 				text.CopyTo(start, node.contents, 0, node.length);
 			} else {
-				FillNode(node.left, text, start);
-				FillNode(node.right, text, start + node.left.length);
+				// Concat node: both children exist by definition (RopeNode's shape comment).
+				FillNode(node.left!, text, start);
+				FillNode(node.right!, text, start + node.left.length);
 			}
 		}
 
@@ -153,14 +154,14 @@ namespace ICSharpCode.AvalonEdit.Utils
 				}
 			} else {
 				// concat node: do recursive calls
-				if (index + count <= node.left.length) {
+				if (index + count <= node.left!.length) {
 					node.left.WriteTo(index, output, count);
 				} else if (index >= node.left.length) {
-					node.right.WriteTo(index - node.left.length, output, count);
+					node.right!.WriteTo(index - node.left.length, output, count);
 				} else {
 					int amountInLeft = node.left.length - index;
 					node.left.WriteTo(index, output, amountInLeft);
-					node.right.WriteTo(0, output, count - amountInLeft);
+					node.right!.WriteTo(0, output, count - amountInLeft);
 				}
 			}
 		}
@@ -187,7 +188,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 
 			while (length > 0) {
 				Rope<char>.RopeCacheEntry entry = rope.FindNodeUsingCache(startIndex).PeekOrDefault();
-				char[] contents = entry.node.contents;
+				char[] contents = entry.node.contents!;
 				int startWithinNode = startIndex - entry.nodeStartIndex;
 				int nodeLength = Math.Min(entry.node.length, startWithinNode + length);
 				for (int i = startIndex - entry.nodeStartIndex; i < nodeLength; i++) {

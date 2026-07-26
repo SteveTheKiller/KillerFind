@@ -624,7 +624,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			RopeNode<T> resultNode;
 			lock (this) {
 				b.AppendLine(ToString());
-				resultNode = cachedResults;
+				resultNode = cachedResults!;
 			}
 			indent += 2;
 			if (resultNode != null) {

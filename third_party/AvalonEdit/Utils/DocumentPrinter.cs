@@ -34,7 +34,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 		/// <summary>
 		/// Converts an IDocument to a Block and applies the provided highlighter.
 		/// </summary>
-		public static Block ConvertTextDocumentToBlock(IDocument document, IHighlighter highlighter)
+		// The highlighter is optional: the editor may have no syntax highlighting installed, which
+		// is exactly what the caller's "as IHighlighter" produces.
+		public static Block ConvertTextDocumentToBlock(IDocument document, IHighlighter? highlighter)
 		{
 			if (document == null) {
 				throw new ArgumentNullException("document");

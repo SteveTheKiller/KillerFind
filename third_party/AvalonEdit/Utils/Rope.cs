@@ -130,7 +130,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			} else {
 				this.root = new FunctionNode<T>(length, initializer);
 			}
-			this.root.CheckInvariants();
+			this.root!.CheckInvariants();
 		}
 
 		private static T[] ToArray(IEnumerable<T> input)
@@ -478,7 +478,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 					throw new ArgumentOutOfRangeException("index", index, "0 <= index < " + this.Length.ToString(CultureInfo.InvariantCulture));
 				}
 				RopeCacheEntry entry = FindNodeUsingCache(index).PeekOrDefault();
-				return entry.node.contents[index - entry.nodeStartIndex];
+				return entry.node.contents![index - entry.nodeStartIndex];
 			}
 			set {
 				if (index < 0 || index >= this.Length) {
@@ -531,8 +531,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 			Debug.Assert(index >= 0 && index < this.Length);
 
 			// thread safety: fetch stack into local variable
-			ImmutableStack<RopeCacheEntry> stack = lastUsedNodeStack;
-			ImmutableStack<RopeCacheEntry> oldStack = stack;
+			ImmutableStack<RopeCacheEntry>? stack = lastUsedNodeStack;
+			ImmutableStack<RopeCacheEntry>? oldStack = stack;
 
 			stack ??= ImmutableStack<RopeCacheEntry>.Empty.Push(new RopeCacheEntry(root, 0));
 			while (!stack.PeekOrDefault().IsInside(index)) {
@@ -554,8 +554,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 					}
 				}
 				// go down towards leaves
-				if (index - entry.nodeStartIndex >= entry.node.left.length) {
-					stack = stack.Push(new RopeCacheEntry(entry.node.right, entry.nodeStartIndex + entry.node.left.length));
+				if (index - entry.nodeStartIndex >= entry.node.left!.length) {
+					stack = stack.Push(new RopeCacheEntry(entry.node.right!, entry.nodeStartIndex + entry.node.left.length));
 				} else {
 					stack = stack.Push(new RopeCacheEntry(entry.node.left, entry.nodeStartIndex));
 				}
@@ -621,7 +621,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 						b.Append(", ");
 					}
 
-					b.Append(element.ToString());
+					b.Append(element?.ToString());
 				}
 				b.Append('}');
 				return b.ToString();
@@ -669,7 +669,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 
 			while (count > 0) {
 				RopeCacheEntry entry = FindNodeUsingCache(startIndex).PeekOrDefault();
-				T[] contents = entry.node.contents;
+				T[] contents = entry.node.contents!;
 				int startWithinNode = startIndex - entry.nodeStartIndex;
 				int nodeLength = Math.Min(entry.node.length, startWithinNode + count);
 				int r = Array.IndexOf(contents, item, startWithinNode, nodeLength - startWithinNode);
@@ -847,12 +847,12 @@ namespace ICSharpCode.AvalonEdit.Utils
 						continue;
 					}
 					Debug.Assert(node.right != null);
-					stack.Push(node.right);
-					node = node.left;
+					stack.Push(node.right!);
+					node = node.left!;
 				}
 				// yield contents of leaf node
 				for (int i = 0; i < node.length; i++) {
-					yield return node.contents[i];
+					yield return node.contents![i];
 				}
 				// go up to the next node not visited yet
 				if (stack.Count > 0) {

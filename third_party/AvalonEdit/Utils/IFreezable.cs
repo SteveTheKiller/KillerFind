@@ -55,7 +55,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 			return FreezeList(list);
 		}
 
-		public static IList<T> FreezeList<T>(IList<T> list)
+		// Nullable in: the body's first act is to substitute an empty list for a null one, and
+		// FreezeListAndElements hands it whatever it was given.
+		public static IList<T> FreezeList<T>(IList<T>? list)
 		{
 			if (list == null || list.Count == 0) {
 				return Empty<T>.Array;

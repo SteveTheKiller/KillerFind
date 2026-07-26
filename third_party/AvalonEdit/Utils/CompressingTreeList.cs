@@ -307,7 +307,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 		#region GetNode
 		private Node GetNode(ref int index)
 		{
-			Node node = root;
+			// GetNode is only reached with an index inside the list, so the tree is not empty.
+			Node node = root!;
 			while (true) {
 				if (node.left != null && index < node.left.totalCount) {
 					node = node.left;
@@ -771,13 +772,13 @@ namespace ICSharpCode.AvalonEdit.Utils
 			if (node == parentNode.left) {
 				if (sibling.right != null) {
 					Debug.Assert(sibling.right.color == RED);
-					sibling.right.color = BLACK;
+					sibling.right!.color = BLACK;
 				}
 				RotateLeft(parentNode);
 			} else {
 				if (sibling.left != null) {
 					Debug.Assert(sibling.left.color == RED);
-					sibling.left.color = BLACK;
+					sibling.left!.color = BLACK;
 				}
 				RotateRight(parentNode);
 			}
@@ -808,7 +809,6 @@ namespace ICSharpCode.AvalonEdit.Utils
 			// A rotation is only ever called on a node that has the child it rotates about; the
 			// assert below is upstream's own statement of that.
 			Node q = p.right!;
-			Debug.Assert(q != null);
 			Debug.Assert(q.parent == p);
 			// set q to be the new root
 			ReplaceNode(p, q);
@@ -829,7 +829,6 @@ namespace ICSharpCode.AvalonEdit.Utils
 		{
 			// let q be p's left child
 			Node q = p.left!;
-			Debug.Assert(q != null);
 			Debug.Assert(q.parent == p);
 			// set q to be the new root
 			ReplaceNode(p, q);

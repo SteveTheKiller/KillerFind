@@ -80,7 +80,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 				return -1;
 			}
 
-			return currentNode.contents[indexInsideNode];
+			return currentNode.contents![indexInsideNode];
 		}
 
 		/// <inheritdoc/>
@@ -90,7 +90,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 				return -1;
 			}
 
-			char result = currentNode.contents[indexInsideNode++];
+			char result = currentNode.contents![indexInsideNode++];
 			if (indexInsideNode >= currentNode.length) {
 				GoToNextNode();
 			}
