@@ -54,8 +54,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		#region Constructor
 		private readonly TextDocument document;
-		private HeightTreeNode root;
-		private WeakLineTracker weakLineTracker;
+		// Both are cleared by Dispose, which is exactly what IsDisposed below reports.
+		private HeightTreeNode? root;
+		private WeakLineTracker? weakLineTracker;
 
 		public HeightTree(TextDocument document, double defaultLineHeight)
 		{
@@ -129,7 +130,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			// now build the corresponding balanced tree
 			int height = DocumentLineTree.GetTreeHeight(nodes.Length);
 			Debug.WriteLine("HeightTree will have height: " + height);
-			root = BuildTree(nodes, 0, nodes.Length, height);
+			// nodes.Length > 0 (asserted above), so the full range always builds a node.
+			root = BuildTree(nodes, 0, nodes.Length, height)!;
 			root.color = BLACK;
 #if DEBUG
 			CheckProperties();
@@ -139,7 +141,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// build a tree from a list of nodes
 		/// </summary>
-		private HeightTreeNode BuildTree(HeightTreeNode[] nodes, int start, int end, int subtreeHeight)
+		// Nullable: an empty range builds no subtree, which is how the recursion bottoms out.
+		private HeightTreeNode? BuildTree(HeightTreeNode[] nodes, int start, int end, int subtreeHeight)
 		{
 			Debug.Assert(start <= end);
 			if (start == end) {
@@ -172,17 +175,20 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			HeightTreeNode node = GetNode(line);
 			if (node.lineNode.collapsedSections != null) {
 				foreach (CollapsedLineSection cs in node.lineNode.collapsedSections.ToArray()) {
+					// In the two "else" branches the section spans more than this one line (the
+					// single-line case is the first branch), so the end it keeps and the neighbour
+					// it moves to both exist.
 					if (cs.Start == line && cs.End == line) {
 						cs.Start = null;
 						cs.End = null;
 					} else if (cs.Start == line) {
 						Uncollapse(cs);
 						cs.Start = line.NextLine;
-						AddCollapsedSection(cs, cs.End.LineNumber - cs.Start.LineNumber + 1);
+						AddCollapsedSection(cs, cs.End!.LineNumber - cs.Start!.LineNumber + 1);
 					} else if (cs.End == line) {
 						Uncollapse(cs);
 						cs.End = line.PreviousLine;
-						AddCollapsedSection(cs, cs.End.LineNumber - cs.Start.LineNumber + 1);
+						AddCollapsedSection(cs, cs.End!.LineNumber - cs.Start!.LineNumber + 1);
 					}
 				}
 			}
@@ -281,8 +287,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		{
 			// node = old parent
 			// node.parent = pivot, new parent
-			List<CollapsedLineSection> collapsedP = node.parent.collapsedSections;
-			List<CollapsedLineSection> collapsedQ = node.collapsedSections;
+			// The rotation has already run, so node has a parent - it is the pivot that took its
+			// place.
+			List<CollapsedLineSection>? collapsedP = node.parent!.collapsedSections;
+			List<CollapsedLineSection>? collapsedQ = node.collapsedSections;
 			// move collapsedSections from old parent to new parent
 			node.parent.collapsedSections = collapsedQ;
 			node.collapsedSections = null;
@@ -306,9 +314,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		private void UpdateAfterRotateRight(HeightTreeNode node)
 		{
 			// node = old parent
-			// node.parent = pivot, new parent
-			List<CollapsedLineSection> collapsedP = node.parent.collapsedSections;
-			List<CollapsedLineSection> collapsedQ = node.collapsedSections;
+			// node.parent = pivot, new parent - see UpdateAfterRotateLeft for why it is not null.
+			List<CollapsedLineSection>? collapsedP = node.parent!.collapsedSections;
+			List<CollapsedLineSection>? collapsedQ = node.collapsedSections;
 			// move collapsedSections from old parent to new parent
 			node.parent.collapsedSections = collapsedQ;
 			node.collapsedSections = null;
@@ -338,9 +346,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		{
 			Debug.Assert(removedNode.left == null || removedNode.right == null);
 
-			List<CollapsedLineSection> collapsed = removedNode.collapsedSections;
+			List<CollapsedLineSection>? collapsed = removedNode.collapsedSections;
 			if (collapsed != null) {
-				HeightTreeNode childNode = removedNode.left ?? removedNode.right;
+				HeightTreeNode? childNode = removedNode.left ?? removedNode.right;
 				if (childNode != null) {
 					foreach (CollapsedLineSection cs in collapsed) {
 						childNode.AddDirectlyCollapsed(cs);
@@ -352,17 +360,20 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
+		// The null asserts are gone: the parameter types state them, and asserting made every use
+		// below read as possibly-null.
 		private void BeforeNodeReplace(HeightTreeNode removedNode, HeightTreeNode newNode, HeightTreeNode newNodeOldParent)
 		{
-			Debug.Assert(removedNode != null);
-			Debug.Assert(newNode != null);
-			while (newNodeOldParent != removedNode) {
-				if (newNodeOldParent.collapsedSections != null) {
-					foreach (CollapsedLineSection cs in newNodeOldParent.collapsedSections) {
+			// The walk goes up from newNode's old position to removedNode, which is one of its
+			// ancestors, so it stops before running off the top of the tree.
+			HeightTreeNode? ancestor = newNodeOldParent;
+			while (ancestor != removedNode) {
+				if (ancestor!.collapsedSections != null) {
+					foreach (CollapsedLineSection cs in ancestor.collapsedSections) {
 						newNode.lineNode.AddDirectlyCollapsed(cs);
 					}
 				}
-				newNodeOldParent = newNodeOldParent.parent;
+				ancestor = ancestor.parent;
 			}
 			if (newNode.collapsedSections != null) {
 				foreach (CollapsedLineSection cs in newNode.collapsedSections) {
@@ -374,7 +385,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		}
 
 		private bool inRemoval;
-		private List<HeightTreeNode> nodesToCheckForMerging;
+		// Allocated on the first removal and reused (cleared, not dropped) after that.
+		private List<HeightTreeNode>? nodesToCheckForMerging;
 
 		private void BeginRemoval()
 		{
@@ -387,7 +399,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		{
 			Debug.Assert(inRemoval);
 			inRemoval = false;
-			foreach (HeightTreeNode node in nodesToCheckForMerging) {
+			// BeginRemoval allocated it, and the assert above guarantees we came through there.
+			foreach (HeightTreeNode node in nodesToCheckForMerging!) {
 				MergeCollapsedSectionsIfPossible(node);
 			}
 			nodesToCheckForMerging.Clear();
@@ -395,14 +408,15 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		private void MergeCollapsedSectionsIfPossible(HeightTreeNode node)
 		{
-			Debug.Assert(node != null);
+			// The null assert is gone: the parameter type states it.
 			if (inRemoval) {
-				nodesToCheckForMerging.Add(node);
+				// inRemoval is only ever set by BeginRemoval, which allocates the list first.
+				nodesToCheckForMerging!.Add(node);
 				return;
 			}
 			// now check if we need to merge collapsedSections together
 			bool merged = false;
-			List<CollapsedLineSection> collapsedL = node.lineNode.collapsedSections;
+			List<CollapsedLineSection>? collapsedL = node.lineNode.collapsedSections;
 			if (collapsedL != null) {
 				for (int i = collapsedL.Count - 1; i >= 0; i--) {
 					CollapsedLineSection cs = collapsedL[i];
@@ -434,11 +448,13 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		#endregion
 
 		#region GetNodeBy... / Get...FromNode
+		// root is never null here: the tree always holds at least the document's single first line,
+		// and every caller runs before Dispose clears it.
 		private HeightTreeNode GetNodeByIndex(int index)
 		{
+			HeightTreeNode node = root!;
 			Debug.Assert(index >= 0);
-			Debug.Assert(index < root.totalCount);
-			HeightTreeNode node = root;
+			Debug.Assert(index < node.totalCount);
 			while (true) {
 				if (node.left != null && index < node.left.totalCount) {
 					node = node.left;
@@ -451,14 +467,16 @@ namespace ICSharpCode.AvalonEdit.Rendering
 					}
 
 					index--;
-					node = node.right;
+					// index is still within this subtree's count, so the right child is there.
+					node = node.right!;
 				}
 			}
 		}
 
+		// root is never null here, for the same reason as GetNodeByIndex.
 		private HeightTreeNode GetNodeByVisualPosition(double position)
 		{
-			HeightTreeNode node = root;
+			HeightTreeNode node = root!;
 			while (true) {
 				double positionAfterLeft = position;
 				if (node.left != null) {
@@ -577,16 +595,17 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		#endregion
 
 		#region LineCount & TotalHeight
-		public int LineCount => root.totalCount;
+		// Neither is reachable after Dispose, which is the only thing that clears root.
+		public int LineCount => root!.totalCount;
 
-		public double TotalHeight => root.totalHeight;
+		public double TotalHeight => root!.totalHeight;
 		#endregion
 
 		#region GetAllCollapsedSections
 		private IEnumerable<HeightTreeNode> AllNodes {
 			get {
 				if (root != null) {
-					HeightTreeNode node = root.LeftMost;
+					HeightTreeNode? node = root.LeftMost;
 					while (node != null) {
 						yield return node;
 						node = node.Successor;
@@ -611,13 +630,15 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		[Conditional("DATACONSISTENCYTEST")]
 		internal void CheckProperties()
 		{
-			CheckProperties(root);
+			CheckProperties(root!);
 
+			// A section reachable through GetAllCollapsedSections is still collapsed, so its
+			// Start/End lines and their section lists are all present.
 			foreach (CollapsedLineSection cs in GetAllCollapsedSections()) {
-				Debug.Assert(GetNode(cs.Start).lineNode.collapsedSections.Contains(cs));
-				Debug.Assert(GetNode(cs.End).lineNode.collapsedSections.Contains(cs));
-				int endLine = cs.End.LineNumber;
-				for (int i = cs.Start.LineNumber; i <= endLine; i++) {
+				Debug.Assert(GetNode(cs.Start!).lineNode.collapsedSections!.Contains(cs));
+				Debug.Assert(GetNode(cs.End!).lineNode.collapsedSections!.Contains(cs));
+				int endLine = cs.End!.LineNumber;
+				for (int i = cs.Start!.LineNumber; i <= endLine; i++) {
 					CheckIsInSection(cs, GetLineByNumber(i));
 				}
 			}
@@ -629,7 +650,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		private void CheckIsInSection(CollapsedLineSection cs, DocumentLine line)
 		{
-			HeightTreeNode node = GetNode(line);
+			HeightTreeNode? node = GetNode(line);
 			if (node.lineNode.collapsedSections != null && node.lineNode.collapsedSections.Contains(cs)) {
 				return;
 			}
@@ -648,8 +669,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		{
 			int totalCount = 1;
 			double totalHeight = node.lineNode.TotalHeight;
+			// IsDirectlyCollapsed is exactly "collapsedSections != null" on both node and lineNode.
 			if (node.lineNode.IsDirectlyCollapsed) {
-				Debug.Assert(node.lineNode.collapsedSections.Count > 0);
+				Debug.Assert(node.lineNode.collapsedSections!.Count > 0);
 			}
 
 			if (node.left != null) {
@@ -673,7 +695,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				}
 			}
 			if (node.IsDirectlyCollapsed) {
-				Debug.Assert(node.collapsedSections.Count > 0);
+				Debug.Assert(node.collapsedSections!.Count > 0);
 				totalHeight = 0;
 			}
 			Debug.Assert(node.totalCount == totalCount);
@@ -683,7 +705,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Checks that all elements in list1 are contained in list2.
 		/// </summary>
-		private static void CheckAllContainedIn(IEnumerable<CollapsedLineSection> list1, ICollection<CollapsedLineSection> list2)
+		// Both nullable: callers pass node.collapsedSections straight in, which is null for an
+		// uncollapsed node - the ??= below is what handles that.
+		private static void CheckAllContainedIn(IEnumerable<CollapsedLineSection>? list1, ICollection<CollapsedLineSection>? list2)
 		{
 			list1 ??= [];
 
@@ -701,7 +725,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		4. Both children of every red node are black. (So every red node must have a black parent.)
 		5. Every simple path from a node to a descendant leaf contains the same number of black nodes. (Not counting the leaf node.)
 		 */
-		private void CheckNodeProperties(HeightTreeNode node, HeightTreeNode parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
+		private void CheckNodeProperties(HeightTreeNode? node, HeightTreeNode? parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
 		{
 			if (node == null) {
 				return;
@@ -731,10 +755,14 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public string GetTreeAsString()
 		{
 			StringBuilder b = new();
-			AppendTreeToString(root, b, 0);
+			if (root != null) {
+				AppendTreeToString(root, b, 0);
+			}
+
 			return b.ToString();
 		}
 
+		// Not nullable: every call site (root, node.left, node.right) is null-checked first.
 		private static void AppendTreeToString(HeightTreeNode node, StringBuilder b, int indent)
 		{
 			if (node.color == RED) {
@@ -785,12 +813,13 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		private void FixTreeOnInsert(HeightTreeNode node)
 		{
-			Debug.Assert(node != null);
+			// The null assert is gone: the parameter type states it, and keeping it told the
+			// compiler null was possible, which poisoned every dereference below.
 			Debug.Assert(node.color == RED);
 			Debug.Assert(node.left == null || node.left.color == BLACK);
 			Debug.Assert(node.right == null || node.right.color == BLACK);
 
-			HeightTreeNode parentNode = node.parent;
+			HeightTreeNode? parentNode = node.parent;
 			if (parentNode == null) {
 				// we inserted in the root -> the node must be black
 				// since this is a root node, making the node black increments the number of black nodes
@@ -807,8 +836,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			// parentNode is red, so there is a conflict here!
 
 			// because the root is black, parentNode is not the root -> there is a grandparent node
-			HeightTreeNode grandparentNode = parentNode.parent;
-			HeightTreeNode uncleNode = Sibling(parentNode);
+			HeightTreeNode grandparentNode = parentNode.parent!;
+			HeightTreeNode? uncleNode = Sibling(parentNode);
 			if (uncleNode != null && uncleNode.color == RED) {
 				parentNode.color = BLACK;
 				uncleNode.color = BLACK;
@@ -818,16 +847,18 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 			// now we know: parent is red but uncle is black
 			// First rotation:
+			// The rotation moves node down one level, so the child it takes over from is there.
 			if (node == parentNode.right && parentNode == grandparentNode.left) {
 				RotateLeft(parentNode);
-				node = node.left;
+				node = node.left!;
 			} else if (node == parentNode.left && parentNode == grandparentNode.right) {
 				RotateRight(parentNode);
-				node = node.right;
+				node = node.right!;
 			}
 			// because node might have changed, reassign variables:
-			parentNode = node.parent;
-			grandparentNode = parentNode.parent;
+			// both still exist - a rotation cannot lift node above its grandparent.
+			parentNode = node.parent!;
+			grandparentNode = parentNode.parent!;
 
 			// Now recolor a bit:
 			parentNode.color = BLACK;
@@ -848,7 +879,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				// replace removedNode with it's in-order successor
 
 				HeightTreeNode leftMost = removedNode.right.LeftMost;
-				HeightTreeNode parentOfLeftMost = leftMost.parent;
+				// leftMost sits below removedNode, so it has a parent.
+				HeightTreeNode parentOfLeftMost = leftMost.parent!;
 				RemoveNode(leftMost); // remove leftMost from its current location
 
 				BeforeNodeReplace(removedNode, leftMost, parentOfLeftMost);
@@ -876,8 +908,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 			// now either removedNode.left or removedNode.right is null
 			// get the remaining child
-			HeightTreeNode parentNode = removedNode.parent;
-			HeightTreeNode childNode = removedNode.left ?? removedNode.right;
+			HeightTreeNode? parentNode = removedNode.parent;
+			HeightTreeNode? childNode = removedNode.left ?? removedNode.right;
 			BeforeNodeRemove(removedNode);
 			ReplaceNode(removedNode, childNode);
 			if (parentNode != null) {
@@ -893,7 +925,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		private void FixTreeOnDelete(HeightTreeNode node, HeightTreeNode parentNode)
+		// Both nullable: node may be the null leaf that replaced a deleted black node, and
+		// parentNode is null when the tree just lost its root.
+		private void FixTreeOnDelete(HeightTreeNode? node, HeightTreeNode? parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
 			if (parentNode == null) {
@@ -937,14 +971,16 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				GetColor(sibling.left) == RED &&
 				GetColor(sibling.right) == BLACK) {
 				sibling.color = RED;
-				sibling.left.color = BLACK;
+				// GetColor returned RED, which only a real node can be.
+				sibling.left!.color = BLACK;
 				RotateRight(sibling);
 			} else if (node == parentNode.right &&
 					   sibling.color == BLACK &&
 					   GetColor(sibling.right) == RED &&
 					   GetColor(sibling.left) == BLACK) {
 				sibling.color = RED;
-				sibling.right.color = BLACK;
+				// Same here: RED means it is there.
+				sibling.right!.color = BLACK;
 				RotateLeft(sibling);
 			}
 			sibling = Sibling(node, parentNode); // update value of sibling after rotation
@@ -966,7 +1002,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		private void ReplaceNode(HeightTreeNode replacedNode, HeightTreeNode newNode)
+		// newNode is null when the replaced node simply goes away, which is the delete path.
+		private void ReplaceNode(HeightTreeNode replacedNode, HeightTreeNode? newNode)
 		{
 			if (replacedNode.parent == null) {
 				Debug.Assert(replacedNode == root);
@@ -986,9 +1023,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		private void RotateLeft(HeightTreeNode p)
 		{
-			// let q be p's right child
-			HeightTreeNode q = p.right;
-			Debug.Assert(q != null);
+			// let q be p's right child. It is the node being lifted into p's place, so a null
+			// here is a caller that picked the wrong rotation, not a shape the tree can be in.
+			HeightTreeNode q = p.right!;
 			Debug.Assert(q.parent == p);
 			// set q to be the new root
 			ReplaceNode(p, q);
@@ -1006,9 +1043,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		private void RotateRight(HeightTreeNode p)
 		{
-			// let q be p's left child
-			HeightTreeNode q = p.left;
-			Debug.Assert(q != null);
+			// let q be p's left child - see RotateLeft for why this is not a nullable read.
+			HeightTreeNode q = p.left!;
 			Debug.Assert(q.parent == p);
 			// set q to be the new root
 			ReplaceNode(p, q);
@@ -1024,33 +1060,40 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			UpdateAfterRotateRight(p);
 		}
 
-		private static HeightTreeNode Sibling(HeightTreeNode node)
+		// The uncle. Null IS a legitimate answer here - a red parent's sibling can be the null
+		// leaf - which is why the caller null-checks the result. node.parent is not null: the
+		// caller has already established there is a grandparent.
+		private static HeightTreeNode? Sibling(HeightTreeNode node)
 		{
-			if (node == node.parent.left) {
+			if (node == node.parent!.left) {
 				return node.parent.right;
 			} else {
 				return node.parent.left;
 			}
 		}
 
-		private static HeightTreeNode Sibling(HeightTreeNode node, HeightTreeNode parentNode)
+		// The sibling of a node being fixed up after a delete. Never null: a black node was just
+		// removed from this side, so the other side has to carry at least one black node or the
+		// black-height property was already violated before this was called.
+		private static HeightTreeNode Sibling(HeightTreeNode? node, HeightTreeNode parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
 			if (node == parentNode.left) {
-				return parentNode.right;
+				return parentNode.right!;
 			} else {
-				return parentNode.left;
+				return parentNode.left!;
 			}
 		}
 
-		private static bool GetColor(HeightTreeNode node)
+		// Nullable by design: a missing child counts as black.
+		private static bool GetColor(HeightTreeNode? node)
 		{
 			return node != null && node.color;
 		}
 		#endregion
 
 		#region Collapsing support
-		private static bool GetIsCollapedFromNode(HeightTreeNode node)
+		private static bool GetIsCollapedFromNode(HeightTreeNode? node)
 		{
 			while (node != null) {
 				if (node.IsDirectlyCollapsed) {
@@ -1071,7 +1114,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		{
 			Debug.Assert(sectionLength > 0);
 
-			HeightTreeNode node = GetNode(section.Start);
+			// A section being added or removed still has its Start and End lines; Uncollapse
+			// clears them only after this has run.
+			HeightTreeNode node = GetNode(section.Start!);
 			// Go up in the tree.
 			while (true) {
 				// Mark all middle nodes as collapsed
@@ -1103,18 +1148,20 @@ namespace ICSharpCode.AvalonEdit.Rendering
 						break;
 					}
 				}
-				// go up to the next node
-				HeightTreeNode parentNode = node.parent;
-				Debug.Assert(parentNode != null);
+				// go up to the next node.
+				// There is always one: the walk stops at section.End, which is at or below the
+				// node this loop started from, so it never runs past the root. (The asserts that
+				// used to say so are folded into the ! - keeping them made every use of parentNode
+				// below read as possibly-null.)
+				HeightTreeNode parentNode = node.parent!;
 				while (parentNode.right == node) {
 					node = parentNode;
-					parentNode = node.parent;
-					Debug.Assert(parentNode != null);
+					parentNode = node.parent!;
 				}
 				node = parentNode;
 			}
-			UpdateAugmentedData(GetNode(section.Start), UpdateAfterChildrenChangeRecursionMode.WholeBranch);
-			UpdateAugmentedData(GetNode(section.End), UpdateAfterChildrenChangeRecursionMode.WholeBranch);
+			UpdateAugmentedData(GetNode(section.Start!), UpdateAfterChildrenChangeRecursionMode.WholeBranch);
+			UpdateAugmentedData(GetNode(section.End!), UpdateAfterChildrenChangeRecursionMode.WholeBranch);
 		}
 
 		private static void AddRemoveCollapsedSectionDown(CollapsedLineSection section, HeightTreeNode node, int sectionLength, bool add)
@@ -1133,7 +1180,6 @@ namespace ICSharpCode.AvalonEdit.Rendering
 					} else {
 						// mark only inside the left subtree
 						node = node.left;
-						Debug.Assert(node != null);
 						continue;
 					}
 				}
@@ -1149,15 +1195,18 @@ namespace ICSharpCode.AvalonEdit.Rendering
 					Debug.Assert(node.documentLine == section.End);
 					break;
 				}
-				// mark inside right subtree:
-				node = node.right;
-				Debug.Assert(node != null);
+				// mark inside right subtree.
+				// sectionLength is still positive, so the section extends past this node and the
+				// right subtree it continues into is there. (The assert that used to say so is
+				// folded into the ! for the same reason as above.)
+				node = node.right!;
 			}
 		}
 
 		public void Uncollapse(CollapsedLineSection section)
 		{
-			int sectionLength = section.End.LineNumber - section.Start.LineNumber + 1;
+			// Only called for a section that is still collapsed, so it still has both ends.
+			int sectionLength = section.End!.LineNumber - section.Start!.LineNumber + 1;
 			AddRemoveCollapsedSection(section, sectionLength, false);
 			// do not call CheckProperties() in here - Uncollapse is also called during line removals
 		}

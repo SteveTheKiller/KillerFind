@@ -28,10 +28,13 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// </summary>
 	internal sealed class HeightTreeNode
 	{
-		internal readonly DocumentLine documentLine;
+		// documentLine and lineNode are unset only on the sentinel node built by the parameterless
+		// constructor, which HeightTree uses while it is rebuilding.
+		internal readonly DocumentLine documentLine = null!;
 		internal HeightTreeLineNode lineNode;
 
-		internal HeightTreeNode left, right, parent;
+		// Structurally nullable: a leaf has no children, the root has no parent.
+		internal HeightTreeNode? left, right, parent;
 		internal bool color;
 
 		internal HeightTreeNode()
@@ -69,14 +72,14 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		}
 
 		/// <summary>
-		/// Gets the inorder successor of the node.
+		/// Gets the inorder successor of the node, or null if this is the last node.
 		/// </summary>
-		internal HeightTreeNode Successor {
+		internal HeightTreeNode? Successor {
 			get {
 				if (right != null) {
 					return right.LeftMost;
 				} else {
-					HeightTreeNode node = this;
+					HeightTreeNode? node = this;
 					HeightTreeNode oldNode;
 					do {
 						oldNode = node;
@@ -115,7 +118,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		///   Start and end of a CollapsedSection always contain the collapsedSection in their
 		///   documentLine (middle node).
 		/// </summary>
-		internal List<CollapsedLineSection> collapsedSections;
+		// Null means "not collapsed", same as on HeightTreeLineNode.
+		internal List<CollapsedLineSection>? collapsedSections;
 
 		internal bool IsDirectlyCollapsed => collapsedSections != null;
 
@@ -132,7 +136,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		internal void RemoveDirectlyCollapsed(CollapsedLineSection section)
 		{
-			Debug.Assert(collapsedSections.Contains(section));
+			// Only ever called for a section this node is actually collapsed by.
+			Debug.Assert(collapsedSections!.Contains(section));
 			collapsedSections.Remove(section);
 			if (collapsedSections.Count == 0) {
 				collapsedSections = null;
@@ -158,7 +163,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				+ "]";
 		}
 
-		private static string GetCollapsedSections(List<CollapsedLineSection> list)
+		private static string GetCollapsedSections(List<CollapsedLineSection>? list)
 		{
 			if (list == null) {
 				return "{}";

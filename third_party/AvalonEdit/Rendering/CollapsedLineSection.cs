@@ -58,14 +58,14 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// When the section is uncollapsed or the text containing it is deleted,
 		/// this property returns null.
 		/// </summary>
-		public DocumentLine Start { get; internal set; }
+		public DocumentLine? Start { get; internal set; }
 
 		/// <summary>
 		/// Gets the end line of the section.
 		/// When the section is uncollapsed or the text containing it is deleted,
 		/// this property returns null.
 		/// </summary>
-		public DocumentLine End { get; internal set; }
+		public DocumentLine? End { get; internal set; }
 
 		/// <summary>
 		/// Uncollapses the section.

@@ -30,7 +30,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		}
 
 		internal double height;
-		internal List<CollapsedLineSection> collapsedSections;
+		// Null means "not collapsed", which is the state of nearly every line; the list is only
+		// allocated once a fold actually covers this one.
+		internal List<CollapsedLineSection>? collapsedSections;
 
 		internal readonly bool IsDirectlyCollapsed => collapsedSections != null;
 
@@ -43,7 +45,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		internal void RemoveDirectlyCollapsed(CollapsedLineSection section)
 		{
-			Debug.Assert(collapsedSections.Contains(section));
+			// Only ever called for a section this line is actually collapsed by, so the list is there.
+			Debug.Assert(collapsedSections!.Contains(section));
 			collapsedSections.Remove(section);
 			if (collapsedSections.Count == 0) {
 				collapsedSections = null;
