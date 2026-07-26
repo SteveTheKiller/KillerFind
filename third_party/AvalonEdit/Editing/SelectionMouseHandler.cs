@@ -639,7 +639,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 			SetCaretOffsetToMousePosition(e, null);
 		}
 
-		private void SetCaretOffsetToMousePosition(MouseEventArgs e, ISegment allowedSegment)
+		// allowedSegment is null when the caret may land anywhere, which is what the parameterless
+		// overload above passes.
+		private void SetCaretOffsetToMousePosition(MouseEventArgs e, ISegment? allowedSegment)
 		{
 			int visualColumn;
 			bool isAtEndOfLine;

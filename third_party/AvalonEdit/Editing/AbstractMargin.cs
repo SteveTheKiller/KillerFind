@@ -109,7 +109,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <summary>
 		/// Called when the <see cref="Document"/> is changing.
 		/// </summary>
-		protected virtual void OnDocumentChanged(TextDocument oldDocument, TextDocument newDocument)
+		// Both nullable: a margin gains its first document from null and loses it back to null.
+		protected virtual void OnDocumentChanged(TextDocument? oldDocument, TextDocument? newDocument)
 		{
 			Document = newDocument;
 		}

@@ -350,7 +350,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 			// now find the TextLine+VisualLine where the caret will end up in
 			VisualLine targetVisualLine = visualLine;
-			TextLine targetLine;
+			// Null when the move would run off the top or bottom of the document; the caller
+			// tests for that before using it.
+			TextLine? targetLine;
 			int textLineIndex = visualLine.TextLines.IndexOf(textLine);
 			switch (direction) {
 				case CaretMovementType.LineUp: {

@@ -156,7 +156,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			TextArea? textArea = GetTextArea(target);
 			if (textArea != null && textArea.Document != null) {
 				using (textArea.Document.RunUpdate()) {
-					IEnumerable<ISegment> segments;
+					IEnumerable<ISegment>? segments;
 					if (textArea.Selection.IsEmpty) {
 						if (defaultSegmentType == DefaultSegmentType.CurrentLine) {
 							segments = [textArea.Document.GetLineByNumber(textArea.Caret.Line)];
