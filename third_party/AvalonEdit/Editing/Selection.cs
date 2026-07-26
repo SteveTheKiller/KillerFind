@@ -104,7 +104,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// Gets the smallest segment that contains all segments in this selection.
 		/// May return null if the selection is empty.
 		/// </summary>
-		public abstract ISegment SurroundingSegment { get; }
+		// Nullable: EmptySelection has no surrounding segment, and the one place that reads this
+		// through the base class tests it for null on the next line.
+		public abstract ISegment? SurroundingSegment { get; }
 
 		/// <summary>
 		/// Replaces the selection with the specified text.
@@ -200,8 +202,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 		public virtual string GetText()
 		{
 			TextDocument document = textArea.Document ?? throw ThrowUtil.NoDocumentAssigned();
-			StringBuilder b = null;
-			string text = null;
+			// Both stay null until the first segment is seen: the single-segment case never
+			// allocates the builder, which is the point of the two-variable dance below.
+			StringBuilder? b = null;
+			string? text = null;
 			foreach (ISegment s in Segments) {
 				if (text != null) {
 					if (b == null) {
@@ -232,7 +236,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 				throw new ArgumentNullException("options");
 			}
 
-			IHighlighter highlighter = textArea.GetService(typeof(IHighlighter)) as IHighlighter;
+			IHighlighter? highlighter = textArea.GetService(typeof(IHighlighter)) as IHighlighter;
 			StringBuilder html = new();
 			bool first = true;
 			foreach (ISegment selectedSegment in this.Segments) {

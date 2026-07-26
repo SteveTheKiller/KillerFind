@@ -30,7 +30,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 		private IntPtr currentContext;
 		private IntPtr previousContext;
 		private IntPtr defaultImeWnd;
-		private HwndSource hwndSource;
+		// Null whenever the text area is not attached to a window, which is also what
+		// ClearAttachedHwnd restores it to.
+		private HwndSource? hwndSource;
 		private readonly EventHandler requerySuggestedHandler; // we need to keep the event handler instance alive because CommandManager.RequerySuggested uses weak references
 		private bool isReadOnly;
 

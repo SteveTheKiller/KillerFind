@@ -40,7 +40,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		public override TextViewPosition EndPosition => new(TextLocation.Empty);
 
-		public override ISegment SurroundingSegment => null;
+		public override ISegment? SurroundingSegment => null;
 
 		public override Selection SetEndpoint(TextViewPosition endPosition)
 		{

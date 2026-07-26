@@ -110,7 +110,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 		private static extern int TF_CreateThreadMgr(out ITfThreadMgr threadMgr);
 
 		[ThreadStatic] private static bool textFrameworkThreadMgrInitialized;
-		[ThreadStatic] private static ITfThreadMgr textFrameworkThreadMgr;
+		// ThreadStatic, so null until the first call on each thread, and null again on any thread
+		// where the Text Services Framework is not available.
+		[ThreadStatic] private static ITfThreadMgr? textFrameworkThreadMgr;
 
 		public static ITfThreadMgr GetTextFrameworkThreadManager()
 		{

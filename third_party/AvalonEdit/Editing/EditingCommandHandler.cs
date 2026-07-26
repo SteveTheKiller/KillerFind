@@ -93,7 +93,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 			TextAreaDefaultInputHandler.WorkaroundWPFMemoryLeak(InputBindings);
 		}
 
-		private static TextArea GetTextArea(object target)
+		// Same as the navigation handler's: the command target is not always a TextArea.
+		private static TextArea? GetTextArea(object target)
 		{
 			return target as TextArea;
 		}
@@ -388,7 +389,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			// Also copy text in HTML format to clipboard - good for pasting text into Word
 			// or to the SharpDevelop forums.
 			if (ConfirmDataFormat(textArea, data, DataFormats.Html)) {
-				IHighlighter highlighter = textArea.GetService(typeof(IHighlighter)) as IHighlighter;
+				IHighlighter? highlighter = textArea.GetService(typeof(IHighlighter)) as IHighlighter;
 				HtmlClipboard.SetHtml(data, HtmlClipboard.CreateHtmlFragment(textArea.Document, highlighter, wholeLine, new HtmlOptions(textArea.Options)));
 			}
 

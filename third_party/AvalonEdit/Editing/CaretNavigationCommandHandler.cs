@@ -130,7 +130,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 		}
 
-		private static TextArea GetTextArea(object target)
+		// Nullable: the command target is whatever had focus, which is not always a TextArea.
+		// Every caller already tests the result before using it.
+		private static TextArea? GetTextArea(object target)
 		{
 			return target as TextArea;
 		}

@@ -80,7 +80,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <summary>
 		/// Gets the document associated with the margin.
 		/// </summary>
-		public TextDocument Document { get; private set; }
+		// A margin that is not attached to a TextView, or attached to one with no document, has
+		// no document of its own. TextViewDocumentChanged sets this straight from TextView?.Document.
+		public TextDocument? Document { get; private set; }
 
 		/// <summary>
 		/// Called when the <see cref="TextView"/> is changing.
@@ -95,7 +97,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 			if (newTextView != null) {
 				newTextView.DocumentChanged += TextViewDocumentChanged;
 			}
-			TextViewDocumentChanged(null, null);
+			// Was (null, null); the handler ignores both, and a null sender misreports the origin.
+			TextViewDocumentChanged(this, EventArgs.Empty);
 		}
 
 		private void TextViewDocumentChanged(object sender, EventArgs e)

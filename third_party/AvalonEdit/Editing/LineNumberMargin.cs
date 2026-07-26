@@ -53,7 +53,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 													 new FrameworkPropertyMetadata(typeof(LineNumberMargin)));
 		}
 
-		private TextArea textArea;
+		// Comes from newTextView.GetService(...) as TextArea, and is cleared when the margin is
+		// detached, so a margin outside a TextArea legitimately has none.
+		private TextArea? textArea;
 
 		/// <summary>
 		/// The typeface used for rendering the line number margin.
@@ -104,7 +106,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		}
 
 		/// <inheritdoc/>
-		protected override void OnTextViewChanged(TextView oldTextView, TextView newTextView)
+		protected override void OnTextViewChanged(TextView? oldTextView, TextView? newTextView)
 		{
 			if (oldTextView != null) {
 				oldTextView.VisualLinesChanged -= TextViewVisualLinesChanged;
