@@ -28,7 +28,11 @@ Keep this list current. An upgrade is a fresh extract of the new tag with these 
    wherever the compiler found an actual hole. Note that the count does not fall linearly:
    annotating a type correctly surfaces every call site that was quietly assuming it non-null,
    so a folder often nets close to zero on its first pass and collapses on the second.
-   Folders finished so far: **Indentation, Search, Snippets, and the root files**.
+   Folders finished so far: **Indentation, Search, Snippets, CodeCompletion, Folding, Utils, and
+   the root files**. Utils was the hard one: `CompressingTreeList` is a red-black tree and
+   `Rope`/`RopeNode` a rope, and in both the shape of a node is expressed purely through which
+   fields are null. Every `!` in those files carries a comment naming the invariant that makes it
+   safe, usually one upstream had already written in prose directly above it.
 
 3. **Whitespace normalized to their own convention.** `third_party/.editorconfig` declares the
    style this tree is actually written in (tabs, LF, Allman on types and methods only), which is

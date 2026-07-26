@@ -249,14 +249,16 @@ namespace ICSharpCode.AvalonEdit.Utils
 				return;
 			}
 
-			Node n = GetNode(ref index);
+			// Nullable from here down: the walk below runs off the end of the list on purpose,
+			// which is what the "while (n != null)" and the asserts are already tracking.
+			Node? n = GetNode(ref index);
 			if (index + count < n.count) {
 				// just remove inside a single node
 				n.count -= count;
 				UpdateAugmentedData(n);
 			} else {
 				// keep only the part of n from 0 to index
-				Node firstNodeBeforeDeletedRange;
+				Node? firstNodeBeforeDeletedRange;
 				if (index > 0) {
 					count -= n.count - index;
 					n.count = index;
@@ -269,13 +271,15 @@ namespace ICSharpCode.AvalonEdit.Utils
 				}
 				while (n != null && count >= n.count) {
 					count -= n.count;
-					Node s = n.Successor;
+					Node? s = n.Successor;
 					RemoveNode(n);
 					n = s;
 				}
 				if (count > 0) {
+					// The loop above stopped because count fell below n.count, which it can only
+					// do while n is still a node; upstream's assert says the same thing.
 					Debug.Assert(n != null && count < n.count);
-					n.count -= count;
+					n!.count -= count;
 					UpdateAugmentedData(n);
 				}
 				if (n != null) {
@@ -388,7 +392,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		{
 			int index = 0;
 			if (root != null) {
-				Node n = root.LeftMost;
+				Node? n = root.LeftMost;
 				while (n != null) {
 					if (comparisonFunc(n.value, item)) {
 						return index;
@@ -559,7 +563,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		public IEnumerator<T> GetEnumerator()
 		{
 			if (root != null) {
-				Node n = root.LeftMost;
+				Node? n = root.LeftMost;
 				while (n != null) {
 					for (int i = 0; i < n.count; i++) {
 						yield return n.value;
@@ -755,14 +759,14 @@ namespace ICSharpCode.AvalonEdit.Utils
 				GetColor(sibling.left) == RED &&
 				GetColor(sibling.right) == BLACK) {
 				sibling.color = RED;
-				sibling.left.color = BLACK;
+				sibling.left!.color = BLACK;
 				RotateRight(sibling);
 			} else if (node == parentNode.right &&
 					   sibling.color == BLACK &&
 					   GetColor(sibling.right) == RED &&
 					   GetColor(sibling.left) == BLACK) {
 				sibling.color = RED;
-				sibling.right.color = BLACK;
+				sibling.right!.color = BLACK;
 				RotateLeft(sibling);
 			}
 			sibling = Sibling(node, parentNode); // update value of sibling after rotation
@@ -890,7 +894,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 
 				// ensure that the tree is compressed:
 				Node p = root.LeftMost;
-				Node n = p.Successor;
+				Node? n = p.Successor;
 				while (n != null) {
 					Debug.Assert(!comparisonFunc(p.value, n.value));
 					p = n;

@@ -138,7 +138,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			} else {
 				// Concat node: both children exist by definition (RopeNode's shape comment).
 				FillNode(node.left!, text, start);
-				FillNode(node.right!, text, start + node.left.length);
+				FillNode(node.right!, text, start + node.left!.length);
 			}
 		}
 

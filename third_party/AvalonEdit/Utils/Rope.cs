@@ -80,7 +80,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 					this.root = RopeNode<T>.CreateFromArray(arr, 0, arr.Length);
 				}
 			}
-			this.root.CheckInvariants();
+			this.root!.CheckInvariants();
 		}
 
 		/// <summary>
@@ -835,7 +835,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 			return arr;
 		}
 
-		private static IEnumerator<T> Enumerate(RopeNode<T> node)
+		// Nullable: the walk sets node to null when the stack empties, which is how it terminates.
+		private static IEnumerator<T> Enumerate(RopeNode<T>? node)
 		{
 			Stack<RopeNode<T>> stack = new();
 			while (node != null) {
