@@ -42,6 +42,21 @@ namespace KillerFind
             }
         }
 
+        /// <summary>Pre-ticked and locked, with an explanatory note underneath. Used when the
+        /// choice is already made for the user: KillerFind is installed machine-wide, so the
+        /// all-users box cannot be unticked without leaving two copies behind.</summary>
+        public void LockCheck2(string? note = null)
+        {
+            Check2.IsChecked  = true;
+            Check2.IsEnabled  = false;
+            Check2.Visibility = Visibility.Visible;
+            if (!string.IsNullOrEmpty(note))
+            {
+                Check2Note.Text       = note;
+                Check2Note.Visibility = Visibility.Visible;
+            }
+        }
+
         private void OK_Click(object sender, RoutedEventArgs e)
         {
             Confirmed = true;

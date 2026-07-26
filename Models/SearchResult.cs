@@ -19,6 +19,15 @@ namespace KillerFind.Models
         // Discovery order, so "as found" can be reversed like any other sort key.
         public int Seq { get; set; }
 
+        /// <summary>
+        /// True when this entry is a folder rather than a file. Always false for a search
+        /// result - the engine only ever produces files - and set when browsing a folder
+        /// (Browse.cs), which lists directories and files into this same collection so that
+        /// searching inside the folder you are looking at can put its hits in place rather
+        /// than in a separate list.
+        /// </summary>
+        public bool IsDirectory { get; set; }
+
         public string SizeLabel
         {
             get
@@ -58,7 +67,7 @@ namespace KillerFind.Models
 
         /// <summary>Real shell icon for this file type (cached per extension; resolved lazily
         /// when the virtualized row is realized, so only visible rows pay for it).</summary>
-        public System.Windows.Media.ImageSource? Icon => Services.IconCache.For(FilePath);
+        public System.Windows.Media.ImageSource? Icon => Services.IconCache.For(FilePath, 32, IsDirectory);
 
         /// <summary>Only matches with line hits - filename-term matches carry no useful
         /// detail rows (the query summary in the header already says what was searched).</summary>

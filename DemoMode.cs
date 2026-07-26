@@ -4,8 +4,10 @@ using System.Linq;
 using KillerFind.Models;
 
 // --demo / /demo: fabricated tabs and results for marketing screenshots, so captures
-// never leak real file names or folder structures. Also hides the install badge and
-// shows v1.00 in the footer. Partial of MainWindow (KillerScan's DemoMode.cs pattern).
+// never leak real file names or folder structures. Also hides the install badge, and
+// makes the About card render its signed state (publisher, thumbprint and the AKA line -
+// see About.cs) so a capture from an unsigned local build matches the released one.
+// Partial of MainWindow (KillerScan's DemoMode.cs pattern).
 namespace KillerFind
 {
     public partial class MainWindow

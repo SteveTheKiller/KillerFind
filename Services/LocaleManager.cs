@@ -3,9 +3,13 @@ using System.Windows;
 
 namespace KillerFind.Services
 {
-    // 8 UI languages. en-US is always the base layer so any locale that omits a key falls back to
-    // English; the chosen locale's file layers on top. Ported from KillerScan.
-    public enum Locale { EnUS, Es, ZhTW, ZhCN, Bn, TrTR, De, Fr }
+    // 10 UI languages, matching KillerScan, KillerNotes and KillerPDF. en-US is always the base
+    // layer so any locale that omits a key falls back to English; the chosen locale's file layers
+    // on top. Ported from KillerScan.
+    //
+    // Append new members at the END: the value is persisted by NAME, not by ordinal, but keeping
+    // the order stable also keeps the language menu's order stable.
+    public enum Locale { EnUS, Es, ZhTW, ZhCN, Bn, TrTR, De, Fr, Ja, Cs }
 
     public static class LocaleManager
     {
@@ -55,6 +59,8 @@ namespace KillerFind.Services
                 Locale.Bn   => new Uri("pack://application:,,,/Strings/bn.xaml"),
                 Locale.TrTR => new Uri("pack://application:,,,/Strings/tr-TR.xaml"),
                 Locale.De   => new Uri("pack://application:,,,/Strings/de-DE.xaml"),
+                Locale.Ja   => new Uri("pack://application:,,,/Strings/ja-JP.xaml"),
+                Locale.Cs   => new Uri("pack://application:,,,/Strings/cs-CZ.xaml"),
                 _           => null,   // English: base only
             };
 

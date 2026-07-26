@@ -16,9 +16,11 @@ namespace KillerFind
         [
             (Locale.EnUS, "English",     "en-US"),
             (Locale.Bn,   "বাংলা",        "bn"),
+            (Locale.Cs,   "Čeština",     "cs-CZ"),
             (Locale.De,   "Deutsch",     "de-DE"),
             (Locale.Es,   "Español",     "es"),
             (Locale.Fr,   "Français",    "fr-FR"),
+            (Locale.Ja,   "日本語",       "ja-JP"),
             (Locale.TrTR, "Türkçe",      "tr-TR"),
             (Locale.ZhCN, "中文 (简体)",  "zh-CN"),
             (Locale.ZhTW, "中文 (繁體)",  "zh-TW"),

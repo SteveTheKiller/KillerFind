@@ -15,15 +15,29 @@ namespace KillerFind
         // ═══════════════════════════════════════════════════════════
         private void Install_Click(object sender, RoutedEventArgs e)
         {
+            // Already installed machine-wide (by an admin, winget, choco or an RMM)? Then the
+            // all-users box is pre-ticked and locked: installing per-user alongside it would
+            // leave two copies and two uninstall entries.
+            bool machineWide = App.MachineInstallExists();
+
             var dlg = new ConfirmDialog(
                 Loc("Str_Dlg_InstallMsg"), Loc("Str_Dlg_InstallBullets"), Loc("Str_Btn_DoInstall"),
-                Loc("Str_Chk_Desktop"), check1Initial: true) { Owner = this };
+                Loc("Str_Chk_Desktop"), check1Initial: true,
+                Loc("Str_Chk_AllUsers"), check2Initial: machineWide) { Owner = this };
+            if (machineWide) dlg.LockCheck2(Loc("Str_Dlg_AlreadyAllUsers"));
             dlg.ShowDialog();
             if (!dlg.Confirmed) return;
 
             PortableBadge.Visibility = Visibility.Collapsed;
             SaveTabsOnExit();
-            App.InstallAndRelaunch(wantDesktop: dlg.Check1Checked);
+
+            // An all-users install needs UAC. If that is declined the app carries on running as
+            // it was, so put the badge back rather than leaving the UI mid-install.
+            if (!App.InstallAndRelaunch(wantDesktop: dlg.Check1Checked, allUsers: dlg.Check2Checked))
+            {
+                PortableBadge.Visibility = Visibility.Visible;
+                SetStatus(Loc("Str_St_InstallCancelled"));
+            }
         }
 
         // ═══════════════════════════════════════════════════════════

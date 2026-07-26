@@ -58,13 +58,55 @@ namespace KillerFind
             TabStrip.ItemsSource = _tabs;
             if (DemoMode || !TryRestoreTabs()) ActivateTab(CreateTab());   // Session.cs / Tabs.cs
 
+            // Restore the saved app-wide accessibility size (AppScale.cs). After the tabs so
+            // _active exists, though the restore path never writes a status line.
+            InitAppScale();
+
+            // Restore the saved results view mode and tile size (ResultsView.cs). Also after the
+            // tabs, since applying the view reads _active to redraw the sort arrows.
+            InitResultsView();
+
+            // Search is an optional panel now, closed unless it was left open (SearchPanel.cs).
+            InitSearchPanel();
+
+            // Folder tree on the left, open unless it was closed (TreePanel.cs). Roots are the
+            // ready drives; everything below loads on expand (FolderTree.cs).
+            InitFolderTree();
+            InitTreePanel();
+
+            // Saved locations, in the slide-up under the tree (Bookmarks.cs). After the tree so
+            // its panel row exists, and after the tabs so the star can read the active folder.
+            InitBookmarks();
+
+            // Show-hidden and folders-on-top (ViewOptions.cs). Before nothing in particular -
+            // they are read by the listing and the tree, both of which run later.
+            InitViewOptions();
+
+            // Where new tabs open (AddressBar.cs).
+            InitHomeFolder();
+
             Loaded += (_, _) =>
             {
                 // Demo mode: no install badge (and fabricated tabs, DemoMode.cs).
                 if (App.IsPortable() && !DemoMode) PortableBadge.Visibility = Visibility.Visible;
                 if (DemoMode) GenerateDemoData();
+
+                // A first-run tab starts at Home rather than as an empty search form. Deferred
+                // to Loaded rather than done in the ctor because navigating reveals the folder
+                // in the tree, and the tree's roots are not built until InitFolderTree above has
+                // run. Restored tabs and piped tabs are left exactly as they were.
+                if (!DemoMode && !_active.IsBrowsing
+                    && _active.PipeFiles == null
+                    && string.IsNullOrEmpty(_active.RootPath))
+                {
+                    _ = NavigateTo(HomeFolder);   // Browse.cs
+                }
             };
-            Closing += (_, _) => { if (!DemoMode) SaveTabsOnExit(); };     // Session.cs
+            Closing += (_, _) =>
+            {
+                StopWatching();                            // BrowseWatcher.cs
+                if (!DemoMode) SaveTabsOnExit();           // Session.cs
+            };
 
             // The theme flyout is StaysOpen (so scrolling under it works); close it
             // ourselves on any click outside it or when the window loses focus.
@@ -94,9 +136,9 @@ namespace KillerFind
         // ═══════════════════════════════════════════════════════════
         //  SCOPE - folder picker
         // ═══════════════════════════════════════════════════════════
-        private void ScopeBar_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
-            => OpenFolderPicker();
-
+        // Clicking the location row now starts an address edit instead of opening the picker;
+        // that handler lives in AddressBar.cs. The picker is still reachable from Ctrl+O and
+        // from the search panel's own browse button below.
         private void BrowseRoot_Click(object sender, RoutedEventArgs e)
             => OpenFolderPicker();
 
@@ -114,6 +156,11 @@ namespace KillerFind
             // Picking a folder is the escape hatch from a piped scope.
             _active.PipeFiles   = null;
             _active.PipeLabel   = string.Empty;
+
+            // Picking a folder now GOES there as well as scoping the search to it. That is the
+            // whole shift: the folder you are looking at and the folder a search would cover are
+            // the same folder, so there is nothing to keep in sync.
+            _ = NavigateTo(picked);   // Browse.cs
         }
 
         // Tab title = the search location, home-relative: C:\Users\steve\code -> ~\code.
@@ -257,6 +304,24 @@ namespace KillerFind
             => e.Handled = true;   // clicks on the card don't dismiss it
 
         // ═══════════════════════════════════════════════════════════
+        //  SHORTCUTS CARD (F1) - family standard, same shape as above
+        // ═══════════════════════════════════════════════════════════
+        private void Shortcuts_Click(object sender, RoutedEventArgs e)
+        {
+            ShortcutsOverlay.Visibility = Visibility.Visible;
+            Anim.FadeIn(ShortcutsOverlay);
+        }
+
+        private void ShortcutsClose_Click(object sender, RoutedEventArgs e)
+            => FadeOverlayOut(ShortcutsOverlay);   // About.cs helper
+
+        private void ShortcutsOverlay_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+            => FadeOverlayOut(ShortcutsOverlay);
+
+        private void ShortcutsCard_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+            => e.Handled = true;   // clicks on the card don't dismiss it
+
+        // ═══════════════════════════════════════════════════════════
         //  SEARCH / STOP  (per tab - background tabs keep searching)
         // ═══════════════════════════════════════════════════════════
         private async void Search_Click(object sender, RoutedEventArgs e)
@@ -296,6 +361,7 @@ namespace KillerFind
             tab.StatsLabel   = string.Empty;
             tab.QueryLabel   = BuildQueryLabel(activeGroups, activeFilters);
             tab.IsSearching  = true;
+            ApplySort(tab);   // strips the view sort for the run - see ApplySort
             if (tab == _active)
             {
                 ScannedText.Text       = string.Empty;
@@ -336,6 +402,7 @@ namespace KillerFind
             finally
             {
                 tab.IsSearching = false;
+                ApplySort(tab);   // the run's deferred sort lands here, in one pass
                 if (tab == _active)
                 {
                     SearchButton.Content   = Loc("Str_Btn_Search");
@@ -399,16 +466,100 @@ namespace KillerFind
             var mods  = System.Windows.Input.Keyboard.Modifiers;
             bool ctrl  = (mods & System.Windows.Input.ModifierKeys.Control) != 0;
             bool shift = (mods & System.Windows.Input.ModifierKeys.Shift)   != 0;
+            bool alt   = (mods & System.Windows.Input.ModifierKeys.Alt)     != 0;
 
-            if (e.Key == System.Windows.Input.Key.F && ctrl && !shift)
+            // Alt+1-0 jumps to a saved location. Alt chords arrive as Key.System with the real
+            // key parked in SystemKey, so they have to be unwrapped before anything can match -
+            // and they are checked first, ahead of every e.Key test below, which would all see
+            // Key.System and never fire. NumPad is deliberately excluded: Alt+numpad digits are
+            // Windows' own character-entry sequence.
+            if (alt && !ctrl && !shift)
+            {
+                var real = e.Key == System.Windows.Input.Key.System ? e.SystemKey : e.Key;
+                if (real >= System.Windows.Input.Key.D0 && real <= System.Windows.Input.Key.D9)
+                {
+                    // 0 is the tenth slot, the way it sits last on the number row.
+                    int slot = real == System.Windows.Input.Key.D0 ? 10 : real - System.Windows.Input.Key.D0;
+                    JumpToBookmark(slot);   // Bookmarks.cs
+                    e.Handled = true;
+                    return;
+                }
+
+                // Alt+D is Explorer's address-bar chord and costs nothing to honour alongside
+                // Ctrl+L, so muscle memory from either lineage works.
+                if (real == System.Windows.Input.Key.D)
+                {
+                    BeginEditAddress();   // AddressBar.cs
+                    e.Handled = true;
+                    return;
+                }
+            }
+
+            if (ctrl && !shift && e.Key == System.Windows.Input.Key.B)
+            {
+                BookmarksBtn_Click(this, new RoutedEventArgs());   // Bookmarks.cs
+                e.Handled = true;
+            }
+            else if (e.Key == System.Windows.Input.Key.F && ctrl && !shift)
             {
                 ShowResultFilterBar();   // Results.cs
                 e.Handled = true;
             }
+            else if (e.Key == System.Windows.Input.Key.F && ctrl && shift)
+            {
+                PipeButton_Click(this, new RoutedEventArgs());   // Results.cs
+                e.Handled = true;
+            }
+            else if (e.Key == System.Windows.Input.Key.S && ctrl && shift)
+            {
+                // Search is an optional panel now, so it needs a way in from the keyboard
+                // (SearchPanel.cs). The chevron's tooltip names this chord.
+                ToggleSearchPanel();
+                e.Handled = true;
+            }
             else if (e.Key == System.Windows.Input.Key.F1)
             {
-                // F1: the patterns + shortcuts card.
-                PatternHelp_Click(this, new RoutedEventArgs());
+                // F1: the shortcuts card, same as every other app in the family.
+                Shortcuts_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+            }
+            else if (e.Key == System.Windows.Input.Key.F5)
+            {
+                Search_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+            }
+            else if (ctrl && e.Key == System.Windows.Input.Key.E)
+            {
+                if (shift) ExportCsv_Click(this, new RoutedEventArgs());   // Export.cs
+                else       Export_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+            }
+            else if (ctrl && (e.Key == System.Windows.Input.Key.Right || e.Key == System.Windows.Input.Key.Left)
+                     && !(e.OriginalSource is TextBox))
+            {
+                // Explicit expand / collapse - the toolbar button toggles, these don't.
+                // Skipped inside a TextBox so Ctrl+arrow keeps its word-jump meaning there.
+                bool expand = e.Key == System.Windows.Input.Key.Right;
+                foreach (var r in _active.Results) r.IsExpanded = expand;
+                SetExpandAllLabel(expand);   // Results.cs
+                e.Handled = true;
+            }
+            else if (ctrl && !shift && e.Key == System.Windows.Input.Key.L)
+            {
+                // Ctrl+L is the address bar in Explorer and in every browser, and this is a
+                // shell now, so it goes there. Clear moved to Ctrl+Shift+L (AddressBar.cs).
+                BeginEditAddress();
+                e.Handled = true;
+            }
+            else if (ctrl && shift && e.Key == System.Windows.Input.Key.L)
+            {
+                Clear_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+            }
+            else if (ctrl && shift && e.Key == System.Windows.Input.Key.C)
+            {
+                // The checkbox is the single source of truth - CaptureTab reads it.
+                CaseSensitiveCheck.IsChecked = CaseSensitiveCheck.IsChecked != true;
                 e.Handled = true;
             }
             else if (ctrl && e.Key == System.Windows.Input.Key.T)
@@ -469,6 +620,8 @@ namespace KillerFind
                     ResultFilterClose_Click(this, new RoutedEventArgs());
                 else if (PatternHelpOverlay.Visibility == Visibility.Visible)
                     PatternHelpClose_Click(this, new RoutedEventArgs());
+                else if (ShortcutsOverlay.Visibility == Visibility.Visible)
+                    ShortcutsClose_Click(this, new RoutedEventArgs());
                 else if (AboutOverlay.Visibility == Visibility.Visible)
                     AboutClose_Click(this, new RoutedEventArgs());
                 else if (_active.IsSearching)
@@ -486,7 +639,33 @@ namespace KillerFind
             tab.StatusKey     = null;   // transient text - not re-renderable on language switch
             tab.StatusArgs    = null;
             tab.StatusMessage = msg;
-            if (tab == _active) StatusText.Text = msg;
+            if (tab == _active) { StatusText.Text = msg; ApplyStatusTone(null); }
+        }
+
+        // The footer indicator light. Green normal, amber for something that did not happen but
+        // was not a fault, red for a genuine failure.
+        //
+        // Driven off the status KEY rather than a separate argument at every call site: the key
+        // already says which of those three a message is, and threading a tone through forty
+        // SetTabStatusKey calls would be forty chances to get it wrong. A raw SetTabStatus has no
+        // key and is always green - those are progress messages.
+        private static readonly string[] WarnKeys =
+        {
+            "Str_Status_FileOnly", "Str_Status_ClipboardBusy", "Str_Status_ElevationDeclined",
+        };
+
+        private static readonly string[] ErrorKeys =
+        {
+            "Str_Status_BadPath", "Str_Status_ShellFailed",
+        };
+
+        private void ApplyStatusTone(string? key)
+        {
+            string brush = key != null && System.Array.IndexOf(ErrorKeys, key) >= 0 ? "DangerRed"
+                         : key != null && System.Array.IndexOf(WarnKeys,  key) >= 0 ? "WarnBrush"
+                         : "PrimaryBrush";
+
+            StatusDot.SetResourceReference(System.Windows.Controls.Border.BackgroundProperty, brush);
         }
 
         // Key-based variant: stores the resource key + args on the tab so a live
@@ -496,12 +675,15 @@ namespace KillerFind
             tab.StatusKey     = key;
             tab.StatusArgs    = args;
             tab.StatusMessage = args.Length > 0 ? string.Format(Loc(key), args) : Loc(key);
-            if (tab == _active) StatusText.Text = tab.StatusMessage;
+            if (tab == _active) { StatusText.Text = tab.StatusMessage; ApplyStatusTone(key); }
         }
 
-        // All engine callbacks land at Background priority: scrolling and typing
-        // (input priority) always win over result churn, so the window stays
-        // responsive mid-search even when batches are huge.
+        // All engine callbacks land at Background priority so queued result churn sits
+        // behind input. Priority alone is NOT what keeps the window alive though: it only
+        // orders work that is still queued, and a callback already running cannot be
+        // interrupted. Responsiveness comes from the engine capping each batch (SearchEngine.cs
+        // MaxBatch), so every callback is short and input gets a slot between them. Do not
+        // remove that cap on the assumption this priority is covering it.
         private void OnResultsBatch(SearchTab tab, List<SearchResult> batch)
         {
             Dispatcher.InvokeAsync(() =>

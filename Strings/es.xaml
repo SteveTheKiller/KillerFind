@@ -3,41 +3,43 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <!-- ================================================================
-         KillerFind - English (en-US) strings. x:Key values are looked up at
-         runtime; never change them. Other locales layer over this file; any
-         key they omit falls back here. {0}/{1} placeholders are filled by the
-         app - keep them.
+         KillerFind - Spanish (es) strings. x:Key values are looked up at
+         runtime; never change them. This file layers over en-US.xaml; any
+         key omitted here falls back to English. {0}/{1} placeholders are
+         filled by the app - keep them.
          ================================================================ -->
 
     <!-- Title bar / flyout -->
     <sys:String x:Key="Str_TT_Language">Idioma</sys:String>
     <sys:String x:Key="Str_TT_Theme">Tema</sys:String>
+    <sys:String x:Key="Str_TT_AppSize">Desplaza la rueda sobre el logotipo para cambiar el tamaño de la aplicación</sys:String>
+    <sys:String x:Key="Str_St_AppSize">Tamaño de la aplicación {0} %</sys:String>
     <sys:String x:Key="Str_Lbl_Theme">tema</sys:String>
     <sys:String x:Key="Str_Lbl_Accent">acento</sys:String>
 
     <!-- Scope bar -->
     <sys:String x:Key="Str_Lbl_In">en:</sys:String>
     <sys:String x:Key="Str_Scope_Empty">(ninguna carpeta seleccionada - haz clic para elegir)</sys:String>
-    <sys:String x:Key="Str_TT_Scope">Haz clic para cambiar la carpeta de busqueda</sys:String>
-    <sys:String x:Key="Str_Dlg_SelectFolder">Selecciona la carpeta raiz de busqueda</sys:String>
+    <sys:String x:Key="Str_TT_Scope">Haz clic para cambiar la carpeta de búsqueda</sys:String>
+    <sys:String x:Key="Str_Dlg_SelectFolder">Selecciona la carpeta raíz de búsqueda</sys:String>
 
     <!-- Search config -->
     <sys:String x:Key="Str_Lbl_Filters">FILTROS</sys:String>
     <sys:String x:Key="Str_Lbl_Include">incluir</sys:String>
     <sys:String x:Key="Str_Lbl_Exclude">excluir</sys:String>
     <sys:String x:Key="Str_TT_Include">Patrones separados por punto y coma, p. ej. *.txt;*.log</sys:String>
-    <sys:String x:Key="Str_TT_Exclude">Rutas o patrones separados por punto y coma que se omitiran</sys:String>
-    <sys:String x:Key="Str_Chk_CaseSensitive">distinguir mayusculas y minusculas</sys:String>
+    <sys:String x:Key="Str_TT_Exclude">Rutas o patrones separados por punto y coma que se omitirán</sys:String>
+    <sys:String x:Key="Str_Chk_CaseSensitive">distinguir mayúsculas y minúsculas</sys:String>
     <sys:String x:Key="Str_Btn_AddFilter">+ agregar filtro</sys:String>
     <sys:String x:Key="Str_Lbl_Advanced">avanzado</sys:String>
-    <sys:String x:Key="Str_Filter_Ext">extension</sys:String>
-    <sys:String x:Key="Str_Filter_Date">fecha de modificacion</sys:String>
-    <sys:String x:Key="Str_Filter_Size">tamano</sys:String>
+    <sys:String x:Key="Str_Filter_Ext">extensión</sys:String>
+    <sys:String x:Key="Str_Filter_Date">fecha de modificación</sys:String>
+    <sys:String x:Key="Str_Filter_Size">tamaño</sys:String>
     <sys:String x:Key="Str_Cond_Is">es</sys:String>
     <sys:String x:Key="Str_Cond_IsNot">no es</sys:String>
     <sys:String x:Key="Str_Cond_Before">antes de</sys:String>
-    <sys:String x:Key="Str_Cond_After">despues de</sys:String>
-    <sys:String x:Key="Str_Cond_Larger">mas de</sys:String>
+    <sys:String x:Key="Str_Cond_After">después de</sys:String>
+    <sys:String x:Key="Str_Cond_Larger">más de</sys:String>
     <sys:String x:Key="Str_Cond_Smaller">menos de</sys:String>
 
     <!-- Pattern help card -->
@@ -46,15 +48,15 @@
     <sys:String x:Key="Str_Help_Star">todo lo que termina en .log</sys:String>
     <sys:String x:Key="Str_Help_Prefix">nombres que empiezan por report</sys:String>
     <sys:String x:Key="Str_Help_Middle">nombres que contienen 2024</sys:String>
-    <sys:String x:Key="Str_Help_Q">? representa exactamente un caracter</sys:String>
+    <sys:String x:Key="Str_Help_Q">? representa exactamente un carácter</sys:String>
     <sys:String x:Key="Str_Help_List">separa varios patrones con ;</sys:String>
-    <sys:String x:Key="Str_Help_Plain">el texto simple tambien funciona - coincide con nombres que lo contienen</sys:String>
-    <sys:String x:Key="Str_Help_Exclude">excluir tambien omite carpetas enteras por nombre</sys:String>
+    <sys:String x:Key="Str_Help_Plain">el texto simple también funciona - coincide con nombres que lo contienen</sys:String>
+    <sys:String x:Key="Str_Help_Exclude">excluir también omite carpetas enteras por nombre</sys:String>
 
     <!-- Tabs -->
-    <sys:String x:Key="Str_Tab_New">nueva busqueda</sys:String>
-    <sys:String x:Key="Str_TT_NewTab">Nueva pestana de busqueda</sys:String>
-    <sys:String x:Key="Str_TT_CloseTab">Cerrar pestana</sys:String>
+    <sys:String x:Key="Str_Tab_New">nueva búsqueda</sys:String>
+    <sys:String x:Key="Str_TT_NewTab">Nueva pestaña de búsqueda</sys:String>
+    <sys:String x:Key="Str_TT_CloseTab">Cerrar pestaña</sys:String>
 
     <!-- Folder picker -->
     <sys:String x:Key="Str_Btn_Cancel">Cancelar</sys:String>
@@ -63,37 +65,41 @@
     <sys:String x:Key="Str_QA_Desktop">Escritorio</sys:String>
     <sys:String x:Key="Str_QA_Documents">Documentos</sys:String>
     <sys:String x:Key="Str_QA_Downloads">Descargas</sys:String>
-    <sys:String x:Key="Str_QA_Pictures">Imagenes</sys:String>
+    <sys:String x:Key="Str_QA_Pictures">Imágenes</sys:String>
     <sys:String x:Key="Str_TT_Up">Subir una carpeta</sys:String>
     <sys:String x:Key="Str_Dlg_NoSubfolders">(sin subcarpetas - haz clic en Seleccionar para usar esta carpeta)</sys:String>
     <sys:String x:Key="Str_Col_Name">nombre</sys:String>
-    <sys:String x:Key="Str_Col_Folder">ubicacion</sys:String>
+    <sys:String x:Key="Str_Col_Folder">ubicación</sys:String>
     <sys:String x:Key="Str_Sort_Found">sin ordenar</sys:String>
     <sys:String x:Key="Str_TT_FilterResults">Filtrar estos resultados (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_Pipe">Buscar dentro de estos resultados</sys:String>
     <sys:String x:Key="Str_Menu_PipeTab">Buscar dentro de estos resultados</sys:String>
     <sys:String x:Key="Str_Pipe_Scope">{0} resultados de {1}  |  {2}</sys:String>
-    <sys:String x:Key="Str_Status_NoPipe">Aun no hay resultados donde buscar.</sys:String>
+    <sys:String x:Key="Str_Status_NoPipe">Aún no hay resultados donde buscar.</sys:String>
 
     <!-- Portable install + quit dialog -->
-    <sys:String x:Key="Str_Portable">PORTATIL</sys:String>
+    <sys:String x:Key="Str_Portable">PORTÁTIL</sys:String>
     <sys:String x:Key="Str_Btn_Install">Instalar KillerFind...</sys:String>
     <sys:String x:Key="Str_Btn_DoInstall">Instalar</sys:String>
-    <sys:String x:Key="Str_Dlg_InstallMsg">Instalar KillerFind en tu perfil de usuario?</sys:String>
-    <sys:String x:Key="Str_Dlg_InstallBullets">- Acceso directo en el menu Inicio&#x0A;- Aparece en Agregar o quitar programas</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallMsg">¿Instalar KillerFind en tu perfil de usuario?</sys:String>
+    <sys:String x:Key="Str_Dlg_InstallBullets">- Acceso directo en el menú Inicio&#x0A;- Aparece en Agregar o quitar programas</sys:String>
     <sys:String x:Key="Str_Chk_Desktop">Acceso directo en el escritorio</sys:String>
-    <sys:String x:Key="Str_Dlg_QuitMsg">Salir de KillerFind?</sys:String>
-    <sys:String x:Key="Str_Chk_RememberTabs">Recordar mis pestanas abiertas</sys:String>
-    <sys:String x:Key="Str_Chk_RememberChoice">Recordar mi eleccion</sys:String>
+    <sys:String x:Key="Str_Chk_AllUsers">Instalar para todos los usuarios (requiere administrador)</sys:String>
+    <sys:String x:Key="Str_Dlg_AlreadyAllUsers">KillerFind ya está instalado para todos los usuarios de este PC, así que se actualizará esa copia. Windows pedirá permiso.</sys:String>
+    <sys:String x:Key="Str_St_InstallCancelled">Instalación cancelada</sys:String>
+    <sys:String x:Key="Str_Dlg_QuitMsg">¿Salir de KillerFind?</sys:String>
+    <sys:String x:Key="Str_Chk_RememberTabs">Recordar mis pestañas abiertas</sys:String>
+    <sys:String x:Key="Str_Chk_RememberChoice">Recordar mi elección</sys:String>
     <sys:String x:Key="Str_Btn_Quit">Salir</sys:String>
-    <sys:String x:Key="Str_Col_Size">tamano</sys:String>
+    <sys:String x:Key="Str_Col_Size">tamaño</sys:String>
     <sys:String x:Key="Str_Col_Modified">modificado</sys:String>
     <sys:String x:Key="Str_Sum_Counts">{0} carpeta(s), {1} archivo(s)</sys:String>
     <sys:String x:Key="Str_TT_ViewList">Vista de lista</sys:String>
     <sys:String x:Key="Str_TT_ViewIcons">Vista de iconos</sys:String>
     <sys:String x:Key="Str_TT_ViewDetails">Vista de detalles</sys:String>
-    <sys:String x:Key="Str_Lbl_SearchTerms">TERMINOS DE BUSQUEDA</sys:String>
-    <sys:String x:Key="Str_Btn_AddTerm">+ agregar termino</sys:String>
+    <sys:String x:Key="Str_Lbl_SearchTerms">TÉRMINOS DE BÚSQUEDA</sys:String>
+    <sys:String x:Key="Str_Btn_AddTerm">+ agregar término</sys:String>
+    <sys:String x:Key="Str_Btn_AddGroup">+ agregar grupo</sys:String>
     <sys:String x:Key="Str_Btn_Clear">BORRAR</sys:String>
 
     <!-- Search button (code-behind swaps idle/stop; keep the brackets) -->
@@ -104,7 +110,7 @@
     <sys:String x:Key="Str_Lbl_Results">RESULTADOS</sys:String>
     <sys:String x:Key="Str_Lbl_ResultsCount">RESULTADOS  ({0})</sys:String>
     <sys:String x:Key="Str_Btn_Export">EXPORTAR HTML</sys:String>
-    <sys:String x:Key="Str_TT_Result">Clic para expandir  |  Doble clic para mostrar en Explorer  |  Clic derecho para mas opciones</sys:String>
+    <sys:String x:Key="Str_TT_Result">Clic para expandir  |  Doble clic para mostrar en Explorer  |  Clic derecho para más opciones</sys:String>
     <sys:String x:Key="Str_Btn_ExpandAll">EXPANDIR TODO</sys:String>
     <sys:String x:Key="Str_Btn_CollapseAll">CONTRAER TODO</sys:String>
     <sys:String x:Key="Str_Menu_OpenFile">Abrir archivo</sys:String>
@@ -117,24 +123,25 @@
 
     <!-- Status messages -->
     <sys:String x:Key="Str_Status_Ready">Listo</sys:String>
-    <sys:String x:Key="Str_Status_InvalidRoot">Ruta raiz invalida o inexistente.</sys:String>
-    <sys:String x:Key="Str_Status_NoTerms">Agrega al menos un termino de busqueda o un filtro.</sys:String>
+    <sys:String x:Key="Str_Status_InvalidRoot">Ruta raíz inválida o inexistente.</sys:String>
+    <sys:String x:Key="Str_Status_NoTerms">Agrega al menos un término de búsqueda o un filtro.</sys:String>
     <sys:String x:Key="Str_Status_Done">Completado en {0}s  -  {1} archivo(s) coincidente(s).</sys:String>
     <sys:String x:Key="Str_Status_Stopped">Detenido.</sys:String>
     <sys:String x:Key="Str_Status_Cleared">Borrado.</sys:String>
-    <sys:String x:Key="Str_Status_NothingExport">Aun no hay nada que exportar.</sys:String>
+    <sys:String x:Key="Str_Status_NothingExport">Aún no hay nada que exportar.</sys:String>
     <sys:String x:Key="Str_Status_Exported">Exportado: {0}</sys:String>
     <sys:String x:Key="Str_Status_ExportFailed">Error al exportar: {0}</sys:String>
     <sys:String x:Key="Str_Status_Scanned">{0} archivos analizados</sys:String>
     <sys:String x:Key="Str_Count_Matches">{0} coincidencias</sys:String>
 
     <!-- About overlay -->
-    <sys:String x:Key="Str_About_Tagline">Busqueda rapida de archivos para Windows. Sin indexacion.</sys:String>
-    <sys:String x:Key="Str_About_Version">VERSION</sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Búsqueda rápida de archivos para Windows. Nombres, contenidos, comodines y filtros, sin índice. Una utilidad de </sys:String>
+    <sys:String x:Key="Str_About_DescB" xml:space="preserve">.</sys:String>
+    <sys:String x:Key="Str_About_Version">VERSIÓN</sys:String>
     <sys:String x:Key="Str_About_Publisher">EDITOR</sys:String>
     <sys:String x:Key="Str_About_Thumbprint">HUELLA DIGITAL</sys:String>
-    <sys:String x:Key="Str_About_Sha">SHA-256</sys:String>
-    <sys:String x:Key="Str_About_Footer">GPLv3  |  creado por un tecnico de campo</sys:String>
+    <sys:String x:Key="Str_About_Sha">SHA-256 DEL EXE</sys:String>
+    <sys:String x:Key="Str_About_Footer">GPLv3  |  creado por un técnico de campo</sys:String>
 
     <!-- HTML report -->
     <sys:String x:Key="Str_Rpt_Meta">Generado {0} &#183; {1} archivos &#183; {2} coincidencias</sys:String>
@@ -144,34 +151,88 @@
     <sys:String x:Key="Str_Rpt_Everything">todo</sys:String>
     <sys:String x:Key="Str_Rpt_Or">o</sys:String>
     <sys:String x:Key="Str_Rpt_Found">hallado por</sys:String>
-    <sys:String x:Key="Str_Rpt_More">... +{0} mas</sys:String>
+    <sys:String x:Key="Str_Rpt_More">... +{0} más</sys:String>
     <sys:String x:Key="Str_Rpt_GenBy">Generado por {0}</sys:String>
 
     <!-- Term/group chips + tooltips -->
     <sys:String x:Key="Str_Mode_Name">nombre</sys:String>
     <sys:String x:Key="Str_Mode_Content">texto</sys:String>
     <sys:String x:Key="Str_TT_ModeName">Nombre de archivo / comodines  (ej. *.log)</sys:String>
-    <sys:String x:Key="Str_TT_ModeContent">Busqueda de contenido  (texto dentro de archivos)</sys:String>
+    <sys:String x:Key="Str_TT_ModeContent">Búsqueda de contenido  (texto dentro de archivos)</sys:String>
     <sys:String x:Key="Str_Group_Any">UNO</sys:String>
     <sys:String x:Key="Str_Group_All">TODOS</sys:String>
-    <sys:String x:Key="Str_TT_GroupAny">UNO: un archivo coincide si cualquier termino de este grupo acierta</sys:String>
-    <sys:String x:Key="Str_TT_GroupAll">TODOS: un archivo debe coincidir con cada termino de este grupo</sys:String>
+    <sys:String x:Key="Str_TT_GroupAny">UNO: un archivo coincide si cualquier término de este grupo acierta</sys:String>
+    <sys:String x:Key="Str_TT_GroupAll">TODOS: un archivo debe coincidir con cada término de este grupo</sys:String>
     <sys:String x:Key="Str_Join_And">Y</sys:String>
     <sys:String x:Key="Str_Join_Or">O</sys:String>
-    <sys:String x:Key="Str_Chk_CloseTabs">Cerrar mis pestanas abiertas</sys:String>
+    <sys:String x:Key="Str_Chk_CloseTabs">Cerrar mis pestañas abiertas</sys:String>
 
     <!-- Help card: shortcuts -->
     <sys:String x:Key="Str_Help_Shortcuts">Atajos</sys:String>
-    <sys:String x:Key="Str_Ks_Run">ejecutar la busqueda</sys:String>
-    <sys:String x:Key="Str_Ks_Esc">cerrar ventanas, detener la busqueda, luego ofrecer salir</sys:String>
+    <sys:String x:Key="Str_Ks_Run">ejecutar la búsqueda</sys:String>
+    <sys:String x:Key="Str_Ks_Esc">cerrar ventanas, detener la búsqueda, luego ofrecer salir</sys:String>
     <sys:String x:Key="Str_Ks_FilterResults">filtrar los resultados</sys:String>
-    <sys:String x:Key="Str_Ks_NewTab">nueva pestana de busqueda</sys:String>
-    <sys:String x:Key="Str_Ks_CloseTab">cerrar la pestana actual</sys:String>
-    <sys:String x:Key="Str_Ks_NextTab">pestana siguiente (Shift: anterior)</sys:String>
-    <sys:String x:Key="Str_Ks_JumpTab">ir a la pestana 1-9 (9 = ultima)</sys:String>
-    <sys:String x:Key="Str_Ks_AddTerm">anadir un termino de busqueda</sys:String>
-    <sys:String x:Key="Str_Ks_AddFilter">anadir un filtro</sys:String>
+    <sys:String x:Key="Str_Ks_NewTab">nueva pestaña de búsqueda</sys:String>
+    <sys:String x:Key="Str_Ks_CloseTab">cerrar la pestaña actual</sys:String>
+    <sys:String x:Key="Str_Ks_NextTab">pestaña siguiente (Shift: anterior)</sys:String>
+    <sys:String x:Key="Str_Ks_JumpTab">ir a la pestaña 1-9 (9 = última)</sys:String>
+    <sys:String x:Key="Str_Ks_AddTerm">añadir un término de búsqueda</sys:String>
+    <sys:String x:Key="Str_Ks_AddFilter">añadir un filtro</sys:String>
     <sys:String x:Key="Str_Ks_Folder">elegir la carpeta</sys:String>
     <sys:String x:Key="Str_Ks_Help">mostrar esta tarjeta</sys:String>
+    <sys:String x:Key="Str_Ks_CaseSensitive">alternar distinción de mayúsculas y minúsculas</sys:String>
+    <sys:String x:Key="Str_Ks_Clear">borrar los resultados</sys:String>
+    <sys:String x:Key="Str_Ks_Address">editar la ubicación: escriba una ruta y pulse Entrar</sys:String>
+    <sys:String x:Key="Str_Ks_Pipe">buscar dentro de estos resultados, en una pestaña nueva</sys:String>
+    <sys:String x:Key="Str_Ks_SearchPanel">mostrar u ocultar el panel de búsqueda</sys:String>
+    <sys:String x:Key="Str_Ks_ExpandAll">expandir todos los resultados</sys:String>
+    <sys:String x:Key="Str_Ks_CollapseAll">contraer todos los resultados</sys:String>
+    <sys:String x:Key="Str_Ks_ExportHtml">exportar los resultados como HTML</sys:String>
+    <sys:String x:Key="Str_Ks_ExportCsv">exportar los resultados como CSV</sys:String>
+    <sys:String x:Key="Str_Ks_Hint">Los atajos funcionan en toda la ventana. Las listas desplegables abiertas, el campo de fecha y el filtro de resultados se quedan con Enter.</sys:String>
+
+    <!-- Browsing, drop targets and the results context menu (2.0) -->
+    <sys:String x:Key="Str_Scope_Dropped">archivos soltados</sys:String>
+    <sys:String x:Key="Str_Tab_Dropped">soltados ({0})</sys:String>
+    <sys:String x:Key="Str_TT_SearchPanel">Mostrar u ocultar el panel de búsqueda  (Ctrl+Mayús+S)</sys:String>
+    <sys:String x:Key="Str_TT_TreePanel">Mostrar u ocultar el árbol de carpetas</sys:String>
+    <sys:String x:Key="Str_TT_CollapseSidebar">Contraer los paneles laterales</sys:String>
+    <sys:String x:Key="Str_TT_Bookmarks">Ubicaciones guardadas  (Ctrl+B)</sys:String>
+    <sys:String x:Key="Str_TT_Favorite">Guardar esta carpeta</sys:String>
+    <sys:String x:Key="Str_TT_ShowHidden">Mostrar elementos ocultos y del sistema</sys:String>
+    <sys:String x:Key="Str_TT_FoldersTop">Mantener las carpetas encima de los archivos</sys:String>
+    <sys:String x:Key="Str_Menu_AddFavorite">Añadir a favoritos</sys:String>
+    <sys:String x:Key="Str_Menu_RemoveFavorite">Quitar de favoritos</sys:String>
+    <sys:String x:Key="Str_Ks_Bookmarks">mostrar u ocultar las ubicaciones guardadas</sys:String>
+    <sys:String x:Key="Str_Ks_JumpBookmark">ir a la ubicación guardada 1-10 (0 = décima)</sys:String>
+    <sys:String x:Key="Str_TT_Back">Atrás</sys:String>
+    <sys:String x:Key="Str_TT_Forward">Adelante</sys:String>
+    <sys:String x:Key="Str_Status_Listing">Abriendo {0}...</sys:String>
+    <sys:String x:Key="Str_Status_Listed">{0} elemento(s)</sys:String>
+    <sys:String x:Key="Str_Status_BadPath">No se puede abrir {0}</sys:String>
+    <sys:String x:Key="Str_Menu_OpenAdmin">Abrir como administrador</sys:String>
+    <sys:String x:Key="Str_Menu_SearchHere">Buscar en esta carpeta</sys:String>
+    <sys:String x:Key="Str_Menu_ExcludeFolder">Excluir esta carpeta</sys:String>
+    <sys:String x:Key="Str_Menu_CopyPath">Copiar ruta completa</sys:String>
+    <sys:String x:Key="Str_Menu_CopyName">Copiar nombre de archivo</sys:String>
+    <sys:String x:Key="Str_Menu_CopyFolder">Copiar ruta de la carpeta</sys:String>
+    <sys:String x:Key="Str_Menu_CopyLines">Copiar líneas coincidentes</sys:String>
+    <sys:String x:Key="Str_Menu_CopyFile">Copiar archivo</sys:String>
+    <sys:String x:Key="Str_Menu_CopyHash">Copiar SHA-256</sys:String>
+    <sys:String x:Key="Str_Menu_Properties">Propiedades</sys:String>
+    <sys:String x:Key="Str_Menu_ShellMenu">Más opciones de Windows...</sys:String>
+    <sys:String x:Key="Str_Status_Copied">{0} copiado(s) al portapapeles</sys:String>
+    <sys:String x:Key="Str_Status_CopiedLines">{0} líneas coincidentes copiadas</sys:String>
+    <sys:String x:Key="Str_Status_CopiedFiles">{0} archivo(s) copiado(s) - pega en el Explorador</sys:String>
+    <sys:String x:Key="Str_Status_NoLines">No hay líneas que copiar (las coincidencias de nombre no tienen)</sys:String>
+    <sys:String x:Key="Str_Status_ClipboardBusy">No se pudo acceder al portapapeles - otra aplicación lo tiene</sys:String>
+    <sys:String x:Key="Str_Status_Hashing">Calculando el hash de {0}...</sys:String>
+    <sys:String x:Key="Str_Status_HashCopied">SHA-256 de {0} copiado</sys:String>
+    <sys:String x:Key="Str_Status_HashFailed">No se pudo leer el archivo para calcular el hash</sys:String>
+    <sys:String x:Key="Str_Status_ElevationDeclined">Elevación rechazada</sys:String>
+    <sys:String x:Key="Str_Status_FileOnly">Ese comando solo funciona con archivos, no con carpetas</sys:String>
+    <sys:String x:Key="Str_Status_ShellFailed">Windows no quiso abrir eso</sys:String>
+    <sys:String x:Key="Str_Status_Excluded">Excluyendo {0} - vuelve a buscar para aplicarlo</sys:String>
+    <sys:String x:Key="Str_Status_AlreadyExcluded">{0} ya está excluido</sys:String>
 
 </ResourceDictionary>

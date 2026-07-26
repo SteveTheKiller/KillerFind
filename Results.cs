@@ -13,20 +13,44 @@ namespace KillerFind
         // ═══════════════════════════════════════════════════════════
         //  RESULT CLICK - single click expands, double click reveals
         // ═══════════════════════════════════════════════════════════
+        // Click a card and it both selects and expands: the ListBox has already done the
+        // selection on mouse-down by the time this runs, so the two do not compete.
+        //
+        // This used to clear the selection here, which made multi-select impossible in list view
+        // and left drag-out with nothing to drag. Ctrl and Shift now suppress the expand toggle
+        // instead, so a modifier-click is pure selection - otherwise building a selection would
+        // expand every card you touched on the way.
         private void ResultHeader_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (sender is FrameworkElement el && el.DataContext is SearchResult r)
+            bool extending = (System.Windows.Input.Keyboard.Modifiers &
+                              (System.Windows.Input.ModifierKeys.Control |
+                               System.Windows.Input.ModifierKeys.Shift)) != 0;
+
+            // Expanding shows a hit's matched content lines, which only a SEARCH produces. While
+            // browsing there are none, so the card opened to reveal the folder you are already
+            // standing in - a click that cost a row of height and told you nothing.
+            if (!extending && !_active.IsBrowsing
+                && sender is FrameworkElement el && el.DataContext is SearchResult r)
                 r.IsExpanded = !r.IsExpanded;
-            ResultsList.SelectedItem = null;
+
             e.Handled = true;
         }
 
+        // Double-click means what it means in a file manager: enter the folder, or open the file.
+        // While showing search results it still reveals in Explorer instead, because "open the
+        // folder this hit is buried in" is what you want from a result and Show in Explorer is
+        // the command that does it. Both live on the context menu either way.
         private void ResultHeader_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (e.ClickCount != 2) return;
-            if (sender is FrameworkElement el && el.Tag is string path && System.IO.File.Exists(path))
-                System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{path}\"");
             e.Handled = true;
+
+            if (sender is not FrameworkElement el) return;
+
+            if (_active.IsBrowsing && el.DataContext is SearchResult r) { ActivateEntry(r); return; }
+
+            if (el.Tag is string path && System.IO.File.Exists(path))
+                System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{path}\"");
         }
 
         private void ExpandAll_Click(object sender, RoutedEventArgs e)
@@ -63,11 +87,41 @@ namespace KillerFind
         }
 
         // Sorts through the collection VIEW, so the underlying results (and the order
-        // the engine found them in) are untouched; live batches insert sorted.
+        // the engine found them in) are untouched.
+        //
+        // A sort is deliberately NOT maintained while a search is running. With a
+        // SortDescription on the view every single Add turns into a binary search plus a
+        // List.Insert, and the shift cost grows with the list, so a run that returns tens
+        // of thousands of hits does on the order of a billion element moves and the window
+        // dies. While IsSearching the view is left unsorted - results append in discovery
+        // order - and the tab's sort is re-applied in one pass when the run ends
+        // (Search_Click's finally block). Changing the sort mid-run therefore records the
+        // choice and reorders on completion rather than immediately.
+        //
+        // Safe to call for a background tab: the shared direction glyph is only touched
+        // when the tab owns the UI.
         private void ApplySort(SearchTab t)
         {
             var view = System.Windows.Data.CollectionViewSource.GetDefaultView(t.Results);
             view.SortDescriptions.Clear();
+
+            // MDL2 chevron up / down, built from codepoints so the source stays pure ASCII.
+            // The details-view column arrows show the same state, so they follow along.
+            if (t == _active)
+            {
+                SortDirButton.Content = ((char)(t.SortAsc ? 0xE70E : 0xE70D)).ToString();
+                UpdateColumnArrows();   // ResultsView.cs
+            }
+
+            if (t.IsSearching) return;   // deferred - re-applied when the search finishes
+
+            // Folders first while browsing, whatever the chosen key is, the way every file
+            // manager does it. IsDirectory descending puts true before false. Search results are
+            // all files, so this is skipped there rather than being a no-op sort on every add.
+            if (t.IsBrowsing && FoldersOnTop)   // ViewOptions.cs
+                view.SortDescriptions.Add(new System.ComponentModel.SortDescription(
+                    nameof(SearchResult.IsDirectory), System.ComponentModel.ListSortDirection.Descending));
+
             string? prop = t.SortIndex switch
             {
                 1 => nameof(SearchResult.FileName),
@@ -82,8 +136,6 @@ namespace KillerFind
                 view.SortDescriptions.Add(new System.ComponentModel.SortDescription(prop,
                     t.SortAsc ? System.ComponentModel.ListSortDirection.Ascending
                               : System.ComponentModel.ListSortDirection.Descending));
-            // MDL2 chevron up / down, built from codepoints so the source stays pure ASCII.
-            SortDirButton.Content = ((char)(t.SortAsc ? 0xE70E : 0xE70D)).ToString();
         }
 
         // ═══════════════════════════════════════════════════════════

@@ -21,6 +21,18 @@ namespace KillerFind.Models
         public CancellationTokenSource? Cts;
         public bool IsSearching;
 
+        // ── Browsing (Browse.cs) ─────────────────────────────────
+        // A tab is either showing a folder's contents or a search's results, in the same
+        // Results collection. IsBrowsing says which, so the sort can put folders first and the
+        // nav buttons know whether they mean anything.
+        public bool   IsBrowsing;
+        public string CurrentFolder = string.Empty;
+
+        // Back / forward, browser-style: a list of visited folders plus a cursor into it, rather
+        // than two stacks, so Forward survives going Back several steps.
+        public List<string> History      = [];
+        public int          HistoryIndex = -1;
+
         // Search config captured from the left panel when switching away.
         public string RootPath        = string.Empty;
         public string IncludePatterns = "*.*";

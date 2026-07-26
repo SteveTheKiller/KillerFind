@@ -96,11 +96,21 @@ namespace KillerFind
             ScannedText.Text       = t.ScannedLabel;
             ScannedText.Visibility = t.IsSearching ? Visibility.Visible : Visibility.Collapsed;
             StatsText.Text         = t.StatsLabel;
+            UpdateLocationColumn();   // ViewOptions.cs - a browsing tab hides the folder column
             SearchButton.Content   = t.IsSearching ? Loc("Str_Btn_Stop") : Loc("Str_Btn_Search");
             ResultsHeader.Text     = t.Results.Count > 0
                 ? string.Format(Loc("Str_Lbl_ResultsCount"), t.Results.Count)
                 : Loc("Str_Lbl_Results");
-            UpdateTabBar();   // corner rounding follows which tab is active
+            UpdateNavButtons();   // Browse.cs - back/forward/up belong to the incoming tab
+
+            // Only the active tab is watched (BrowseWatcher.cs), so the watch moves with it and
+            // the incoming tab gets a silent refresh to catch anything that changed on disk while
+            // it sat in the background.
+            StopWatching();
+            if (t.IsBrowsing && System.IO.Directory.Exists(t.CurrentFolder))
+                _ = NavigateTo(t.CurrentFolder, record: false);
+
+            UpdateTabBar();       // corner rounding follows which tab is active
         }
 
         private void SwitchToTab(SearchTab t)
@@ -158,6 +168,10 @@ namespace KillerFind
         {
             CaptureTab(_active);
             ActivateTab(CreateTab());
+
+            // A tab is a place now, not a blank search form. Opening at Home means the location
+            // row is never empty and the results pane never starts as a prompt (AddressBar.cs).
+            _ = NavigateTo(HomeFolder);   // Browse.cs
         }
 
         private void Tab_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)

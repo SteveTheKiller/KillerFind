@@ -12,6 +12,8 @@
     <!-- Title bar / flyout -->
     <sys:String x:Key="Str_TT_Language">语言</sys:String>
     <sys:String x:Key="Str_TT_Theme">主题</sys:String>
+    <sys:String x:Key="Str_TT_AppSize">在标志上滚动滚轮可调整应用大小</sys:String>
+    <sys:String x:Key="Str_St_AppSize">应用大小 {0}%</sys:String>
     <sys:String x:Key="Str_Lbl_Theme">主题</sys:String>
     <sys:String x:Key="Str_Lbl_Accent">强调色</sys:String>
 
@@ -82,6 +84,9 @@
     <sys:String x:Key="Str_Dlg_InstallMsg">将 KillerFind 安装到你的用户配置文件？</sys:String>
     <sys:String x:Key="Str_Dlg_InstallBullets">- 开始菜单快捷方式&#x0A;- 显示在添加/删除程序中</sys:String>
     <sys:String x:Key="Str_Chk_Desktop">桌面快捷方式</sys:String>
+    <sys:String x:Key="Str_Chk_AllUsers">为所有用户安装（需要管理员权限）</sys:String>
+    <sys:String x:Key="Str_Dlg_AlreadyAllUsers">KillerFind 已为本电脑上的所有用户安装，因此将更新该副本。Windows 将请求授权。</sys:String>
+    <sys:String x:Key="Str_St_InstallCancelled">安装已取消</sys:String>
     <sys:String x:Key="Str_Dlg_QuitMsg">退出 KillerFind？</sys:String>
     <sys:String x:Key="Str_Chk_RememberTabs">记住我打开的标签页</sys:String>
     <sys:String x:Key="Str_Chk_RememberChoice">记住我的选择</sys:String>
@@ -94,6 +99,7 @@
     <sys:String x:Key="Str_TT_ViewDetails">详细信息视图</sys:String>
     <sys:String x:Key="Str_Lbl_SearchTerms">搜索词</sys:String>
     <sys:String x:Key="Str_Btn_AddTerm">+ 添加搜索词</sys:String>
+    <sys:String x:Key="Str_Btn_AddGroup">+ æ·»åŠ ç»„</sys:String>
     <sys:String x:Key="Str_Btn_Clear">清除</sys:String>
 
     <!-- Search button (code-behind swaps idle/stop; keep the brackets) -->
@@ -129,11 +135,12 @@
     <sys:String x:Key="Str_Count_Matches">{0} 处匹配</sys:String>
 
     <!-- About overlay -->
-    <sys:String x:Key="Str_About_Tagline">Windows 上的快速文件搜索。无需索引。</sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Windows 上的快速文件搜索。支持文件名、内容、通配符和过滤器，无需索引。</sys:String>
+    <sys:String x:Key="Str_About_DescB" xml:space="preserve"> 出品的实用工具。</sys:String>
     <sys:String x:Key="Str_About_Version">版本</sys:String>
     <sys:String x:Key="Str_About_Publisher">发布者</sys:String>
     <sys:String x:Key="Str_About_Thumbprint">指纹</sys:String>
-    <sys:String x:Key="Str_About_Sha">SHA-256</sys:String>
+    <sys:String x:Key="Str_About_Sha">EXE SHA-256</sys:String>
     <sys:String x:Key="Str_About_Footer">GPLv3  |  由一名现场技术员打造</sys:String>
 
     <!-- HTML report -->
@@ -173,5 +180,59 @@
     <sys:String x:Key="Str_Ks_AddFilter">添加过滤器</sys:String>
     <sys:String x:Key="Str_Ks_Folder">选择文件夹</sys:String>
     <sys:String x:Key="Str_Ks_Help">显示此卡片</sys:String>
+    <sys:String x:Key="Str_Ks_CaseSensitive">切换区分大小写</sys:String>
+    <sys:String x:Key="Str_Ks_Clear">清除结果</sys:String>
+    <sys:String x:Key="Str_Ks_Address">编辑位置 - 输入路径后按 Enter</sys:String>
+    <sys:String x:Key="Str_Ks_Pipe">在这些结果中搜索，新建标签页</sys:String>
+    <sys:String x:Key="Str_Ks_SearchPanel">显示或隐藏搜索面板</sys:String>
+    <sys:String x:Key="Str_Ks_ExpandAll">展开全部结果</sys:String>
+    <sys:String x:Key="Str_Ks_CollapseAll">折叠全部结果</sys:String>
+    <sys:String x:Key="Str_Ks_ExportHtml">将结果导出为 HTML</sys:String>
+    <sys:String x:Key="Str_Ks_ExportCsv">将结果导出为 CSV</sys:String>
+    <sys:String x:Key="Str_Ks_Hint">快捷键在整个窗口内有效。展开的下拉列表、日期框和结果筛选框会自行处理 Enter。</sys:String>
+
+    <!-- Browsing, drop targets and the results context menu (2.0) -->
+    <sys:String x:Key="Str_Scope_Dropped">拖入的文件</sys:String>
+    <sys:String x:Key="Str_Tab_Dropped">拖入 ({0})</sys:String>
+    <sys:String x:Key="Str_TT_SearchPanel">显示或隐藏搜索面板  (Ctrl+Shift+S)</sys:String>
+    <sys:String x:Key="Str_TT_TreePanel">显示或隐藏文件夹树</sys:String>
+    <sys:String x:Key="Str_TT_CollapseSidebar">折叠侧边面板</sys:String>
+    <sys:String x:Key="Str_TT_Bookmarks">已保存的位置  (Ctrl+B)</sys:String>
+    <sys:String x:Key="Str_TT_Favorite">保存此文件夹</sys:String>
+    <sys:String x:Key="Str_TT_ShowHidden">显示隐藏和系统项目</sys:String>
+    <sys:String x:Key="Str_TT_FoldersTop">文件夹置于文件之上</sys:String>
+    <sys:String x:Key="Str_Menu_AddFavorite">添加到收藏夹</sys:String>
+    <sys:String x:Key="Str_Menu_RemoveFavorite">从收藏夹移除</sys:String>
+    <sys:String x:Key="Str_Ks_Bookmarks">显示或隐藏已保存的位置</sys:String>
+    <sys:String x:Key="Str_Ks_JumpBookmark">转到已保存的位置 1-10（0 = 第十个）</sys:String>
+    <sys:String x:Key="Str_TT_Back">后退</sys:String>
+    <sys:String x:Key="Str_TT_Forward">前进</sys:String>
+    <sys:String x:Key="Str_Status_Listing">正在打开 {0}...</sys:String>
+    <sys:String x:Key="Str_Status_Listed">{0} 个项目</sys:String>
+    <sys:String x:Key="Str_Status_BadPath">无法打开 {0}</sys:String>
+    <sys:String x:Key="Str_Menu_OpenAdmin">以管理员身份打开</sys:String>
+    <sys:String x:Key="Str_Menu_SearchHere">在此文件夹中搜索</sys:String>
+    <sys:String x:Key="Str_Menu_ExcludeFolder">排除此文件夹</sys:String>
+    <sys:String x:Key="Str_Menu_CopyPath">复制完整路径</sys:String>
+    <sys:String x:Key="Str_Menu_CopyName">复制文件名</sys:String>
+    <sys:String x:Key="Str_Menu_CopyFolder">复制文件夹路径</sys:String>
+    <sys:String x:Key="Str_Menu_CopyLines">复制匹配的行</sys:String>
+    <sys:String x:Key="Str_Menu_CopyFile">复制文件</sys:String>
+    <sys:String x:Key="Str_Menu_CopyHash">复制 SHA-256</sys:String>
+    <sys:String x:Key="Str_Menu_Properties">属性</sys:String>
+    <sys:String x:Key="Str_Menu_ShellMenu">更多 Windows 选项...</sys:String>
+    <sys:String x:Key="Str_Status_Copied">已复制 {0} 项到剪贴板</sys:String>
+    <sys:String x:Key="Str_Status_CopiedLines">已复制 {0} 个匹配行</sys:String>
+    <sys:String x:Key="Str_Status_CopiedFiles">已复制 {0} 个文件 - 可在资源管理器中粘贴</sys:String>
+    <sys:String x:Key="Str_Status_NoLines">没有可复制的匹配行(文件名匹配没有行)</sys:String>
+    <sys:String x:Key="Str_Status_ClipboardBusy">无法访问剪贴板 - 其他应用正在占用</sys:String>
+    <sys:String x:Key="Str_Status_Hashing">正在计算 {0} 的哈希...</sys:String>
+    <sys:String x:Key="Str_Status_HashCopied">已复制 {0} 的 SHA-256</sys:String>
+    <sys:String x:Key="Str_Status_HashFailed">无法读取文件以计算哈希</sys:String>
+    <sys:String x:Key="Str_Status_ElevationDeclined">已拒绝提权</sys:String>
+    <sys:String x:Key="Str_Status_FileOnly">该命令只能用于文件，不能用于文件夹</sys:String>
+    <sys:String x:Key="Str_Status_ShellFailed">Windows 未能打开它</sys:String>
+    <sys:String x:Key="Str_Status_Excluded">正在排除 {0} - 重新搜索后生效</sys:String>
+    <sys:String x:Key="Str_Status_AlreadyExcluded">{0} 已被排除</sys:String>
 
 </ResourceDictionary>

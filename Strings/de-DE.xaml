@@ -12,6 +12,8 @@
     <!-- Title bar / flyout -->
     <sys:String x:Key="Str_TT_Language">Sprache</sys:String>
     <sys:String x:Key="Str_TT_Theme">Design</sys:String>
+    <sys:String x:Key="Str_TT_AppSize">Mit dem Mausrad über dem Schriftzug die App-Größe ändern</sys:String>
+    <sys:String x:Key="Str_St_AppSize">App-Größe {0} %</sys:String>
     <sys:String x:Key="Str_Lbl_Theme">Design</sys:String>
     <sys:String x:Key="Str_Lbl_Accent">Akzent</sys:String>
 
@@ -82,6 +84,9 @@
     <sys:String x:Key="Str_Dlg_InstallMsg">KillerFind im Benutzerprofil installieren?</sys:String>
     <sys:String x:Key="Str_Dlg_InstallBullets">- Startmenü-Verknüpfung&#x0A;- Erscheint unter Apps und Features</sys:String>
     <sys:String x:Key="Str_Chk_Desktop">Desktop-Verknüpfung</sys:String>
+    <sys:String x:Key="Str_Chk_AllUsers">Für alle Benutzer installieren (Administrator erforderlich)</sys:String>
+    <sys:String x:Key="Str_Dlg_AlreadyAllUsers">KillerFind ist auf diesem PC bereits für alle Benutzer installiert, daher wird diese Kopie aktualisiert. Windows fragt nach der Berechtigung.</sys:String>
+    <sys:String x:Key="Str_St_InstallCancelled">Installation abgebrochen</sys:String>
     <sys:String x:Key="Str_Dlg_QuitMsg">KillerFind beenden?</sys:String>
     <sys:String x:Key="Str_Chk_RememberTabs">Offene Tabs merken</sys:String>
     <sys:String x:Key="Str_Chk_RememberChoice">Auswahl merken</sys:String>
@@ -94,6 +99,7 @@
     <sys:String x:Key="Str_TT_ViewDetails">Detailansicht</sys:String>
     <sys:String x:Key="Str_Lbl_SearchTerms">SUCHBEGRIFFE</sys:String>
     <sys:String x:Key="Str_Btn_AddTerm">+ Begriff hinzufügen</sys:String>
+    <sys:String x:Key="Str_Btn_AddGroup">+ Gruppe hinzufügen</sys:String>
     <sys:String x:Key="Str_Btn_Clear">LEEREN</sys:String>
 
     <!-- Search button (code-behind swaps idle/stop; keep the brackets) -->
@@ -129,11 +135,12 @@
     <sys:String x:Key="Str_Count_Matches">{0} Treffer</sys:String>
 
     <!-- About overlay -->
-    <sys:String x:Key="Str_About_Tagline">Schnelle Dateisuche für Windows. Ohne Indizierung.</sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Schnelle Dateisuche für Windows. Namen, Inhalte, Wildcards und Filter, ohne Index. Ein Dienstprogramm von </sys:String>
+    <sys:String x:Key="Str_About_DescB" xml:space="preserve">.</sys:String>
     <sys:String x:Key="Str_About_Version">VERSION</sys:String>
     <sys:String x:Key="Str_About_Publisher">HERAUSGEBER</sys:String>
     <sys:String x:Key="Str_About_Thumbprint">FINGERABDRUCK</sys:String>
-    <sys:String x:Key="Str_About_Sha">SHA-256</sys:String>
+    <sys:String x:Key="Str_About_Sha">EXE-SHA-256</sys:String>
     <sys:String x:Key="Str_About_Footer">GPLv3  |  entwickelt von einem Field-Techniker</sys:String>
 
     <!-- HTML report -->
@@ -173,5 +180,59 @@
     <sys:String x:Key="Str_Ks_AddFilter">Filter hinzufügen</sys:String>
     <sys:String x:Key="Str_Ks_Folder">Ordner wählen</sys:String>
     <sys:String x:Key="Str_Ks_Help">diese Karte anzeigen</sys:String>
+    <sys:String x:Key="Str_Ks_CaseSensitive">Groß-/Kleinschreibung umschalten</sys:String>
+    <sys:String x:Key="Str_Ks_Clear">Ergebnisse leeren</sys:String>
+    <sys:String x:Key="Str_Ks_Address">Ort bearbeiten - Pfad eingeben und Eingabetaste drücken</sys:String>
+    <sys:String x:Key="Str_Ks_Pipe">in diesen Ergebnissen suchen, in einem neuen Tab</sys:String>
+    <sys:String x:Key="Str_Ks_SearchPanel">Suchbereich ein- oder ausblenden</sys:String>
+    <sys:String x:Key="Str_Ks_ExpandAll">alle Ergebnisse aufklappen</sys:String>
+    <sys:String x:Key="Str_Ks_CollapseAll">alle Ergebnisse zuklappen</sys:String>
+    <sys:String x:Key="Str_Ks_ExportHtml">Ergebnisse als HTML exportieren</sys:String>
+    <sys:String x:Key="Str_Ks_ExportCsv">Ergebnisse als CSV exportieren</sys:String>
+    <sys:String x:Key="Str_Ks_Hint">Kurzbefehle gelten im ganzen Fenster. Geöffnete Dropdowns, das Datumsfeld und der Ergebnisfilter behalten die Eingabetaste für sich.</sys:String>
+
+    <!-- Browsing, drop targets and the results context menu (2.0) -->
+    <sys:String x:Key="Str_Scope_Dropped">abgelegte Dateien</sys:String>
+    <sys:String x:Key="Str_Tab_Dropped">abgelegt ({0})</sys:String>
+    <sys:String x:Key="Str_TT_SearchPanel">Suchbereich ein- oder ausblenden  (Strg+Umschalt+S)</sys:String>
+    <sys:String x:Key="Str_TT_TreePanel">Ordnerbaum ein- oder ausblenden</sys:String>
+    <sys:String x:Key="Str_TT_CollapseSidebar">Seitenbereiche einklappen</sys:String>
+    <sys:String x:Key="Str_TT_Bookmarks">Gespeicherte Orte  (Strg+B)</sys:String>
+    <sys:String x:Key="Str_TT_Favorite">Diesen Ordner speichern</sys:String>
+    <sys:String x:Key="Str_TT_ShowHidden">Versteckte und Systemelemente anzeigen</sys:String>
+    <sys:String x:Key="Str_TT_FoldersTop">Ordner über Dateien halten</sys:String>
+    <sys:String x:Key="Str_Menu_AddFavorite">Zu Favoriten hinzufügen</sys:String>
+    <sys:String x:Key="Str_Menu_RemoveFavorite">Aus Favoriten entfernen</sys:String>
+    <sys:String x:Key="Str_Ks_Bookmarks">gespeicherte Orte ein- oder ausblenden</sys:String>
+    <sys:String x:Key="Str_Ks_JumpBookmark">zu gespeichertem Ort 1-10 springen (0 = zehnter)</sys:String>
+    <sys:String x:Key="Str_TT_Back">Zurück</sys:String>
+    <sys:String x:Key="Str_TT_Forward">Vorwärts</sys:String>
+    <sys:String x:Key="Str_Status_Listing">{0} wird geöffnet...</sys:String>
+    <sys:String x:Key="Str_Status_Listed">{0} Element(e)</sys:String>
+    <sys:String x:Key="Str_Status_BadPath">{0} kann nicht geöffnet werden</sys:String>
+    <sys:String x:Key="Str_Menu_OpenAdmin">Als Administrator öffnen</sys:String>
+    <sys:String x:Key="Str_Menu_SearchHere">In diesem Ordner suchen</sys:String>
+    <sys:String x:Key="Str_Menu_ExcludeFolder">Diesen Ordner ausschließen</sys:String>
+    <sys:String x:Key="Str_Menu_CopyPath">Vollständigen Pfad kopieren</sys:String>
+    <sys:String x:Key="Str_Menu_CopyName">Dateinamen kopieren</sys:String>
+    <sys:String x:Key="Str_Menu_CopyFolder">Ordnerpfad kopieren</sys:String>
+    <sys:String x:Key="Str_Menu_CopyLines">Gefundene Zeilen kopieren</sys:String>
+    <sys:String x:Key="Str_Menu_CopyFile">Datei kopieren</sys:String>
+    <sys:String x:Key="Str_Menu_CopyHash">SHA-256 kopieren</sys:String>
+    <sys:String x:Key="Str_Menu_Properties">Eigenschaften</sys:String>
+    <sys:String x:Key="Str_Menu_ShellMenu">Weitere Windows-Optionen...</sys:String>
+    <sys:String x:Key="Str_Status_Copied">{0} in die Zwischenablage kopiert</sys:String>
+    <sys:String x:Key="Str_Status_CopiedLines">{0} gefundene Zeilen kopiert</sys:String>
+    <sys:String x:Key="Str_Status_CopiedFiles">{0} Datei(en) kopiert - im Explorer einfügen</sys:String>
+    <sys:String x:Key="Str_Status_NoLines">Keine gefundenen Zeilen zum Kopieren (Namenstreffer haben keine)</sys:String>
+    <sys:String x:Key="Str_Status_ClipboardBusy">Zwischenablage nicht erreichbar - eine andere App hält sie</sys:String>
+    <sys:String x:Key="Str_Status_Hashing">{0} wird gehasht...</sys:String>
+    <sys:String x:Key="Str_Status_HashCopied">SHA-256 von {0} kopiert</sys:String>
+    <sys:String x:Key="Str_Status_HashFailed">Datei zum Hashen nicht lesbar</sys:String>
+    <sys:String x:Key="Str_Status_ElevationDeclined">Rechteerhöhung abgelehnt</sys:String>
+    <sys:String x:Key="Str_Status_FileOnly">Dieser Befehl gilt nur für Dateien, nicht für Ordner</sys:String>
+    <sys:String x:Key="Str_Status_ShellFailed">Windows wollte das nicht öffnen</sys:String>
+    <sys:String x:Key="Str_Status_Excluded">{0} wird ausgeschlossen - Suche erneut ausführen</sys:String>
+    <sys:String x:Key="Str_Status_AlreadyExcluded">{0} ist bereits ausgeschlossen</sys:String>
 
 </ResourceDictionary>

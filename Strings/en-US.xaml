@@ -12,13 +12,37 @@
     <!-- Title bar / flyout -->
     <sys:String x:Key="Str_TT_Language">Language</sys:String>
     <sys:String x:Key="Str_TT_Theme">Theme</sys:String>
+    <!-- App-wide accessibility zoom: wheel over the title-bar wordmark (AppScale.cs) -->
+    <sys:String x:Key="Str_TT_AppSize">Scroll over the wordmark to resize the app</sys:String>
+    <sys:String x:Key="Str_St_AppSize">App size {0}%</sys:String>
     <sys:String x:Key="Str_Lbl_Theme">theme</sys:String>
     <sys:String x:Key="Str_Lbl_Accent">accent</sys:String>
 
     <!-- Scope bar -->
     <sys:String x:Key="Str_Lbl_In">in:</sys:String>
     <sys:String x:Key="Str_Scope_Empty">(no folder selected - click to choose)</sys:String>
+    <!-- Source name in the scope breadcrumb when a tab was made by dropping files on the window -->
+    <sys:String x:Key="Str_Scope_Dropped">dropped files</sys:String>
     <sys:String x:Key="Str_TT_Scope">Click to change search folder</sys:String>
+    <!-- Browsing (Browse.cs) -->
+    <sys:String x:Key="Str_TT_SearchPanel">Show or hide the search panel  (Ctrl+Shift+S)</sys:String>
+    <sys:String x:Key="Str_TT_TreePanel">Show or hide the folder tree</sys:String>
+    <sys:String x:Key="Str_TT_CollapseSidebar">Collapse the side panels</sys:String>
+    <!-- Favourites (Bookmarks.cs) -->
+    <sys:String x:Key="Str_TT_Bookmarks">Saved locations  (Ctrl+B)</sys:String>
+    <sys:String x:Key="Str_TT_Favorite">Save this folder</sys:String>
+    <sys:String x:Key="Str_TT_ShowHidden">Show hidden and system items</sys:String>
+    <sys:String x:Key="Str_TT_FoldersTop">Keep folders above files</sys:String>
+    <sys:String x:Key="Str_Menu_AddFavorite">Add to favorites</sys:String>
+    <sys:String x:Key="Str_Menu_RemoveFavorite">Remove from favorites</sys:String>
+    <sys:String x:Key="Str_Ks_Bookmarks">show or hide saved locations</sys:String>
+    <sys:String x:Key="Str_Ks_JumpBookmark">go to saved location 1-10 (0 = tenth)</sys:String>
+    <sys:String x:Key="Str_TT_Back">Back</sys:String>
+    <sys:String x:Key="Str_TT_Forward">Forward</sys:String>
+    <!-- Up reuses the folder picker's own Str_TT_Up, further down this file -->
+    <sys:String x:Key="Str_Status_Listing">Opening {0}...</sys:String>
+    <sys:String x:Key="Str_Status_Listed">{0} item(s)</sys:String>
+    <sys:String x:Key="Str_Status_BadPath">Cannot open {0}</sys:String>
     <sys:String x:Key="Str_Dlg_SelectFolder">Select root search folder</sys:String>
 
     <!-- Search config -->
@@ -53,6 +77,8 @@
 
     <!-- Tabs -->
     <sys:String x:Key="Str_Tab_New">new search</sys:String>
+    <!-- Tab title for a tab created by dropping files on the window; {0} = file count -->
+    <sys:String x:Key="Str_Tab_Dropped">dropped ({0})</sys:String>
     <sys:String x:Key="Str_TT_NewTab">New search tab</sys:String>
     <sys:String x:Key="Str_TT_CloseTab">Close tab</sys:String>
 
@@ -82,6 +108,9 @@
     <sys:String x:Key="Str_Dlg_InstallMsg">Install KillerFind to your user profile?</sys:String>
     <sys:String x:Key="Str_Dlg_InstallBullets">- Start Menu shortcut&#x0A;- Appears in Add/Remove Programs</sys:String>
     <sys:String x:Key="Str_Chk_Desktop">Desktop shortcut</sys:String>
+    <sys:String x:Key="Str_Chk_AllUsers">Install for all users (Admin required)</sys:String>
+    <sys:String x:Key="Str_Dlg_AlreadyAllUsers">KillerFind is already installed for all users on this PC, so this will update that copy. Windows will ask for permission.</sys:String>
+    <sys:String x:Key="Str_St_InstallCancelled">Install canceled</sys:String>
     <sys:String x:Key="Str_Dlg_QuitMsg">Quit KillerFind?</sys:String>
     <sys:String x:Key="Str_Chk_RememberTabs">Remember my open tabs</sys:String>
     <sys:String x:Key="Str_Chk_RememberChoice">Remember my choice</sys:String>
@@ -111,6 +140,32 @@
     <sys:String x:Key="Str_Menu_OpenFile">Open file</sys:String>
     <sys:String x:Key="Str_Menu_OpenWith">Open with...</sys:String>
     <sys:String x:Key="Str_Menu_ShowExplorer">Show in Explorer</sys:String>
+    <!-- Results context menu (ResultsMenu.cs). Copy commands act on the whole selection. -->
+    <sys:String x:Key="Str_Menu_OpenAdmin">Open as administrator</sys:String>
+    <sys:String x:Key="Str_Menu_SearchHere">Search inside this folder</sys:String>
+    <sys:String x:Key="Str_Menu_ExcludeFolder">Exclude this folder</sys:String>
+    <sys:String x:Key="Str_Menu_CopyPath">Copy full path</sys:String>
+    <sys:String x:Key="Str_Menu_CopyName">Copy file name</sys:String>
+    <sys:String x:Key="Str_Menu_CopyFolder">Copy folder path</sys:String>
+    <sys:String x:Key="Str_Menu_CopyLines">Copy matched lines</sys:String>
+    <sys:String x:Key="Str_Menu_CopyFile">Copy file</sys:String>
+    <sys:String x:Key="Str_Menu_CopyHash">Copy SHA-256</sys:String>
+    <sys:String x:Key="Str_Menu_Properties">Properties</sys:String>
+    <sys:String x:Key="Str_Menu_ShellMenu">More Windows options...</sys:String>
+    <!-- Status lines those commands write; {0} is a count or a file name -->
+    <sys:String x:Key="Str_Status_Copied">Copied {0} to the clipboard</sys:String>
+    <sys:String x:Key="Str_Status_CopiedLines">Copied {0} matched lines</sys:String>
+    <sys:String x:Key="Str_Status_CopiedFiles">Copied {0} file(s) - paste in Explorer</sys:String>
+    <sys:String x:Key="Str_Status_NoLines">No matched lines to copy (name matches have none)</sys:String>
+    <sys:String x:Key="Str_Status_ClipboardBusy">Could not reach the clipboard - another app is holding it</sys:String>
+    <sys:String x:Key="Str_Status_Hashing">Hashing {0}...</sys:String>
+    <sys:String x:Key="Str_Status_HashCopied">SHA-256 of {0} copied</sys:String>
+    <sys:String x:Key="Str_Status_HashFailed">Could not read the file to hash it</sys:String>
+    <sys:String x:Key="Str_Status_ElevationDeclined">Elevation declined</sys:String>
+    <sys:String x:Key="Str_Status_FileOnly">That command only works on files, not folders</sys:String>
+    <sys:String x:Key="Str_Status_ShellFailed">Windows would not open that</sys:String>
+    <sys:String x:Key="Str_Status_Excluded">Excluding {0} - run the search again to apply it</sys:String>
+    <sys:String x:Key="Str_Status_AlreadyExcluded">{0} is already excluded</sys:String>
     <sys:String x:Key="Str_Menu_Minimize">Minimize</sys:String>
     <sys:String x:Key="Str_Menu_Maximize">Maximize</sys:String>
     <sys:String x:Key="Str_Menu_Restore">Restore</sys:String>
@@ -130,11 +185,14 @@
     <sys:String x:Key="Str_Count_Matches">{0} matches</sys:String>
 
     <!-- About overlay -->
-    <sys:String x:Key="Str_About_Tagline">Fast file search for Windows. No indexing.</sys:String>
+    <!-- Tagline is composed in XAML: DescA + "GPLv3 " + [Killer Tools link] + DescB.
+         GPLv3 and the product name stay out of the translatable text (family standard). -->
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Fast file search for Windows. Names, contents, wildcards and filters, with no index. A </sys:String>
+    <sys:String x:Key="Str_About_DescB" xml:space="preserve"> utility.</sys:String>
     <sys:String x:Key="Str_About_Version">VERSION</sys:String>
     <sys:String x:Key="Str_About_Publisher">PUBLISHER</sys:String>
     <sys:String x:Key="Str_About_Thumbprint">THUMBPRINT</sys:String>
-    <sys:String x:Key="Str_About_Sha">SHA-256</sys:String>
+    <sys:String x:Key="Str_About_Sha">EXE SHA-256</sys:String>
     <sys:String x:Key="Str_About_Footer">GPLv3  |  built by a field tech</sys:String>
 
     <!-- HTML report (exported in the app's current language) -->
@@ -175,5 +233,15 @@
     <sys:String x:Key="Str_Ks_AddFilter">add a filter</sys:String>
     <sys:String x:Key="Str_Ks_Folder">choose the folder</sys:String>
     <sys:String x:Key="Str_Ks_Help">show this card</sys:String>
+    <sys:String x:Key="Str_Ks_CaseSensitive">toggle case-sensitive matching</sys:String>
+    <sys:String x:Key="Str_Ks_Clear">clear the results</sys:String>
+    <sys:String x:Key="Str_Ks_Address">edit the location - type a path and press Enter</sys:String>
+    <sys:String x:Key="Str_Ks_Pipe">search within these results, in a new tab</sys:String>
+    <sys:String x:Key="Str_Ks_SearchPanel">show or hide the search panel</sys:String>
+    <sys:String x:Key="Str_Ks_ExpandAll">expand every result</sys:String>
+    <sys:String x:Key="Str_Ks_CollapseAll">collapse every result</sys:String>
+    <sys:String x:Key="Str_Ks_ExportHtml">export the results as HTML</sys:String>
+    <sys:String x:Key="Str_Ks_ExportCsv">export the results as CSV</sys:String>
+    <sys:String x:Key="Str_Ks_Hint">Shortcuts work anywhere in the window. Open dropdowns, the date box, and the results filter keep Enter for themselves.</sys:String>
 
 </ResourceDictionary>

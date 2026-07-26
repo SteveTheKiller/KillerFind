@@ -23,6 +23,12 @@ namespace KillerFind
             "Programs", AppName);
         private static readonly string InstallExe = Path.Combine(InstallDir, ExeName);
 
+        // Machine-wide ("all users") install target. Used by the /silent path that winget, choco
+        // and RMMs call, and by the Install for all users checkbox on the install prompt.
+        private static readonly string MachineInstallDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), AppName);
+        private static readonly string MachineInstallExe = Path.Combine(MachineInstallDir, ExeName);
+
         private static readonly string StartMenuDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.Programs), AppName);
         private static readonly string StartMenuLnk = Path.Combine(StartMenuDir, $"{AppName}.lnk");
@@ -67,7 +73,9 @@ namespace KillerFind
             }
 
             // Demo / screenshot mode: KillerFind.exe --demo fills tabs with fabricated
-            // results so marketing screenshots never leak real file names.
+            // results so marketing screenshots never leak real file names. It also shows
+            // the About card in its signed state (About.cs) so captures taken from an
+            // unsigned local build match the released one.
             KillerFind.MainWindow.DemoMode = Array.Exists(e.Args, a =>
                 string.Equals(a, "--demo", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(a, "/demo",  StringComparison.OrdinalIgnoreCase));
@@ -113,20 +121,88 @@ namespace KillerFind
         // Portable badge / install (public surface used by MainWindow)
         // ============================================================
 
-        /// <summary>True when running from outside the installed location (i.e. portable mode).</summary>
+        /// <summary>True when running from outside the installed location (i.e. portable mode).
+        /// Must check the machine-wide path as well as the per-user one: a /silent install from
+        /// winget, choco or an RMM lands in Program Files, and comparing only against the
+        /// per-user path would report those copies as portable.</summary>
         internal static bool IsPortable()
         {
             string currentExe = Process.GetCurrentProcess().MainModule!.FileName;
-            return !string.Equals(currentExe, InstallExe, StringComparison.OrdinalIgnoreCase);
+            return !string.Equals(currentExe, InstallExe, StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(currentExe, MachineInstallExe, StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>Installs KillerFind, then relaunches from the installed location.</summary>
-        internal static void InstallAndRelaunch(bool wantDesktop)
-        {
-            DoInstall(wantDesktop);
+        /// <summary>True when KillerFind is already installed machine-wide.</summary>
+        internal static bool MachineInstallExists() => File.Exists(MachineInstallExe);
 
+        /// <summary>Installs KillerFind, then relaunches from the installed location.
+        /// For an all-users install the app re-runs itself elevated with /silent - the same
+        /// machine-wide path winget and choco already use - so UAC only appears when the user
+        /// actually asked for it. Returns false if that elevation was declined or failed.</summary>
+        internal static bool InstallAndRelaunch(bool wantDesktop, bool allUsers)
+        {
+            if (allUsers)
+            {
+                if (!RunElevatedSilentInstall()) return false;
+
+                // Only ever one install: drop the per-user copy so there is a single Start Menu
+                // entry and a single uninstall entry. Settings are deliberately left alone.
+                RemovePerUserInstall();
+
+                Process.Start(new ProcessStartInfo(MachineInstallExe));
+                Application.Current.Shutdown();
+                return true;
+            }
+
+            DoInstall(wantDesktop);
             Process.Start(new ProcessStartInfo(InstallExe));
             Application.Current.Shutdown();
+            return true;
+        }
+
+        /// <summary>Re-run this exe elevated with /silent and wait for it to finish.</summary>
+        private static bool RunElevatedSilentInstall()
+        {
+            try
+            {
+                var psi = new ProcessStartInfo(Process.GetCurrentProcess().MainModule!.FileName, "/silent")
+                {
+                    UseShellExecute = true,
+                    Verb = "runas",          // triggers the UAC prompt
+                };
+                using var p = Process.Start(psi);
+                p?.WaitForExit();
+                return p is not null && p.ExitCode == 0 && File.Exists(MachineInstallExe);
+            }
+            catch
+            {
+                // Declining the UAC prompt throws Win32Exception 1223 (ERROR_CANCELLED).
+                return false;
+            }
+        }
+
+        /// <summary>Remove a per-user install: files, shortcuts, and its HKCU install markers.
+        /// Settings under the app's own registry key are deliberately left alone so theme,
+        /// accent, locale and window placement survive the move to a machine-wide install.</summary>
+        private static void RemovePerUserInstall()
+        {
+            try { if (File.Exists(StartMenuLnk)) File.Delete(StartMenuLnk); } catch { }
+            try { if (Directory.Exists(StartMenuDir)) Directory.Delete(StartMenuDir, true); } catch { }
+            try { if (File.Exists(DesktopLnk)) File.Delete(DesktopLnk); } catch { }
+            try { if (Directory.Exists(InstallDir)) Directory.Delete(InstallDir, true); } catch { }
+            try
+            {
+                using var key = Registry.CurrentUser.OpenSubKey(RegKey, writable: true);
+                key?.DeleteValue("Installed", throwOnMissingValue: false);
+                key?.DeleteValue("InstallPath", throwOnMissingValue: false);
+            }
+            catch { }
+            try
+            {
+                Registry.CurrentUser.DeleteSubKeyTree(
+                    @"Software\Microsoft\Windows\CurrentVersion\Uninstall\KillerFind", throwOnMissingSubKey: false);
+            }
+            catch { }
         }
 
         // ============================================================

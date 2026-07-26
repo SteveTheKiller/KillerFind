@@ -12,6 +12,8 @@
     <!-- Title bar / flyout -->
     <sys:String x:Key="Str_TT_Language">ভাষা</sys:String>
     <sys:String x:Key="Str_TT_Theme">থিম</sys:String>
+    <sys:String x:Key="Str_TT_AppSize">অ্যাপের আকার বদলাতে লোগোর উপর স্ক্রোল করুন</sys:String>
+    <sys:String x:Key="Str_St_AppSize">অ্যাপের আকার {0}%</sys:String>
     <sys:String x:Key="Str_Lbl_Theme">থিম</sys:String>
     <sys:String x:Key="Str_Lbl_Accent">অ্যাকসেন্ট</sys:String>
 
@@ -82,6 +84,9 @@
     <sys:String x:Key="Str_Dlg_InstallMsg">আপনার ইউজার প্রোফাইলে KillerFind ইনস্টল করবেন?</sys:String>
     <sys:String x:Key="Str_Dlg_InstallBullets">- স্টার্ট মেনু শর্টকাট&#x0A;- Add/Remove Programs-এ দেখা যাবে</sys:String>
     <sys:String x:Key="Str_Chk_Desktop">ডেস্কটপ শর্টকাট</sys:String>
+    <sys:String x:Key="Str_Chk_AllUsers">সব ব্যবহারকারীর জন্য ইনস্টল করুন (অ্যাডমিন প্রয়োজন)</sys:String>
+    <sys:String x:Key="Str_Dlg_AlreadyAllUsers">KillerFind ইতিমধ্যেই এই পিসির সব ব্যবহারকারীর জন্য ইনস্টল করা আছে, তাই সেই কপিটিই হালনাগাদ হবে। Windows অনুমতি চাইবে।</sys:String>
+    <sys:String x:Key="Str_St_InstallCancelled">ইনস্টল বাতিল হয়েছে</sys:String>
     <sys:String x:Key="Str_Dlg_QuitMsg">KillerFind বন্ধ করবেন?</sys:String>
     <sys:String x:Key="Str_Chk_RememberTabs">আমার খোলা ট্যাবগুলি মনে রাখুন</sys:String>
     <sys:String x:Key="Str_Chk_RememberChoice">আমার পছন্দ মনে রাখুন</sys:String>
@@ -94,6 +99,7 @@
     <sys:String x:Key="Str_TT_ViewDetails">বিস্তারিত ভিউ</sys:String>
     <sys:String x:Key="Str_Lbl_SearchTerms">অনুসন্ধানের শব্দ</sys:String>
     <sys:String x:Key="Str_Btn_AddTerm">+ শব্দ যোগ করুন</sys:String>
+    <sys:String x:Key="Str_Btn_AddGroup">+ à¦—à§à¦°à§à¦ª à¦¯à§‹à¦— à¦•à¦°à§à¦¨</sys:String>
     <sys:String x:Key="Str_Btn_Clear">পরিষ্কার করুন</sys:String>
 
     <!-- Search button (code-behind swaps idle/stop; keep the brackets) -->
@@ -129,11 +135,12 @@
     <sys:String x:Key="Str_Count_Matches">{0}টি মিল</sys:String>
 
     <!-- About overlay -->
-    <sys:String x:Key="Str_About_Tagline">Windows-এর জন্য দ্রুত ফাইল অনুসন্ধান। কোনো ইনডেক্সিং নেই।</sys:String>
+    <sys:String x:Key="Str_About_DescA" xml:space="preserve">Windows-এর জন্য দ্রুত ফাইল অনুসন্ধান। নাম, কনটেন্ট, ওয়াইল্ডকার্ড ও ফিল্টার, কোনো ইনডেক্স ছাড়াই। একটি </sys:String>
+    <sys:String x:Key="Str_About_DescB" xml:space="preserve"> ইউটিলিটি।</sys:String>
     <sys:String x:Key="Str_About_Version">সংস্করণ</sys:String>
     <sys:String x:Key="Str_About_Publisher">প্রকাশক</sys:String>
     <sys:String x:Key="Str_About_Thumbprint">থাম্বপ্রিন্ট</sys:String>
-    <sys:String x:Key="Str_About_Sha">SHA-256</sys:String>
+    <sys:String x:Key="Str_About_Sha">EXE SHA-256</sys:String>
     <sys:String x:Key="Str_About_Footer">GPLv3  |  একজন ফিল্ড টেক দ্বারা নির্মিত</sys:String>
 
     <!-- HTML report -->
@@ -173,5 +180,59 @@
     <sys:String x:Key="Str_Ks_AddFilter">ফিল্টার যোগ করুন</sys:String>
     <sys:String x:Key="Str_Ks_Folder">ফোল্ডার বাছুন</sys:String>
     <sys:String x:Key="Str_Ks_Help">এই কার্ড দেখান</sys:String>
+    <sys:String x:Key="Str_Ks_CaseSensitive">কেস-সংবেদনশীল মিল চালু/বন্ধ করুন</sys:String>
+    <sys:String x:Key="Str_Ks_Clear">ফলাফল মুছুন</sys:String>
+    <sys:String x:Key="Str_Ks_Address">অবস্থান সম্পাদনা করুন - পাথ লিখে Enter চাপুন</sys:String>
+    <sys:String x:Key="Str_Ks_Pipe">এই ফলাফলের ভিতরে খুঁজুন, নতুন ট্যাবে</sys:String>
+    <sys:String x:Key="Str_Ks_SearchPanel">সার্চ প্যানেল দেখান বা লুকান</sys:String>
+    <sys:String x:Key="Str_Ks_ExpandAll">সব ফলাফল খুলুন</sys:String>
+    <sys:String x:Key="Str_Ks_CollapseAll">সব ফলাফল বন্ধ করুন</sys:String>
+    <sys:String x:Key="Str_Ks_ExportHtml">ফলাফল HTML হিসেবে এক্সপোর্ট করুন</sys:String>
+    <sys:String x:Key="Str_Ks_ExportCsv">ফলাফল CSV হিসেবে এক্সপোর্ট করুন</sys:String>
+    <sys:String x:Key="Str_Ks_Hint">শর্টকাট উইন্ডোর যেকোনো জায়গায় কাজ করে। খোলা ড্রপডাউন, তারিখের ঘর ও ফলাফল ফিল্টার Enter নিজেদের জন্য রাখে।</sys:String>
+
+    <!-- Browsing, drop targets and the results context menu (2.0) -->
+    <sys:String x:Key="Str_Scope_Dropped">ড্রপ করা ফাইল</sys:String>
+    <sys:String x:Key="Str_Tab_Dropped">ড্রপ করা ({0})</sys:String>
+    <sys:String x:Key="Str_TT_SearchPanel">সার্চ প্যানেল দেখান বা লুকান  (Ctrl+Shift+S)</sys:String>
+    <sys:String x:Key="Str_TT_TreePanel">ফোল্ডার ট্রি দেখান বা লুকান</sys:String>
+    <sys:String x:Key="Str_TT_CollapseSidebar">পাশের প্যানেলগুলো বন্ধ করুন</sys:String>
+    <sys:String x:Key="Str_TT_Bookmarks">সংরক্ষিত অবস্থান  (Ctrl+B)</sys:String>
+    <sys:String x:Key="Str_TT_Favorite">এই ফোল্ডার সংরক্ষণ করুন</sys:String>
+    <sys:String x:Key="Str_TT_ShowHidden">লুকানো ও সিস্টেম আইটেম দেখান</sys:String>
+    <sys:String x:Key="Str_TT_FoldersTop">ফোল্ডার ফাইলের উপরে রাখুন</sys:String>
+    <sys:String x:Key="Str_Menu_AddFavorite">প্রিয় তালিকায় যোগ করুন</sys:String>
+    <sys:String x:Key="Str_Menu_RemoveFavorite">প্রিয় তালিকা থেকে সরান</sys:String>
+    <sys:String x:Key="Str_Ks_Bookmarks">সংরক্ষিত অবস্থান দেখান বা লুকান</sys:String>
+    <sys:String x:Key="Str_Ks_JumpBookmark">সংরক্ষিত অবস্থান 1-10 এ যান (0 = দশম)</sys:String>
+    <sys:String x:Key="Str_TT_Back">পেছনে</sys:String>
+    <sys:String x:Key="Str_TT_Forward">সামনে</sys:String>
+    <sys:String x:Key="Str_Status_Listing">{0} খোলা হচ্ছে...</sys:String>
+    <sys:String x:Key="Str_Status_Listed">{0} টি আইটেম</sys:String>
+    <sys:String x:Key="Str_Status_BadPath">{0} খোলা যাচ্ছে না</sys:String>
+    <sys:String x:Key="Str_Menu_OpenAdmin">অ্যাডমিনিস্ট্রেটর হিসেবে খুলুন</sys:String>
+    <sys:String x:Key="Str_Menu_SearchHere">এই ফোল্ডারের ভেতরে খুঁজুন</sys:String>
+    <sys:String x:Key="Str_Menu_ExcludeFolder">এই ফোল্ডার বাদ দিন</sys:String>
+    <sys:String x:Key="Str_Menu_CopyPath">পুরো পাথ কপি করুন</sys:String>
+    <sys:String x:Key="Str_Menu_CopyName">ফাইলের নাম কপি করুন</sys:String>
+    <sys:String x:Key="Str_Menu_CopyFolder">ফোল্ডারের পাথ কপি করুন</sys:String>
+    <sys:String x:Key="Str_Menu_CopyLines">মিলে যাওয়া লাইন কপি করুন</sys:String>
+    <sys:String x:Key="Str_Menu_CopyFile">ফাইল কপি করুন</sys:String>
+    <sys:String x:Key="Str_Menu_CopyHash">SHA-256 কপি করুন</sys:String>
+    <sys:String x:Key="Str_Menu_Properties">বৈশিষ্ট্য</sys:String>
+    <sys:String x:Key="Str_Menu_ShellMenu">Windows-এর আরও অপশন...</sys:String>
+    <sys:String x:Key="Str_Status_Copied">{0} টি ক্লিপবোর্ডে কপি হয়েছে</sys:String>
+    <sys:String x:Key="Str_Status_CopiedLines">{0} টি মিলে যাওয়া লাইন কপি হয়েছে</sys:String>
+    <sys:String x:Key="Str_Status_CopiedFiles">{0} টি ফাইল কপি হয়েছে - Explorer-এ পেস্ট করুন</sys:String>
+    <sys:String x:Key="Str_Status_NoLines">কপি করার মতো মিলে যাওয়া লাইন নেই (নামের মিলে লাইন থাকে না)</sys:String>
+    <sys:String x:Key="Str_Status_ClipboardBusy">ক্লিপবোর্ডে পৌঁছানো যায়নি - অন্য একটি অ্যাপ সেটি ধরে রেখেছে</sys:String>
+    <sys:String x:Key="Str_Status_Hashing">{0} এর হ্যাশ করা হচ্ছে...</sys:String>
+    <sys:String x:Key="Str_Status_HashCopied">{0} এর SHA-256 কপি হয়েছে</sys:String>
+    <sys:String x:Key="Str_Status_HashFailed">হ্যাশ করার জন্য ফাইলটি পড়া যায়নি</sys:String>
+    <sys:String x:Key="Str_Status_ElevationDeclined">অনুমতি বাড়ানো প্রত্যাখ্যান করা হয়েছে</sys:String>
+    <sys:String x:Key="Str_Status_FileOnly">এই কমান্ডটি শুধু ফাইলে কাজ করে, ফোল্ডারে নয়</sys:String>
+    <sys:String x:Key="Str_Status_ShellFailed">Windows এটি খুলতে পারেনি</sys:String>
+    <sys:String x:Key="Str_Status_Excluded">{0} বাদ দেওয়া হচ্ছে - প্রয়োগ করতে আবার সার্চ করুন</sys:String>
+    <sys:String x:Key="Str_Status_AlreadyExcluded">{0} ইতিমধ্যেই বাদ দেওয়া আছে</sys:String>
 
 </ResourceDictionary>

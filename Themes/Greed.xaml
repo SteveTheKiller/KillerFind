@@ -25,6 +25,8 @@
     <SolidColorBrush x:Key="PaneBrush"           Color="#003824" po:Freeze="True"/>
     <SolidColorBrush x:Key="TableHeaderBrush"    Color="#002e1c" po:Freeze="True"/>
     <SolidColorBrush x:Key="CardBorderBrush"     Color="#0f4a30" po:Freeze="True"/>
+    <SolidColorBrush x:Key="TreeLineBrush"       Color="#156140" po:Freeze="True"/>
+    <SolidColorBrush x:Key="WarnBrush"           Color="#e0d49a" po:Freeze="True"/>
     <SolidColorBrush x:Key="PaneBorderBrush"     Color="#0f4a30" po:Freeze="True"/>
 
     <SolidColorBrush x:Key="TextBrush"           Color="#fffde8" po:Freeze="True"/>

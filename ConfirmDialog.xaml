@@ -90,6 +90,12 @@
                                Visibility="Collapsed" Margin="0,0,0,4"/>
                     <CheckBox x:Name="Check1" Visibility="Collapsed" Margin="0,8,0,0" FontSize="12"/>
                     <CheckBox x:Name="Check2" Visibility="Collapsed" Margin="0,8,0,0" FontSize="12"/>
+                    <!-- Explanatory note under Check2, shown by LockCheck2 when the choice is
+                         already made for the user (e.g. KillerFind is installed machine-wide). -->
+                    <TextBlock x:Name="Check2Note" Visibility="Collapsed"
+                               Foreground="{StaticResource MutedTextBrush}"
+                               FontSize="11" LineHeight="16" TextWrapping="Wrap"
+                               Margin="22,5,0,0"/>
                 </StackPanel>
 
                 <!-- Buttons -->

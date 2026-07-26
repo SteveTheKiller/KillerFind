@@ -10,6 +10,7 @@
                 ViewportUnits="Absolute" Viewport="0,0,256,256" Stretch="None"/>
 
     <kui:ThumbViewportFloorConverter x:Key="ThumbFloor"/>
+    <kui:LastChildConverter x:Key="IsLastChild"/>
 
     <FontFamily x:Key="WordmarkFont">/KillerFind;component/Fonts/#Typewriter - a602 (dead postman 2004)</FontFamily>
 
@@ -125,6 +126,14 @@
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="border" Property="Background" Value="{DynamicResource RowSelectedBrush}"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource OutlineBtnBrush}"/>
+                        </Trigger>
+                        <!-- Tag="on" marks a toolbar button whose option is switched on, the
+                             same convention the rail buttons use. Additive: a button that never
+                             sets Tag is untouched. Declared after IsPressed so a press still
+                             wins while the mouse is down. -->
+                        <Trigger Property="Tag" Value="on">
+                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
                             <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource OutlineBtnBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -547,6 +556,17 @@
                             </Track.Thumb>
                         </Track>
                     </Grid>
+                    <ControlTemplate.Triggers>
+                        <!-- IsDirectionReversed is declared True on the Track above because a
+                             VERTICAL track needs it: without it the thumb rises as the content
+                             scrolls down. A horizontal track wants the opposite, and one shared
+                             template serves both orientations here, so it has to be undone -
+                             otherwise the horizontal thumb sits at the right when the content is
+                             scrolled hard left, which is what it was doing. -->
+                        <Trigger Property="Orientation" Value="Horizontal">
+                            <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -581,6 +601,16 @@
         </Setter>
     </Style>
 
+    <!-- Menu icon glyph. Segoe MDL2 at 13px sits right against 12px menu text, and it takes
+         MenuTextBrush so it dims and accents with its row rather than staying a constant tone. -->
+    <Style x:Key="MenuGlyph" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Foreground" Value="{DynamicResource MenuTextBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+
     <Style TargetType="MenuItem">
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="Background" Value="Transparent"/>
@@ -591,12 +621,28 @@
             <Setter.Value>
                 <ControlTemplate TargetType="MenuItem">
                     <Border x:Name="bg" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
-                        <ContentPresenter ContentSource="Header" VerticalAlignment="Center"/>
+                        <!-- Icon gutter (family standard, see KillerScan App.xaml). The column is
+                             Auto and the presenter collapses when an item has no Icon, so the
+                             menus that don't use icons keep their exact previous layout - a
+                             collapsed element contributes neither width nor margin. -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <ContentPresenter x:Name="ico" Grid.Column="0" ContentSource="Icon"
+                                              Width="18" Margin="0,0,10,0"
+                                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <ContentPresenter Grid.Column="1" ContentSource="Header" VerticalAlignment="Center"/>
+                        </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsHighlighted" Value="True">
                             <Setter TargetName="bg" Property="Background" Value="{DynamicResource MenuHoverBrush}"/>
                             <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                        </Trigger>
+                        <Trigger Property="Icon" Value="{x:Null}">
+                            <Setter TargetName="ico" Property="Visibility" Value="Collapsed"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -604,6 +650,11 @@
         </Setter>
     </Style>
 
+    <!-- NOTE: inside a Menu or ContextMenu, WPF does NOT use this implicit style - it looks up
+         MenuItem.SeparatorStyleKey and falls back to the stock Aero separator, the bright gray
+         3D line. That is what the caption system menu was showing between Maximize and Close
+         (Chrome.cs ShowCaptionMenu adds a Separator there). The keyed alias just below is what
+         actually applies in menus; this one covers separators used anywhere else. -->
     <Style TargetType="Separator">
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="Height" Value="1"/>
@@ -616,6 +667,21 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- The key WPF actually resolves for a Separator sitting in a menu. Same look as above;
+         registering it here is what stops the stock light-gray line. -->
+    <Style x:Key="{x:Static MenuItem.SeparatorStyleKey}" TargetType="Separator"
+           BasedOn="{StaticResource {x:Type Separator}}"/>
+
+    <!-- Glyph for a MenuItem.Icon, so an icon in the new gutter is one line at the call site
+         and the size/color live in one place (family standard, see KillerScan App.xaml). -->
+    <Style x:Key="MenuIcon" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
     <Style x:Key="Card" TargetType="Border">
@@ -720,6 +786,325 @@
                             <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Sidebar icon-rail button, ported from KillerNotes (which took it from KillerPDF): bare
+         glyph with a soft shadow, turning the accent color on hover. Set Content to the glyph;
+         override FontFamily/FontSize for text glyphs like a "?" button. -->
+    <Style x:Key="RailButton" TargetType="Button">
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <!-- 20 logical hugs the 16px glyphs; the RailW=24 column (SearchPanel.cs) leaves only a
+             2px inset per side, so zooming scales the icons rather than blank strip. -->
+        <Setter Property="Width" Value="20"/>
+        <Setter Property="Height" Value="20"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="Transparent">
+                        <TextBlock Text="{TemplateBinding Content}"
+                                   FontFamily="{TemplateBinding FontFamily}"
+                                   FontSize="{TemplateBinding FontSize}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="Black" BlurRadius="4" ShadowDepth="2" Direction="270"
+                                                  Opacity="{DynamicResource IconShadowOpacity}"/>
+                            </TextBlock.Effect>
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}" Value="True">
+                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                        </DataTrigger>
+                                        <!-- Tag="on" marks a rail toggle whose panel is open. -->
+                                        <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=Button}}" Value="on">
+                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- View-mode toggles (results pane list / icons / details). Tag="on" marks the active one,
+         the same convention the folder picker's own strip uses. -->
+    <Style x:Key="ViewToggleBtn" TargetType="Button">
+        <Setter Property="Width" Value="26"/>
+        <Setter Property="Height" Value="24"/>
+        <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Foreground" Value="{DynamicResource DimTextBrush}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="bg" Background="Transparent" CornerRadius="3">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bg" Property="Background" Value="{DynamicResource RowHoverBrush}"/>
+                        </Trigger>
+                        <Trigger Property="Tag" Value="on">
+                            <Setter TargetName="bg" Property="Background" Value="{DynamicResource RowSelectedBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Details-view column header buttons: a label plus a sort arrow, flat until hovered. -->
+    <Style x:Key="ColHeaderBtn" TargetType="Button">
+        <Setter Property="Height" Value="22"/>
+        <Setter Property="Padding" Value="6,0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="bg" Background="Transparent" CornerRadius="3" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bg" Property="Background" Value="{DynamicResource RowHoverBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ═══════════ FOLDER TREE ═══════════ -->
+    <!-- The stock WPF TreeView brings its own chrome with it: a white SystemColors selection
+         highlight, Aero triangles, and a ScrollViewer whose corner square between the two
+         scrollbars is painted with the system Control brush - the white box that showed up at
+         the end of the horizontal bar. All three are replaced here rather than patched. -->
+
+    <!-- Expander triangle. Two Paths rather than a glyph font so it stays crisp at any app
+         scale and takes the accent on hover like everything else. -->
+    <Style x:Key="TreeExpander" TargetType="ToggleButton">
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Width" Value="16"/>
+        <Setter Property="Height" Value="16"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border Background="Transparent" Width="16" Height="16">
+                        <!-- Canvas so the geometry coordinates below are absolute within the
+                             16px gutter and line up with the connecting line, which sits at
+                             x=7.5-8.5. A bare Path would be positioned by layout instead, and
+                             the alignment this whole style exists for would drift.
+                             The two states are separate geometries rather than one chevron on a
+                             RotateTransform: rotating about the bounding-box centre swings the
+                             arms back across the line, which is what drew an X over it.
+                             FILL is what makes the line read as a zigzag rather than something
+                             with a chevron laid over it - an unclosed figure still fills as if
+                             closed, so the triangle between the arms is painted in the panel's
+                             own background and the line disappears behind it. -->
+                        <Canvas Width="16" Height="16">
+                            <!-- TWO paths, not one. The mask and the visible chevron want
+                                 different left edges: the stroke sits a pixel clear of the line
+                                 so the two read as separate marks, but a fill that started
+                                 there would leave the line showing along the inside of the
+                                 arms. The fill path reaches back to x=7 - past the line's left
+                                 edge at 7.5 - so the whole 1px is covered. It has no stroke, so
+                                 all it ever does is paint background. -->
+                            <Path x:Name="arrowFill" Data="M 7,3.5 L 13,7.5 L 7,11.5"
+                                  Fill="{DynamicResource BackgroundBrush}" SnapsToDevicePixels="False"/>
+                            <Path x:Name="arrow" Data="M 8.5,3.5 L 13,7.5 L 8.5,11.5"
+                                  StrokeThickness="1.4" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                  Stroke="{DynamicResource DimTextBrush}" SnapsToDevicePixels="False"/>
+                        </Canvas>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <!-- Points down, vertex landing on x=8 - the line's centre - so the
+                                 line runs into the point of the V rather than off to one side.
+                                 Arm length and angle match the collapsed chevron (these are its
+                                 own three points rotated 90 degrees, worked out by hand: a
+                                 RenderTransform cannot be reached by TargetName, MC4111).
+                                 Fill and stroke share a geometry here, unlike the collapsed
+                                 state - the line passes through the V's interior rather than
+                                 along its edge, so the plain triangle already covers it. -->
+                            <Setter TargetName="arrow"     Property="Data" Value="M 4,5.25 L 8,9.75 L 12,5.25"/>
+                            <Setter TargetName="arrowFill" Property="Data" Value="M 4,5.25 L 8,9.75 L 12,5.25"/>
+                            <Setter TargetName="arrow" Property="Stroke" Value="{DynamicResource PrimaryBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="arrow" Property="Stroke" Value="{DynamicResource PrimaryBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="FolderTreeItem" TargetType="TreeViewItem">
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+        <Setter Property="Padding" Value="2,1"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TreeViewItem">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <!-- 16px gutter carries the expander AND the connecting lines, so
+                                 the lines land dead centre on the triangle at every depth. -->
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Connecting lines. The vertical runs the full height of the node and
+                             its children; the horizontal is the stub out to this node's icon.
+                             For the last child the vertical is cut to an elbow (see trigger)
+                             so it stops at the join instead of trailing into empty space. -->
+                        <Rectangle x:Name="VerLine" Grid.RowSpan="2" Width="1"
+                                   HorizontalAlignment="Center" VerticalAlignment="Stretch"
+                                   Fill="{DynamicResource TreeLineBrush}" SnapsToDevicePixels="True"/>
+                        <!-- Only drawn for a node with no expander. Where there IS one the
+                             chevron is the connector - its tips meet the vertical line at x=8
+                             and it carries the eye out to the icon, so a stub underneath it
+                             would just be the line showing through the arms again. -->
+                        <Rectangle x:Name="HorLine" Height="1" Margin="8,0,0,0"
+                                   VerticalAlignment="Center" HorizontalAlignment="Stretch"
+                                   Visibility="Collapsed"
+                                   Fill="{DynamicResource TreeLineBrush}" SnapsToDevicePixels="True"/>
+
+                        <ToggleButton x:Name="Expander" Style="{StaticResource TreeExpander}"
+                                      ClickMode="Press" VerticalAlignment="Center"
+                                      IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"/>
+
+                        <Border x:Name="Bd" Grid.Column="1" CornerRadius="3" Margin="2,0,0,0"
+                                Background="Transparent" Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter x:Name="PART_Header" ContentSource="Header"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                        </Border>
+
+                        <ItemsPresenter x:Name="ItemsHost" Grid.Row="1" Grid.Column="1"/>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsExpanded" Value="False">
+                            <Setter TargetName="ItemsHost" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                        <!-- No children means no chevron, so the elbow stub takes over as the
+                             connector. The vertical stays either way: a leaf still belongs to
+                             the run of siblings drawn down the gutter. -->
+                        <Trigger Property="HasItems" Value="False">
+                            <Setter TargetName="Expander" Property="Visibility" Value="Hidden"/>
+                            <Setter TargetName="HorLine" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" SourceName="Bd" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource RowHoverBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource RowSelectedBrush}"/>
+                        </Trigger>
+                        <!-- Last sibling: cut the vertical to an elbow. Bound to the container
+                             itself so a recycled container re-evaluates (LastChildConverter.cs). -->
+                        <DataTrigger Value="True"
+                                     Binding="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource IsLastChild}}">
+                            <Setter TargetName="VerLine" Property="VerticalAlignment" Value="Top"/>
+                            <Setter TargetName="VerLine" Property="Height" Value="11"/>
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ScrollViewer with NO corner element. The stock template puts a Rectangle in the gap
+         where the two scrollbars meet, filled with SystemColors.ControlBrushKey - white in
+         every theme this app ships, and the little square that kept showing up at the end of
+         the horizontal bar. Retemplating the TreeView alone did not remove it: the TreeView's
+         template still hosted a plain ScrollViewer, which brings its own default template and
+         the corner with it. The cell is simply left empty here. -->
+    <Style x:Key="BareScrollViewer" TargetType="ScrollViewer">
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollViewer">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <ScrollContentPresenter Grid.Row="0" Grid.Column="0"
+                                                Margin="{TemplateBinding Padding}"
+                                                CanContentScroll="{TemplateBinding CanContentScroll}"
+                                                CanHorizontallyScroll="False"
+                                                CanVerticallyScroll="False"/>
+
+                        <!-- The PART_ names are what ScrollViewer wires its own scrolling to, so
+                             Value binds one-way and the control drives it from there. -->
+                        <ScrollBar x:Name="PART_VerticalScrollBar" Grid.Row="0" Grid.Column="1"
+                                   Orientation="Vertical" Cursor="Arrow"
+                                   Minimum="0" Maximum="{TemplateBinding ScrollableHeight}"
+                                   ViewportSize="{TemplateBinding ViewportHeight}"
+                                   Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                   Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+
+                        <ScrollBar x:Name="PART_HorizontalScrollBar" Grid.Row="1" Grid.Column="0"
+                                   Orientation="Horizontal" Cursor="Arrow"
+                                   Minimum="0" Maximum="{TemplateBinding ScrollableWidth}"
+                                   ViewportSize="{TemplateBinding ViewportWidth}"
+                                   Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                   Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
+
+                        <!-- Row 1 / Column 1 deliberately left empty: that is the corner. -->
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="FolderTreeView" TargetType="TreeView">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="ItemContainerStyle" Value="{StaticResource FolderTreeItem}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TreeView">
+                    <Border Background="{TemplateBinding Background}" BorderThickness="0">
+                        <ScrollViewer Style="{StaticResource BareScrollViewer}"
+                                      Padding="{TemplateBinding Padding}"
+                                      CanContentScroll="False"
+                                      HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Auto">
+                            <ItemsPresenter/>
+                        </ScrollViewer>
+                    </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

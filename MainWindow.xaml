@@ -8,6 +8,7 @@
         Icon="Resources/kf-icon.ico"
         Height="700" Width="1200" MinHeight="500" MinWidth="800"
         WindowStyle="None"
+        AllowDrop="True" DragOver="Window_DragOver" Drop="Window_Drop"
         Background="{DynamicResource BackgroundBrush}"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
@@ -43,9 +44,14 @@
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0">
                 <Image x:Name="TitleIcon" Width="27" Height="27" VerticalAlignment="Center" Margin="0,0,7,0"
                        RenderOptions.BitmapScalingMode="HighQuality" IsHitTestVisible="False"/>
-                <!-- Clicking the wordmark opens the website (same rule as KillerPDF) -->
-                <Grid VerticalAlignment="Center" shell:WindowChrome.IsHitTestVisibleInChrome="True"
-                      Cursor="Hand" ToolTip="killerfind.net" Background="Transparent" MouseLeftButtonUp="Wordmark_Click">
+                <!-- The wordmark drives the app-wide accessibility size: roll the wheel over it
+                     (AppScale.cs). Hit-test-visible in the chrome so the wheel reaches it, which
+                     also opts it out of the native caption - so window drag and double-click
+                     maximize come back via the LogoBar handlers. Family standard; the website
+                     link lives on the About card's wordmark. -->
+                <Grid x:Name="LogoBar" VerticalAlignment="Center" shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                      Cursor="Hand" ToolTip="{DynamicResource Str_TT_AppSize}" Background="Transparent"
+                      MouseWheel="LogoBar_MouseWheel" MouseLeftButtonDown="LogoBar_MouseLeftButtonDown">
                     <!-- Main-titlebar wordmark is 18/23.4 (KillerScan standard); dialogs use 15/19.5. -->
                     <TextBlock FontFamily="{DynamicResource WordmarkFont}" FontSize="18" Margin="1,2,0,0" Opacity="{DynamicResource IconShadowOpacity}">
                         <TextBlock.Effect><BlurEffect Radius="3"/></TextBlock.Effect>
@@ -58,13 +64,8 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                <!-- Language/theme glyphs read better a notch larger than the window buttons -->
-                <Button x:Name="LangButton" Click="LangButton_Click" Style="{StaticResource ChromeButton}" FontSize="13" Content="&#xE774;" ToolTip="{DynamicResource Str_TT_Language}">
-                    <Button.ContextMenu>
-                        <ContextMenu x:Name="LangMenu" Placement="Bottom"/>
-                    </Button.ContextMenu>
-                </Button>
-                <Button x:Name="ThemeButton" Click="ThemeButton_Click" Style="{StaticResource ChromeButton}" FontSize="13" Content="&#xE790;" ToolTip="{DynamicResource Str_TT_Theme}"/>
+                <!-- Language and theme moved to the icon rail (column 0), the way KillerNotes
+                     has them. The title bar keeps only the window buttons. -->
                 <Button x:Name="MinimizeBtn" Click="MinimizeBtn_Click" Style="{StaticResource ChromeButton}" Content="&#xE921;"/>
                 <Button x:Name="MaximizeBtn" Click="MaximizeBtn_Click" Style="{StaticResource ChromeButton}" Content="&#xE922;"/>
                 <Button x:Name="CloseBtn"    Click="CloseBtn_Click"    Style="{StaticResource ChromeCloseButton}" Content="&#xE8BB;"/>
@@ -73,8 +74,11 @@
             <!-- Theme + accent flyout -->
             <!-- StaysOpen so the flyout doesn't take mouse capture: the results list keeps
                  scrolling under it. Outside clicks close it from code. -->
-            <Popup x:Name="ThemePopup" PlacementTarget="{Binding ElementName=ThemeButton}" Placement="Bottom"
-                   StaysOpen="True" AllowsTransparency="True" HorizontalOffset="-92" VerticalOffset="5">
+            <!-- Placement follows the button: it used to hang below a title-bar glyph at the top
+                 right, and now opens upward off a rail button pinned to the bottom left, so the
+                 flyout grows over the pane instead of off the bottom edge. -->
+            <Popup x:Name="ThemePopup" PlacementTarget="{Binding ElementName=ThemeButton}" Placement="Top"
+                   StaysOpen="True" AllowsTransparency="True" HorizontalOffset="-6" VerticalOffset="-2">
                 <Border Background="{DynamicResource MenuBackgroundBrush}" BorderBrush="{DynamicResource MenuBorderBrush}"
                         BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="14">
                     <Border.Effect><DropShadowEffect Color="Black" BlurRadius="22" ShadowDepth="4" Direction="270" Opacity="0.55"/></Border.Effect>
@@ -103,18 +107,307 @@
         </Grid>
 
         <!-- ══════════ ROW 1 - 2-PANEL GRID ══════════ -->
-        <Grid Grid.Row="1" Panel.ZIndex="1">
+        <!-- ScaleHost: the app-wide accessibility zoom (AppScale.cs) puts a LayoutTransform
+             here, not on the root grid, so the title bar and footer keep a fixed size and the
+             wordmark you scroll over never moves. LayoutTransform reflows and re-rasterizes
+             text; RenderTransform would bitmap-stretch it. -->
+        <Grid x:Name="ScaleHost" Grid.Row="1" Panel.ZIndex="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="265" MinWidth="200" MaxWidth="380"/>
-                <ColumnDefinition Width="6"/>
+                <!-- Folder tree, then the permanent icon rail on the tree's inner lip, then the
+                     results, then the search panel out on the right edge. Both side panels
+                     collapse to zero width and are driven from the one rail; the rail itself
+                     never moves, which is the whole reason it sits between the tree and the
+                     content rather than on the window's outer edge. -->
+                <ColumnDefinition x:Name="TreeCol" Width="240" MinWidth="0" MaxWidth="420"/>
+                <ColumnDefinition x:Name="RailCol" Width="24"/>
+                <ColumnDefinition x:Name="TreeGapCol" Width="6"/>
                 <ColumnDefinition Width="*" MinWidth="220"/>
+                <ColumnDefinition x:Name="SearchGapCol" Width="0"/>
+                <ColumnDefinition x:Name="SearchCol" Width="0" MinWidth="0" MaxWidth="380"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Continuous grain behind the whole row: search config, the 6px gap, and the margins around the results pane -->
-            <Border Grid.ColumnSpan="3" IsHitTestVisible="False" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+            <!-- Continuous grain behind the whole row: both sidebars, the gaps, and the margins around the results pane -->
+            <Border Grid.ColumnSpan="6" IsHitTestVisible="False" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
 
-            <!-- COLUMN 0 - SEARCH CONFIG (textured, flows into the bars above / footer below) -->
-            <Grid Grid.Column="0">
+            <!-- COLUMN 0 - FOLDER TREE. Open by default: this is a file manager now, and the
+                 tree is how you get around in one. Collapses from the rail. -->
+            <Grid Grid.Column="0" x:Name="TreePanel">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <!-- Auto, so the favourites slide-up's animated Height drives the split and
+                         the tree above simply gives up the room (the Killculator arrangement). -->
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Border Grid.Row="0" Background="Transparent" Padding="4,6,2,6">
+                    <TreeView x:Name="FolderTree" Style="{StaticResource FolderTreeView}"
+                              TreeViewItem.Expanded="FolderTree_Expanded"
+                              ContextMenuOpening="FolderTree_ContextMenuOpening"
+                              SelectedItemChanged="FolderTree_SelectedItemChanged">
+                        <!-- Folder-only menu, so it reuses the results menu's strings where they
+                             already say the right thing (FolderTree.cs). On the TreeView itself,
+                             not the item template - see the results list for why. -->
+                        <TreeView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="{DynamicResource Str_Tab_New}" Click="TreeOpenNewTab_Click">
+                                    <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE710;"/></MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="{DynamicResource Str_Menu_ShowExplorer}" Click="TreeShowInExplorer_Click">
+                                    <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE838;"/></MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="{DynamicResource Str_Menu_SearchHere}" Click="TreeSearchHere_Click">
+                                    <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE721;"/></MenuItem.Icon>
+                                </MenuItem>
+                                <Separator/>
+                                <MenuItem Tag="fav" Header="{DynamicResource Str_Menu_AddFavorite}" Click="TreeFavorite_Click">
+                                    <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE734;"/></MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="{DynamicResource Str_Menu_CopyPath}" Click="TreeCopyPath_Click">
+                                    <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE71B;"/></MenuItem.Icon>
+                                </MenuItem>
+                                <Separator/>
+                                <MenuItem Header="{DynamicResource Str_Menu_Properties}" Click="TreeProperties_Click">
+                                    <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE946;"/></MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="{DynamicResource Str_Menu_ShellMenu}" Click="TreeShellMenu_Click">
+                                    <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE712;"/></MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </TreeView.ContextMenu>
+                        <TreeView.ItemContainerStyle>
+                            <!-- Inherits the themed template from Controls.xaml and adds the
+                                 two-way state bindings, so RevealInTree can drive the tree from
+                                 code when navigation came from somewhere else. -->
+                            <Style TargetType="TreeViewItem" BasedOn="{StaticResource FolderTreeItem}">
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                                <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+                            </Style>
+                        </TreeView.ItemContainerStyle>
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate DataType="{x:Type local:FolderNode}"
+                                                      ItemsSource="{Binding Children}">
+                                <StackPanel Orientation="Horizontal" Margin="0,1">
+                                    <Image Source="{Binding Icon}" Width="16" Height="16"
+                                           VerticalAlignment="Center" Margin="0,0,6,0"
+                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center"
+                                               FontFamily="{DynamicResource MonoFont}" FontSize="11"
+                                               Foreground="{DynamicResource TextBrush}"
+                                               TextTrimming="CharacterEllipsis"
+                                               ToolTip="{Binding Path}"/>
+                                </StackPanel>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </Border>
+
+                <!-- Edge fades, KillerNotes' NotesFade pattern on both ends: nodes dissolve into
+                     the chrome as they scroll off rather than being clipped mid-row. The overlay
+                     IS the chrome - BackgroundBrush plus the same grain - under an opacity mask,
+                     so it fades to an exact match for the sidebar (never darker, grain intact)
+                     instead of a flat black band. Inset 12px on the right to clear the
+                     scrollbar, and hit-test-transparent so the tree still takes clicks under it.
+                     Always on rather than toggled from scroll position: unlike KillerNotes'
+                     single list this panel has a scrollbar on both axes, and a fade that blinks
+                     in and out as a lazy load changes the content height reads as a glitch. -->
+                <Border Grid.Row="0" Height="18" VerticalAlignment="Top" Margin="0,0,12,0" IsHitTestVisible="False">
+                    <Border.OpacityMask>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#FF000000" Offset="0"/>
+                            <GradientStop Color="#00000000" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.OpacityMask>
+                    <Grid>
+                        <Border Background="{DynamicResource BackgroundBrush}"/>
+                        <Border Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                    </Grid>
+                </Border>
+                <Border Grid.Row="0" Height="22" VerticalAlignment="Bottom" Margin="0,0,12,0" IsHitTestVisible="False">
+                    <Border.OpacityMask>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#00000000" Offset="0"/>
+                            <GradientStop Color="#FF000000" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.OpacityMask>
+                    <Grid>
+                        <Border Background="{DynamicResource BackgroundBrush}"/>
+                        <Border Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                    </Grid>
+                </Border>
+
+                <!-- FAVOURITES SLIDE-UP (Bookmarks.cs). Height animates 0 -> open so it rises
+                     out of the sidebar's bottom edge, the way KillerNotes' Killculator does.
+                     No header and no close button by design: the rail star is the handle and
+                     the rows are the whole content. A hairline on top is the only separator,
+                     since a full card would read as a second panel rather than a drawer. -->
+                <Border x:Name="BookmarksPanel" Grid.Row="1" Height="0" Visibility="Collapsed"
+                        ClipToBounds="True" AllowDrop="True"
+                        BorderBrush="{DynamicResource TreeLineBrush}" BorderThickness="0,1,0,0"
+                        DragOver="BookmarksPanel_DragOver" Drop="BookmarksPanel_Drop">
+                    <Grid>
+                        <Border Background="{DynamicResource BackgroundBrush}"/>
+                        <Border Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                        <ListBox x:Name="BookmarksList" Background="Transparent" BorderThickness="0"
+                                 Padding="4,4,2,4" Focusable="False" FocusVisualStyle="{x:Null}"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="0"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value><ControlTemplate TargetType="ListBoxItem"><ContentPresenter/></ControlTemplate></Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="{x:Type local:Bookmark}">
+                                    <Border Padding="4,3" CornerRadius="3" Cursor="Hand"
+                                            ToolTip="{Binding Path}"
+                                            MouseLeftButtonUp="Bookmark_Click">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="Transparent"/>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="{DynamicResource RowHoverBrush}"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Border.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="{DynamicResource Str_Menu_RemoveFavorite}"
+                                                          Click="BookmarkRemove_Click">
+                                                    <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE738;"/></MenuItem.Icon>
+                                                </MenuItem>
+                                            </ContextMenu>
+                                        </Border.ContextMenu>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Image Source="{Binding Icon}" Width="16" Height="16"
+                                                   VerticalAlignment="Center" Margin="0,0,6,0"
+                                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center"
+                                                       FontFamily="{DynamicResource MonoFont}" FontSize="11"
+                                                       Foreground="{DynamicResource TextBrush}"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <!-- Divider grip. Same Thumb approach as the tree's width handle, turned
+                             through 90 degrees: the drawer's Height is animated by the open and
+                             close, so a GridSplitter would be fighting that same property.
+                             The Border's own 1px top edge is the visible divider; this is the
+                             5px band you can actually grab. -->
+                        <Thumb x:Name="BookmarksGrip" Height="5" VerticalAlignment="Top"
+                               Panel.ZIndex="60" Cursor="SizeNS"
+                               DragDelta="BookmarksGrip_DragDelta"
+                               DragCompleted="BookmarksGrip_DragCompleted">
+                            <Thumb.Template>
+                                <ControlTemplate TargetType="Thumb">
+                                    <!-- Transparent, not empty: a Border with no Background is
+                                         not hit-testable and the grip would be unusable. -->
+                                    <Border Background="Transparent">
+                                        <Rectangle x:Name="hint" Height="1" VerticalAlignment="Top"
+                                                   Fill="{DynamicResource TreeLineBrush}" Opacity="0"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="hint" Property="Opacity" Value="1"/>
+                                        </Trigger>
+                                        <Trigger Property="IsDragging" Value="True">
+                                            <Setter TargetName="hint" Property="Opacity" Value="1"/>
+                                            <Setter TargetName="hint" Property="Fill" Value="{DynamicResource PrimaryBrush}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Thumb.Template>
+                        </Thumb>
+                    </Grid>
+                </Border>
+
+                <!-- RESIZE GRIP. A Thumb rather than a GridSplitter: a splitter resizes the two
+                     columns either side of it, and this column's neighbour is the 24px rail,
+                     which must never move. Driving TreeCol's width by hand lets the star column
+                     absorb the change instead, and keeps the drag from fighting the collapse
+                     animation, which sets that same Width property (TreePanel.cs).
+                     Spans both rows so the whole edge is grabbable, favourites included, and
+                     sits last so it is above the edge fades. -->
+                <Thumb x:Name="TreeResizeGrip" Grid.RowSpan="2" Panel.ZIndex="50"
+                       HorizontalAlignment="Right" Width="5" Cursor="SizeWE"
+                       DragDelta="TreeResizeGrip_DragDelta" DragCompleted="TreeResizeGrip_DragCompleted">
+                    <Thumb.Template>
+                        <ControlTemplate TargetType="Thumb">
+                            <!-- Transparent, not empty: a Border with no Background is not
+                                 hit-testable, so the grip would be invisible AND unusable. -->
+                            <Border x:Name="grip" Background="Transparent">
+                                <Rectangle x:Name="hint" Width="1" HorizontalAlignment="Right"
+                                           Fill="{DynamicResource TreeLineBrush}" Opacity="0"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="hint" Property="Opacity" Value="1"/>
+                                </Trigger>
+                                <Trigger Property="IsDragging" Value="True">
+                                    <Setter TargetName="hint" Property="Opacity" Value="1"/>
+                                    <Setter TargetName="hint" Property="Fill" Value="{DynamicResource PrimaryBrush}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Thumb.Template>
+                </Thumb>
+            </Grid>
+
+            <!-- COLUMN 1 - ICON RAIL, on the tree's inner lip. That placement is the
+                 KillerNotes / KillerPDF pattern and it is the point of it: the icons sit right
+                 next to the results whether the tree is open or shut and never move when it
+                 collapses. Putting the rail on the window's outer edge instead makes them jump.
+                 Layout is the family standard: ONE chevron pinned at the top that collapses the
+                 sidebars, and a bottom stack of feature toggles. The 2px left margin on
+                 centered elements is a 1px shift toward the pane, so the icons read as
+                 centered on the strip. -->
+            <Grid Grid.Column="1">
+                <!-- Collapses THIS sidebar - the tree - and nothing else, exactly like
+                     KillerNotes. The tree is the sidebar's default content, so it needs no
+                     separate rail icon; the search panel on the far right is not this
+                     chevron's business and has its own toggle below. -->
+                <Button x:Name="SidebarToggleBtn" Style="{StaticResource RailButton}"
+                        Content="&#xE76B;" FontSize="12"
+                        VerticalAlignment="Top" HorizontalAlignment="Center" Margin="2,10,0,0"
+                        ToolTip="{DynamicResource Str_TT_CollapseSidebar}" Click="TreePanel_Click"/>
+                <StackPanel x:Name="RailBottom" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="2,0,0,6">
+                    <!-- E721 (magnifier): the search panel, out on the right edge. Glyph never
+                         changes - RailButton draws it in TextBrush and switches to the accent
+                         on Tag="on", which is the open/shut tell. -->
+                    <Button x:Name="SearchPanelBtn" Style="{StaticResource RailButton}" Content="&#xE721;"
+                            FontSize="12" Margin="0,0,0,10" Click="SearchPanel_Click"
+                            ToolTip="{DynamicResource Str_TT_SearchPanel}"/>
+                    <!-- E734 (star): the saved-locations slide-up under the tree
+                         (Bookmarks.cs). Accents while open, like the search toggle. -->
+                    <Button x:Name="BookmarksBtn" Style="{StaticResource RailButton}" Content="&#xE734;"
+                            FontSize="12" Margin="0,0,0,10" Click="BookmarksBtn_Click"
+                            ToolTip="{DynamicResource Str_TT_Bookmarks}"/>
+                    <!-- E774 (globe): the locale menu, filled on click by BuildLanguageMenu
+                         (Language.cs). Placement="Top" so it opens upward off the rail's
+                         bottom rather than off the bottom edge of the window. -->
+                    <Button x:Name="LangButton" Style="{StaticResource RailButton}" Content="&#xE774;"
+                            Margin="0,0,0,10" Click="LangButton_Click"
+                            ToolTip="{DynamicResource Str_TT_Language}">
+                        <Button.ContextMenu>
+                            <ContextMenu x:Name="LangMenu" Placement="Top"/>
+                        </Button.ContextMenu>
+                    </Button>
+                    <!-- E790 (paint roller): the theme + accent flyout (ThemePopup, below). -->
+                    <Button x:Name="ThemeButton" Style="{StaticResource RailButton}" Content="&#xE790;"
+                            Click="ThemeButton_Click" ToolTip="{DynamicResource Str_TT_Theme}"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- COLUMN 5 - SEARCH CONFIG, out on the right edge (textured, flows into the bars
+                 above / footer below). Collapsed by default and toggled from the rail. -->
+            <Grid Grid.Column="5" x:Name="SearchPanel" Visibility="Collapsed">
               <DockPanel Background="Transparent" LastChildFill="True">
                 <Border DockPanel.Dock="Bottom" Padding="12,8">
                     <StackPanel>
@@ -378,11 +671,12 @@
                 </Grid>
               </DockPanel>
             </Grid>
+            <!-- end COLUMN 5 search panel -->
 
-            <!-- COLUMN 2 - TAB STRIP + RESULTS. One tab = one whole search (folder, terms,
+            <!-- COLUMN 3 - TAB STRIP + RESULTS. One tab = one whole search (folder, terms,
                  filters, results). Tab visuals mirror KillerPDF: active tab takes the pane
                  background with a 3px accent stripe on top and a soft shadow. -->
-            <Grid Grid.Column="2">
+            <Grid Grid.Column="3">
               <Grid.RowDefinitions>
                   <RowDefinition Height="Auto"/>
                   <RowDefinition Height="*"/>
@@ -414,16 +708,25 @@
                         </LinearGradientBrush>
                     </Border.OpacityMask>
                 </Border>
-                <DockPanel LastChildFill="False">
-                <ScrollViewer DockPanel.Dock="Left" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Hidden">
+                <DockPanel LastChildFill="True">
+                <!-- Horizontal scrolling is DISABLED, not hidden: hidden still measures the
+                     content at infinite width, which would let the tabs size to their own
+                     content and defeat the UniformGrid below. Disabled constrains them to the
+                     bar's actual width, which is the point. -->
+                <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled">
                     <ItemsControl x:Name="TabStrip">
                         <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                            <!-- Tabs share the bar equally and fill it, browser-style, instead of
+                                 hugging their titles and leaving dead space on the right. -->
+                            <ItemsPanelTemplate><UniformGrid Rows="1"/></ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:SearchTab}">
+                                <!-- No MaxWidth: it would cap each cell and put the dead space
+                                     back. The MinWidth floor is low so a lot of open tabs still
+                                     divide the bar rather than overflowing it. -->
                                 <Border x:Name="tabBd" CornerRadius="4,4,0,0" Margin="0,3,1,0" Padding="12,4,5,5"
-                                        MinWidth="120" MaxWidth="220"
+                                        MinWidth="60"
                                         Cursor="Hand" Background="{DynamicResource BackgroundBrush}"
                                         BorderThickness="0,0,1,0" BorderBrush="{DynamicResource CardBorderBrush}"
                                         MouseDown="Tab_MouseDown"
@@ -478,13 +781,17 @@
               <!-- Tab-switch crossfade ghost: SwitchToTab snapshots the outgoing pane into
                    this Image (same slot + margin, ZIndex above the pane) and fades it out
                    over the incoming tab's live content - no dip to the dark background. -->
-              <Image x:Name="TabFadeGhost" Grid.Row="1" Margin="0,0,8,2" Stretch="Fill"
+              <Image x:Name="TabFadeGhost" Grid.Row="1" Margin="0,0,8,0" Stretch="Fill"
                      Panel.ZIndex="40" IsHitTestVisible="False" Visibility="Collapsed"/>
 
               <!-- RESULTS: distinct recessed surface, bordered + shadowed like KillerPDF.
                    The tab's location and run-status lines live INSIDE the pane now - each tab
                    is its own search, so the old full-width bars were wasted space. -->
-              <Border x:Name="ResultsPane" Grid.Row="1" Margin="0,0,8,2" Background="{DynamicResource PaneBrush}"
+              <!-- No bottom margin: PaneShadow is Direction=270 and casts DOWN over the footer,
+                   and a DropShadowEffect draws outside the element's bounds without taking any
+                   layout space. Any gap here is real padding, not room for the shadow, and it
+                   just lifts the pane off the footer. -->
+              <Border x:Name="ResultsPane" Grid.Row="1" Margin="0,0,8,0" Background="{DynamicResource PaneBrush}"
                     BorderBrush="{DynamicResource PaneBorderBrush}" BorderThickness="1" CornerRadius="6" Effect="{StaticResource PaneShadow}">
               <Grid>
                 <!-- Same treatment as KillerPDF's document pane: the whole content pane is grain-wrapped. -->
@@ -494,10 +801,21 @@
                      actions on the right: pipe, export, close tab. -->
                 <Grid DockPanel.Dock="Top">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" x:Name="ScopeBar" CornerRadius="5,0,0,0" Padding="12,7,8,5"
+                    <!-- Back / forward / up. Browser order and browser glyphs, because that is
+                         what everyone's hand already expects at the top left. -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="8,0,2,0" VerticalAlignment="Center">
+                        <Button x:Name="NavBackBtn" Style="{StaticResource ViewToggleBtn}" Content="&#xE72B;"
+                                ToolTip="{DynamicResource Str_TT_Back}" Click="NavBack_Click"/>
+                        <Button x:Name="NavForwardBtn" Style="{StaticResource ViewToggleBtn}" Content="&#xE72A;" Margin="2,0"
+                                ToolTip="{DynamicResource Str_TT_Forward}" Click="NavForward_Click"/>
+                        <Button x:Name="NavUpBtn" Style="{StaticResource ViewToggleBtn}" Content="&#xE74A;"
+                                ToolTip="{DynamicResource Str_TT_Up}" Click="NavUp_Click"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" x:Name="ScopeBar" CornerRadius="5,0,0,0" Padding="12,7,8,5"
                             Cursor="Hand" ToolTip="{DynamicResource Str_TT_Scope}" MouseLeftButtonUp="ScopeBar_Click">
                         <Border.Style>
                             <Style TargetType="Border">
@@ -520,11 +838,69 @@
                                        Foreground="{DynamicResource PrimaryBrush}" FontFamily="{DynamicResource MonoFont}" FontSize="12"
                                        VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
                                        ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+                            <!-- Hidden mirror of the tab's search root. Not the address bar -
+                                 CaptureTab reads it, so it has to keep meaning "search root"
+                                 even while the visible row is being edited. -->
                             <TextBox x:Name="RootPathBox" Visibility="Collapsed"/>
+                            <!-- The editable address bar itself, over the label in the same cell
+                                 (AddressBar.cs). Collapsed until you click the row, Ctrl+L or
+                                 Alt+D. -->
+                            <TextBox x:Name="AddressBox" Grid.Column="1" Visibility="Collapsed"
+                                     Background="{DynamicResource BackgroundBrush}"
+                                     Foreground="{DynamicResource TextBrush}"
+                                     CaretBrush="{DynamicResource PrimaryBrush}"
+                                     BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="1"
+                                     FontFamily="{DynamicResource MonoFont}" FontSize="12"
+                                     Padding="4,1" VerticalAlignment="Center"
+                                     VerticalContentAlignment="Center"
+                                     KeyDown="AddressBox_KeyDown" LostFocus="AddressBox_LostFocus"/>
                         </Grid>
                     </Border>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,4,8,2">
-                        <!-- Pipe: search WITHIN these results in a new tab -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,4,8,2">
+                        <!-- View modes: cards / tile grid / flat rows under sortable columns.
+                             Folded up from the row below, so this strip now carries everything
+                             that acts on the listing. -->
+                        <Button x:Name="ViewListBtn" Style="{StaticResource ViewToggleBtn}" Content="&#xE8FD;"
+                                VerticalAlignment="Center" ToolTip="{DynamicResource Str_TT_ViewList}" Click="ViewList_Click"/>
+                        <Button x:Name="ViewIconsBtn" Style="{StaticResource ViewToggleBtn}" Content="&#xE80A;" Margin="2,0"
+                                VerticalAlignment="Center" ToolTip="{DynamicResource Str_TT_ViewIcons}" Click="ViewIcons_Click"/>
+                        <Button x:Name="ViewDetailsBtn" Style="{StaticResource ViewToggleBtn}" Content="&#xE700;" Margin="0,0,8,0"
+                                VerticalAlignment="Center" ToolTip="{DynamicResource Str_TT_ViewDetails}" Click="ViewDetails_Click"/>
+                        <!-- Sort: field + direction -->
+                        <ComboBox x:Name="SortCombo" Width="118" Height="24" FontSize="11" VerticalAlignment="Center"
+                                  Margin="0,0,4,0" SelectionChanged="SortCombo_Changed">
+                            <ComboBoxItem Content="{DynamicResource Str_Sort_Found}"/>
+                            <ComboBoxItem Content="{DynamicResource Str_Col_Name}"/>
+                            <ComboBoxItem Content="{DynamicResource Str_Col_Folder}"/>
+                            <ComboBoxItem Content="{DynamicResource Str_Col_Size}"/>
+                            <ComboBoxItem Content="{DynamicResource Str_Col_Modified}"/>
+                        </ComboBox>
+                        <Button x:Name="SortDirButton" Content="&#xE70E;" Width="24" Height="24" Padding="0" Margin="0,0,6,0"
+                                FontFamily="Segoe MDL2 Assets" FontSize="10" Style="{StaticResource SurfaceButton}"
+                                VerticalAlignment="Center" Click="SortDir_Click"/>
+                        <!-- Expand/collapse all: one glyph button, no words to shift width.
+                             Hidden (not collapsed) outside list view - see ResultsView.cs. -->
+                        <Button x:Name="ExpandAllButton" Style="{StaticResource SurfaceButton}"
+                                Width="26" Height="24" Padding="0" Margin="0,0,10,0" VerticalAlignment="Center"
+                                ToolTip="{DynamicResource Str_Btn_ExpandAll}" Click="ExpandAll_Click">
+                            <TextBlock x:Name="ExpandAllGlyph" Text="&#xE740;" FontFamily="Segoe MDL2 Assets" FontSize="11"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                        <!-- Favourite: browser convention, reflects and toggles wherever this tab
+                         currently is. E735 filled when saved, E734 outline when not
+                         (Bookmarks.cs). -->
+                        <Button x:Name="FavouriteStarBtn" Content="&#xE734;" Width="26" Height="24" Padding="0" Margin="0,0,6,0"
+                                FontFamily="Segoe MDL2 Assets" FontSize="11" Style="{StaticResource SurfaceButton}"
+                                ToolTip="{DynamicResource Str_TT_Favorite}" Click="FavouriteStar_Click"/>
+                        <!-- View options (ViewOptions.cs). Both accent while on, via the
+                             Tag="on" trigger SurfaceButton carries. -->
+                        <Button x:Name="ShowHiddenBtn" Content="&#xE7B3;" Width="26" Height="24" Padding="0" Margin="0,0,6,0"
+                                FontFamily="Segoe MDL2 Assets" FontSize="11" Style="{StaticResource SurfaceButton}"
+                                ToolTip="{DynamicResource Str_TT_ShowHidden}" Click="ShowHidden_Click"/>
+                        <Button x:Name="FoldersTopBtn" Content="&#xE8B7;" Width="26" Height="24" Padding="0" Margin="0,0,6,0"
+                                FontFamily="Segoe MDL2 Assets" FontSize="11" Style="{StaticResource SurfaceButton}"
+                                ToolTip="{DynamicResource Str_TT_FoldersTop}" Click="FoldersTop_Click"/>
+                    <!-- Pipe: search WITHIN these results in a new tab -->
                         <Button Content="&#xE71C;" Width="26" Height="24" Padding="0" Margin="0,0,6,0"
                                 FontFamily="Segoe MDL2 Assets" FontSize="11" Style="{StaticResource SurfaceButton}"
                                 ToolTip="{DynamicResource Str_TT_Pipe}" Click="PipeButton_Click"/>
@@ -533,59 +909,64 @@
                                 Padding="8,3" FontSize="10" VerticalAlignment="Center" Margin="0,0,6,0" Click="ExportCsv_Click"/>
                         <Button Content="HTML" Style="{StaticResource SurfaceButton}"
                                 Padding="8,3" FontSize="10" VerticalAlignment="Center" Click="Export_Click"/>
-                        <!-- Close THIS tab, tucked in the corner -->
-                        <Button Content="x" Style="{StaticResource DangerButton}" Width="24" Height="24" Margin="6,0,0,0" FontSize="12"
-                                ToolTip="{DynamicResource Str_TT_CloseTab}" Click="CloseActiveTab_Click"/>
+                        <!-- No close button here. Every tab carries its own x in the strip, and
+                             with a single tab the strip is hidden and there is nothing to close
+                             to - you close the window. Ctrl+W still works either way. -->
                     </StackPanel>
                 </Grid>
 
-                <!-- Run status row: what this tab's search is doing right now -->
-                <Border DockPanel.Dock="Top" Padding="12,2,12,5">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Width="3" Background="{DynamicResource PrimaryBrush}" Margin="0,1,10,1" CornerRadius="2"/>
-                        <TextBlock x:Name="StatusText" Grid.Column="1" Text="{DynamicResource Str_Status_Ready}" Foreground="{DynamicResource MutedTextBrush}"
-                                   FontFamily="{DynamicResource MonoFont}" FontSize="12" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                    </Grid>
-                </Border>
+                <!-- The run-status row used to live here, above the results. It said the same
+                     thing the RESULTS (n) header said, in a pane that is now a folder listing
+                     rather than a search report - so both moved to the footer status bar, which
+                     is where a running commentary belongs. StatusText is in ROW 2 now. -->
 
-                <Border DockPanel.Dock="Top" Background="Transparent" BorderBrush="{DynamicResource PaneBorderBrush}"
-                        BorderThickness="0,0,0,1" Padding="12,7">
+                <!-- The view/sort row that used to sit here folded up into the location row
+                     above: two strips of chrome over a folder listing is one too many. QueryText
+                     went to the footer with the rest of the commentary. -->
+
+                <!-- Details-view column headers. Collapsed in the other two views. The column
+                     widths are duplicated in DetailsRowTemplate below and the right margin
+                     hand-clears the scrollbar; keep the two in step if you change either. -->
+                <!-- Styled to match KillerScan's DataGrid column headers (MainWindow.xaml,
+                     DataGrid.ColumnHeaderStyle): TableHeaderBrush behind, MutedTextBrush type at
+                     11, and the accent stripe underneath as a 1px HeaderLineBrush bottom border
+                     rather than the pane's own grey. Top corners rounded to 5 so the band sits
+                     inside the pane's CornerRadius 6 instead of squaring it off. -->
+                <Border x:Name="DetailsHeader" DockPanel.Dock="Top" Visibility="Collapsed"
+                        Background="{DynamicResource TableHeaderBrush}" BorderBrush="{DynamicResource HeaderLineBrush}"
+                        BorderThickness="0,0,0,1" CornerRadius="5,5,0,0" Padding="10,4,26,4">
                     <Grid>
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="26"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="{Binding LocationWidth, Source={x:Static local:ResultsViewState.Current}}"/>
+                            <ColumnDefinition Width="86"/>
+                            <ColumnDefinition Width="128"/>
                         </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Orientation="Horizontal">
-                            <TextBlock x:Name="ResultsHeader" Text="{DynamicResource Str_Lbl_Results}" Style="{StaticResource SectionHeader}" Margin="0" VerticalAlignment="Center"/>
-                            <!-- What this tab searched for, so old tabs stay self-explanatory -->
-                            <TextBlock x:Name="QueryText" Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource MonoFont}"
-                                       FontSize="11" VerticalAlignment="Center" Margin="14,0,10,0" TextTrimming="CharacterEllipsis"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal">
-                            <!-- Sort like the HTML report: field + direction -->
-                            <ComboBox x:Name="SortCombo" Width="130" Height="24" FontSize="11" VerticalAlignment="Center"
-                                      Margin="0,0,4,0" SelectionChanged="SortCombo_Changed">
-                                <ComboBoxItem Content="{DynamicResource Str_Sort_Found}"/>
-                                <ComboBoxItem Content="{DynamicResource Str_Col_Name}"/>
-                                <ComboBoxItem Content="{DynamicResource Str_Col_Folder}"/>
-                                <ComboBoxItem Content="{DynamicResource Str_Col_Size}"/>
-                                <ComboBoxItem Content="{DynamicResource Str_Col_Modified}"/>
-                            </ComboBox>
-                            <Button x:Name="SortDirButton" Content="&#xE70E;" Width="24" Height="24" Padding="0" Margin="0,0,10,0"
-                                    FontFamily="Segoe MDL2 Assets" FontSize="10" Style="{StaticResource SurfaceButton}"
-                                    VerticalAlignment="Center" Click="SortDir_Click"/>
-                            <!-- Expand/collapse all: one glyph button, no words to shift width -->
-                            <Button x:Name="ExpandAllButton" Style="{StaticResource SurfaceButton}"
-                                    Width="26" Height="24" Padding="0" VerticalAlignment="Center"
-                                    ToolTip="{DynamicResource Str_Btn_ExpandAll}" Click="ExpandAll_Click">
-                                <TextBlock x:Name="ExpandAllGlyph" Text="&#xE740;" FontFamily="Segoe MDL2 Assets" FontSize="11"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Button>
-                        </StackPanel>
+                        <Button Grid.Column="1" Style="{StaticResource ColHeaderBtn}" Click="ColName_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{DynamicResource Str_Col_Name}" FontFamily="{DynamicResource MonoFont}" FontSize="10"/>
+                                <TextBlock x:Name="ColNameArrow" FontFamily="Segoe MDL2 Assets" FontSize="8" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="2" Style="{StaticResource ColHeaderBtn}" Click="ColFolder_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{DynamicResource Str_Col_Folder}" FontFamily="{DynamicResource MonoFont}" FontSize="10"/>
+                                <TextBlock x:Name="ColFolderArrow" FontFamily="Segoe MDL2 Assets" FontSize="8" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="3" Style="{StaticResource ColHeaderBtn}" HorizontalContentAlignment="Right" Click="ColSize_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{DynamicResource Str_Col_Size}" FontFamily="{DynamicResource MonoFont}" FontSize="10"/>
+                                <TextBlock x:Name="ColSizeArrow" FontFamily="Segoe MDL2 Assets" FontSize="8" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="4" Style="{StaticResource ColHeaderBtn}" Click="ColModified_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{DynamicResource Str_Col_Modified}" FontFamily="{DynamicResource MonoFont}" FontSize="10"/>
+                                <TextBlock x:Name="ColModArrow" FontFamily="Segoe MDL2 Assets" FontSize="8" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                     </Grid>
                 </Border>
 
@@ -596,10 +977,188 @@
                 <Border IsHitTestVisible="False" CornerRadius="0,0,5,5"
                         Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
                 <ListBox x:Name="ResultsList" Background="Transparent" BorderThickness="0" Padding="8,4,8,0" Focusable="False"
-                         FocusVisualStyle="{x:Null}" SelectionMode="Single"
+                         FocusVisualStyle="{x:Null}" SelectionMode="Extended"
                          VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
                          VirtualizingPanel.ScrollUnit="Pixel"
+                         PreviewMouseWheel="ResultsList_PreviewMouseWheel"
+                         PreviewMouseLeftButtonDown="ResultsList_PreviewMouseLeftButtonDown"
+                         PreviewMouseMove="ResultsList_PreviewMouseMove"
+                         PreviewMouseLeftButtonUp="ResultsList_PreviewMouseLeftButtonUp"
+                         PreviewMouseRightButtonDown="ResultsList_PreviewMouseRightButtonDown"
+                         ContextMenuOpening="ResultsList_ContextMenuOpening"
                          ScrollViewer.CanContentScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                    <ListBox.Resources>
+                        <!-- One menu for all three views. No per-item Tag bindings: the
+                             right-click records what is under the pointer and each command asks
+                             FilesForCommand what to act on, which is what lets a command work on
+                             a whole selection ("copy 12 paths") instead of a single Tag.
+                             Flat rather than nested because this app's MenuItem template has no
+                             submenu popup, so a Copy submenu would silently never open. -->
+                        <ContextMenu x:Key="ResultMenu">
+                            <MenuItem Header="{DynamicResource Str_Menu_OpenFile}"      Click="MenuOpen_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8E5;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource Str_Menu_OpenWith}"      Click="MenuOpenWith_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE7AC;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource Str_Menu_OpenAdmin}"     Click="MenuOpenAdmin_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE7EF;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <Separator/>
+                            <MenuItem Header="{DynamicResource Str_Menu_ShowExplorer}"  Click="MenuShowInExplorer_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE838;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource Str_Menu_SearchHere}"    Click="MenuSearchHere_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE721;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource Str_Menu_ExcludeFolder}" Click="MenuExcludeFolder_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE738;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <!-- Header swaps between add and remove as the menu opens, so one
+                                 item covers both directions (ResultsMenu.cs). -->
+                            <MenuItem Tag="fav" Header="{DynamicResource Str_Menu_AddFavorite}"
+                                      Click="MenuFavorite_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE734;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <Separator/>
+                            <MenuItem Header="{DynamicResource Str_Menu_CopyPath}"      Click="MenuCopyPath_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE71B;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource Str_Menu_CopyName}"      Click="MenuCopyName_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8AC;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource Str_Menu_CopyFolder}"    Click="MenuCopyFolder_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8B7;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource Str_Menu_CopyLines}"     Click="MenuCopyLines_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8A5;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource Str_Menu_CopyFile}"      Click="MenuCopyFile_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8C8;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource Str_Menu_CopyHash}"      Click="MenuCopyHash_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE72E;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <Separator/>
+                            <MenuItem Header="{DynamicResource Str_Menu_Properties}"    Click="MenuProperties_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE946;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource Str_Menu_ShellMenu}"     Click="MenuShell_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE712;"/></MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+
+                        <!-- Panels. List and details stack; icons wrap. The wrap panel virtualizes
+                             (VirtualizingWrapPanel.cs) because a results list is not a directory
+                             listing - it reaches six figures, and a plain WrapPanel would realize
+                             every tile. Tile geometry comes from the shared view state, so one
+                             size change relays the whole grid. -->
+                        <ItemsPanelTemplate x:Key="PanelStack">
+                            <VirtualizingStackPanel/>
+                        </ItemsPanelTemplate>
+                        <ItemsPanelTemplate x:Key="PanelWrap">
+                            <local:VirtualizingWrapPanel
+                                ItemWidth="{Binding TileWidth, Source={x:Static local:ResultsViewState.Current}}"
+                                ItemHeight="{Binding TileHeight, Source={x:Static local:ResultsViewState.Current}}"/>
+                        </ItemsPanelTemplate>
+
+                        <!-- ICON VIEW. Fixed-size tile: art on top, name wrapped to two lines
+                             under it. No expander - a tile cannot carry matched content lines,
+                             and the wrap panel needs every item the same height anyway. The art
+                             is set by an attached behavior rather than a plain binding because it
+                             depends on both the file and the current size, and containers get
+                             recycled onto different files as the grid scrolls (ResultsView.cs). -->
+                        <DataTemplate x:Key="TileTemplate" DataType="{x:Type models:SearchResult}">
+                            <Border CornerRadius="4" Margin="3" Padding="4,6" Cursor="Hand"
+                                    Tag="{Binding FilePath}" ToolTip="{Binding FilePath}"
+                                    PreviewMouseLeftButtonDown="ResultHeader_MouseDown">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource RowHoverBrush}"/>
+                                            </Trigger>
+                                            <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource RowSelectedBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel>
+                                    <Image HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           RenderOptions.BitmapScalingMode="HighQuality"
+                                           MaxWidth="{Binding TileSize, Source={x:Static local:ResultsViewState.Current}}"
+                                           Height="{Binding TileSize, Source={x:Static local:ResultsViewState.Current}}"
+                                           local:TileArt.Path="{Binding FilePath}"
+                                           local:TileArt.Size="{Binding TileSize, Source={x:Static local:ResultsViewState.Current}}"/>
+                                    <TextBlock Text="{Binding FileName}" Foreground="{DynamicResource TextBrush}"
+                                               FontFamily="{DynamicResource MonoFont}" FontSize="10.5"
+                                               TextAlignment="Center" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
+                                               MaxHeight="30" Margin="2,6,2,0"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+
+                        <!-- DETAILS VIEW. One flat row per result under the sortable column
+                             headers above. Column widths and the scrollbar-clearing right pad
+                             are duplicated from DetailsHeader; change both together. -->
+                        <DataTemplate x:Key="DetailsRowTemplate" DataType="{x:Type models:SearchResult}">
+                            <Border Padding="10,3,26,3" Cursor="Hand" Tag="{Binding FilePath}"
+                                    PreviewMouseLeftButtonDown="ResultHeader_MouseDown">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource RowHoverBrush}"/>
+                                            </Trigger>
+                                            <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource RowSelectedBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="26"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <!-- Collapses to 0 while browsing - see LocationWidth. -->
+                                        <ColumnDefinition Width="{Binding LocationWidth, Source={x:Static local:ResultsViewState.Current}}"/>
+                                        <ColumnDefinition Width="86"/>
+                                        <ColumnDefinition Width="128"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Image Grid.Column="0" Source="{Binding Icon}" Width="16" Height="16"
+                                           HorizontalAlignment="Left" VerticalAlignment="Center"
+                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding FileName}" Foreground="{DynamicResource TextBrush}"
+                                               FontFamily="{DynamicResource MonoFont}" FontSize="11" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" Margin="0,0,10,0"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Directory}" Foreground="{DynamicResource DimTextBrush}"
+                                               FontFamily="{DynamicResource MonoFont}" FontSize="10.5" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" Margin="0,0,10,0"/>
+                                    <TextBlock Grid.Column="3" Text="{Binding SizeLabel}" Foreground="{DynamicResource MutedTextBrush}"
+                                               FontFamily="{DynamicResource MonoFont}" FontSize="10.5" VerticalAlignment="Center"
+                                               TextAlignment="Right" Margin="0,0,10,0"/>
+                                    <TextBlock Grid.Column="4" Text="{Binding ModifiedLabel}" Foreground="{DynamicResource MutedTextBrush}"
+                                               FontFamily="{DynamicResource MonoFont}" FontSize="10.5" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.Resources>
+
+                    <!-- The menu hangs off the ListBox rather than off the Border inside each of
+                         the three item templates. One owner instead of one per realized
+                         container: a ContextMenu is a FrameworkElement, so assigning the same
+                         resource instance to every Border gave it a single owner anyway -
+                         whichever container WPF handed it to last, which recycling then
+                         unparents as the list scrolls. Attaching here sidesteps that entirely,
+                         and the seed comes from whatever is under the pointer when the menu
+                         opens, so all three views behave the same. -->
+                    <ListBox.ContextMenu>
+                        <StaticResource ResourceKey="ResultMenu"/>
+                    </ListBox.ContextMenu>
+
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem">
                             <Setter Property="Padding" Value="0"/>
@@ -626,13 +1185,6 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
-                                        <Border.ContextMenu>
-                                            <ContextMenu Tag="{Binding FilePath}">
-                                                <MenuItem Header="{DynamicResource Str_Menu_OpenFile}" Tag="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}" Click="OpenFile_Click"/>
-                                                <MenuItem Header="{DynamicResource Str_Menu_OpenWith}" Tag="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}" Click="OpenWith_Click"/>
-                                                <MenuItem Header="{DynamicResource Str_Menu_ShowExplorer}" Tag="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}" Click="ShowInExplorer_Click"/>
-                                            </ContextMenu>
-                                        </Border.ContextMenu>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -704,6 +1256,14 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
+                <!-- Rubber-band selection layer. Sits over the list in the same cell so mouse
+                     coordinates taken against the ListBox drop straight onto this canvas with no
+                     conversion. Never hit-testable, or it would eat the drag it is drawing. -->
+                <Canvas x:Name="MarqueeLayer" IsHitTestVisible="False" Panel.ZIndex="10">
+                    <Rectangle x:Name="MarqueeRect" Visibility="Collapsed"
+                               Fill="{DynamicResource PrimaryBrush}" Opacity="0.22"
+                               Stroke="{DynamicResource PrimaryBrush}" StrokeThickness="1"/>
+                </Canvas>
                 </Grid>
                 </Border>
               </DockPanel>
@@ -749,11 +1309,40 @@
           <Grid>
             <Border IsHitTestVisible="False" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
             <!-- Live counters for the ACTIVE tab's search (moved here from the run status bar) -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,0,0">
+            <!-- 8px inset, not the family's usual 16: the status line is the leftmost thing in
+                 the window now that it carries the listing commentary, and 16 left it floating. -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0">
+                <!-- App-wide zoom level (AppScale.cs). Leftmost in the status area at the same
+                     16px inset, ChromeTextBrush, mono 11.5 - the exact slot and treatment
+                     KillerScan gives its footer StatusText (MainWindow.xaml row 3). Hidden at
+                     100%; a collapsed element takes no width or margin, so the counters sit
+                     exactly where they did before. -->
+                <TextBlock x:Name="AppScaleLabel" Visibility="Collapsed" Foreground="{DynamicResource ChromeTextBrush}"
+                           FontFamily="{DynamicResource MonoFont}" FontSize="11.5" VerticalAlignment="Center"
+                           Margin="0,0,14,0" ToolTip="{DynamicResource Str_TT_AppSize}"/>
+                <!-- 11.5 status / 10 corner type is the family footer standard (see KillerScan
+                     MainWindow.xaml row 3); the landing sites use the same 11.5px in .statusbar. -->
                 <TextBlock x:Name="ScannedText" Foreground="{DynamicResource TextFooter}" FontFamily="{DynamicResource MonoFont}"
-                           FontSize="11" VerticalAlignment="Center" Margin="0,0,14,0" Visibility="Collapsed"/>
+                           FontSize="11.5" VerticalAlignment="Center" Margin="0,0,14,0" Visibility="Collapsed"/>
                 <TextBlock x:Name="StatsText" Foreground="{DynamicResource PrimaryBrush}" FontFamily="{DynamicResource MonoFont}"
-                           FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                           FontSize="11.5" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                <!-- The running commentary, moved down out of the results pane: "Ready",
+                     "Opening C:\...", "164 item(s)", "Cannot open X". It used to sit above the
+                     listing alongside a RESULTS (n) header that said the same thing, which made
+                     sense when a tab was a search report and stopped making sense once a tab
+                     became a folder. Keeps its accent tick so it still reads as the live line.
+                     ResultsHeader rides along collapsed - six places still write a count into
+                     it and this is the count they were writing. -->
+                <Border x:Name="StatusDot" Width="3" Background="{DynamicResource PrimaryBrush}" Margin="0,3,7,3" CornerRadius="2"/>
+                <TextBlock x:Name="StatusText" Text="{DynamicResource Str_Status_Ready}" Foreground="{DynamicResource TextFooter}"
+                           FontFamily="{DynamicResource MonoFont}" FontSize="11.5" VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" MaxWidth="520"/>
+                <!-- What this tab searched for, so an old search tab stays self-explanatory.
+                     Empty while browsing, and a collapsed-width TextBlock costs nothing. -->
+                <TextBlock x:Name="QueryText" Foreground="{DynamicResource MutedTextBrush}" FontFamily="{DynamicResource MonoFont}"
+                           FontSize="11" VerticalAlignment="Center" Margin="14,0,0,0"
+                           TextTrimming="CharacterEllipsis" MaxWidth="360"/>
+                <TextBlock x:Name="ResultsHeader" Visibility="Collapsed"/>
             </StackPanel>
             <!-- Portable mode indicator (hidden when installed), same as KillerScan -->
             <StackPanel x:Name="PortableBadge" Orientation="Horizontal" HorizontalAlignment="Center"
@@ -765,9 +1354,10 @@
                         VerticalAlignment="Center"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,16,0">
-                <TextBlock x:Name="VersionLabel" Text="v0.99" Foreground="{DynamicResource TextFooter}" FontFamily="{DynamicResource MonoFont}" FontSize="11" VerticalAlignment="Center" Margin="0,0,12,0"
+                <TextBlock x:Name="VersionLabel" Text="v0.99" Foreground="{DynamicResource TextFooter}" FontFamily="{DynamicResource MonoFont}" FontSize="10" VerticalAlignment="Center" Margin="0,0,12,0"
                            Cursor="Hand" ToolTip="About" MouseLeftButtonUp="VersionLabel_Click"/>
-                <TextBlock FontSize="11" VerticalAlignment="Center" FontFamily="{DynamicResource MonoFont}" Margin="0,0,14,0">
+                <!-- 14px trailing margin keeps the copyright clear of the corner grip (family standard) -->
+                <TextBlock FontSize="10" VerticalAlignment="Center" FontFamily="{DynamicResource MonoFont}" Margin="0,0,14,0">
                     <Run Text="&#x00A9; 2026 " Foreground="{DynamicResource TextFooter}"/>
                     <Hyperlink NavigateUri="https://thekiller.net" RequestNavigate="Hyperlink_RequestNavigate" Foreground="{DynamicResource TextFooter}" TextDecorations="None">
                         <Run Text="Steve the Killer"/>
@@ -793,12 +1383,14 @@
         <!-- ══════════ ABOUT OVERLAY (dim backdrop + centered card) ══════════ -->
         <Grid x:Name="AboutOverlay" Grid.RowSpan="3" Panel.ZIndex="9000" Visibility="Collapsed"
               Background="#88000000" MouseLeftButtonDown="AboutOverlay_Click">
-            <!-- Fixed width: the info box never dictates the card size, and hashes never wrap. -->
             <!-- Card structure copied from KillerScan (the rules for every About card):
-                 width hugs the SHA-256 line, the drop shadow lives on a SEPARATE border so
-                 the card text never renders through a bitmap effect (stays ClearType-crisp),
-                 and the whole surface is grain-wrapped. -->
-            <Grid Width="468" VerticalAlignment="Center" MouseLeftButtonDown="AboutCard_Click">
+                 the SHA-256 line is the ONLY thing that sets the width - it never wraps, so the
+                 info panel sizes to it and the card sizes to the info panel. The header grid
+                 below pins its width to that panel so a long tagline wraps instead of widening
+                 the card. The drop shadow lives on a SEPARATE border so the card text never
+                 renders through a bitmap effect (stays ClearType-crisp), and the whole surface
+                 is grain-wrapped. -->
+            <Grid VerticalAlignment="Center" HorizontalAlignment="Center" MouseLeftButtonDown="AboutCard_Click">
                 <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="6" IsHitTestVisible="False">
                     <Border.Effect><DropShadowEffect Color="Black" BlurRadius="26" ShadowDepth="5" Direction="270" Opacity="0.6"/></Border.Effect>
                 </Border>
@@ -836,9 +1428,11 @@
                             </Button.Style>
                         </Button>
 
-                        <StackPanel Margin="24,22,24,18">
-                            <!-- Header: icon left, wordmark (links to the site) + tagline right -->
-                            <Grid Margin="0,0,0,14">
+                        <StackPanel Margin="18,10,18,18">
+                            <!-- Header: icon left, wordmark (links to the site) + tagline right.
+                                 Width is pinned to the info panel below so the tagline wraps
+                                 instead of widening the card - the SHA-256 line stays the driver. -->
+                            <Grid Margin="0,4,0,14" Width="{Binding ActualWidth, ElementName=AboutInfoGrid}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
@@ -854,26 +1448,59 @@
                                                    Opacity="{DynamicResource IconShadowOpacity}"><TextBlock.Effect><BlurEffect Radius="2"/></TextBlock.Effect><Run Text="Killer" FontSize="22" Foreground="#C0000000"/><Run Text="Find" FontSize="28.6" FontWeight="Bold" Foreground="#C0000000"/></TextBlock>
                                         <TextBlock FontFamily="{DynamicResource WordmarkFont}"><Run Text="Killer" FontSize="22" Foreground="{DynamicResource TextBrush}"/><Run Text="Find" FontSize="28.6" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/></TextBlock>
                                     </Grid>
-                                    <TextBlock Text="{DynamicResource Str_About_Tagline}" FontSize="12" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap"/>
+                                    <!-- Tagline is composed here, not in the .xaml string files: GPLv3 and
+                                         "Killer Tools" are proper nouns and stay out of the translations
+                                         (same split KillerScan and KillerNotes use). -->
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap"><Run Text="{DynamicResource Str_About_DescA}"/><Run Text="GPLv3 "/><Hyperlink NavigateUri="https://killertools.net" RequestNavigate="AboutLink_Navigate" Foreground="{DynamicResource PrimaryBrush}" TextDecorations="None">Killer Tools</Hyperlink><Run Text="{DynamicResource Str_About_DescB}"/></TextBlock>
                                 </StackPanel>
                             </Grid>
 
-                            <!-- Info panel - matte, lifted above the grainy card; hashes never wrap -->
-                            <Grid>
-                                <Border Background="{DynamicResource BackgroundBrush}" CornerRadius="4" IsHitTestVisible="False">
+                            <!-- Info panel - matte, lifted above the grainy card. The shadow lives on
+                                 its own border so the field text never renders through a bitmap effect
+                                 (stays ClearType-crisp). Field spacing and sizes match KillerScan. -->
+                            <Grid x:Name="AboutInfoGrid">
+                                <Border Background="{DynamicResource PaneBrush}" CornerRadius="4" IsHitTestVisible="False">
                                     <Border.Effect><DropShadowEffect Color="Black" BlurRadius="14" ShadowDepth="2" Direction="270" Opacity="0.5"/></Border.Effect>
                                 </Border>
-                                <StackPanel Margin="14,12">
-                                    <TextBlock Text="{DynamicResource Str_About_Version}" Foreground="{DynamicResource DimTextBrush}" FontFamily="Consolas" FontSize="10"/>
-                                    <TextBlock x:Name="AboutVersionBlock" Foreground="{DynamicResource PrimaryBrush}" FontFamily="Consolas" FontSize="12"
-                                               Cursor="Hand" MouseLeftButtonUp="AboutVersion_Click" Margin="0,1,0,8"/>
-                                    <TextBlock Text="{DynamicResource Str_About_Publisher}" Foreground="{DynamicResource DimTextBrush}" FontFamily="Consolas" FontSize="10"/>
-                                    <TextBlock x:Name="AboutPublisherBlock" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" FontSize="12" Margin="0,1,0,8"/>
-                                    <TextBlock Text="{DynamicResource Str_About_Thumbprint}" Foreground="{DynamicResource DimTextBrush}" FontFamily="Consolas" FontSize="10"/>
-                                    <TextBlock x:Name="AboutThumbprintBlock" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" FontSize="11" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="0,1,0,8"/>
-                                    <TextBlock Text="{DynamicResource Str_About_Sha}" Foreground="{DynamicResource DimTextBrush}" FontFamily="Consolas" FontSize="10"/>
-                                    <TextBlock x:Name="AboutSha256Block" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" FontSize="11" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="0,1,0,0"/>
-                                </StackPanel>
+                                <Border Background="{DynamicResource PaneBrush}" CornerRadius="4" Padding="14,12,14,4">
+                                    <StackPanel>
+                                        <StackPanel Margin="0,0,0,10">
+                                            <TextBlock Text="{DynamicResource Str_About_Version}" Foreground="{DynamicResource DimTextBrush}" FontFamily="Consolas" FontSize="10"/>
+                                            <!-- One row, two ends: the version in the accent on the left, the
+                                                 release date muted and italic hard right against the panel edge.
+                                                 Bottom-aligned rather than centred so the two sizes sit on a
+                                                 shared baseline. Only the version text is clickable. -->
+                                            <Grid Margin="0,1,0,0">
+                                                <TextBlock x:Name="AboutVersionBlock" Foreground="{DynamicResource PrimaryBrush}"
+                                                           FontFamily="Consolas" FontSize="13" Cursor="Hand"
+                                                           HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                                           MouseLeftButtonUp="AboutVersion_Click"/>
+                                                <TextBlock x:Name="AboutReleaseDateBlock" Foreground="{DynamicResource MutedTextBrush}"
+                                                           FontFamily="Consolas" FontSize="11" FontStyle="Italic"
+                                                           HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+                                            </Grid>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,0,10">
+                                            <TextBlock Text="{DynamicResource Str_About_Publisher}" Foreground="{DynamicResource DimTextBrush}" FontFamily="Consolas" FontSize="10"/>
+                                            <TextBlock x:Name="AboutPublisherBlock" Foreground="{DynamicResource TextBrush}" FontSize="12" Margin="0,1,0,0"/>
+                                            <!-- Shown only on a signed exe, where the certificate subject is the
+                                                 legal name - this ties it back to the name people know. The alias
+                                                 itself is an accent link to thekiller.net; "AKA" stays muted so
+                                                 the eye lands on the name (same plain-text + accent-link split as
+                                                 the tagline above). -->
+                                            <TextBlock x:Name="AboutAkaBlock" Visibility="Collapsed" Foreground="{DynamicResource MutedTextBrush}"
+                                                       FontSize="11" Margin="0,3,0,0"><Run Text="AKA "/><Hyperlink NavigateUri="https://thekiller.net" RequestNavigate="AboutLink_Navigate" Foreground="{DynamicResource PrimaryBrush}" TextDecorations="None" ToolTip="thekiller.net"><Run x:Name="AboutAkaRun"/></Hyperlink></TextBlock>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,0,10">
+                                            <TextBlock Text="{DynamicResource Str_About_Thumbprint}" Foreground="{DynamicResource DimTextBrush}" FontFamily="Consolas" FontSize="10"/>
+                                            <TextBlock x:Name="AboutThumbprintBlock" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" FontSize="11" TextWrapping="Wrap" Margin="0,1,0,0"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,0,10">
+                                            <TextBlock Text="{DynamicResource Str_About_Sha}" Foreground="{DynamicResource DimTextBrush}" FontFamily="Consolas" FontSize="10"/>
+                                            <TextBlock x:Name="AboutSha256Block" Foreground="{DynamicResource TextBrush}" FontFamily="Consolas" FontSize="11" TextWrapping="NoWrap" Margin="0,1,0,0"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
                             </Grid>
 
                             <Button x:Name="AboutUpdateButton" Visibility="Collapsed" Margin="0,14,0,0" HorizontalAlignment="Left" Cursor="Hand" Click="AboutUpdateButton_Click">
@@ -889,12 +1516,6 @@
                                 </Button.Template>
                                 <TextBlock x:Name="AboutUpdateText" Foreground="{DynamicResource PrimaryBrush}" FontSize="12"/>
                             </Button>
-
-                            <!-- Footer: copyright with the name linking to thekiller.net; the website
-                                 link lives on the wordmark above. -->
-                            <TextBlock Margin="0,14,0,0" FontSize="11" FontFamily="Consolas" Foreground="{DynamicResource MutedTextBrush}">
-                                <Run Text="&#x00A9; 2026 "/><Hyperlink NavigateUri="https://thekiller.net" RequestNavigate="AboutLink_Navigate" Foreground="{DynamicResource MutedTextBrush}" TextDecorations="None">Steve the Killer</Hyperlink><Run Text="  &#x00B7;  GPLv3"/>
-                            </TextBlock>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -986,57 +1607,134 @@
                             <TextBlock Grid.Row="6" Grid.Column="1" Style="{StaticResource HelpDesc}" Text="{DynamicResource Str_Help_Exclude}"/>
                     </Grid>
 
-                    <!-- SHORTCUTS: full keyboard map (F1 opens this card) -->
-                    <TextBlock Text="{DynamicResource Str_Help_Shortcuts}" Style="{StaticResource SectionHeader}" FontSize="13" Margin="0,16,0,12"/>
-                    <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="118"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <Grid.Resources>
-                                <Style x:Key="KsKey" TargetType="TextBlock">
-                                    <Setter Property="FontFamily" Value="Consolas"/>
-                                    <Setter Property="FontSize" Value="12"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
-                                    <Setter Property="Margin" Value="0,0,10,7"/>
-                                    <Setter Property="VerticalAlignment" Value="Top"/>
+                </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ══════════ SHORTCUTS OVERLAY (F1) - family standard, same chrome as the card above ══════════ -->
+        <Grid x:Name="ShortcutsOverlay" Grid.RowSpan="3" Panel.ZIndex="9000" Visibility="Collapsed"
+              Background="#88000000" MouseLeftButtonDown="ShortcutsOverlay_Click">
+            <Border Width="460" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource CardBorderBrush}"
+                    BorderThickness="1" CornerRadius="8" MouseLeftButtonDown="ShortcutsCard_Click">
+                <Border.Effect><DropShadowEffect Color="Black" BlurRadius="30" ShadowDepth="6" Direction="270" Opacity="0.6"/></Border.Effect>
+                <Grid>
+                <Border IsHitTestVisible="False" CornerRadius="7" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                <StackPanel Margin="24,20">
+                    <Grid Margin="0,0,0,12">
+                        <TextBlock Text="{DynamicResource Str_Help_Shortcuts}" Style="{StaticResource SectionHeader}" FontSize="13" Margin="0" VerticalAlignment="Center"/>
+                        <!-- Foreground lives in a Style setter so the hover/press triggers can win
+                             (a local value would beat them - that's why hover never turned red). -->
+                        <Button Content="&#xE8BB;" Click="ShortcutsClose_Click" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                Width="30" Height="26" FontSize="10" FontFamily="Segoe MDL2 Assets"
+                                Background="Transparent" BorderThickness="0" Cursor="Hand">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Foreground" Value="{DynamicResource ChromeTextBrush}"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="bg" Background="Transparent" CornerRadius="3">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Foreground" Value="{DynamicResource DangerRed}"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsPressed" Value="True">
+                                                        <Setter Property="Foreground" Value="{DynamicResource DangerRed}"/>
+                                                        <Setter TargetName="bg" Property="Background" Value="#33C42B1C"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
                                 </Style>
-                                <Style x:Key="KsDesc" TargetType="TextBlock">
-                                    <Setter Property="FontSize" Value="11"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
-                                    <Setter Property="TextWrapping" Value="Wrap"/>
-                                    <Setter Property="Margin" Value="0,1,0,7"/>
-                                </Style>
-                            </Grid.Resources>
-                            <TextBlock Grid.Row="0"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Enter"/>
-                            <TextBlock Grid.Row="0"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_Run}"/>
-                            <TextBlock Grid.Row="1"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Esc"/>
-                            <TextBlock Grid.Row="1"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_Esc}"/>
-                            <TextBlock Grid.Row="2"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+F"/>
-                            <TextBlock Grid.Row="2"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_FilterResults}"/>
-                            <TextBlock Grid.Row="3"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+T"/>
-                            <TextBlock Grid.Row="3"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_NewTab}"/>
-                            <TextBlock Grid.Row="4"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+W"/>
-                            <TextBlock Grid.Row="4"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_CloseTab}"/>
-                            <TextBlock Grid.Row="5"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+Tab"/>
-                            <TextBlock Grid.Row="5"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_NextTab}"/>
-                            <TextBlock Grid.Row="6"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+1-9"/>
-                            <TextBlock Grid.Row="6"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_JumpTab}"/>
-                            <TextBlock Grid.Row="7"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+N"/>
-                            <TextBlock Grid.Row="7"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_AddTerm}"/>
-                            <TextBlock Grid.Row="8"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+Shift+N"/>
-                            <TextBlock Grid.Row="8"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_AddFilter}"/>
-                            <TextBlock Grid.Row="9"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+O"/>
-                            <TextBlock Grid.Row="9"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_Folder}"/>
-                            <TextBlock Grid.Row="10" Grid.Column="0" Style="{StaticResource KsKey}"  Text="F1"/>
-                            <TextBlock Grid.Row="10" Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_Help}"/>
+                            </Button.Style>
+                        </Button>
                     </Grid>
+
+                    <!-- Two columns: gesture, then what it does. Rows are added in the same order
+                         as Window_PreviewKeyDown handles them, so the card and the code stay in step. -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="128"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.Resources>
+                            <Style x:Key="KsKey" TargetType="TextBlock">
+                                <Setter Property="FontFamily" Value="Consolas"/>
+                                <Setter Property="FontSize" Value="12"/>
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter Property="Margin" Value="0,0,10,7"/>
+                                <Setter Property="VerticalAlignment" Value="Top"/>
+                            </Style>
+                            <Style x:Key="KsDesc" TargetType="TextBlock">
+                                <Setter Property="FontSize" Value="11"/>
+                                <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+                                <Setter Property="TextWrapping" Value="Wrap"/>
+                                <Setter Property="Margin" Value="0,1,0,7"/>
+                            </Style>
+                        </Grid.Resources>
+                        <TextBlock Grid.Row="0"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Enter / F5"/>
+                        <TextBlock Grid.Row="0"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_Run}"/>
+                        <TextBlock Grid.Row="1"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Esc"/>
+                        <TextBlock Grid.Row="1"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_Esc}"/>
+                        <TextBlock Grid.Row="2"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+O"/>
+                        <TextBlock Grid.Row="2"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_Folder}"/>
+                        <TextBlock Grid.Row="3"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+N"/>
+                        <TextBlock Grid.Row="3"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_AddTerm}"/>
+                        <TextBlock Grid.Row="4"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+Shift+N"/>
+                        <TextBlock Grid.Row="4"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_AddFilter}"/>
+                        <TextBlock Grid.Row="5"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+Shift+C"/>
+                        <TextBlock Grid.Row="5"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_CaseSensitive}"/>
+                        <TextBlock Grid.Row="6"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+L / Alt+D"/>
+                        <TextBlock Grid.Row="6"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_Address}"/>
+                        <TextBlock Grid.Row="21" Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+Shift+L"/>
+                        <TextBlock Grid.Row="21" Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_Clear}"/>
+                        <TextBlock Grid.Row="7"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+F"/>
+                        <TextBlock Grid.Row="7"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_FilterResults}"/>
+                        <TextBlock Grid.Row="8"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+Shift+F"/>
+                        <TextBlock Grid.Row="8"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_Pipe}"/>
+                        <TextBlock Grid.Row="9"  Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+Shift+S"/>
+                        <TextBlock Grid.Row="9"  Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_SearchPanel}"/>
+                        <TextBlock Grid.Row="10" Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+Right"/>
+                        <TextBlock Grid.Row="10" Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_ExpandAll}"/>
+                        <TextBlock Grid.Row="11" Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+Left"/>
+                        <TextBlock Grid.Row="11" Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_CollapseAll}"/>
+                        <TextBlock Grid.Row="12" Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+E"/>
+                        <TextBlock Grid.Row="12" Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_ExportHtml}"/>
+                        <TextBlock Grid.Row="13" Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+Shift+E"/>
+                        <TextBlock Grid.Row="13" Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_ExportCsv}"/>
+                        <TextBlock Grid.Row="14" Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+T"/>
+                        <TextBlock Grid.Row="14" Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_NewTab}"/>
+                        <TextBlock Grid.Row="15" Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+W"/>
+                        <TextBlock Grid.Row="15" Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_CloseTab}"/>
+                        <TextBlock Grid.Row="16" Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+Tab"/>
+                        <TextBlock Grid.Row="16" Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_NextTab}"/>
+                        <TextBlock Grid.Row="17" Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+1-9"/>
+                        <TextBlock Grid.Row="17" Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_JumpTab}"/>
+                        <TextBlock Grid.Row="18" Grid.Column="0" Style="{StaticResource KsKey}"  Text="Ctrl+B"/>
+                        <TextBlock Grid.Row="18" Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_Bookmarks}"/>
+                        <TextBlock Grid.Row="19" Grid.Column="0" Style="{StaticResource KsKey}"  Text="Alt+1-0"/>
+                        <TextBlock Grid.Row="19" Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_JumpBookmark}"/>
+                        <TextBlock Grid.Row="20" Grid.Column="0" Style="{StaticResource KsKey}"  Text="F1"/>
+                        <TextBlock Grid.Row="20" Grid.Column="1" Style="{StaticResource KsDesc}" Text="{DynamicResource Str_Ks_Help}"/>
+                    </Grid>
+
+                    <TextBlock Text="{DynamicResource Str_Ks_Hint}" Foreground="{DynamicResource DimTextBrush}"
+                               FontSize="10.5" TextWrapping="Wrap" Margin="0,10,0,0"/>
                 </StackPanel>
                 </Grid>
             </Border>

@@ -185,14 +185,29 @@ namespace KillerFind
 
             // ---- UI pump: this task flushes batches every ~150ms until the workers finish ----
             const int UiIntervalMs = 150;
+
+            // Each ResultsBatch becomes exactly ONE dispatcher callback on the UI thread, and a
+            // callback cannot be interrupted once it has started - DispatcherPriority only orders
+            // work that is still queued. So draining the whole queue into a single batch froze the
+            // window for as long as it took to add every result, and no priority could help: a
+            // broad match like "steve" can put tens of thousands of hits in one 150ms window.
+            // Slices are capped instead. A backlog is drained by posting slices back to back
+            // rather than waiting out another tick, so throughput is unchanged - only the size of
+            // any one UI callback is bounded, which is what lets input interleave.
+            const int MaxBatch = 250;
+
+            // Posts at most MaxBatch results. Returns true while the queue still holds more.
+            bool FlushResults()
+            {
+                var batch = new List<SearchResult>(MaxBatch);
+                while (batch.Count < MaxBatch && outQueue.TryDequeue(out var r)) batch.Add(r);
+                if (batch.Count > 0) ResultsBatch?.Invoke(batch);
+                return !outQueue.IsEmpty;
+            }
+
             void Flush()
             {
-                if (!outQueue.IsEmpty)
-                {
-                    var batch = new List<SearchResult>();
-                    while (outQueue.TryDequeue(out var r)) batch.Add(r);
-                    if (batch.Count > 0) ResultsBatch?.Invoke(batch);
-                }
+                while (FlushResults()) { }
                 var cf = currentFile;
                 if (cf.Length > 0) StatusChanged?.Invoke(cf);
                 ProgressChanged?.Invoke(Volatile.Read(ref processed));
