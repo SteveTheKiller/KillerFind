@@ -90,8 +90,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 					if (left != null) {
 						return left.RightMost;
 					} else {
-						Node node = this;
-						Node oldNode;
+						Node? node = this;
+						Node? oldNode;
 						do {
 							oldNode = node;
 							node = node.parent;
@@ -110,8 +110,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 					if (right != null) {
 						return right.LeftMost;
 					} else {
-						Node node = this;
-						Node oldNode;
+						Node? node = this;
+						Node? oldNode;
 						do {
 							oldNode = node;
 							node = node.parent;
@@ -199,7 +199,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 				} else if (index == 0) {
 					// insert before:
 					// maybe we can put the value in the previous node?
-					Node p = n.Predecessor;
+					Node? p = n.Predecessor;
 					if (p != null && comparisonFunc(p.value, item)) {
 						p.count += count;
 						UpdateAugmentedData(p);
@@ -442,7 +442,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			}
 
 			Node? prevNode = null;
-			for (Node n = root.LeftMost; n != null; n = n.Successor) {
+			for (Node? n = root.LeftMost; n != null; n = n.Successor) {
 				n.value = converter(n.value);
 				if (prevNode != null && comparisonFunc(prevNode.value, n.value)) {
 					n.count += prevNode.count;
@@ -600,12 +600,13 @@ namespace ICSharpCode.AvalonEdit.Utils
 
 		private void FixTreeOnInsert(Node node)
 		{
-			Debug.Assert(node != null);
+			// The null assert is gone: the parameter type says it now, and keeping it made the
+			// compiler treat every use below as possibly null.
 			Debug.Assert(node.color == RED);
 			Debug.Assert(node.left == null || node.left.color == BLACK);
 			Debug.Assert(node.right == null || node.right.color == BLACK);
 
-			Node parentNode = node.parent;
+			Node? parentNode = node.parent;
 			if (parentNode == null) {
 				// we inserted in the root -> the node must be black
 				// since this is a root node, making the node black increments the number of black nodes
@@ -622,7 +623,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			// parentNode is red, so there is a conflict here!
 
 			// because the root is black, parentNode is not the root -> there is a grandparent node
-			Node grandparentNode = parentNode.parent;
+			Node grandparentNode = parentNode.parent!;
 			Node uncleNode = Sibling(parentNode);
 			if (uncleNode != null && uncleNode.color == RED) {
 				parentNode.color = BLACK;
@@ -635,14 +636,16 @@ namespace ICSharpCode.AvalonEdit.Utils
 			// First rotation:
 			if (node == parentNode.right && parentNode == grandparentNode.left) {
 				RotateLeft(parentNode);
-				node = node.left;
+				// The rotation just made the old node the child on this side, so it is there.
+				node = node.left!;
 			} else if (node == parentNode.left && parentNode == grandparentNode.right) {
 				RotateRight(parentNode);
-				node = node.right;
+				node = node.right!;
 			}
 			// because node might have changed, reassign variables:
-			parentNode = node.parent;
-			grandparentNode = parentNode.parent;
+			// node is still below its grandparent either way, so both links exist.
+			parentNode = node.parent!;
+			grandparentNode = parentNode.parent!;
 
 			// Now recolor a bit:
 			parentNode.color = BLACK;
@@ -802,7 +805,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 		private void RotateLeft(Node p)
 		{
 			// let q be p's right child
-			Node q = p.right;
+			// A rotation is only ever called on a node that has the child it rotates about; the
+			// assert below is upstream's own statement of that.
+			Node q = p.right!;
 			Debug.Assert(q != null);
 			Debug.Assert(q.parent == p);
 			// set q to be the new root
@@ -823,7 +828,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		private void RotateRight(Node p)
 		{
 			// let q be p's left child
-			Node q = p.left;
+			Node q = p.left!;
 			Debug.Assert(q != null);
 			Debug.Assert(q.parent == p);
 			// set q to be the new root
@@ -841,26 +846,32 @@ namespace ICSharpCode.AvalonEdit.Utils
 			UpdateAugmentedData(q);
 		}
 
+		// Only called on a node that has a parent and a sibling: in a red-black tree a node whose
+		// sibling is missing would already violate the black-height property.
 		private static Node Sibling(Node node)
 		{
-			if (node == node.parent.left) {
-				return node.parent.right;
+			if (node == node.parent!.left) {
+				return node.parent.right!;
 			} else {
-				return node.parent.left;
+				return node.parent.left!;
 			}
 		}
 
 		private static Node Sibling(Node? node, Node parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
+			// Same invariant as the single-argument overload: the sibling of a node being fixed
+			// up after a delete always exists, or the tree was already unbalanced.
 			if (node == parentNode.left) {
-				return parentNode.right;
+				return parentNode.right!;
 			} else {
-				return parentNode.left;
+				return parentNode.left!;
 			}
 		}
 
-		private static bool GetColor(Node node)
+		// Nullable by design: this is the "a missing child counts as black" rule, which is the
+		// whole reason the method exists. Its body has always tested for null.
+		private static bool GetColor(Node? node)
 		{
 			return node != null && node.color;
 		}
