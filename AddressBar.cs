@@ -37,7 +37,10 @@ namespace KillerFind
             // files, not a path - so the row stays a label there.
             if (_active.PipeFiles != null) return;
 
-            Pane.AddressBox.Text = _active.CurrentFolder ?? _active.RootPath ?? string.Empty;
+            // Empty on This PC rather than its sentinel: there is no path to edit there, and an
+            // internal token in the address box would just be noise to type over.
+            string here = _active.CurrentFolder ?? _active.RootPath ?? string.Empty;
+            Pane.AddressBox.Text = IsThisPc(here) ? string.Empty : here;   // Browse.cs
             Pane.AddressBox.Visibility   = Visibility.Visible;
             Pane.ScopePathLabel.Visibility = Visibility.Collapsed;
 

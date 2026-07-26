@@ -91,9 +91,15 @@
     <sys:String x:Key="Str_Sort_Found">v pořadí nalezení</sys:String>
     <sys:String x:Key="Str_TT_FilterResults">Filtrovat tyto výsledky (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_Pipe">Hledat uvnitř těchto výsledků</sys:String>
+    <sys:String x:Key="Str_TT_DualPane">Druhý panel  |  pravým tlačítkem přepnete vedle sebe / pod sebou</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">Další nástroje</sys:String>
+    <sys:String x:Key="Str_TT_Sort">Řadit podle</sys:String>
+    <sys:String x:Key="Str_Nav_ThisPc">Tento počítač</sys:String>
     <sys:String x:Key="Str_Menu_PipeTab">Hledat uvnitř těchto výsledků</sys:String>
     <sys:String x:Key="Str_Pipe_Scope">{0} výsledků z {1}  |  {2}</sys:String>
     <sys:String x:Key="Str_Status_NoPipe">Zatím nejsou žádné výsledky k prohledání.</sys:String>
+
+    <sys:String x:Key="Str_Status_ElevateFailed">Nepodařilo se spustit shell se zvýšenými oprávněními: {0}</sys:String>
 
     <!-- Portable install + quit dialog -->
     <sys:String x:Key="Str_Portable">PŘENOSNÉ</sys:String>
@@ -136,6 +142,8 @@
     <sys:String x:Key="Str_Menu_ShowExplorer">Zobrazit v Průzkumníku</sys:String>
     <sys:String x:Key="Str_Menu_OpenAdmin">Otevřít jako správce</sys:String>
     <sys:String x:Key="Str_Menu_SearchHere">Hledat v této složce</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminal">Otevřít zde terminál</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminalAdmin">Otevřít zde terminál jako správce</sys:String>
     <sys:String x:Key="Str_Menu_ExcludeFolder">Vyloučit tuto složku</sys:String>
     <sys:String x:Key="Str_Menu_CopyPath">Kopírovat úplnou cestu</sys:String>
     <sys:String x:Key="Str_Menu_CopyName">Kopírovat název souboru</sys:String>
@@ -186,6 +194,8 @@
 
     <!-- HTML report -->
     <sys:String x:Key="Str_Rpt_Meta">Vygenerováno {0} &#183; {1} souborů &#183; {2} shod</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">Vygenerováno {0} &#183; {1} položek</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">Obsah složky {0}.</sys:String>
     <sys:String x:Key="Str_Rpt_Query">Prohledáno {0} na {1}.</sys:String>
     <sys:String x:Key="Str_Rpt_TermName">názvy souborů obsahující {0}</sys:String>
     <sys:String x:Key="Str_Rpt_TermContent">obsah souborů obsahující {0}</sys:String>
@@ -228,9 +238,60 @@
     <sys:String x:Key="Str_Ks_SearchPanel">zobrazit nebo skrýt panel hledání</sys:String>
     <sys:String x:Key="Str_Ks_ExpandAll">rozbalit všechny výsledky</sys:String>
     <sys:String x:Key="Str_Ks_CollapseAll">sbalit všechny výsledky</sys:String>
+    <sys:String x:Key="Str_Ks_Shell">otevřít panel PowerShell v této složce</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmd">otevřít panel CMD v této složce</sys:String>
+    <sys:String x:Key="Str_Ks_ShellAdmin">otevřít PowerShell jako správce</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmdAdmin">otevřít CMD jako správce</sys:String>
     <sys:String x:Key="Str_Ks_ExportHtml">exportovat výsledky do HTML</sys:String>
     <sys:String x:Key="Str_Ks_ExportCsv">exportovat výsledky do CSV</sys:String>
     <sys:String x:Key="Str_Ks_Hint">Zkratky fungují kdekoli v okně. Otevřené rozbalovací seznamy, pole s datem a filtr výsledků si Enter ponechávají pro sebe.</sys:String>
+
+    <!-- Font dialog, reached from the row under the theme flyout -->
+    <sys:String x:Key="Str_Fonts_Row">Písma...</sys:String>
+    <sys:String x:Key="Str_Fonts_Title">PÍSMA</sys:String>
+    <sys:String x:Key="Str_Fonts_App">APLIKACE</sys:String>
+    <sys:String x:Key="Str_Fonts_Terminal">TERMINÁL</sys:String>
+    <sys:String x:Key="Str_Fonts_Default">Výchozí</sys:String>
+    <sys:String x:Key="Str_Fonts_Hint">Kolečkem nad seznamem procházíte písma. Každá změna se projeví ihned.</sys:String>
+    <sys:String x:Key="Str_Fonts_Unreadable">{0} nemá čitelná písmena - zůstává předchozí písmo</sys:String>
+
+    <!-- Title-bar caption on an elevated window, beside the wordmark -->
+    <sys:String x:Key="Str_Title_Elevated">- Zvýšená oprávnění</sys:String>
+    <sys:String x:Key="Str_Ks_MenuBar">zobrazit nebo skrýt lištu panelu</sys:String>
+    <sys:String x:Key="Str_Ks_NewWindow">otevřít nové okno</sys:String>
+
+    <!-- Recently visited folders, behind the address bar's chevron (Recents.cs) -->
+    <sys:String x:Key="Str_TT_Recents">Naposledy navštívené složky</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">Zatím žádné nedávné složky</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">Vymazat seznam</sys:String>
+
+    <!-- Results density, on the rail (Density.cs) -->
+    <sys:String x:Key="Str_TT_Density">Hustota výsledků - klikem přepnete, kolečkem odstupňujete</sys:String>
+    <sys:String x:Key="Str_St_DensityRoomy">Hustota: prostorná</sys:String>
+    <sys:String x:Key="Str_St_DensityFull">Hustota: pohodlná</sys:String>
+    <sys:String x:Key="Str_St_DensityCompact">Hustota: kompaktní</sys:String>
+    <sys:String x:Key="Str_St_DensityTight">Hustota: těsná</sys:String>
+    <sys:String x:Key="Str_St_DensityMin">Hustota: minimální</sys:String>
+
+    <!-- Terminal right-click menu (Terminal/TerminalMenu.cs) -->
+    <sys:String x:Key="Str_Term_Copy">Kopírovat</sys:String>
+    <sys:String x:Key="Str_Term_Paste">Vložit</sys:String>
+    <sys:String x:Key="Str_Term_SelectAll">Vybrat vše</sys:String>
+    <sys:String x:Key="Str_Term_Clear">Vymazat</sys:String>
+    <sys:String x:Key="Str_Term_NewShell">Nový terminál</sys:String>
+    <sys:String x:Key="Str_Term_OpenFolder">Otevřít tuto složku</sys:String>
+    <sys:String x:Key="Str_Term_Fonts">Písma...</sys:String>
+    <sys:String x:Key="Str_Term_EditPrompt">Upravit prompt...</sys:String>
+    <sys:String x:Key="Str_Term_ResetPrompt">Resetovat prompt</sys:String>
+    <sys:String x:Key="Str_Term_Close">Zavřít terminál</sys:String>
+    <sys:String x:Key="Str_Dlg_ResetPromptMsg">Vrátit dodávaný skript promptu? Vaše úpravy tohoto souboru budou ztraceny.</sys:String>
+    <sys:String x:Key="Str_Btn_Reset">Resetovat</sys:String>
+    <!-- Rail button: left click opens PowerShell, right click picks -->
+    <sys:String x:Key="Str_TT_Terminal">Otevřít terminál  (F8)  -  pravým tlačítkem vyberete</sys:String>
+    <sys:String x:Key="Str_Term_PowerShell">PowerShell</sys:String>
+    <sys:String x:Key="Str_Term_PowerShellAdmin">PowerShell jako správce</sys:String>
+    <sys:String x:Key="Str_Term_Cmd">Příkazový řádek</sys:String>
+    <sys:String x:Key="Str_Term_CmdAdmin">Příkazový řádek jako správce</sys:String>
 
     <!-- Karta zkratek: nadpisy kategorii, prepinac SEZNAM / KLAVESNICE a napoveda -->
     <sys:String x:Key="Str_Ks_About">zobrazit kartu O aplikaci</sys:String>

@@ -79,12 +79,34 @@ namespace KillerFind
             // its panel row exists, and after the tabs so the star can read the active folder.
             InitBookmarks();
 
+            // Recently visited folders, behind the address bar's chevron (Recents.cs). After
+            // bookmarks because it reuses their separator, and before any navigation runs.
+            InitRecents();
+
+            // Results density (Density.cs). Before the first listing so rows are never drawn
+            // roomy and then retightened a frame later.
+            InitDensity();
+
             // Show-hidden and folders-on-top (ViewOptions.cs). Before nothing in particular -
             // they are read by the listing and the tree, both of which run later.
             InitViewOptions();
 
+            // Menubar hidden or showing (MenuBar.cs). After the panes exist and before the
+            // first listing, so a hidden bar never flashes on screen at launch.
+            InitMenuBar();
+
+            // Chosen typefaces for the app and the terminal (Fonts.cs). The app slot overrides
+            // the MonoFont resource, so this only has to beat the first render, not any
+            // particular init - a DynamicResource repaints whenever the override lands.
+            InitFonts();
+
             // Where new tabs open (AddressBar.cs).
             InitHomeFolder();
+
+            // What a shell is told about the window hosting it (Terminal/ShellEnv.cs). Before
+            // any shell can be spawned, because a child inherits the environment as a COPY -
+            // a variable published after the fact never reaches a terminal already open.
+            InitShellEnv();
 
             Loaded += (_, _) =>
             {
@@ -102,11 +124,41 @@ namespace KillerFind
                 {
                     _ = NavigateTo(HomeFolder);   // Browse.cs
                 }
+
+                ApplyElevationHalo();   // Elevation.cs - mark an admin window before it shows
+                ApplyStartupShell();    // and open the shell an elevated relaunch asked for
             };
             Closing += (_, _) =>
             {
+                // No fade here: Session.cs's OnClosing override already does it (stage 2), and
+                // it runs BEFORE this handler because raising Closing is the last thing that
+                // override does. A second fade started from here re-cancelled a close the
+                // override had already taken charge of.
                 StopWatching();                            // BrowseWatcher.cs
-                if (!DemoMode) SaveTabsOnExit();           // Session.cs
+                DisposeShellEnv();                         // Terminal/ShellEnv.cs
+
+                // An elevated window does NOT write the session back. Both instances share one
+                // settings store, so whichever quit last would clobber the other's remembered
+                // tabs - and the admin window is a task you finish, not the one you live in.
+                if (!DemoMode && !IsElevated) SaveTabsOnExit();   // Session.cs
+            };
+
+            // The two thumb buttons on a mouse, at the WINDOW level so they work over a folder
+            // listing, the tree and a terminal alike - a shell has no use for them and Windows
+            // has meant Back and Forward by them for twenty years. Preview, so the terminal's
+            // own mouse handling never sees them first.
+            PreviewMouseDown += (_, e) =>
+            {
+                if (e.ChangedButton == System.Windows.Input.MouseButton.XButton1)
+                {
+                    NavBack_Click(this, new RoutedEventArgs());      // Browse.cs
+                    e.Handled = true;
+                }
+                else if (e.ChangedButton == System.Windows.Input.MouseButton.XButton2)
+                {
+                    NavForward_Click(this, new RoutedEventArgs());   // Browse.cs
+                    e.Handled = true;
+                }
             };
 
             // The theme flyout is StaysOpen (so scrolling under it works); close it
@@ -493,6 +545,20 @@ namespace KillerFind
             // runs for chords that go on to be swallowed.
             KbSyncLayerFromModifiers();
 
+            // A FOCUSED SHELL OWNS THE KEYBOARD.
+            //
+            // This is a PREVIEW handler on the window, so it tunnels from the root DOWN and
+            // runs before the terminal ever sees the key. Without this guard the app's own
+            // bindings win every time: Enter ran a search instead of submitting the command
+            // line, and Backspace navigated instead of deleting a character. Anything a shell
+            // could plausibly want - which is nearly everything, including bare letters, Enter,
+            // Backspace, Tab, Esc, arrows and Ctrl+C - has to pass straight through.
+            //
+            // The exceptions are the chords that manage the WINDOW rather than the shell, and
+            // they are listed rather than inferred: a shell has no opinion about which tab is
+            // showing, so those stay with the app.
+            if (TerminalHasFocus && !IsWindowChord(e, ctrl, shift, alt)) return;
+
             // Alt+1-0 jumps to a saved location. Alt chords arrive as Key.System with the real
             // key parked in SystemKey, so they have to be unwrapped before anything can match -
             // and they are checked first, ahead of every e.Key test below, which would all see
@@ -510,7 +576,7 @@ namespace KillerFind
                     return;
                 }
 
-                // Alt+D is Explorer's address-bar chord and costs nothing to honour alongside
+                // Alt+D is Explorer's address-bar chord and costs nothing to honor alongside
                 // Ctrl+L, so muscle memory from either lineage works.
                 if (real == System.Windows.Input.Key.D)
                 {
@@ -557,6 +623,15 @@ namespace KillerFind
                 BookmarksBtn_Click(this, new RoutedEventArgs());   // Bookmarks.cs
                 e.Handled = true;
             }
+            else if (ctrl && !shift && e.Key == System.Windows.Input.Key.H)
+            {
+                // Show hidden and system items. This had no chord at all - only the toolbar
+                // toggle, which is also the first thing shed into the overflow chevron on a
+                // narrow pane, so on a split window it could be two clicks deep. Ctrl+H is what
+                // other file managers use for it and it was free (Ctrl+Shift+H is the hash).
+                ShowHidden_Click(this, new RoutedEventArgs());     // ViewOptions.cs
+                e.Handled = true;
+            }
             else if (e.Key == System.Windows.Input.Key.F && ctrl && !shift)
             {
                 ShowResultFilterBar();   // Results.cs
@@ -600,12 +675,11 @@ namespace KillerFind
             }
             else if (e.Key == System.Windows.Input.Key.F9)
             {
-                Export_Click(this, new RoutedEventArgs());      // Export.cs - HTML
-                e.Handled = true;
-            }
-            else if (e.Key == System.Windows.Input.Key.F8)
-            {
-                ExportCsv_Click(this, new RoutedEventArgs());   // Export.cs - CSV
+                // Both exports live on F9 now, shift picking the format, because F8 went to the
+                // shell - a primary feature deserved a key you can reach without looking, and
+                // export is not something you press twenty times an hour.
+                if (shift) ExportCsv_Click(this, new RoutedEventArgs());   // Export.cs - CSV
+                else       Export_Click(this, new RoutedEventArgs());      // Export.cs - HTML
                 e.Handled = true;
             }
             // ── File operations (FileCommands.cs) ────────────────
@@ -650,6 +724,23 @@ namespace KillerFind
                 // Select every row. Skipped inside a text box, where Ctrl+A has to keep meaning
                 // "select this text".
                 Pane.ResultsList.SelectAll();
+                e.Handled = true;
+            }
+            else if (e.Key == System.Windows.Input.Key.F11 && !ctrl && !shift && !alt)
+            {
+                // Open the second pane, or close it. It had a provisional Ctrl+Shift+P, which is
+                // a two-hand chord for something you flick on and off constantly - and F11 came
+                // free when the menubar took F10, so the two layout keys now sit next to each
+                // other. Ctrl+Shift+P stays as an alias for anyone who learned it.
+                ToggleDualPane();   // DualPane.cs
+                e.Handled = true;
+            }
+            else if (IsF10(e) && !ctrl && !shift && !alt)
+            {
+                // F10: hide the pane menubar, in both panes and on both kinds of tab
+                // (MenuBar.cs). Handling it also stops WPF entering its menu mode, which is
+                // what a bare F10 otherwise means to a window.
+                ToggleMenuBar();
                 e.Handled = true;
             }
             else if (e.Key == System.Windows.Input.Key.F12)
@@ -715,9 +806,16 @@ namespace KillerFind
             }
             else if (ctrl && !shift && e.Key == System.Windows.Input.Key.N)
             {
-                // Ctrl+N adds a search term. Explorer uses it for New Window, which KillerFind
-                // has no equivalent of yet - when multi-window lands, this moves and the term
-                // gets a new home the same way the filter just did.
+                // Explorer's New Window, which is what every hand arriving here expects Ctrl+N
+                // to be. It held "add a search term" only because there was no second window to
+                // give it to; there is now, so the term moved to Ctrl+Shift+A as promised.
+                OpenNewWindow();   // NewWindow.cs
+                e.Handled = true;
+            }
+            else if (ctrl && shift && e.Key == System.Windows.Input.Key.A)
+            {
+                // Add a search term. A for "add", and Ctrl+Shift because the panel it acts on is
+                // optional now - this is not a chord you reach for while browsing.
                 _active.Groups[_active.Groups.Count - 1].Terms.Add(new SearchTerm());
                 e.Handled = true;
             }
@@ -735,10 +833,45 @@ namespace KillerFind
                 OpenFolderPicker();
                 e.Handled = true;
             }
+            // ── Shell (TerminalTabs.cs) ─────────────────────────
+            // F8 is the primary key: opening a shell in the folder you are looking at is one of
+            // the reasons to use this app, and a two-hand chord is the wrong price for it. It
+            // took F8 from CSV export, which moved next to HTML export on Shift+F9.
+            //
+            // Shift picks CMD (the LCD skin), Ctrl asks for the elevated one - which relaunches
+            // us through UAC (Elevation.cs) rather than opening a tab in this process.
+            //
+            // F8 IS in IsWindowChord (TerminalTabs.cs), so it opens a shell from inside a shell
+            // too. It cost PSReadLine's F8 history search to do that, which was the argument for
+            // the other way round - but a headline key that stops working once you are in the
+            // thing it opens reads as broken, and history is still on Ctrl+r and prefix+Up.
+            else if (!alt && e.Key == System.Windows.Input.Key.F8)
+            {
+                bool admin = ctrl;
+                OpenShell(shift ? Terminal.TerminalProfile.Cmd(elevated: admin)
+                                : Terminal.TerminalProfile.PowerShell(elevated: admin));
+                e.Handled = true;
+            }
+            // Ctrl+` is the chord VS Code and Windows Terminal both use for "open a terminal
+            // here", so a hand trained on either arrives expecting it. Kept as an alias for F8.
+            else if (ctrl && !alt && e.Key == System.Windows.Input.Key.OemTilde)
+            {
+                OpenShell(shift ? Terminal.TerminalProfile.Cmd()
+                                : Terminal.TerminalProfile.PowerShell());
+                e.Handled = true;
+            }
+            else if (ctrl && alt && e.Key == System.Windows.Input.Key.OemTilde)
+            {
+                // Ctrl+Alt+` asks for the elevated one, which relaunches us through UAC
+                // (Elevation.cs) rather than opening a tab here.
+                OpenShell(shift ? Terminal.TerminalProfile.Cmd(elevated: true)
+                                : Terminal.TerminalProfile.PowerShell(elevated: true));
+                e.Handled = true;
+            }
             // ── Results context-menu commands (ResultsMenu.cs) ───
             // Conventions first: where Windows or Explorer already owns a chord for one of
             // these, that chord wins, because a hand trained anywhere else arrives expecting it.
-            // Alt+Enter (Properties), Shift+F10 (shell menu), F3 (search), Ctrl+D (favourite)
+            // Alt+Enter (Properties), Shift+F10 (shell menu), F3 (search), Ctrl+D (favorite)
             // and Ctrl+Shift+C (copy as path) are all Windows'. Ctrl+Shift+Enter and plain Enter
             // live in the Enter branch below, where they share the key with running a search.
             //
@@ -748,7 +881,16 @@ namespace KillerFind
             //
             // All of them go through FromKeyboard, never straight at the handler: see the note
             // on that method about the stale right-click seed.
-            else if (e.Key == System.Windows.Input.Key.F10 && shift)
+            else if (ctrl && shift && e.Key == System.Windows.Input.Key.P)
+            {
+                // Second pane. PROVISIONAL - no convention exists for this (Explorer has no
+                // dual pane at all), so it is a placeholder to re-cut with the rest once the
+                // overlay shows the whole map. Right-clicking the toolbar button flips the
+                // orientation; that has no key yet on purpose.
+                ToggleDualPane();   // DualPane.cs
+                e.Handled = true;
+            }
+            else if (IsF10(e) && shift)
             {
                 FromKeyboard(MenuShell_Click);         // Windows' own context-menu key
                 e.Handled = true;

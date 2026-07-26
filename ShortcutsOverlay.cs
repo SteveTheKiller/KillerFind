@@ -21,7 +21,7 @@ namespace KillerFind
         [
             ("Search", "Enter",          "Str_Ks_Run"),
             ("Search", "Ctrl+E",         "Str_Ks_FocusSearch"),
-            ("Search", "Ctrl+N",         "Str_Ks_AddTerm"),
+            ("Search", "Ctrl+Shift+A",   "Str_Ks_AddTerm"),
             ("Search", "F7",             "Str_Ks_AddFilter"),
             ("Search", "Alt+C",          "Str_Ks_CaseSensitive"),
             ("Search", "Ctrl+F",         "Str_Ks_FilterResults"),
@@ -35,18 +35,29 @@ namespace KillerFind
             ("Nav",    "Ctrl+B",         "Str_Ks_Bookmarks"),
             ("Nav",    "Alt+1-0",        "Str_Ks_JumpBookmark"),
 
+            ("Tabs",   "Ctrl+N",         "Str_Ks_NewWindow"),
             ("Tabs",   "Ctrl+T",         "Str_Ks_NewTab"),
             ("Tabs",   "Ctrl+W",         "Str_Ks_CloseTab"),
             ("Tabs",   "Ctrl+Tab",       "Str_Ks_NextTab"),
             ("Tabs",   "Ctrl+1-9",       "Str_Ks_JumpTab"),
 
             ("View",   "F5",             "Str_Ks_Refresh"),
+            ("View",   "F10",            "Str_Ks_MenuBar"),
+            ("View",   "F11",            "Str_TT_DualPane"),
+            ("View",   "Ctrl+H",         "Str_TT_ShowHidden"),
             ("View",   "Ctrl+Shift+S",   "Str_Ks_SearchPanel"),
             ("View",   "Ctrl+Right",     "Str_Ks_ExpandAll"),
             ("View",   "Ctrl+Left",      "Str_Ks_CollapseAll"),
 
             ("File",   "F9",             "Str_Ks_ExportHtml"),
-            ("File",   "F8",             "Str_Ks_ExportCsv"),
+            ("File",   "Shift+F9",       "Str_Ks_ExportCsv"),
+
+            // Shells open as tabs in the opposite pane, so they are grouped with tabs rather
+            // than given a category of their own - one more heading for three rows would cost
+            // a Str_Ks_Cat key in ten locale files to say the same thing.
+            ("Tabs",   "F8",             "Str_Ks_Shell"),
+            ("Tabs",   "Shift+F8",       "Str_Ks_ShellCmd"),
+            ("Tabs",   "Ctrl+F8",        "Str_Ks_ShellAdmin"),
 
             ("Edit",   "Ctrl+A",         "Str_Ks_SelectAll"),
             ("Edit",   "Ctrl+X / C / V", "Str_Ks_CutCopyPaste"),

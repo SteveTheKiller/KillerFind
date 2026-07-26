@@ -47,12 +47,19 @@ namespace KillerFind
         // Room for the art plus two wrapped lines of filename. The width floor keeps small
         // icon sizes from squeezing names down to three characters and an ellipsis.
         //
-        // The +16 is the horizontal gap between tiles: at 96px art that is a 112px cell, so
-        // icons sit 16px apart. It used to be +44, which spread the grid out with far more air
-        // between columns than Explorer uses. Longer names trim sooner as a result - that is
-        // the trade, and the tooltip still carries the full path.
-        public double TileWidth  => Math.Max(96, _tileSize + 16);
-        public double TileHeight => _tileSize + 52;
+        // The added number is the horizontal gap between tiles: at 96px art and the Comfortable
+        // +16 that is a 112px cell, so icons sit 16px apart. It used to be a flat +44, which
+        // spread the grid out with far more air between columns than Explorer uses. Longer
+        // names trim sooner as a result - that is the trade, and the tooltip still carries the
+        // full path. Density drives it now, so tightening pulls the columns together instead of
+        // leaving the same gaps around smaller tiles.
+        public double TileWidth  => Math.Max(96, _tileSize + TileExtraW[_density]);
+
+        // The trailing number is everything under the art: the tile's own vertical padding, the
+        // gap above the name, and two lines of it. Those three shrink with density, so the cell
+        // has to shrink by the same amount or the space just moves from inside the tile to
+        // between the rows and nothing looks any tighter.
+        public double TileHeight => _tileSize + TileExtraH[_density];
 
         // Details view's "location" column. Zero while browsing, where it repeats the folder you
         // are already standing in on every single row; restored for search results, which is the
@@ -69,6 +76,109 @@ namespace KillerFind
             get => _locationWidth;
             set { if (_locationWidth != value) { _locationWidth = value; Notify(); } }
         }
+
+        // ═══════════════════════════════════════════════════════════
+        //  DENSITY
+        // ═══════════════════════════════════════════════════════════
+        // 0 Roomy, 1 Comfortable, 2 Compact, 3 Tight, 4 Minimal. Every view's padding is derived
+        // here rather than hardcoded in its template, so one property change retightens all
+        // three at once.
+        //
+        // Exposed as properties on this shared object rather than stamped onto every result the
+        // way KillerNotes stamps its notes: KillerFind's list can hold six figures of rows and
+        // walking them to set a padding would be absurd, while the templates already bind here
+        // for the tile size. Changing a property repaints; nothing is re-listed.
+        /// <summary>Number of density levels. The cycle and the status captions both key off it.</summary>
+        public const int DensityLevels = 5;
+
+        // Comfortable, not Roomy, is where a fresh install lands: it is the spacing every
+        // screenshot and every previous build used, and level 0 exists to go LOOSER than that.
+        private int _density = 1;
+
+        public int Density
+        {
+            get => _density;
+            set
+            {
+                int v = value < 0 ? 0 : value > DensityLevels - 1 ? DensityLevels - 1 : value;
+                if (v == _density) return;
+                _density = v;
+
+                // Everything derived, in one go. TileHeight is in here because a tighter tile is
+                // a SHORTER cell, not just a smaller picture - without it the grid keeps the old
+                // row pitch and the padding comes off the inside of an unchanged box.
+                Notify();
+                Notify(nameof(TilePad));
+                Notify(nameof(TileMargin));
+                Notify(nameof(TileNamePad));
+                Notify(nameof(TileWidth));
+                Notify(nameof(TileHeight));
+                Notify(nameof(RowPad));
+                Notify(nameof(CardPad));
+                Notify(nameof(HeaderPad));
+            }
+        }
+
+        // The ladder, one row per level, written as tables rather than switch arms: with five
+        // levels the point of the numbers is how they step, and a column you can read down
+        // catches a value out of order in a way five separate expressions never would.
+        //
+        // Index: 0 Roomy, 1 Comfortable, 2 Compact, 3 Tight, 4 Minimal.
+
+        // Tiles. The name keeps its two lines at every level - trimming a file name to one line
+        // is lost information, which is the opposite of what density is for.
+        private static readonly double[] TileExtraW = { 30, 16, 12, 8, 4 };
+        private static readonly double[] TileExtraH = { 62, 52, 46, 40, 34 };
+
+        private static readonly Thickness[] TilePads =
+        {
+            new Thickness(6, 8, 6, 8), new Thickness(4, 6, 4, 6), new Thickness(3, 4, 3, 4),
+            new Thickness(2, 2, 2, 2), new Thickness(1, 1, 1, 1),
+        };
+
+        private static readonly Thickness[] TileMargins =
+        {
+            new Thickness(6), new Thickness(3), new Thickness(2), new Thickness(1), new Thickness(0),
+        };
+
+        private static readonly Thickness[] TileNamePads =
+        {
+            new Thickness(2, 8, 2, 0), new Thickness(2, 6, 2, 0), new Thickness(2, 4, 2, 0),
+            new Thickness(2, 2, 2, 0), new Thickness(2, 1, 2, 0),
+        };
+
+        public Thickness TilePad     => TilePads[_density];
+        public Thickness TileMargin  => TileMargins[_density];
+        public Thickness TileNamePad => TileNamePads[_density];
+
+        // Details rows and list cards. The side padding moves with density too, so a tight level
+        // wins width as well as height - but the right number never drops below 22, because
+        // that gap is what keeps the last column out from under the scrollbar rather than
+        // decoration. The left number is shared with the column headers, which is why HeaderPad
+        // exists: the two have to step together or every row sits off its own heading.
+        private static readonly Thickness[] RowPads =
+        {
+            new Thickness(20, 5, 36, 5), new Thickness(14, 3, 30, 3), new Thickness(10, 1, 26, 1),
+            new Thickness(8, 1, 24, 1),  new Thickness(6, 0, 22, 0),
+        };
+
+        private static readonly Thickness[] CardPads =
+        {
+            new Thickness(20, 9, 20, 9), new Thickness(14, 6, 14, 6), new Thickness(10, 4, 10, 4),
+            new Thickness(8, 3, 8, 3),   new Thickness(6, 2, 6, 2),
+        };
+
+        // The header's own vertical padding is fixed - it is a band of type, not a row of
+        // results, and letting it shrink would just make the column names harder to hit.
+        private static readonly Thickness[] HeaderPads =
+        {
+            new Thickness(20, 4, 36, 4), new Thickness(14, 4, 30, 4), new Thickness(10, 4, 26, 4),
+            new Thickness(8, 4, 24, 4),  new Thickness(6, 4, 22, 4),
+        };
+
+        public Thickness RowPad    => RowPads[_density];
+        public Thickness CardPad   => CardPads[_density];
+        public Thickness HeaderPad => HeaderPads[_density];
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void Notify([CallerMemberName] string? n = null)
@@ -95,6 +205,17 @@ namespace KillerFind
             DependencyProperty.RegisterAttached("Size", typeof(int), typeof(TileArt),
                 new PropertyMetadata(0, OnChanged));
 
+        // Folders and drives have no extension to key on, so without this the extension-only
+        // fast path answers every one of them with the generic unknown-file page. It is what
+        // picks up a custom folder icon too, and what makes a drive at This PC look like a
+        // drive rather than a document.
+        public static readonly DependencyProperty IsDirectoryProperty =
+            DependencyProperty.RegisterAttached("IsDirectory", typeof(bool), typeof(TileArt),
+                new PropertyMetadata(false, OnChanged));
+
+        public static bool GetIsDirectory(DependencyObject d) => (bool)d.GetValue(IsDirectoryProperty);
+        public static void SetIsDirectory(DependencyObject d, bool v) => d.SetValue(IsDirectoryProperty, v);
+
         public static string? GetPath(DependencyObject d) => (string?)d.GetValue(PathProperty);
         public static void   SetPath(DependencyObject d, string? v) => d.SetValue(PathProperty, v);
 
@@ -112,7 +233,7 @@ namespace KillerFind
 
             // Synchronous and cheap: the shell icon is cached per extension and per size, so a
             // screen of tiles costs a handful of shell calls no matter how many results there are.
-            img.Source = Services.IconCache.For(path!, size);
+            img.Source = Services.IconCache.For(path!, size, GetIsDirectory(img));
         }
     }
 
@@ -151,9 +272,15 @@ namespace KillerFind
             Services.ThemeManager.SetSetting("ResultsView", mode.ToString(CultureInfo.InvariantCulture));
         }
 
+        // The view mode is a WINDOW-wide setting mirrored into per-pane controls, so it has to
+        // reach every live pane, not just the focused one (Panes.cs). Writing through `Pane`
+        // alone left the second pane on whatever template its XAML defaulted to, with its three
+        // view buttons unlit, and changing the view from one pane left the other stale.
+        private void ApplyResultsView() => ForEachPane(ApplyResultsViewToPane);
+
         // Swap the panel and the template, then light the button that is now active. Same shape
         // as the folder picker's ApplyView, which is where the pattern comes from.
-        private void ApplyResultsView()
+        private void ApplyResultsViewToPane()
         {
             Pane.ResultsList.ItemsPanel = (ItemsPanelTemplate)Pane.ResultsList.FindResource(
                 _viewMode == 1 ? "PanelWrap" : "PanelStack");
@@ -202,10 +329,6 @@ namespace KillerFind
                 // is what you are looking for when you click those.
                 _active.SortAsc = index == 1 || index == 2;
             }
-
-            _syncingSort = true;
-            Pane.SortCombo.SelectedIndex = _active.SortIndex;
-            _syncingSort = false;
 
             ApplySort(_active);
         }

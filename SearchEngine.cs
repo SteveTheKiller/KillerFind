@@ -162,7 +162,7 @@ namespace KillerFind
                     foreach (var f in fileList ?? SafeEnumerateFiles(rootPath))
                     {
                         if (ct.IsCancellationRequested) break;
-                        feed.Add(f, ct);   // throws OCE if cancelled while the queue is full
+                        feed.Add(f, ct);   // throws OCE if canceled while the queue is full
                     }
                 }
                 catch (OperationCanceledException) { /* graceful stop */ }

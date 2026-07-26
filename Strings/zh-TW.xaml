@@ -73,9 +73,15 @@
     <sys:String x:Key="Str_Sort_Found">預設順序</sys:String>
     <sys:String x:Key="Str_TT_FilterResults">篩選這些結果（Ctrl+F）</sys:String>
     <sys:String x:Key="Str_TT_Pipe">在這些結果中搜尋</sys:String>
+    <sys:String x:Key="Str_TT_DualPane">第二個窗格  |  右鍵切換左右 / 上下</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">更多工具</sys:String>
+    <sys:String x:Key="Str_TT_Sort">排序方式</sys:String>
+    <sys:String x:Key="Str_Nav_ThisPc">本機</sys:String>
     <sys:String x:Key="Str_Menu_PipeTab">在這些結果中搜尋</sys:String>
     <sys:String x:Key="Str_Pipe_Scope">來自 {1} 的 {0} 個結果  |  {2}</sys:String>
     <sys:String x:Key="Str_Status_NoPipe">還沒有可供搜尋的結果。</sys:String>
+
+    <sys:String x:Key="Str_Status_ElevateFailed">無法啟動系統管理員 shell：{0}</sys:String>
 
     <!-- Portable install + quit dialog -->
     <sys:String x:Key="Str_Portable">可攜版</sys:String>
@@ -99,7 +105,7 @@
     <sys:String x:Key="Str_TT_ViewDetails">詳細資料檢視</sys:String>
     <sys:String x:Key="Str_Lbl_SearchTerms">搜尋關鍵字</sys:String>
     <sys:String x:Key="Str_Btn_AddTerm">+ 新增關鍵字</sys:String>
-    <sys:String x:Key="Str_Btn_AddGroup">+ æ–°å¢žç¾¤çµ„</sys:String>
+    <sys:String x:Key="Str_Btn_AddGroup">+ 新增群組</sys:String>
     <sys:String x:Key="Str_Btn_Clear">清除</sys:String>
 
     <!-- Search button (code-behind swaps idle/stop; keep the brackets) -->
@@ -145,6 +151,8 @@
 
     <!-- HTML report -->
     <sys:String x:Key="Str_Rpt_Meta">產生於 {0} &#183; {1} 個檔案 &#183; {2} 個符合</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">產生於 {0} &#183; {1} 個項目</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">{0} 的清單。</sys:String>
     <sys:String x:Key="Str_Rpt_Query">在 {0} 中搜尋{1}。</sys:String>
     <sys:String x:Key="Str_Rpt_TermName">檔名包含 {0}</sys:String>
     <sys:String x:Key="Str_Rpt_TermContent">檔案內容包含 {0}</sys:String>
@@ -187,9 +195,60 @@
     <sys:String x:Key="Str_Ks_SearchPanel">顯示或隱藏搜尋面板</sys:String>
     <sys:String x:Key="Str_Ks_ExpandAll">展開全部結果</sys:String>
     <sys:String x:Key="Str_Ks_CollapseAll">摺疊全部結果</sys:String>
+    <sys:String x:Key="Str_Ks_Shell">在此資料夾中開啟 PowerShell 分頁</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmd">在此資料夾中開啟 CMD 分頁</sys:String>
+    <sys:String x:Key="Str_Ks_ShellAdmin">以系統管理員身分開啟 PowerShell</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmdAdmin">以系統管理員身分開啟 CMD</sys:String>
     <sys:String x:Key="Str_Ks_ExportHtml">將結果匯出為 HTML</sys:String>
     <sys:String x:Key="Str_Ks_ExportCsv">將結果匯出為 CSV</sys:String>
     <sys:String x:Key="Str_Ks_Hint">快速鍵在整個視窗內有效。展開的下拉式清單、日期欄與結果篩選框會自行處理 Enter。</sys:String>
+
+    <!-- Font dialog, reached from the row under the theme flyout -->
+    <sys:String x:Key="Str_Fonts_Row">字型...</sys:String>
+    <sys:String x:Key="Str_Fonts_Title">字型</sys:String>
+    <sys:String x:Key="Str_Fonts_App">應用程式</sys:String>
+    <sys:String x:Key="Str_Fonts_Terminal">終端機</sys:String>
+    <sys:String x:Key="Str_Fonts_Default">預設</sys:String>
+    <sys:String x:Key="Str_Fonts_Hint">在清單上滾動滾輪即可瀏覽字型，每次變更立即生效。</sys:String>
+    <sys:String x:Key="Str_Fonts_Unreadable">{0} 沒有可讀字母 - 保留上一個字型</sys:String>
+
+    <!-- Title-bar caption on an elevated window, beside the wordmark -->
+    <sys:String x:Key="Str_Title_Elevated">- 已提升權限</sys:String>
+    <sys:String x:Key="Str_Ks_MenuBar">顯示或隱藏窗格工具列</sys:String>
+    <sys:String x:Key="Str_Ks_NewWindow">開啟新視窗</sys:String>
+
+    <!-- Recently visited folders, behind the address bar's chevron (Recents.cs) -->
+    <sys:String x:Key="Str_TT_Recents">最近造訪的資料夾</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">尚無最近的資料夾</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">清除清單</sys:String>
+
+    <!-- Results density, on the rail (Density.cs) -->
+    <sys:String x:Key="Str_TT_Density">結果密度 - 按一下切換，滾輪調整</sys:String>
+    <sys:String x:Key="Str_St_DensityRoomy">密度：寬敞</sys:String>
+    <sys:String x:Key="Str_St_DensityFull">密度：寬鬆</sys:String>
+    <sys:String x:Key="Str_St_DensityCompact">密度：緊湊</sys:String>
+    <sys:String x:Key="Str_St_DensityTight">密度：緊密</sys:String>
+    <sys:String x:Key="Str_St_DensityMin">密度：最小</sys:String>
+
+    <!-- Terminal right-click menu (Terminal/TerminalMenu.cs) -->
+    <sys:String x:Key="Str_Term_Copy">複製</sys:String>
+    <sys:String x:Key="Str_Term_Paste">貼上</sys:String>
+    <sys:String x:Key="Str_Term_SelectAll">全選</sys:String>
+    <sys:String x:Key="Str_Term_Clear">清除畫面</sys:String>
+    <sys:String x:Key="Str_Term_NewShell">新增終端機</sys:String>
+    <sys:String x:Key="Str_Term_OpenFolder">開啟此資料夾</sys:String>
+    <sys:String x:Key="Str_Term_Fonts">字型...</sys:String>
+    <sys:String x:Key="Str_Term_EditPrompt">編輯提示字元...</sys:String>
+    <sys:String x:Key="Str_Term_ResetPrompt">重設提示字元</sys:String>
+    <sys:String x:Key="Str_Term_Close">關閉終端機</sys:String>
+    <sys:String x:Key="Str_Dlg_ResetPromptMsg">要還原隨附的提示字元指令碼嗎？您對此檔案所做的變更將會遺失。</sys:String>
+    <sys:String x:Key="Str_Btn_Reset">重設</sys:String>
+    <!-- Rail button: left click opens PowerShell, right click picks -->
+    <sys:String x:Key="Str_TT_Terminal">開啟終端機  (F8)  -  按右鍵選擇</sys:String>
+    <sys:String x:Key="Str_Term_PowerShell">PowerShell</sys:String>
+    <sys:String x:Key="Str_Term_PowerShellAdmin">以系統管理員身分執行 PowerShell</sys:String>
+    <sys:String x:Key="Str_Term_Cmd">命令提示字元</sys:String>
+    <sys:String x:Key="Str_Term_CmdAdmin">以系統管理員身分執行命令提示字元</sys:String>
 
     <!-- Browsing, drop targets and the results context menu (2.0) -->
     <sys:String x:Key="Str_Scope_Dropped">拖入的檔案</sys:String>
@@ -212,6 +271,8 @@
     <sys:String x:Key="Str_Status_BadPath">無法開啟 {0}</sys:String>
     <sys:String x:Key="Str_Menu_OpenAdmin">以系統管理員身分開啟</sys:String>
     <sys:String x:Key="Str_Menu_SearchHere">在此資料夾中搜尋</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminal">在此開啟終端機</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminalAdmin">在此以系統管理員身分開啟終端機</sys:String>
     <sys:String x:Key="Str_Menu_ExcludeFolder">排除此資料夾</sys:String>
     <sys:String x:Key="Str_Menu_CopyPath">複製完整路徑</sys:String>
     <sys:String x:Key="Str_Menu_CopyName">複製檔案名稱</sys:String>

@@ -23,10 +23,17 @@ namespace KillerFind
         private const string AssetBase = "https://killerfind.net/assets/";
         private const string SiteUrl   = "https://killerfind.net";
 
+        /// <param name="browsing">
+        /// True when the tab is a folder listing rather than a search. A listing has no query
+        /// and no matches, so "Searched X for everything - 0 matches" is wrong twice over. It
+        /// cannot be inferred from an empty <paramref name="terms"/>: a search with only
+        /// FILTERS ("every .pdf over 100 MB") also has no terms and is still a search.
+        /// </param>
         public void Export(string outputPath,
                            IList<SearchResult> results,
                            IList<SearchTerm>   terms,
-                           string              rootPath)
+                           string              rootPath,
+                           bool                browsing = false)
         {
             string current = Services.ThemeManager.Current.ToString().ToLowerInvariant();
             string ts = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
@@ -123,8 +130,13 @@ namespace KillerFind
             sb.AppendLine("</div></div>");
 
             int totalMatches = results.Sum(r => r.TotalMatchCount);
-            string meta = string.Format(L("Str_Rpt_Meta", "Generated {0} · {1} files · {2} matches"),
-                $"<b>{ts}</b>", $"<b>{results.Count:N0}</b>", $"<b>{totalMatches:N0}</b>");
+            // A folder listing counts ITEMS and has no match count to report; only a search
+            // does. Reporting "0 matches" over a full listing read as a broken export.
+            string meta = browsing
+                ? string.Format(L("Str_Rpt_MetaList", "Generated {0} · {1} items"),
+                    $"<b>{ts}</b>", $"<b>{results.Count:N0}</b>")
+                : string.Format(L("Str_Rpt_Meta", "Generated {0} · {1} files · {2} matches"),
+                    $"<b>{ts}</b>", $"<b>{results.Count:N0}</b>", $"<b>{totalMatches:N0}</b>");
             sb.AppendLine($"<p class='meta'>{meta}</p>");
 
             // Plain-language description of what was searched, instead of raw term chips.
@@ -142,7 +154,9 @@ namespace KillerFind
                 1 => termBits[0],
                 _ => string.Join(", ", termBits.Take(termBits.Count - 1)) + $" {or} " + termBits[termBits.Count - 1],
             };
-            sb.AppendLine($"<p class='query'>{string.Format(L("Str_Rpt_Query", "Searched {0} for {1}."), $"<b>{Esc(rootPath)}</b>", what)}</p>");
+            sb.AppendLine($"<p class='query'>{(browsing
+                ? string.Format(L("Str_Rpt_Listing", "Listing of {0}."), $"<b>{Esc(rootPath)}</b>")
+                : string.Format(L("Str_Rpt_Query", "Searched {0} for {1}."), $"<b>{Esc(rootPath)}</b>", what))}</p>");
 
             sb.AppendLine("<div class='tablewrap'><table id='tbl'><thead><tr>");
             sb.AppendLine($"<th data-type='text'>{L("Str_Col_Name", "name")} <span class='arrow'></span></th>");

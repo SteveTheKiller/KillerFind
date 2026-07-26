@@ -10,7 +10,7 @@ namespace KillerFind.Services
     /// KillerUI / Grunge theme engine. Swaps the palette dictionary (MergedDictionaries[0]) in
     /// place at runtime; control styles bind brushes via DynamicResource so an in-place per-key
     /// update repaints everything. Persistence is pluggable (wire GetSetting/SetSetting at startup).
-    /// Requires Themes/{Theme}.xaml colour dictionaries (copy them from KillerScan) merged at [0].
+    /// Requires Themes/{Theme}.xaml color dictionaries (copy them from KillerScan) merged at [0].
     /// </summary>
     public static class ThemeManager
     {
@@ -33,9 +33,22 @@ namespace KillerFind.Services
 
         public static event Action? ThemeChanged;
 
+        /// <summary>Set by App before <see cref="Initialize"/> when the process is running elevated.</summary>
+        /// <remarks>
+        /// An admin window gets Blood, and keeps its own theme under its own key. Two reasons
+        /// for a separate key rather than just forcing the palette: switching theme inside an
+        /// admin window must not rewrite the theme every ordinary window uses, and an elevated
+        /// process shares the same HKCU as the unelevated one, so a single key would have them
+        /// fighting over it. Blood is the default rather than a lock - the point is that an
+        /// admin window never comes up looking like a user-level one.
+        /// </remarks>
+        public static bool Elevated { get; set; }
+
+        private static string ThemeKey => Elevated ? "ThemeAdmin" : "Theme";
+
         public static void Initialize()
         {
-            _current     = Enum.TryParse<Theme>(GetSetting("Theme"),        out var t)  ? t  : _current;
+            _current     = Enum.TryParse<Theme>(GetSetting(ThemeKey),       out var t)  ? t  : (Elevated ? Theme.Blood : _current);
             _darkAccent  = Enum.TryParse<Accent>(GetSetting("DarkAccent"),  out var da) ? da : _darkAccent;
             _lightAccent = Enum.TryParse<Accent>(GetSetting("LightAccent"), out var la) ? la : _lightAccent;
             _blackAccent = Enum.TryParse<Accent>(GetSetting("BlackAccent"), out var ba) ? ba : _blackAccent;
@@ -45,7 +58,7 @@ namespace KillerFind.Services
         public static void Apply(Theme theme)
         {
             _current = theme;
-            SetSetting("Theme", theme.ToString());
+            SetSetting(ThemeKey, theme.ToString());
             LoadDict(theme);
             ThemeChanged?.Invoke();
         }

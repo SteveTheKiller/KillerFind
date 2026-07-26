@@ -33,13 +33,18 @@ namespace KillerFind
         {
             if (string.IsNullOrWhiteSpace(folder)) return;
 
-            try { folder = Path.GetFullPath(folder); }
-            catch { SetTabStatusKey(_active, "Str_Status_BadPath", folder); return; }
-
-            if (!Directory.Exists(folder))
+            // This PC is a listing, not a directory, so it skips the path checks entirely.
+            bool thisPc = IsThisPc(folder);
+            if (!thisPc)
             {
-                SetTabStatusKey(_active, "Str_Status_BadPath", folder);
-                return;
+                try { folder = Path.GetFullPath(folder); }
+                catch { SetTabStatusKey(_active, "Str_Status_BadPath", folder); return; }
+
+                if (!Directory.Exists(folder))
+                {
+                    SetTabStatusKey(_active, "Str_Status_BadPath", folder);
+                    return;
+                }
             }
 
             var tab = _active;
@@ -55,7 +60,7 @@ namespace KillerFind
 
             tab.CurrentFolder = folder;
             tab.IsBrowsing    = true;
-            tab.Title         = FolderTitle(folder);
+            tab.Title         = thisPc ? Loc("Str_Nav_ThisPc") : FolderTitle(folder);
 
             // Cancel a listing still running for the folder we just left, or a slow network
             // share would land its results on top of the folder you moved to.
@@ -63,14 +68,22 @@ namespace KillerFind
             _listCts = new CancellationTokenSource();
             var ct = _listCts.Token;
 
-            Pane.RootPathBox.Text    = folder;
-            Pane.ScopePathLabel.Text = folder;
+            // The sentinel is never shown: the address row reads "This PC" the way Explorer's
+            // does. It is what CaptureTab stores as the tab's search root too, which is not a
+            // directory, so pressing Search here opens the folder picker instead of scanning.
+            string shown = thisPc ? Loc("Str_Nav_ThisPc") : folder;
+            Pane.RootPathBox.Text    = shown;
+            Pane.ScopePathLabel.Text = shown;
             UpdateNavButtons();
-            SetTabStatusKey(tab, "Str_Status_Listing", folder);
+            SetTabStatusKey(tab, "Str_Status_Listing", shown);
 
             List<SearchResult> entries;
-            try { entries = await Task.Run(() => ListFolder(folder, ct), ct); }
-            catch (OperationCanceledException) { return; }
+            if (thisPc) entries = ListDrives();
+            else
+            {
+                try { entries = await Task.Run(() => ListFolder(folder, ct), ct); }
+                catch (OperationCanceledException) { return; }
+            }
 
             if (ct.IsCancellationRequested || tab != _active) return;
 
@@ -81,21 +94,86 @@ namespace KillerFind
             ApplyFilter(tab);
 
             // Watch AFTER the listing lands, so the first events cannot arrive against a
-            // collection that is still being filled (BrowseWatcher.cs).
-            StartWatching(folder);
+            // collection that is still being filled (BrowseWatcher.cs). There is no directory
+            // behind This PC to watch, so the previous folder's watcher is simply dropped.
+            if (thisPc) StopWatching();
+            else        StartWatching(folder);
 
             Pane.ResultsHeader.Text = string.Format(Loc("Str_Lbl_ResultsCount"), tab.Results.Count);
             SetTabStatusKey(tab, "Str_Status_Listed", entries.Count.ToString("N0"));
             UpdateTabBar();
 
-            UpdateFavouriteStar();   // Bookmarks.cs - a new folder changes what the star means
+            UpdateFavoriteStar();   // Bookmarks.cs - a new folder changes what the star means
             UpdateLocationColumn();  // ViewOptions.cs - browsing needs no per-row folder
+            UpdateRecentsButton();   // Recents.cs - the chevron is browse-only
+
+            // Recorded AFTER the listing succeeded, not before: a path that turned out to be
+            // unreadable is not somewhere you were, and putting it in the list would hand you a
+            // row that fails every time you pick it.
+            RecordRecent(folder);   // Recents.cs
 
             // Point the tree at where we landed, whichever route got us here - the tree's own
             // selection handler is what called this in the first place when it was the route,
             // and RevealInTree guards that case (FolderTree.cs). Not awaited: expanding the
             // chain can touch a slow drive and the listing is already on screen.
-            _ = RevealInTree(folder);
+            // The tree is rooted AT the drives, so This PC is above everything it can show and
+            // there is nothing to reveal.
+            if (!thisPc) _ = RevealInTree(folder);
+        }
+
+        // ── This PC ──────────────────────────────────────────────
+        // The top of the browse hierarchy: Up from a drive root lands here instead of stopping
+        // dead, and it lists the drives the way Explorer's This PC does.
+        //
+        // It is a LISTING, not a folder - no path on disk contains C:\ and D:\ - so it travels
+        // as a sentinel that cannot collide with a real path (':' is illegal in a Windows path
+        // except after the drive letter). Everything downstream that needs a genuine directory
+        // is gated either on IsThisPc or on Directory.Exists, which it already was: the search
+        // root falls back to the folder picker, TargetFolder() returns null so paste and
+        // new-folder stay disabled, and the watcher and tree reveal are skipped above. That is
+        // what keeps This PC browse-only without a second code path for it.
+        internal const string ThisPc = ":ThisPC:";
+
+        internal static bool IsThisPc(string? path) => string.Equals(path, ThisPc, StringComparison.Ordinal);
+
+        /// <summary>
+        /// The drives, as browse entries. Not off the UI thread like ListFolder: this is a
+        /// handful of rows, and DriveInfo.GetDrives does not touch the volumes themselves.
+        /// </summary>
+        private static List<SearchResult> ListDrives()
+        {
+            var list = new List<SearchResult>();
+            int seq = 0;
+
+            DriveInfo[] drives;
+            try { drives = DriveInfo.GetDrives(); }
+            catch (IOException) { return list; }
+            catch (UnauthorizedAccessException) { return list; }
+
+            foreach (var d in drives)
+            {
+                string root;
+                try { root = d.RootDirectory.FullName; }
+                catch { continue; }
+
+                list.Add(new SearchResult
+                {
+                    FilePath    = root,
+                    // Same "Local Disk (C:)" label the tree uses, from the one place that
+                    // builds it (FolderTree.cs), so the two cannot drift.
+                    FileName    = FolderNode.DriveLabel(d),
+                    Directory   = string.Empty,
+                    IsDirectory = true,
+                    // Left at 0 like a folder. Free space would be the interesting number here,
+                    // but the column says size, and a size column that means something else on
+                    // one screen is worse than a blank one.
+                    SizeBytes   = 0,
+                    Modified    = default,
+                    Seq         = seq++,
+                });
+            }
+
+            return list;
         }
 
         // Everything in one pass, each entry stat'd once. Enumerating the FileSystemInfo rather
@@ -188,14 +266,23 @@ namespace KillerFind
             if (parent != null) await NavigateTo(parent);
         }
 
-        // Null at a drive root, which is where Up should stop until the This PC page exists.
+        // Null only at the very top: a drive root's parent is This PC, and This PC has none.
+        //
+        // The path goes to GetParent AS IS. Trimming the trailing separator first turned "C:\"
+        // into "C:", which Windows reads as a DRIVE-RELATIVE path and resolves against whatever
+        // that drive's current directory happens to be - so Up from C:\ jumped to a folder near
+        // the process's working directory instead of going up. Untrimmed, GetParent("C:\")
+        // returns null, which is exactly the drive-root signal wanted here. Nothing else can
+        // arrive with a trailing separator: NavigateTo runs every path through GetFullPath,
+        // which only leaves one on a drive root.
         private static string? ParentOf(string folder)
         {
             if (string.IsNullOrEmpty(folder)) return null;
+            if (IsThisPc(folder)) return null;
             try
             {
-                var parent = System.IO.Directory.GetParent(folder.TrimEnd(Path.DirectorySeparatorChar));
-                return parent?.FullName;
+                var parent = System.IO.Directory.GetParent(folder);
+                return parent?.FullName ?? ThisPc;
             }
             catch { return null; }
         }

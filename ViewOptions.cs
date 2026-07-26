@@ -22,7 +22,11 @@ namespace KillerFind
             UpdateViewOptionButtons();
         }
 
-        private void UpdateViewOptionButtons()
+        // Both toggles are WINDOW-wide settings, so both panes have to show the same state -
+        // hence ForEachPane rather than writing through `Pane` once (Panes.cs).
+        private void UpdateViewOptionButtons() => ForEachPane(UpdateViewOptionButtonsInPane);
+
+        private void UpdateViewOptionButtonsInPane()
         {
             // E7B3 is the "hidden" eye, E890 the open one, so the glyph says what you are
             // currently looking at rather than what the click would do.
@@ -64,14 +68,6 @@ namespace KillerFind
             if (browsing && _active != null && _active.SortIndex == 0)
             {
                 _active.SortIndex = 1;               // name
-
-                // Programmed, not user-driven: suppress SortCombo_Changed and sort by hand, so
-                // this works the same whether it runs during a tab switch or a navigation.
-                bool wasSyncing = _syncingSort;      // Results.cs
-                _syncingSort = true;
-                Pane.SortCombo.SelectedIndex = 1;
-                _syncingSort = wasSyncing;
-
                 ApplySort(_active);                  // Results.cs
             }
         }

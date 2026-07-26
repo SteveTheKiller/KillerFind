@@ -48,9 +48,11 @@
     <SolidColorBrush x:Key="MenuHoverBrush"      Color="#b2b2b2" po:Freeze="True"/>
     <SolidColorBrush x:Key="OutlinePressedBrush" Color="#c8f5d8" po:Freeze="True"/>
     <SolidColorBrush x:Key="ScrollThumbBrush"    Color="#8818843d" po:Freeze="True"/>
+    <!-- Resting accent edge - see Dark.xaml. -->
+    <SolidColorBrush x:Key="TabEdgeBrush"        Color="#661b5e20" po:Freeze="True"/>
     <SolidColorBrush x:Key="ScrollThumbHoverBrush" Color="#1b5e20" po:Freeze="True"/>
 
-    <!-- Device-type label colours (darkened, for the light pane) -->
+    <!-- Device-type label colors (darkened, for the light pane) -->
     <SolidColorBrush x:Key="TypeRouter"     Color="#B06000" po:Freeze="True"/>
     <SolidColorBrush x:Key="TypeWindows"    Color="#1D5FB0" po:Freeze="True"/>
     <SolidColorBrush x:Key="TypePrinter"    Color="#9C3F66" po:Freeze="True"/>

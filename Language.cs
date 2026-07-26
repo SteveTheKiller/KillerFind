@@ -89,7 +89,14 @@ namespace KillerFind
         }
 
         /// <summary>Look up a localized string; falls back to the key name if missing.</summary>
-        private string Loc(string key) => Application.Current.TryFindResource(key) as string ?? key;
+        private string Loc(string key) => LocStatic(key);
+
+        /// <summary>
+        /// The same lookup, reachable from a model. Bookmark needs it to name the This PC entry
+        /// (Bookmarks.cs), and a model has no window to ask.
+        /// </summary>
+        internal static string LocStatic(string key)
+            => Application.Current.TryFindResource(key) as string ?? key;
 
         /// <summary>Re-applies strings set in code so a live language switch updates them.
         /// Static {DynamicResource Str_*} XAML refreshes itself; everything below is the

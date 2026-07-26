@@ -53,7 +53,12 @@ namespace KillerFind
             Children.Add(Placeholder);
         }
 
-        private static string DriveLabel(DriveInfo d)
+        /// <summary>
+        /// "Local Disk (C:)" style label, or the bare letter when the volume cannot be read.
+        /// Internal because the This PC listing (Browse.cs) shows the same drives and must
+        /// name them the same way the tree does.
+        /// </summary>
+        internal static string DriveLabel(DriveInfo d)
         {
             string letter = d.Name.TrimEnd('\\');
             try
@@ -359,24 +364,36 @@ namespace KillerFind
                 r => full.StartsWith(r.Path, StringComparison.OrdinalIgnoreCase));
             if (root == null) return;
 
+            var segments = RelativeSegments(root.Path, full).ToList();
+
             var current = root;
-            await current.LoadChildrenAsync();
-            current.IsExpanded = true;
-
-            foreach (string segment in RelativeSegments(root.Path, full))
+            if (segments.Count > 0)
             {
-                var next = current.Children.FirstOrDefault(
-                    c => string.Equals(c.Name, segment, StringComparison.OrdinalIgnoreCase));
-                if (next == null) return;   // hidden, or gone since the listing
-
-                await next.LoadChildrenAsync();
-                current = next;
+                await current.LoadChildrenAsync();
                 current.IsExpanded = true;
             }
 
-            // Collapse the leaf again: arriving somewhere should show you where you are, not
-            // dump its whole subtree open underneath you.
-            current.IsExpanded = false;
+            for (int i = 0; i < segments.Count; i++)
+            {
+                var next = current.Children.FirstOrDefault(
+                    c => string.Equals(c.Name, segments[i], StringComparison.OrdinalIgnoreCase));
+                if (next == null) return;   // hidden, or gone since the listing
+
+                current = next;
+
+                // The DESTINATION's own expander is left exactly as the user had it. Only the
+                // ancestors are opened, and only because the chain has to be walked to reach it.
+                //
+                // This used to expand every node including the leaf and then force the leaf shut
+                // again. Going UP made that visibly wrong: the folder you are moving INTO is the
+                // one already expanded showing where you came from, so slamming it closed
+                // collapsed the branch under the cursor and the whole tree jumped. Dual pane only
+                // made it obvious - it did the same thing with one pane.
+                if (i == segments.Count - 1) break;
+
+                await current.LoadChildrenAsync();   // needed to match the NEXT segment
+                current.IsExpanded = true;
+            }
 
             _treeSyncing = true;
             current.IsSelected = true;

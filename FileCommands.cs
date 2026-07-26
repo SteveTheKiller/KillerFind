@@ -80,7 +80,7 @@ namespace KillerFind
         }
 
         /// <summary>
-        /// Pastes whatever is on the clipboard into the browsed folder, honouring the drop effect
+        /// Pastes whatever is on the clipboard into the browsed folder, honoring the drop effect
         /// the copying app asked for - so a cut from Explorer moves here, and a copy copies.
         /// </summary>
         internal void PasteIntoCurrentFolder()

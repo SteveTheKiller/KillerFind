@@ -73,9 +73,15 @@
     <sys:String x:Key="Str_Sort_Found">wie gefunden</sys:String>
     <sys:String x:Key="Str_TT_FilterResults">Diese Ergebnisse filtern (Strg+F)</sys:String>
     <sys:String x:Key="Str_TT_Pipe">In diesen Ergebnissen suchen</sys:String>
+    <sys:String x:Key="Str_TT_DualPane">Zweiter Bereich  |  Rechtsklick wechselt nebeneinander / übereinander</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">Weitere Werkzeuge</sys:String>
+    <sys:String x:Key="Str_TT_Sort">Sortieren nach</sys:String>
+    <sys:String x:Key="Str_Nav_ThisPc">Dieser PC</sys:String>
     <sys:String x:Key="Str_Menu_PipeTab">In diesen Ergebnissen suchen</sys:String>
     <sys:String x:Key="Str_Pipe_Scope">{0} Ergebnisse aus {1}  |  {2}</sys:String>
     <sys:String x:Key="Str_Status_NoPipe">Noch keine Ergebnisse zum Durchsuchen.</sys:String>
+
+    <sys:String x:Key="Str_Status_ElevateFailed">Erhöhte Eingabeaufforderung konnte nicht gestartet werden: {0}</sys:String>
 
     <!-- Portable install + quit dialog -->
     <sys:String x:Key="Str_Portable">PORTABEL</sys:String>
@@ -145,6 +151,8 @@
 
     <!-- HTML report -->
     <sys:String x:Key="Str_Rpt_Meta">Erstellt {0} &#183; {1} Dateien &#183; {2} Treffer</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">Erstellt {0} &#183; {1} Elemente</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">Inhalt von {0}.</sys:String>
     <sys:String x:Key="Str_Rpt_Query">Durchsucht: {0} nach {1}.</sys:String>
     <sys:String x:Key="Str_Rpt_TermName">Dateinamen mit {0}</sys:String>
     <sys:String x:Key="Str_Rpt_TermContent">Dateiinhalten mit {0}</sys:String>
@@ -187,9 +195,60 @@
     <sys:String x:Key="Str_Ks_SearchPanel">Suchbereich ein- oder ausblenden</sys:String>
     <sys:String x:Key="Str_Ks_ExpandAll">alle Ergebnisse aufklappen</sys:String>
     <sys:String x:Key="Str_Ks_CollapseAll">alle Ergebnisse zuklappen</sys:String>
+    <sys:String x:Key="Str_Ks_Shell">PowerShell-Tab in diesem Ordner öffnen</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmd">CMD-Tab in diesem Ordner öffnen</sys:String>
+    <sys:String x:Key="Str_Ks_ShellAdmin">PowerShell als Administrator öffnen</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmdAdmin">CMD als Administrator öffnen</sys:String>
     <sys:String x:Key="Str_Ks_ExportHtml">Ergebnisse als HTML exportieren</sys:String>
     <sys:String x:Key="Str_Ks_ExportCsv">Ergebnisse als CSV exportieren</sys:String>
     <sys:String x:Key="Str_Ks_Hint">Kurzbefehle gelten im ganzen Fenster. Geöffnete Dropdowns, das Datumsfeld und der Ergebnisfilter behalten die Eingabetaste für sich.</sys:String>
+
+    <!-- Font dialog, reached from the row under the theme flyout -->
+    <sys:String x:Key="Str_Fonts_Row">Schriftarten...</sys:String>
+    <sys:String x:Key="Str_Fonts_Title">SCHRIFTARTEN</sys:String>
+    <sys:String x:Key="Str_Fonts_App">ANWENDUNG</sys:String>
+    <sys:String x:Key="Str_Fonts_Terminal">TERMINAL</sys:String>
+    <sys:String x:Key="Str_Fonts_Default">Standard</sys:String>
+    <sys:String x:Key="Str_Fonts_Hint">Mit dem Mausrad über einer Liste durch die Schriftarten blättern. Jede Änderung wirkt sofort.</sys:String>
+    <sys:String x:Key="Str_Fonts_Unreadable">{0} hat keine lesbaren Buchstaben - die vorherige Schriftart bleibt</sys:String>
+
+    <!-- Title-bar caption on an elevated window, beside the wordmark -->
+    <sys:String x:Key="Str_Title_Elevated">- Erhöhte Rechte</sys:String>
+    <sys:String x:Key="Str_Ks_MenuBar">Bereichsleiste ein- oder ausblenden</sys:String>
+    <sys:String x:Key="Str_Ks_NewWindow">neues Fenster öffnen</sys:String>
+
+    <!-- Recently visited folders, behind the address bar's chevron (Recents.cs) -->
+    <sys:String x:Key="Str_TT_Recents">Zuletzt besuchte Ordner</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">Noch keine zuletzt besuchten Ordner</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">Liste leeren</sys:String>
+
+    <!-- Results density, on the rail (Density.cs) -->
+    <sys:String x:Key="Str_TT_Density">Ergebnisdichte - Klick wechselt, Mausrad stuft</sys:String>
+    <sys:String x:Key="Str_St_DensityRoomy">Dichte: geräumig</sys:String>
+    <sys:String x:Key="Str_St_DensityFull">Dichte: komfortabel</sys:String>
+    <sys:String x:Key="Str_St_DensityCompact">Dichte: kompakt</sys:String>
+    <sys:String x:Key="Str_St_DensityTight">Dichte: eng</sys:String>
+    <sys:String x:Key="Str_St_DensityMin">Dichte: minimal</sys:String>
+
+    <!-- Terminal right-click menu (Terminal/TerminalMenu.cs) -->
+    <sys:String x:Key="Str_Term_Copy">Kopieren</sys:String>
+    <sys:String x:Key="Str_Term_Paste">Einfügen</sys:String>
+    <sys:String x:Key="Str_Term_SelectAll">Alles auswählen</sys:String>
+    <sys:String x:Key="Str_Term_Clear">Leeren</sys:String>
+    <sys:String x:Key="Str_Term_NewShell">Neues Terminal</sys:String>
+    <sys:String x:Key="Str_Term_OpenFolder">Diesen Ordner öffnen</sys:String>
+    <sys:String x:Key="Str_Term_Fonts">Schriftarten...</sys:String>
+    <sys:String x:Key="Str_Term_EditPrompt">Prompt bearbeiten...</sys:String>
+    <sys:String x:Key="Str_Term_ResetPrompt">Prompt zurücksetzen</sys:String>
+    <sys:String x:Key="Str_Term_Close">Terminal schließen</sys:String>
+    <sys:String x:Key="Str_Dlg_ResetPromptMsg">Das mitgelieferte Prompt-Skript wiederherstellen? Ihre Änderungen an dieser Datei gehen verloren.</sys:String>
+    <sys:String x:Key="Str_Btn_Reset">Zurücksetzen</sys:String>
+    <!-- Rail button: left click opens PowerShell, right click picks -->
+    <sys:String x:Key="Str_TT_Terminal">Terminal öffnen  (F8)  -  Rechtsklick zum Auswählen</sys:String>
+    <sys:String x:Key="Str_Term_PowerShell">PowerShell</sys:String>
+    <sys:String x:Key="Str_Term_PowerShellAdmin">PowerShell als Administrator</sys:String>
+    <sys:String x:Key="Str_Term_Cmd">Eingabeaufforderung</sys:String>
+    <sys:String x:Key="Str_Term_CmdAdmin">Eingabeaufforderung als Administrator</sys:String>
 
     <!-- Browsing, drop targets and the results context menu (2.0) -->
     <sys:String x:Key="Str_Scope_Dropped">abgelegte Dateien</sys:String>
@@ -212,6 +271,8 @@
     <sys:String x:Key="Str_Status_BadPath">{0} kann nicht geöffnet werden</sys:String>
     <sys:String x:Key="Str_Menu_OpenAdmin">Als Administrator öffnen</sys:String>
     <sys:String x:Key="Str_Menu_SearchHere">In diesem Ordner suchen</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminal">Terminal hier öffnen</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminalAdmin">Terminal hier als Administrator öffnen</sys:String>
     <sys:String x:Key="Str_Menu_ExcludeFolder">Diesen Ordner ausschließen</sys:String>
     <sys:String x:Key="Str_Menu_CopyPath">Vollständigen Pfad kopieren</sys:String>
     <sys:String x:Key="Str_Menu_CopyName">Dateinamen kopieren</sys:String>

@@ -12,13 +12,13 @@
     <DropShadowEffect x:Key="TextStrokeSoft" Color="Black" BlurRadius="2" ShadowDepth="0.6" Direction="270" Opacity="0.45"/>
 
     <!-- ================================================================
-         KillerScan - DARK theme (colours + brushes only). Tiered surface
+         KillerScan - DARK theme (colors + brushes only). Tiered surface
          hierarchy ported from KillerPDF:
            Background = chrome   (#1c1c1c) - window, titlebar, footer (blend)
            Surface    = bar      (#333333) - scan config bar, table header
            Pane       = content  (#3a3a3a) - devices pane + grid rows (lightest)
          Borders (CardBorder) separate the tiers. ThemeManager swaps this
-         dictionary's keys in place at runtime - colours/brushes only here.
+         dictionary's keys in place at runtime - colors/brushes only here.
          ================================================================ -->
 
     <!-- Accent -->
@@ -64,9 +64,15 @@
     <SolidColorBrush x:Key="MenuHoverBrush"      Color="#404040" po:Freeze="True"/>
     <SolidColorBrush x:Key="OutlinePressedBrush" Color="#0d2a18" po:Freeze="True"/>
     <SolidColorBrush x:Key="ScrollThumbBrush"    Color="#551ea54c" po:Freeze="True"/>
+
+    <!-- Resting accent edge: the accent at 40%, for a lip that has to read as accent-colored
+         without claiming to be the live thing. The active tab of the UNFOCUSED pane uses it,
+         the same way the site's feature cards carry a dim tab-edge until hovered. Every
+         accent overlay redefines it, or picking an accent would leave this one behind. -->
+    <SolidColorBrush x:Key="TabEdgeBrush"        Color="#661ea54c" po:Freeze="True"/>
     <SolidColorBrush x:Key="ScrollThumbHoverBrush" Color="#1ea54c" po:Freeze="True"/>
 
-    <!-- Device-type label colours (bright, for dark panes) -->
+    <!-- Device-type label colors (bright, for dark panes) -->
     <SolidColorBrush x:Key="TypeRouter"     Color="#F0A030" po:Freeze="True"/>
     <SolidColorBrush x:Key="TypeWindows"    Color="#60A0F0" po:Freeze="True"/>
     <SolidColorBrush x:Key="TypePrinter"    Color="#D080A0" po:Freeze="True"/>

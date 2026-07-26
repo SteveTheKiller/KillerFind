@@ -21,6 +21,16 @@ namespace KillerFind.Models
         public CancellationTokenSource? Cts;
         public bool IsSearching;
 
+        // ── Shell (Terminal/) ────────────────────────────────────
+        // A terminal tab owns its control, and the control owns the pty. Held here rather than
+        // rebuilt on activation because a shell has STATE: rebuilding it on every tab switch
+        // would kill whatever was running in it.
+        // Internal, not public: TerminalControl is internal, and this model is public.
+        internal KillerFind.Terminal.TerminalControl? Term;
+
+        /// <summary>True when this tab is a shell rather than a folder or a search.</summary>
+        public bool IsTerminal => Term != null;
+
         // ── Browsing (Browse.cs) ─────────────────────────────────
         // A tab is either showing a folder's contents or a search's results, in the same
         // Results collection. IsBrowsing says which, so the sort can put folders first and the
@@ -82,6 +92,39 @@ namespace KillerFind.Models
         {
             get => _isActive;
             set { _isActive = value; Notify(); }
+        }
+
+        // True only for the ACTIVE tab of the FOCUSED pane, and only while two panes are open.
+        // The focus ring has to continue around the active tab - the tab and the pane are one
+        // surface, so a ring that stops at the tab strip reads as broken. Notifying, because it
+        // is bound in the tab template and changes without the row being rebuilt (see the note
+        // in CLAUDE.md about non-notifying bound properties on this model).
+        private bool _paneFocused;
+        public bool PaneFocused
+        {
+            get => _paneFocused;
+            set { _paneFocused = value; Notify(); }
+        }
+
+        // Active tab of the pane that does NOT have focus. Its accent lip drops to the dimmed
+        // TabEdgeBrush - two lips at full accent both claim to be the live pane. Not simply
+        // !PaneFocused: with one pane open there is no focused/unfocused distinction to draw,
+        // and the single pane's lip stays bright.
+        private bool _paneDimmed;
+        public bool PaneDimmed
+        {
+            get => _paneDimmed;
+            set { _paneDimmed = value; Notify(); }
+        }
+
+        // MDL2 glyph shown before the title, empty for a folder or search tab. Notifying,
+        // because it is bound in the tab template (see the note in CLAUDE.md about
+        // non-notifying bound properties on this model).
+        private string _tabGlyph = string.Empty;
+        public string TabGlyph
+        {
+            get => _tabGlyph;
+            set { _tabGlyph = value; Notify(); }
         }
 
         // Rightmost tab in the strip. The tab's 1px right border is a divider BETWEEN tabs,

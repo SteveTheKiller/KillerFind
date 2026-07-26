@@ -43,6 +43,12 @@ namespace KillerFind
 
         internal SearchTab Active { get; set; } = null!;   // set before anything reads it
 
+        /// <summary>
+        /// This pane's location row is collapsed (F10, MenuBar.cs). Per pane and not per tab:
+        /// the row is pane chrome, and hiding it per tab would make it jump on every switch.
+        /// </summary>
+        internal bool MenuBarHidden { get; set; }
+
         // ── Navigation + address bar ─────────────────────────────
         private void NavBack_Click(object s, RoutedEventArgs e)            => Owner.NavBack_Click(s, e);
         private void NavForward_Click(object s, RoutedEventArgs e)         => Owner.NavForward_Click(s, e);
@@ -55,12 +61,17 @@ namespace KillerFind
         private void ViewList_Click(object s, RoutedEventArgs e)           => Owner.ViewList_Click(s, e);
         private void ViewIcons_Click(object s, RoutedEventArgs e)          => Owner.ViewIcons_Click(s, e);
         private void ViewDetails_Click(object s, RoutedEventArgs e)        => Owner.ViewDetails_Click(s, e);
-        private void SortCombo_Changed(object s, SelectionChangedEventArgs e) => Owner.SortCombo_Changed(s, e);
+        private void SortMenu_Click(object s, RoutedEventArgs e)           => Owner.SortMenu_Click(s, e);
+        private void SortItem_Click(object s, RoutedEventArgs e)           => Owner.SortItem_Click(s, e);
         private void SortDir_Click(object s, RoutedEventArgs e)            => Owner.SortDir_Click(s, e);
         private void ShowHidden_Click(object s, RoutedEventArgs e)         => Owner.ShowHidden_Click(s, e);
         private void FoldersTop_Click(object s, RoutedEventArgs e)         => Owner.FoldersTop_Click(s, e);
         private void ExpandAll_Click(object s, RoutedEventArgs e)          => Owner.ExpandAll_Click(s, e);
-        private void FavouriteStar_Click(object s, RoutedEventArgs e)      => Owner.FavouriteStar_Click(s, e);
+        private void FavoriteStar_Click(object s, RoutedEventArgs e)      => Owner.FavoriteStar_Click(s, e);
+
+        // ── Results context menu: shells ─────────────────────────
+        private void MenuTerminal_Click(object s, RoutedEventArgs e)       => Owner.MenuTerminal_Click(s, e);
+        private void MenuTerminalAdmin_Click(object s, RoutedEventArgs e)  => Owner.MenuTerminalAdmin_Click(s, e);
 
         // ── Details-view column headers ──────────────────────────
         private void ColName_Click(object s, RoutedEventArgs e)            => Owner.ColName_Click(s, e);
@@ -71,6 +82,39 @@ namespace KillerFind
         // ── Pipe + export ────────────────────────────────────────
         private void PipeButton_Click(object s, RoutedEventArgs e)         => Owner.PipeButton_Click(s, e);
         private void PipeTab_Click(object s, RoutedEventArgs e)            => Owner.PipeTab_Click(s, e);
+        // These two pass THIS pane rather than (sender, args): the reflow acts on the pane that
+        // resized, which is not necessarily the focused one.
+        // Raised by the location ROW, not the strip: the strip's own width is a consequence of
+        // what has been shed, so driving off it made the reflow feed back on itself.
+        private void ToolStrip_SizeChanged(object s, SizeChangedEventArgs e) => Owner.ToolStrip_SizeChanged(this);
+
+        /// <summary>
+        /// Clip the pane content to the pane's own rounded corners.
+        /// </summary>
+        /// <remarks>
+        /// One of the few things kept in this file rather than forwarded: it is geometry for
+        /// THIS pane, with no window state in it at all.
+        ///
+        /// A Border with a CornerRadius draws a rounded edge but does not clip its child, so
+        /// anything that reaches the top of the pane squares those corners off. Nothing ever did
+        /// while the location row was always present - the row's own background filled the
+        /// corner - so the bug only appeared once F10 could hide it and the terminal and results
+        /// list ran straight into the curve.
+        ///
+        /// Radius 5, not the border's 6: the clip sits INSIDE a 1px border, so it has to follow
+        /// the inner curve or it would show a hairline of content outside the stroke.
+        /// </remarks>
+        private void PaneContent_SizeChanged(object s, SizeChangedEventArgs e)
+        {
+            if (s is not FrameworkElement el) return;
+            el.Clip = new System.Windows.Media.RectangleGeometry(
+                new Rect(0, 0, el.ActualWidth, el.ActualHeight), 5, 5);
+        }
+        private void Overflow_Click(object s, RoutedEventArgs e)            => Owner.Overflow_Click(this);
+        // Passes THIS pane, like the two above: the menu drops from this pane's chevron.
+        private void Recents_Click(object s, RoutedEventArgs e)             => Owner.Recents_Click(this);
+        // Dual pane's two handlers are gone from here: the button moved to the window's icon
+        // rail, where it is wired straight to MainWindow and needs no forward.
         private void ExportButton_Click(object s, RoutedEventArgs e)       => Owner.ExportButton_Click(s, e);
         private void Export_Click(object s, RoutedEventArgs e)             => Owner.Export_Click(s, e);
         private void ExportCsv_Click(object s, RoutedEventArgs e)          => Owner.ExportCsv_Click(s, e);

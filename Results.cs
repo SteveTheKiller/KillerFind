@@ -71,13 +71,45 @@ namespace KillerFind
         // ═══════════════════════════════════════════════════════════
         //  RESULT SORTING (like the HTML report's clickable columns)
         // ═══════════════════════════════════════════════════════════
-        private bool _syncingSort;   // true while a tab switch programs the combo
-
-        internal void SortCombo_Changed(object sender, SelectionChangedEventArgs e)
+        // The sort key is picked from a flyout rather than a combo (FilePane.xaml). The tab's
+        // SortIndex was always the source of truth and the combo only mirrored it, so the old
+        // _syncingSort guard is gone with it: nothing programs a selection any more, and a
+        // click on a flyout row is by definition the user.
+        internal void SortMenu_Click(object sender, RoutedEventArgs e)
         {
-            if (_syncingSort || _active == null || Pane.SortCombo.SelectedIndex < 0) return;
-            _active.SortIndex = Pane.SortCombo.SelectedIndex;
+            SyncSortMenu();                     // opened cold - reflect the tab before it shows
+            var p = Pane.SortPopup;
+            p.IsOpen = !p.IsOpen;
+            if (p.IsOpen && p.Child is UIElement child) Anim.FadeIn(child);
+        }
+
+        internal void SortItem_Click(object sender, RoutedEventArgs e)
+        {
+            Pane.SortPopup.IsOpen = false;
+            if (_active == null) return;
+
+            // The index rides on CommandParameter, not Tag: SurfaceButton's Tag="on" trigger is
+            // what marks the chosen row, so Tag is already spoken for.
+            if (sender is not Button b || !int.TryParse(b.CommandParameter as string, out int idx)) return;
+            if (idx == _active.SortIndex) return;
+
+            _active.SortIndex = idx;
             ApplySort(_active);
+            SyncSortMenu();
+        }
+
+        /// <summary>
+        /// Light the active tab's sort key in the flyout, through the same Tag="on" accent
+        /// convention the toolbar toggles use.
+        /// </summary>
+        private void SyncSortMenu()
+        {
+            int idx = _active?.SortIndex ?? 1;
+            Pane.SortFoundItem.Tag    = idx == 0 ? "on" : null;
+            Pane.SortNameItem.Tag     = idx == 1 ? "on" : null;
+            Pane.SortFolderItem.Tag   = idx == 2 ? "on" : null;
+            Pane.SortSizeItem.Tag     = idx == 3 ? "on" : null;
+            Pane.SortModifiedItem.Tag = idx == 4 ? "on" : null;
         }
 
         internal void SortDir_Click(object sender, RoutedEventArgs e)

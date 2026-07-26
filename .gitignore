@@ -16,4 +16,6 @@ Thumbs.db
 .DS_Store
 
 # Working art assets (source .xcf, exports). Published web assets live in find-landing/brand/.
-brand/
+# Leading slash anchors this to the repo root: unanchored, "brand/" matches at ANY depth and
+# swallows find-landing/brand/ too, so a new published icon there would be silently untracked.
+/brand/

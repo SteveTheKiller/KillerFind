@@ -47,7 +47,7 @@ namespace KillerFind
 
         // ── Entry points ─────────────────────────────────────────
 
-        /// <summary>Copy or move into a folder. Blocks until the operation ends or is cancelled.</summary>
+        /// <summary>Copy or move into a folder. Blocks until the operation ends or is canceled.</summary>
         public static FileOpResult CopyOrMove(Window owner, IEnumerable<string> sources,
                                               string targetDir, bool move)
         {
@@ -189,7 +189,7 @@ namespace KillerFind
         {
             _cts.Cancel();
 
-            // If a conflict is on screen the worker is parked on the event, and cancelling the
+            // If a conflict is on screen the worker is parked on the event, and canceling the
             // token alone would never wake it - it is not inside a copy loop to notice.
             _answer = ConflictChoice.Cancel;
             _answered.Set();

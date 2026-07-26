@@ -11,7 +11,7 @@
     <DropShadowEffect x:Key="TextStrokeSoft" Color="Black" BlurRadius="2" ShadowDepth="0.6" Direction="270" Opacity="0.45"/>
 
     <!-- KillerScan - BLOOD theme. Ported from KillerPDF Themes/Blood.xaml.
-         Primary = HeaderAccent so the accent reads as colour, not the white base Accent. -->
+         Primary = HeaderAccent so the accent reads as color, not the white base Accent. -->
     <SolidColorBrush x:Key="PrimaryBrush"        Color="#e8485a" po:Freeze="True"/>
     <SolidColorBrush x:Key="PrimaryHoverBrush"   Color="#e8485a" po:Freeze="True"/>
     <SolidColorBrush x:Key="PrimaryPressedBrush" Color="#e8485a" po:Freeze="True"/>
@@ -48,9 +48,11 @@
     <SolidColorBrush x:Key="MenuHoverBrush"      Color="#54201f" po:Freeze="True"/>
     <SolidColorBrush x:Key="OutlinePressedBrush" Color="#44ffffff" po:Freeze="True"/>
     <SolidColorBrush x:Key="ScrollThumbBrush"    Color="#aaf8c99e" po:Freeze="True"/>
+    <!-- Resting accent edge - see Dark.xaml. -->
+    <SolidColorBrush x:Key="TabEdgeBrush"        Color="#66e8485a" po:Freeze="True"/>
     <SolidColorBrush x:Key="ScrollThumbHoverBrush" Color="#fce6d2" po:Freeze="True"/>
 
-    <!-- Device-type label colours (bright, for dark panes) -->
+    <!-- Device-type label colors (bright, for dark panes) -->
     <SolidColorBrush x:Key="TypeRouter"     Color="#F0A030" po:Freeze="True"/>
     <SolidColorBrush x:Key="TypeWindows"    Color="#60A0F0" po:Freeze="True"/>
     <SolidColorBrush x:Key="TypePrinter"    Color="#D080A0" po:Freeze="True"/>

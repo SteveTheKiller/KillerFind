@@ -88,6 +88,10 @@ namespace KillerFind
             Services.LocaleManager.GetSetting = GetSetting;
             Services.LocaleManager.SetSetting = SetSetting;
 
+            // An elevated window themes itself separately, and defaults to Blood - see
+            // ThemeManager.ThemeKey. Has to be set before Initialize, which is what reads it.
+            Services.ThemeManager.Elevated = KillerFind.MainWindow.IsElevated;
+
             Services.ThemeManager.Initialize();    // restore saved theme before the window is built
             Services.LocaleManager.Initialize();   // then the saved language (en-US base + override)
             new MainWindow().Show();

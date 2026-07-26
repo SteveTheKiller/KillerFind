@@ -335,7 +335,7 @@ namespace KillerFind.Services
 
         // ── Delete ───────────────────────────────────────────────
 
-        /// <summary>Permanent delete. Ours, recursive, cancellable.</summary>
+        /// <summary>Permanent delete. Ours, recursive, cancelable.</summary>
         public static FileOpResult Delete(IEnumerable<string> paths, Action<FileOpProgress> onProgress,
                                           CancellationToken ct)
         {

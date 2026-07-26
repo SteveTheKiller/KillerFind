@@ -47,11 +47,13 @@ namespace KillerFind
                 ["F1"]    = ("Help",   "Str_Ks_Help"),
                 ["F4"]    = ("Nav",    "Str_Ks_Address"),
                 ["F5"]    = ("View",   "Str_Ks_Refresh"),
-                ["F8"]    = ("File",   "Str_Ks_ExportCsv"),
+                ["F8"]    = ("Tabs",   "Str_Ks_Shell"),
                 ["F9"]    = ("File",   "Str_Ks_ExportHtml"),
                 ["F2"]    = ("Edit",   "Str_Ks_Rename"),
                 ["F7"]    = ("Search", "Str_Ks_AddFilter"),
                 ["Del"]   = ("Edit",   "Str_Ks_Recycle"),
+                ["F10"]   = ("View",   "Str_Ks_MenuBar"),
+                ["F11"]   = ("View",   "Str_TT_DualPane"),
                 ["F12"]   = ("Help",   "Str_Ks_About"),
                 ["Enter"] = ("Search", "Str_Ks_Run"),
                 ["Esc"]   = ("Edit",   "Str_Ks_Esc"),
@@ -59,11 +61,12 @@ namespace KillerFind
             },
             [KbLayer.Ctrl] = new()
             {
-                ["N"]     = ("Search", "Str_Ks_AddTerm"),
+                ["N"]     = ("Tabs",   "Str_Ks_NewWindow"),
                 ["F"]     = ("Search", "Str_Ks_FilterResults"),
                 ["L"]     = ("Nav",    "Str_Ks_Address"),
                 ["O"]     = ("Nav",    "Str_Ks_Folder"),
                 ["B"]     = ("Nav",    "Str_Ks_Bookmarks"),
+                ["H"]     = ("View",   "Str_TT_ShowHidden"),
                 ["T"]     = ("Tabs",   "Str_Ks_NewTab"),
                 ["W"]     = ("Tabs",   "Str_Ks_CloseTab"),
                 ["Tab"]   = ("Tabs",   "Str_Ks_NextTab"),
@@ -79,19 +82,26 @@ namespace KillerFind
                 ["D5"]    = ("Tabs",   "Str_Ks_JumpTab"), ["D6"] = ("Tabs", "Str_Ks_JumpTab"),
                 ["D7"]    = ("Tabs",   "Str_Ks_JumpTab"), ["D8"] = ("Tabs", "Str_Ks_JumpTab"),
                 ["D9"]    = ("Tabs",   "Str_Ks_JumpTab"),
+                ["F8"]    = ("Tabs",   "Str_Ks_ShellAdmin"),
+                ["Grave"] = ("Tabs",   "Str_Ks_Shell"),
             },
             [KbLayer.CtrlShift] = new()
             {
                 ["N"]   = ("Edit",   "Str_Ks_NewFolder"),
+                ["A"]   = ("Search", "Str_Ks_AddTerm"),
                 ["C"]   = ("Search", "Str_Ks_CaseSensitive"),
                 ["F"]   = ("Search", "Str_Ks_Pipe"),
                 ["S"]   = ("View",   "Str_Ks_SearchPanel"),
                 ["L"]   = ("Edit",   "Str_Ks_Clear"),
                 ["Tab"] = ("Tabs",   "Str_Ks_NextTab"),
+                ["F8"]  = ("Tabs",   "Str_Ks_ShellCmdAdmin"),
             },
             [KbLayer.Shift] = new()
             {
                 ["Del"] = ("Edit", "Str_Ks_DeleteForever"),
+                ["F8"]  = ("Tabs", "Str_Ks_ShellCmd"),
+                ["F9"]  = ("File", "Str_Ks_ExportCsv"),
+                ["F10"] = ("File", "Str_Menu_ShellMenu"),
             },
             [KbLayer.Alt] = new()
             {
@@ -165,6 +175,12 @@ namespace KillerFind
             // Each view sets its own width: a board's worth for the keyboard, two columns' worth
             // for the list. Neither is the other's size.
             ShortcutCard.Width = keyboard ? 1000 : 780;
+
+            // Height comes from the WINDOW, not from the content. The card is centered and has
+            // no height of its own, so a list taller than the window was simply clipped and the
+            // last group lost rows with nothing to say so. 150 covers the card's own chrome:
+            // title row, the LIST / KEYBOARD toggle, the hint line and the margins.
+            ShortcutScroll.MaxHeight = Math.Max(200, ActualHeight - 150);
 
             KsViewListBtn.SetResourceReference(ForegroundProperty,     keyboard ? "MutedTextBrush" : "PrimaryBrush");
             KsViewKeyboardBtn.SetResourceReference(ForegroundProperty, keyboard ? "PrimaryBrush" : "MutedTextBrush");

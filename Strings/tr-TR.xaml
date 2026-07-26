@@ -73,9 +73,15 @@
     <sys:String x:Key="Str_Sort_Found">bulunma sırası</sys:String>
     <sys:String x:Key="Str_TT_FilterResults">Bu sonuçları filtrele (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_Pipe">Bu sonuçların içinde ara</sys:String>
+    <sys:String x:Key="Str_TT_DualPane">İkinci bölme  |  yan yana / üst üste için sağ tıklayın</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">Diğer araçlar</sys:String>
+    <sys:String x:Key="Str_TT_Sort">Sıralama ölçütü</sys:String>
+    <sys:String x:Key="Str_Nav_ThisPc">Bu bilgisayar</sys:String>
     <sys:String x:Key="Str_Menu_PipeTab">Bu sonuçların içinde ara</sys:String>
     <sys:String x:Key="Str_Pipe_Scope">{1} içinden {0} sonuç  |  {2}</sys:String>
     <sys:String x:Key="Str_Status_NoPipe">İçinde aranacak sonuç yok.</sys:String>
+
+    <sys:String x:Key="Str_Status_ElevateFailed">Yönetici kabuğu başlatılamadı: {0}</sys:String>
 
     <!-- Portable install + quit dialog -->
     <sys:String x:Key="Str_Portable">TAŞINABİLİR</sys:String>
@@ -145,6 +151,8 @@
 
     <!-- HTML report -->
     <sys:String x:Key="Str_Rpt_Meta">Oluşturuldu {0} &#183; {1} dosya &#183; {2} eşleşme</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">Oluşturuldu {0} &#183; {1} öğe</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">{0} içeriği.</sys:String>
     <sys:String x:Key="Str_Rpt_Query">{0} içinde arandı: {1}.</sys:String>
     <sys:String x:Key="Str_Rpt_TermName">{0} içeren dosya adları</sys:String>
     <sys:String x:Key="Str_Rpt_TermContent">{0} içeren dosya içerikleri</sys:String>
@@ -187,9 +195,60 @@
     <sys:String x:Key="Str_Ks_SearchPanel">arama panelini göster veya gizle</sys:String>
     <sys:String x:Key="Str_Ks_ExpandAll">tüm sonuçları aç</sys:String>
     <sys:String x:Key="Str_Ks_CollapseAll">tüm sonuçları kapat</sys:String>
+    <sys:String x:Key="Str_Ks_Shell">bu klasörde PowerShell sekmesi aç</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmd">bu klasörde CMD sekmesi aç</sys:String>
+    <sys:String x:Key="Str_Ks_ShellAdmin">PowerShell'i yönetici olarak aç</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmdAdmin">CMD'yi yönetici olarak aç</sys:String>
     <sys:String x:Key="Str_Ks_ExportHtml">sonuçları HTML olarak dışa aktar</sys:String>
     <sys:String x:Key="Str_Ks_ExportCsv">sonuçları CSV olarak dışa aktar</sys:String>
     <sys:String x:Key="Str_Ks_Hint">Kısayollar pencerenin her yerinde çalışır. Açık açılır listeler, tarih kutusu ve sonuç filtresi Enter tuşunu kendine ayırır.</sys:String>
+
+    <!-- Font dialog, reached from the row under the theme flyout -->
+    <sys:String x:Key="Str_Fonts_Row">Yazı tipleri...</sys:String>
+    <sys:String x:Key="Str_Fonts_Title">YAZI TİPLERİ</sys:String>
+    <sys:String x:Key="Str_Fonts_App">UYGULAMA</sys:String>
+    <sys:String x:Key="Str_Fonts_Terminal">TERMİNAL</sys:String>
+    <sys:String x:Key="Str_Fonts_Default">Varsayılan</sys:String>
+    <sys:String x:Key="Str_Fonts_Hint">Listenin üzerinde tekerleği çevirerek yazı tiplerine göz atın. Her değişiklik hemen uygulanır.</sys:String>
+    <sys:String x:Key="Str_Fonts_Unreadable">{0} okunabilir harf içermiyor - önceki yazı tipi korunuyor</sys:String>
+
+    <!-- Title-bar caption on an elevated window, beside the wordmark -->
+    <sys:String x:Key="Str_Title_Elevated">- Yükseltilmiş ayrıcalıklar</sys:String>
+    <sys:String x:Key="Str_Ks_MenuBar">bölme çubuğunu göster veya gizle</sys:String>
+    <sys:String x:Key="Str_Ks_NewWindow">yeni pencere aç</sys:String>
+
+    <!-- Recently visited folders, behind the address bar's chevron (Recents.cs) -->
+    <sys:String x:Key="Str_TT_Recents">Son ziyaret edilen klasörler</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">Henüz son klasör yok</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">Listeyi temizle</sys:String>
+
+    <!-- Results density, on the rail (Density.cs) -->
+    <sys:String x:Key="Str_TT_Density">Sonuç yoğunluğu - tıklayarak değiştirin, tekerlekle ayarlayın</sys:String>
+    <sys:String x:Key="Str_St_DensityRoomy">Yoğunluk: geniş</sys:String>
+    <sys:String x:Key="Str_St_DensityFull">Yoğunluk: rahat</sys:String>
+    <sys:String x:Key="Str_St_DensityCompact">Yoğunluk: sıkışık</sys:String>
+    <sys:String x:Key="Str_St_DensityTight">Yoğunluk: dar</sys:String>
+    <sys:String x:Key="Str_St_DensityMin">Yoğunluk: en az</sys:String>
+
+    <!-- Terminal right-click menu (Terminal/TerminalMenu.cs) -->
+    <sys:String x:Key="Str_Term_Copy">Kopyala</sys:String>
+    <sys:String x:Key="Str_Term_Paste">Yapıştır</sys:String>
+    <sys:String x:Key="Str_Term_SelectAll">Tümünü seç</sys:String>
+    <sys:String x:Key="Str_Term_Clear">Temizle</sys:String>
+    <sys:String x:Key="Str_Term_NewShell">Yeni terminal</sys:String>
+    <sys:String x:Key="Str_Term_OpenFolder">Bu klasörü aç</sys:String>
+    <sys:String x:Key="Str_Term_Fonts">Yazı tipleri...</sys:String>
+    <sys:String x:Key="Str_Term_EditPrompt">İstemi düzenle...</sys:String>
+    <sys:String x:Key="Str_Term_ResetPrompt">İstemi sıfırla</sys:String>
+    <sys:String x:Key="Str_Term_Close">Terminali kapat</sys:String>
+    <sys:String x:Key="Str_Dlg_ResetPromptMsg">Birlikte gelen istem betiği geri yüklensin mi? Bu dosyada yaptığınız değişiklikler kaybolacak.</sys:String>
+    <sys:String x:Key="Str_Btn_Reset">Sıfırla</sys:String>
+    <!-- Rail button: left click opens PowerShell, right click picks -->
+    <sys:String x:Key="Str_TT_Terminal">Terminal aç  (F8)  -  seçmek için sağ tıklayın</sys:String>
+    <sys:String x:Key="Str_Term_PowerShell">PowerShell</sys:String>
+    <sys:String x:Key="Str_Term_PowerShellAdmin">PowerShell'i yönetici olarak</sys:String>
+    <sys:String x:Key="Str_Term_Cmd">Komut İstemi</sys:String>
+    <sys:String x:Key="Str_Term_CmdAdmin">Komut İstemi'ni yönetici olarak</sys:String>
 
     <!-- Browsing, drop targets and the results context menu (2.0) -->
     <sys:String x:Key="Str_Scope_Dropped">bırakılan dosyalar</sys:String>
@@ -212,6 +271,8 @@
     <sys:String x:Key="Str_Status_BadPath">{0} açılamıyor</sys:String>
     <sys:String x:Key="Str_Menu_OpenAdmin">Yönetici olarak aç</sys:String>
     <sys:String x:Key="Str_Menu_SearchHere">Bu klasörde ara</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminal">Burada terminal aç</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminalAdmin">Burada yönetici olarak terminal aç</sys:String>
     <sys:String x:Key="Str_Menu_ExcludeFolder">Bu klasörü hariç tut</sys:String>
     <sys:String x:Key="Str_Menu_CopyPath">Tam yolu kopyala</sys:String>
     <sys:String x:Key="Str_Menu_CopyName">Dosya adını kopyala</sys:String>

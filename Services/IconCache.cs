@@ -74,6 +74,46 @@ namespace KillerFind.Services
                         : SHIL_JUMBO;
 
         // ── 32px path (SHGetFileInfo) ────────────────────────────
+        /// <summary>
+        /// The "This PC" computer icon. It has no path for the shell to resolve, so it comes
+        /// from imageres.dll, which is where Explorer's own copy lives - index 104 is the
+        /// computer. A machine with a replaced imageres just gets no icon rather than a wrong
+        /// one, which is why the failure returns null instead of substituting a folder.
+        /// </summary>
+        public static ImageSource? ForComputer(int px)
+        {
+            string key = ":computer:|" + px;
+            lock (Cache)
+                if (Cache.TryGetValue(key, out var hit)) return hit;
+
+            ImageSource? img = null;
+            IntPtr large = IntPtr.Zero, small = IntPtr.Zero;
+            try
+            {
+                string res = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.System), "imageres.dll");
+
+                if (ExtractIconEx(res, 104, out large, out small, 1) > 0)
+                {
+                    IntPtr use = px <= 16 && small != IntPtr.Zero ? small : large;
+                    if (use != IntPtr.Zero) img = FromHIcon(use, crop: false);
+                }
+            }
+            catch { /* an unusual or locked-down shell: no icon rather than a wrong one */ }
+            finally
+            {
+                if (large != IntPtr.Zero) DestroyIcon(large);
+                if (small != IntPtr.Zero) DestroyIcon(small);
+            }
+
+            lock (Cache) Cache[key] = img;
+            return img;
+        }
+
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+        private static extern int ExtractIconEx(string file, int index,
+                                                out IntPtr large, out IntPtr small, int count);
+
         private static ImageSource? LoadSmallPath(string pathOrName, bool real)
         {
             var info = new SHFILEINFO();
@@ -141,7 +181,7 @@ namespace KillerFind.Services
         //
         // Only when the content is genuinely small: an icon that fills most of the canvas is a
         // real 256px asset, and its transparent margin is deliberate design that should be kept.
-        // Below 60% is well clear of that and unambiguously the centred-small-icon case.
+        // Below 60% is well clear of that and unambiguously the centered-small-icon case.
         private static BitmapSource TrimCanvas(BitmapSource src)
         {
             int w = src.PixelWidth, h = src.PixelHeight;

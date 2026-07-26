@@ -45,9 +45,30 @@ namespace KillerFind
         // a different surface anyway and the pane keeps its rounding under it. One tab
         // collapses the strip and the pane takes its fully rounded top back. Re-run on tab
         // switch and after a drag-reorder, since either can change which tab owns a corner.
+        // Runs for EVERY live pane, not just the focused one: the band takes real height, so a
+        // pane that shows it sits lower than a pane that does not, and the two pane tops stopped
+        // lining up the moment their tab counts differed.
         private void UpdateTabBar()
         {
-            bool show = _tabs.Count > 1;
+            ForEachPane(UpdateTabBarInPane);   // Panes.cs
+
+            // The pane's top margin depends on whether the strip is showing, which is exactly
+            // what just changed (DualPane.cs).
+            ApplyPaneMargins();
+
+            // Which tab owns the strip's left and right edge can change on any add, close or
+            // drag-reorder, and the ring's verticals follow it too.
+            UpdatePaneFocusRing();
+        }
+
+        private void UpdateTabBarInPane()
+        {
+            // With two panes open the band shows in BOTH as soon as EITHER has more than one
+            // tab. A single-tab pane then shows its one tab, which is still a thing you can
+            // click; reserving blank strip height instead would line the tops up with dead
+            // space. With one pane LivePanes() yields only that pane, so this is the old
+            // "2+ tabs" rule unchanged.
+            bool show = LivePanes().Any(p => p.Tabs.Count > 1);
             Pane.TabBar.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
 
             // Which tab is rightmost drives its divider (see SearchTab.IsLast).
@@ -60,6 +81,10 @@ namespace KillerFind
                 bool lastActive  = _tabs.Count > 0 && _tabs[_tabs.Count - 1] == _active;
                 Pane.ResultsPane.CornerRadius = new CornerRadius(firstActive ? 0 : 6, lastActive ? 0 : 6, 6, 6);
                 Pane.ScopeBar.CornerRadius    = new CornerRadius(firstActive ? 0 : 5, 0, 0, 0);
+                // The ring line in the band IS the pane's top border, so it curves where the
+                // pane curves. Left flat and full-width it overshot the corner and read as a
+                // rule laid across the pane rather than as its edge (FilePane.xaml).
+                Pane.TabBarRing.CornerRadius  = new CornerRadius(firstActive ? 0 : 6, lastActive ? 0 : 6, 0, 0);
             }
             else
             {
@@ -82,10 +107,14 @@ namespace KillerFind
         {
             _active = t;
             foreach (var tab in _tabs) tab.IsActive = tab == t;
+            UpdatePaneFocusRing();   // DualPane.cs - the ring follows the ACTIVE tab, so
+                                     // switching tabs has to move it, not just switching panes
 
             TermsList.ItemsSource   = t.Groups;
             FiltersList.ItemsSource = t.Filters;
             Pane.ResultsList.ItemsSource = t.Results;
+
+            ApplyTerminalView(t);   // TerminalTabs.cs - a shell tab shows a pty, not a listing
 
             Pane.RootPathBox.Text             = t.RootPath;
             Pane.ScopePathLabel.Text          = t.PipeFiles != null ? t.PipeLabel
@@ -100,9 +129,6 @@ namespace KillerFind
             ApplyStatusTone(t.StatusKey);
             Pane.QueryText.Text    = t.QueryLabel;
             SetExpandAllLabel(t.Results.Count > 0 && t.Results.All(r => r.IsExpanded));
-            _syncingSort = true;
-            Pane.SortCombo.SelectedIndex = t.SortIndex;
-            _syncingSort = false;
             ApplySort(t);
             Pane.ResultFilterBox.Text     = t.FilterText;
             Pane.ResultFilterBar.Visibility = t.FilterText.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -229,6 +255,8 @@ namespace KillerFind
         {
             if (!_tabs.Contains(t)) return;   // guard against a double-fire
 
+            CloseTerminal(t);   // TerminalTabs.cs - a shell tab has a pty to end
+
             // Only closing the ACTIVE tab changes what the pane shows - fade that.
             var snap = t == _active ? SnapshotPane() : null;
 
@@ -237,6 +265,17 @@ namespace KillerFind
 
             if (_tabs.Count == 0)
             {
+                // Closing the LAST tab of the second pane closes the pane. A pane with nothing
+                // in it is not a thing you can be looking at, and handing back a fresh blank tab
+                // instead left the only way out of dual pane being to go and find the toggle.
+                // The first pane keeps the always-one-tab rule - there is nothing to fall back
+                // to there. CloseSecondPane moves focus to the survivor before it hides this one.
+                if (DualPane && ReferenceEquals(Pane, RightPane))
+                {
+                    CloseSecondPane();   // DualPane.cs
+                    return;
+                }
+
                 ActivateTab(CreateTab());
                 RunPaneCrossfade(snap);
                 return;
@@ -343,6 +382,13 @@ namespace KillerFind
             _tabDragging = true;
             Panel.SetZIndex(cont, 3);   // grabbed tab rides above its neighbors
 
+            // Over the other pane the real tab cannot follow the hand - it is still parked in
+            // the strip it came from - so a ghost takes over and the reorder stands down
+            // (PaneDrag.cs). Coming back into this pane hands control straight back.
+            var over = DropTargetPane(e);
+            UpdateDragFeedback(_tabDragTab, e, over);
+            if (over != null) return;
+
             int cur = _tabs.IndexOf(_tabDragTab);
             double slide   = cont.ActualWidth + 1;               // +1 = tab margin gap
             double rawLeft = x - _tabGrabDX;
@@ -382,10 +428,21 @@ namespace KillerFind
             var  t = _tabDragTab;
             _tabDragTab  = null;
             _tabDragging = false;
+            HideDragFeedback();   // PaneDrag.cs - the ghost goes whatever the drop turns out to be
 
             if (!wasDragging)
             {
                 if (t != null) SwitchToTab(t);
+                return;
+            }
+
+            // Dropped over the OTHER pane? Then this was a move, not a reorder (PaneDrag.cs).
+            // Checked on release rather than mid-drag on purpose: moving a tab between panes
+            // rebuilds its container, which would pull the mouse capture out from under the
+            // drag that is still running.
+            if (t != null && DropTargetPane(e) is { } target)
+            {
+                MoveTabToPane(t, target, e);
                 return;
             }
 

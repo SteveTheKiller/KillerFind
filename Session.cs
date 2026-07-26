@@ -50,6 +50,9 @@ namespace KillerFind
         // Esc path: a remembered "stay" swallows the key, a remembered "quit" closes.
         private void RequestQuit()
         {
+            // An elevated window just goes. See the note on the same guard in OnClosing.
+            if (IsElevated) { ConfirmedClose(); return; }   // Elevation.cs
+
             string remembered = Services.ThemeManager.GetSetting("EscQuit") ?? string.Empty;
             if (remembered == "stay") return;
             if (remembered == "quit") { ConfirmedClose(); return; }
@@ -65,8 +68,15 @@ namespace KillerFind
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
-            // Stage 1: the quit prompt (unless confirmed, remembered, or demo).
-            if (!_closeConfirmed && !DemoMode &&
+            // Stage 1: the quit prompt (unless confirmed, remembered, demo, or ELEVATED).
+            //
+            // The admin window never prompts. Both checkboxes are about the session - "close my
+            // open tabs" and "remember this choice" - and an elevated window does not write the
+            // session back at all (see the guard in MainWindow's Closing handler), so every
+            // answer it could give is discarded. Asking a question whose answer is thrown away
+            // is worse than not asking: it implies the tabs in front of you will be remembered,
+            // and they will not. It is also a window you opened to run one command and close.
+            if (!_closeConfirmed && !DemoMode && !IsElevated &&
                 string.IsNullOrEmpty(Services.ThemeManager.GetSetting("EscQuit")))
             {
                 e.Cancel = true;

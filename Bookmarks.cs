@@ -11,7 +11,7 @@ using System.Windows.Media.Animation;
 namespace KillerFind
 {
     // ═══════════════════════════════════════════════════════════
-    //  FAVOURITES  -  saved locations, in a slide-up under the tree
+    //  FAVORITES  -  saved locations, in a slide-up under the tree
     // ═══════════════════════════════════════════════════════════
     // The Killculator arrangement from KillerNotes: docked in the row BELOW the tree, so the
     // tree shrinks and stays visible above it rather than being covered. Height animates 0 ->
@@ -22,15 +22,23 @@ namespace KillerFind
     public sealed class Bookmark
     {
         public string Path { get; set; } = string.Empty;
-        public string Name => System.IO.Path.GetFileName(Path.TrimEnd('\\')) is { Length: > 0 } n
-                            ? n
-                            : Path.TrimEnd('\\');   // a drive root has no file name part
-        public ImageSource? Icon => Services.IconCache.For(Path, 16, isDirectory: true);
+
+        public string Name => MainWindow.IsThisPc(Path)             // Browse.cs
+                            ? MainWindow.LocStatic("Str_Nav_ThisPc")
+                            : System.IO.Path.GetFileName(Path.TrimEnd('\\')) is { Length: > 0 } n
+                                ? n
+                                : Path.TrimEnd('\\');   // a drive root has no file name part
+
+        // This PC has no path for the shell to resolve, so it borrows the computer icon from
+        // imageres. Everything else is a real folder and answers for itself.
+        public ImageSource? Icon => MainWindow.IsThisPc(Path)
+                                  ? Services.IconCache.ForComputer(16)
+                                  : Services.IconCache.For(Path, 16, isDirectory: true);
     }
 
     public partial class MainWindow
     {
-        private readonly ObservableCollection<Bookmark> _bookmarks = new ObservableCollection<Bookmark>();
+        private readonly ObservableCollection<Bookmark> _bookmarks = [];
 
         private bool _bookmarksOpen;
 
@@ -53,13 +61,20 @@ namespace KillerFind
         {
             BookmarksList.ItemsSource = _bookmarks;
 
-            string saved = Services.ThemeManager.GetSetting("Bookmarks") ?? string.Empty;
-            foreach (string p in saved.Split(new[] { BookmarkSep }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                // Somewhere that no longer exists is dropped rather than shown as a dead row -
-                // a favourite that cannot be opened is worse than one that quietly went away.
-                if (Directory.Exists(p)) _bookmarks.Add(new Bookmark { Path = p });
-            }
+            string? saved = Services.ThemeManager.GetSetting("Bookmarks");
+
+            // NULL means never configured, which is not the same as an EMPTY string. An empty
+            // one means the user removed every favorite they had, and re-seeding then would
+            // put back exactly what they just deleted, every launch.
+            if (saved == null) SeedBookmarks();
+            else
+                foreach (string p in saved.Split([BookmarkSep], StringSplitOptions.RemoveEmptyEntries))
+                {
+                    // Somewhere that no longer exists is dropped rather than shown as a dead
+                    // row - a favorite that cannot be opened is worse than one that quietly
+                    // went away. This PC is not a directory, so it is exempt from that check.
+                    if (IsThisPc(p) || Directory.Exists(p)) _bookmarks.Add(new Bookmark { Path = p });
+                }
 
             // Invariant culture on the round trip, as with the tree width - a stored "168.5"
             // must not become unparseable under a comma decimal separator.
@@ -69,7 +84,7 @@ namespace KillerFind
                 _bookmarksHeight = ClampBookmarks(parsed);
 
             ApplyBookmarksPanel(animate: false);
-            UpdateFavouriteStar();
+            UpdateFavoriteStar();
         }
 
         // ── Resize ───────────────────────────────────────────────
@@ -114,6 +129,25 @@ namespace KillerFind
             => Services.ThemeManager.SetSetting("Bookmarks",
                    string.Join(BookmarkSep.ToString(), _bookmarks.Select(b => b.Path)));
 
+        /// <summary>
+        /// First run: This PC, then Home. Two entries rather than none, because an empty
+        /// favorites drawer teaches nobody what the drawer is for, and these are the two
+        /// places every file browser starts from.
+        /// </summary>
+        /// <remarks>
+        /// Saved immediately, so the setting stops being null. That is what makes removing
+        /// them stick: the next launch sees an empty string rather than a missing key and
+        /// leaves the drawer alone.
+        /// </remarks>
+        private void SeedBookmarks()
+        {
+            _bookmarks.Add(new Bookmark { Path = ThisPc });        // Browse.cs
+            if (Directory.Exists(HomeFolder))                      // AddressBar.cs
+                _bookmarks.Add(new Bookmark { Path = HomeFolder });
+
+            SaveBookmarks();
+        }
+
         // ── Membership ───────────────────────────────────────────
         private bool IsBookmarked(string? path)
             => !string.IsNullOrEmpty(path)
@@ -121,12 +155,16 @@ namespace KillerFind
 
         private void AddBookmark(string? path)
         {
-            if (string.IsNullOrEmpty(path) || !Directory.Exists(path)) return;
+            // This PC passes the existence check by exemption: it is a place you can navigate
+            // to but not a directory on disk, so Directory.Exists says no and the star did
+            // nothing at all when you clicked it there.
+            if (string.IsNullOrEmpty(path)) return;
+            if (!IsThisPc(path) && !Directory.Exists(path)) return;   // Browse.cs
             if (IsBookmarked(path)) return;
 
             _bookmarks.Add(new Bookmark { Path = path! });
             SaveBookmarks();
-            UpdateFavouriteStar();
+            UpdateFavoriteStar();
         }
 
         private void RemoveBookmark(string? path)
@@ -139,14 +177,17 @@ namespace KillerFind
 
             _bookmarks.Remove(hit);
             SaveBookmarks();
-            UpdateFavouriteStar();
+            UpdateFavoriteStar();
         }
 
         // ── The star in the location bar ─────────────────────────
         // Browser convention: it reflects and toggles wherever you currently are. Filled when
         // this folder is saved, outline when not.
-        internal void FavouriteStar_Click(object sender, RoutedEventArgs e)
+        internal void FavoriteStar_Click(object sender, RoutedEventArgs e)
         {
+            // This PC is bookmarkable like any other place. It is not a folder, but it IS
+            // somewhere you navigate to, and the sentinel round-trips through NavigateTo the
+            // same as a path would (Browse.cs).
             string? here = _active.CurrentFolder;
             if (string.IsNullOrEmpty(here)) return;
 
@@ -158,13 +199,13 @@ namespace KillerFind
         /// Repoints the star at the active tab's folder. Called from navigation as well as from
         /// add/remove, since moving to a new folder changes the answer without touching the list.
         /// </summary>
-        internal void UpdateFavouriteStar()
+        internal void UpdateFavoriteStar()
         {
             bool on = _active != null && _active.IsBrowsing && IsBookmarked(_active.CurrentFolder);
 
             // E735 filled, E734 outline.
-            Pane.FavouriteStarBtn.Content = ((char)(on ? 0xE735 : 0xE734)).ToString();
-            Pane.FavouriteStarBtn.Tag     = on ? "on" : null;
+            Pane.FavoriteStarBtn.Content = ((char)(on ? 0xE735 : 0xE734)).ToString();
+            Pane.FavoriteStarBtn.Tag     = on ? "on" : null;
         }
 
         // ── The slide-up ─────────────────────────────────────────
@@ -257,9 +298,9 @@ namespace KillerFind
 
         private static List<string> DroppedFolders(DragEventArgs e)
         {
-            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return new List<string>();
-            if (e.Data.GetData(DataFormats.FileDrop) is not string[] paths) return new List<string>();
-            return paths.Where(Directory.Exists).ToList();
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return [];
+            if (e.Data.GetData(DataFormats.FileDrop) is not string[] paths) return [];
+            return [.. paths.Where(Directory.Exists)];
         }
     }
 }

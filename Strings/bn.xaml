@@ -73,9 +73,15 @@
     <sys:String x:Key="Str_Sort_Found">যেমন পাওয়া</sys:String>
     <sys:String x:Key="Str_TT_FilterResults">এই ফলাফলগুলি ফিল্টার করুন (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_Pipe">এই ফলাফলগুলির মধ্যে অনুসন্ধান করুন</sys:String>
+    <sys:String x:Key="Str_TT_DualPane">দ্বিতীয় প্যান  |  পাশাপাশি / উপর-নিচ বদলাতে ডান-ক্লিক করুন</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">আরও টুল</sys:String>
+    <sys:String x:Key="Str_TT_Sort">সাজান</sys:String>
+    <sys:String x:Key="Str_Nav_ThisPc">এই পিসি</sys:String>
     <sys:String x:Key="Str_Menu_PipeTab">এই ফলাফলগুলির মধ্যে অনুসন্ধান করুন</sys:String>
     <sys:String x:Key="Str_Pipe_Scope">{1} থেকে {0}টি ফলাফল  |  {2}</sys:String>
     <sys:String x:Key="Str_Status_NoPipe">অনুসন্ধানের জন্য এখনও কোনো ফলাফল নেই।</sys:String>
+
+    <sys:String x:Key="Str_Status_ElevateFailed">এলিভেটেড শেল চালু করা যায়নি: {0}</sys:String>
 
     <!-- Portable install + quit dialog -->
     <sys:String x:Key="Str_Portable">পোর্টেবল</sys:String>
@@ -99,7 +105,7 @@
     <sys:String x:Key="Str_TT_ViewDetails">বিস্তারিত ভিউ</sys:String>
     <sys:String x:Key="Str_Lbl_SearchTerms">অনুসন্ধানের শব্দ</sys:String>
     <sys:String x:Key="Str_Btn_AddTerm">+ শব্দ যোগ করুন</sys:String>
-    <sys:String x:Key="Str_Btn_AddGroup">+ à¦—à§à¦°à§à¦ª à¦¯à§‹à¦— à¦•à¦°à§à¦¨</sys:String>
+    <sys:String x:Key="Str_Btn_AddGroup">+ গ্রুপ যোগ করুন</sys:String>
     <sys:String x:Key="Str_Btn_Clear">পরিষ্কার করুন</sys:String>
 
     <!-- Search button (code-behind swaps idle/stop; keep the brackets) -->
@@ -145,6 +151,8 @@
 
     <!-- HTML report -->
     <sys:String x:Key="Str_Rpt_Meta">তৈরি {0} &#183; {1}টি ফাইল &#183; {2}টি ম্যাচ</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">তৈরি {0} &#183; {1}টি আইটেম</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">{0} এর তালিকা।</sys:String>
     <sys:String x:Key="Str_Rpt_Query">{0}-এ খোঁজা হয়েছে: {1}।</sys:String>
     <sys:String x:Key="Str_Rpt_TermName">ফাইলনামে {0} আছে</sys:String>
     <sys:String x:Key="Str_Rpt_TermContent">ফাইলের কনটেন্টে {0} আছে</sys:String>
@@ -187,9 +195,60 @@
     <sys:String x:Key="Str_Ks_SearchPanel">সার্চ প্যানেল দেখান বা লুকান</sys:String>
     <sys:String x:Key="Str_Ks_ExpandAll">সব ফলাফল খুলুন</sys:String>
     <sys:String x:Key="Str_Ks_CollapseAll">সব ফলাফল বন্ধ করুন</sys:String>
+    <sys:String x:Key="Str_Ks_Shell">এই ফোল্ডারে একটি PowerShell ট্যাব খুলুন</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmd">এই ফোল্ডারে একটি CMD ট্যাব খুলুন</sys:String>
+    <sys:String x:Key="Str_Ks_ShellAdmin">PowerShell প্রশাসক হিসেবে খুলুন</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmdAdmin">CMD প্রশাসক হিসেবে খুলুন</sys:String>
     <sys:String x:Key="Str_Ks_ExportHtml">ফলাফল HTML হিসেবে এক্সপোর্ট করুন</sys:String>
     <sys:String x:Key="Str_Ks_ExportCsv">ফলাফল CSV হিসেবে এক্সপোর্ট করুন</sys:String>
     <sys:String x:Key="Str_Ks_Hint">শর্টকাট উইন্ডোর যেকোনো জায়গায় কাজ করে। খোলা ড্রপডাউন, তারিখের ঘর ও ফলাফল ফিল্টার Enter নিজেদের জন্য রাখে।</sys:String>
+
+    <!-- Font dialog, reached from the row under the theme flyout -->
+    <sys:String x:Key="Str_Fonts_Row">ফন্ট...</sys:String>
+    <sys:String x:Key="Str_Fonts_Title">ফন্ট</sys:String>
+    <sys:String x:Key="Str_Fonts_App">অ্যাপ</sys:String>
+    <sys:String x:Key="Str_Fonts_Terminal">টার্মিনাল</sys:String>
+    <sys:String x:Key="Str_Fonts_Default">ডিফল্ট</sys:String>
+    <sys:String x:Key="Str_Fonts_Hint">তালিকার উপরে হুইল ঘুরিয়ে ফন্ট দেখুন। প্রতিটি পরিবর্তন সঙ্গে সঙ্গে কার্যকর হয়।</sys:String>
+    <sys:String x:Key="Str_Fonts_Unreadable">{0}-তে পাঠযোগ্য অক্ষর নেই - আগের ফন্ট রাখা হচ্ছে</sys:String>
+
+    <!-- Title-bar caption on an elevated window, beside the wordmark -->
+    <sys:String x:Key="Str_Title_Elevated">- উন্নীত অধিকার</sys:String>
+    <sys:String x:Key="Str_Ks_MenuBar">প্যানেলের বার দেখান বা লুকান</sys:String>
+    <sys:String x:Key="Str_Ks_NewWindow">নতুন উইন্ডো খুলুন</sys:String>
+
+    <!-- Recently visited folders, behind the address bar's chevron (Recents.cs) -->
+    <sys:String x:Key="Str_TT_Recents">সম্প্রতি দেখা ফোল্ডার</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">এখনো কোনো সাম্প্রতিক ফোল্ডার নেই</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">তালিকা মুছুন</sys:String>
+
+    <!-- Results density, on the rail (Density.cs) -->
+    <sys:String x:Key="Str_TT_Density">ফলাফলের ঘনত্ব - ক্লিকে বদলান, হুইলে ধাপে ধাপে</sys:String>
+    <sys:String x:Key="Str_St_DensityRoomy">ঘনত্ব: প্রশস্ত</sys:String>
+    <sys:String x:Key="Str_St_DensityFull">ঘনত্ব: আরামদায়ক</sys:String>
+    <sys:String x:Key="Str_St_DensityCompact">ঘনত্ব: সংক্ষিপ্ত</sys:String>
+    <sys:String x:Key="Str_St_DensityTight">ঘনত্ব: ঘন</sys:String>
+    <sys:String x:Key="Str_St_DensityMin">ঘনত্ব: সর্বনিম্ন</sys:String>
+
+    <!-- Terminal right-click menu (Terminal/TerminalMenu.cs) -->
+    <sys:String x:Key="Str_Term_Copy">কপি করুন</sys:String>
+    <sys:String x:Key="Str_Term_Paste">পেস্ট করুন</sys:String>
+    <sys:String x:Key="Str_Term_SelectAll">সব নির্বাচন করুন</sys:String>
+    <sys:String x:Key="Str_Term_Clear">পরিষ্কার করুন</sys:String>
+    <sys:String x:Key="Str_Term_NewShell">নতুন টার্মিনাল</sys:String>
+    <sys:String x:Key="Str_Term_OpenFolder">এই ফোল্ডার খুলুন</sys:String>
+    <sys:String x:Key="Str_Term_Fonts">ফন্ট...</sys:String>
+    <sys:String x:Key="Str_Term_EditPrompt">প্রম্পট সম্পাদনা...</sys:String>
+    <sys:String x:Key="Str_Term_ResetPrompt">প্রম্পট রিসেট করুন</sys:String>
+    <sys:String x:Key="Str_Term_Close">টার্মিনাল বন্ধ করুন</sys:String>
+    <sys:String x:Key="Str_Dlg_ResetPromptMsg">সরবরাহ করা প্রম্পট স্ক্রিপ্ট ফিরিয়ে আনবেন? এই ফাইলে করা আপনার পরিবর্তনগুলি হারিয়ে যাবে।</sys:String>
+    <sys:String x:Key="Str_Btn_Reset">রিসেট</sys:String>
+    <!-- Rail button: left click opens PowerShell, right click picks -->
+    <sys:String x:Key="Str_TT_Terminal">টার্মিনাল খুলুন  (F8)  -  বেছে নিতে ডান ক্লিক করুন</sys:String>
+    <sys:String x:Key="Str_Term_PowerShell">PowerShell</sys:String>
+    <sys:String x:Key="Str_Term_PowerShellAdmin">PowerShell প্রশাসক হিসেবে</sys:String>
+    <sys:String x:Key="Str_Term_Cmd">কমান্ড প্রম্পট</sys:String>
+    <sys:String x:Key="Str_Term_CmdAdmin">কমান্ড প্রম্পট প্রশাসক হিসেবে</sys:String>
 
     <!-- Browsing, drop targets and the results context menu (2.0) -->
     <sys:String x:Key="Str_Scope_Dropped">ড্রপ করা ফাইল</sys:String>
@@ -212,6 +271,8 @@
     <sys:String x:Key="Str_Status_BadPath">{0} খোলা যাচ্ছে না</sys:String>
     <sys:String x:Key="Str_Menu_OpenAdmin">অ্যাডমিনিস্ট্রেটর হিসেবে খুলুন</sys:String>
     <sys:String x:Key="Str_Menu_SearchHere">এই ফোল্ডারের ভেতরে খুঁজুন</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminal">এখানে টার্মিনাল খুলুন</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminalAdmin">এখানে প্রশাসক হিসেবে টার্মিনাল খুলুন</sys:String>
     <sys:String x:Key="Str_Menu_ExcludeFolder">এই ফোল্ডার বাদ দিন</sys:String>
     <sys:String x:Key="Str_Menu_CopyPath">পুরো পাথ কপি করুন</sys:String>
     <sys:String x:Key="Str_Menu_CopyName">ফাইলের নাম কপি করুন</sys:String>

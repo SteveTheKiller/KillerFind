@@ -24,9 +24,11 @@ namespace KillerFind
 
         private void InitTreePanel()
         {
-            // Defaults to open, so only an explicit "0" closes it. A first run with no setting
-            // stored should show the tree.
-            _treeOpen = Services.ThemeManager.GetSetting("TreePanelOpen") != "0";
+            // Defaults to CLOSED, so only an explicit "1" opens it. A first run should be the
+            // listing and nothing else: the tiles are what the app is for, and a sidebar the
+            // user did not ask for costs a column of them before they have seen the thing work.
+            // The rail chevron is right there the moment they want it.
+            _treeOpen = Services.ThemeManager.GetSetting("TreePanelOpen") == "1";
 
             // Invariant culture on the round trip: a saved "240.5" must not become unparseable
             // for anyone whose decimal separator is a comma.
@@ -35,6 +37,55 @@ namespace KillerFind
                 _treeWidth = Clamp(w);
 
             ApplyTreePanel(animate: false);   // startup should not slide
+
+            // The fade has to track the horizontal scrollbar, and the scrollbar appears and
+            // disappears as folders expand and the widest label changes - so this is driven off
+            // layout rather than set once.
+            FolderTree.SizeChanged += (_, _) => SyncTreeFade();
+            FolderTree.Loaded      += (_, _) => SyncTreeFade();
+        }
+
+        /// <summary>
+        /// Keep the bottom edge fade sitting on the tree's last visible ROW rather than on the
+        /// horizontal scrollbar underneath it.
+        /// </summary>
+        /// <remarks>
+        /// The scrollbar's real height is measured rather than taken from SystemParameters: the
+        /// tree uses the app's own themed scrollbar template, which is not the system metric, and
+        /// on a scaled window (AppScale.cs) it is not that metric times anything predictable
+        /// either. Measuring is the only version that stays right.
+        /// </remarks>
+        private void SyncTreeFade()
+        {
+            var sv = FindDescendant<System.Windows.Controls.ScrollViewer>(FolderTree);
+            double lift = 0;
+
+            if (sv != null && sv.ComputedHorizontalScrollBarVisibility == Visibility.Visible)
+            {
+                var bar = FindHorizontalBar(sv);
+                lift = bar?.ActualHeight ?? SystemParameters.HorizontalScrollBarHeight;
+            }
+
+            var m = TreeFadeBottom.Margin;
+            if (Math.Abs(m.Bottom - lift) < 0.5) return;     // no churn on every layout pass
+            TreeFadeBottom.Margin = new Thickness(m.Left, m.Top, m.Right, lift);
+        }
+
+        // FindDescendant takes the FIRST match of a type, and a ScrollViewer has two scrollbars,
+        // so the orientation has to be checked rather than assumed.
+        private static System.Windows.Controls.Primitives.ScrollBar? FindHorizontalBar(DependencyObject root)
+        {
+            int n = System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);
+            for (int i = 0; i < n; i++)
+            {
+                var c = System.Windows.Media.VisualTreeHelper.GetChild(root, i);
+                if (c is System.Windows.Controls.Primitives.ScrollBar b
+                    && b.Orientation == System.Windows.Controls.Orientation.Horizontal) return b;
+
+                var deeper = FindHorizontalBar(c);
+                if (deeper != null) return deeper;
+            }
+            return null;
         }
 
         private static double Clamp(double w)

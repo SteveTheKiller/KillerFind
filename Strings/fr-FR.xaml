@@ -73,9 +73,15 @@
     <sys:String x:Key="Str_Sort_Found">non trié</sys:String>
     <sys:String x:Key="Str_TT_FilterResults">Filtrer ces résultats (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_Pipe">Chercher dans ces résultats</sys:String>
+    <sys:String x:Key="Str_TT_DualPane">Second volet  |  clic droit pour basculer côte à côte / empilé</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">Plus d'outils</sys:String>
+    <sys:String x:Key="Str_TT_Sort">Trier par</sys:String>
+    <sys:String x:Key="Str_Nav_ThisPc">Ce PC</sys:String>
     <sys:String x:Key="Str_Menu_PipeTab">Chercher dans ces résultats</sys:String>
     <sys:String x:Key="Str_Pipe_Scope">{0} résultats de {1}  |  {2}</sys:String>
     <sys:String x:Key="Str_Status_NoPipe">Aucun résultat où chercher pour l'instant.</sys:String>
+
+    <sys:String x:Key="Str_Status_ElevateFailed">Impossible de démarrer un shell élevé : {0}</sys:String>
 
     <!-- Portable install + quit dialog -->
     <sys:String x:Key="Str_Portable">PORTABLE</sys:String>
@@ -145,6 +151,8 @@
 
     <!-- HTML report -->
     <sys:String x:Key="Str_Rpt_Meta">Généré {0} &#183; {1} fichiers &#183; {2} correspondances</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">Généré {0} &#183; {1} éléments</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">Contenu de {0}.</sys:String>
     <sys:String x:Key="Str_Rpt_Query">Recherche dans {0} : {1}.</sys:String>
     <sys:String x:Key="Str_Rpt_TermName">noms de fichiers contenant {0}</sys:String>
     <sys:String x:Key="Str_Rpt_TermContent">contenus de fichiers contenant {0}</sys:String>
@@ -187,9 +195,60 @@
     <sys:String x:Key="Str_Ks_SearchPanel">afficher ou masquer le panneau de recherche</sys:String>
     <sys:String x:Key="Str_Ks_ExpandAll">déplier tous les résultats</sys:String>
     <sys:String x:Key="Str_Ks_CollapseAll">replier tous les résultats</sys:String>
+    <sys:String x:Key="Str_Ks_Shell">ouvrir un onglet PowerShell dans ce dossier</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmd">ouvrir un onglet CMD dans ce dossier</sys:String>
+    <sys:String x:Key="Str_Ks_ShellAdmin">ouvrir PowerShell en tant qu'administrateur</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmdAdmin">ouvrir CMD en tant qu'administrateur</sys:String>
     <sys:String x:Key="Str_Ks_ExportHtml">exporter les résultats en HTML</sys:String>
     <sys:String x:Key="Str_Ks_ExportCsv">exporter les résultats en CSV</sys:String>
     <sys:String x:Key="Str_Ks_Hint">Les raccourcis fonctionnent partout dans la fenêtre. Les listes déroulantes ouvertes, le champ de date et le filtre de résultats gardent Entrée pour eux.</sys:String>
+
+    <!-- Font dialog, reached from the row under the theme flyout -->
+    <sys:String x:Key="Str_Fonts_Row">Polices...</sys:String>
+    <sys:String x:Key="Str_Fonts_Title">POLICES</sys:String>
+    <sys:String x:Key="Str_Fonts_App">APPLICATION</sys:String>
+    <sys:String x:Key="Str_Fonts_Terminal">TERMINAL</sys:String>
+    <sys:String x:Key="Str_Fonts_Default">Par défaut</sys:String>
+    <sys:String x:Key="Str_Fonts_Hint">Faites tourner la molette sur une liste pour parcourir les polices. Chaque changement s'applique aussitôt.</sys:String>
+    <sys:String x:Key="Str_Fonts_Unreadable">{0} n'a aucune lettre lisible - la police précédente est conservée</sys:String>
+
+    <!-- Title-bar caption on an elevated window, beside the wordmark -->
+    <sys:String x:Key="Str_Title_Elevated">- Privilèges élevés</sys:String>
+    <sys:String x:Key="Str_Ks_MenuBar">afficher ou masquer la barre du panneau</sys:String>
+    <sys:String x:Key="Str_Ks_NewWindow">ouvrir une nouvelle fenêtre</sys:String>
+
+    <!-- Recently visited folders, behind the address bar's chevron (Recents.cs) -->
+    <sys:String x:Key="Str_TT_Recents">Dossiers récemment visités</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">Aucun dossier récent</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">Effacer la liste</sys:String>
+
+    <!-- Results density, on the rail (Density.cs) -->
+    <sys:String x:Key="Str_TT_Density">Densité des résultats - clic pour changer, molette pour ajuster</sys:String>
+    <sys:String x:Key="Str_St_DensityRoomy">Densité : spacieuse</sys:String>
+    <sys:String x:Key="Str_St_DensityFull">Densité : confortable</sys:String>
+    <sys:String x:Key="Str_St_DensityCompact">Densité : compacte</sys:String>
+    <sys:String x:Key="Str_St_DensityTight">Densité : serrée</sys:String>
+    <sys:String x:Key="Str_St_DensityMin">Densité : minimale</sys:String>
+
+    <!-- Terminal right-click menu (Terminal/TerminalMenu.cs) -->
+    <sys:String x:Key="Str_Term_Copy">Copier</sys:String>
+    <sys:String x:Key="Str_Term_Paste">Coller</sys:String>
+    <sys:String x:Key="Str_Term_SelectAll">Tout sélectionner</sys:String>
+    <sys:String x:Key="Str_Term_Clear">Effacer</sys:String>
+    <sys:String x:Key="Str_Term_NewShell">Nouveau terminal</sys:String>
+    <sys:String x:Key="Str_Term_OpenFolder">Ouvrir ce dossier</sys:String>
+    <sys:String x:Key="Str_Term_Fonts">Polices...</sys:String>
+    <sys:String x:Key="Str_Term_EditPrompt">Modifier l'invite...</sys:String>
+    <sys:String x:Key="Str_Term_ResetPrompt">Réinitialiser l'invite</sys:String>
+    <sys:String x:Key="Str_Term_Close">Fermer le terminal</sys:String>
+    <sys:String x:Key="Str_Dlg_ResetPromptMsg">Restaurer le script d'invite fourni ? Vos modifications de ce fichier seront perdues.</sys:String>
+    <sys:String x:Key="Str_Btn_Reset">Réinitialiser</sys:String>
+    <!-- Rail button: left click opens PowerShell, right click picks -->
+    <sys:String x:Key="Str_TT_Terminal">Ouvrir un terminal  (F8)  -  clic droit pour choisir</sys:String>
+    <sys:String x:Key="Str_Term_PowerShell">PowerShell</sys:String>
+    <sys:String x:Key="Str_Term_PowerShellAdmin">PowerShell en tant qu'administrateur</sys:String>
+    <sys:String x:Key="Str_Term_Cmd">Invite de commandes</sys:String>
+    <sys:String x:Key="Str_Term_CmdAdmin">Invite de commandes en tant qu'administrateur</sys:String>
 
     <!-- Browsing, drop targets and the results context menu (2.0) -->
     <sys:String x:Key="Str_Scope_Dropped">fichiers déposés</sys:String>
@@ -212,6 +271,8 @@
     <sys:String x:Key="Str_Status_BadPath">Impossible d'ouvrir {0}</sys:String>
     <sys:String x:Key="Str_Menu_OpenAdmin">Ouvrir en tant qu'administrateur</sys:String>
     <sys:String x:Key="Str_Menu_SearchHere">Rechercher dans ce dossier</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminal">Ouvrir un terminal ici</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminalAdmin">Ouvrir un terminal ici en tant qu'administrateur</sys:String>
     <sys:String x:Key="Str_Menu_ExcludeFolder">Exclure ce dossier</sys:String>
     <sys:String x:Key="Str_Menu_CopyPath">Copier le chemin complet</sys:String>
     <sys:String x:Key="Str_Menu_CopyName">Copier le nom du fichier</sys:String>

@@ -6,7 +6,7 @@
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Title="KillerFind"
         Icon="Resources/kf-icon.ico"
-        Height="700" Width="1200" MinHeight="500" MinWidth="800"
+        Height="710" Width="1140" MinHeight="500" MinWidth="800"
         WindowStyle="None"
         AllowDrop="True" DragOver="Window_DragOver" Drop="Window_Drop"
         Background="{DynamicResource BackgroundBrush}"
@@ -62,6 +62,13 @@
                         <Run Text="Killer" Foreground="{DynamicResource TextBrush}"/><Run Text="Find" FontSize="23.4" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
                     </TextBlock>
                 </Grid>
+
+                <!-- Elevated only (Elevation.cs). OUTSIDE LogoBar on purpose: the wordmark is
+                     the scroll-to-zoom target, and widening its hit area with a caption would
+                     mean rolling the wheel next to the logo silently resized the app. -->
+                <TextBlock x:Name="ElevatedTag" Visibility="Collapsed" VerticalAlignment="Center"
+                           Margin="9,3,0,0" FontFamily="Consolas" FontSize="11.5"
+                           Text="{DynamicResource Str_Title_Elevated}"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" shell:WindowChrome.IsHitTestVisibleInChrome="True">
@@ -102,6 +109,21 @@
                             <Button Style="{StaticResource ThemeSwatch}" Tag="Blue"   Background="#50AEE8" Click="AccentSwatch_Click" ToolTip="Blue"/>
                             <Button Style="{StaticResource ThemeSwatch}" Tag="Purple" Background="#B982E3" Click="AccentSwatch_Click" ToolTip="Purple"/>
                         </StackPanel>
+
+                        <!-- Fonts sit behind a row rather than in the flyout itself: a font
+                             list is hundreds of entries and belongs in a dialog, while this
+                             flyout is swatches you pick at a glance. Room below for more of
+                             these as other pickers break out. -->
+                        <Border Height="1" Margin="0,12,0,6" Background="{DynamicResource MenuBorderBrush}"/>
+                        <Button x:Name="FontsRowBtn" Click="FontsRow_Click"
+                                Style="{StaticResource MenuRowButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8D2;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                                           Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource Str_Fonts_Row}" FontFamily="Consolas"
+                                           FontSize="11.5" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                 </Border>
             </Popup>
@@ -135,7 +157,7 @@
             <Grid Grid.Column="0" x:Name="TreePanel">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
-                    <!-- Auto, so the favourites slide-up's animated Height drives the split and
+                    <!-- Auto, so the favorites slide-up's animated Height drives the split and
                          the tree above simply gives up the room (the Killculator arrangement). -->
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
@@ -222,7 +244,11 @@
                         <Border Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
                     </Grid>
                 </Border>
-                <Border Grid.Row="0" Height="22" VerticalAlignment="Bottom" Margin="0,0,12,0" IsHitTestVisible="False">
+                <!-- Bottom margin is driven from code (TreePanel.cs): when the tree grows a
+                     horizontal scrollbar the content's bottom edge moves UP by its height, and a
+                     fade pinned to the row would sit over the scrollbar instead of over the last
+                     row it is meant to be fading out. -->
+                <Border x:Name="TreeFadeBottom" Grid.Row="0" Height="22" VerticalAlignment="Bottom" Margin="0,0,12,0" IsHitTestVisible="False">
                     <Border.OpacityMask>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                             <GradientStop Color="#00000000" Offset="0"/>
@@ -235,7 +261,7 @@
                     </Grid>
                 </Border>
 
-                <!-- FAVOURITES SLIDE-UP (Bookmarks.cs). Height animates 0 -> open so it rises
+                <!-- FAVORITES SLIDE-UP (Bookmarks.cs). Height animates 0 -> open so it rises
                      out of the sidebar's bottom edge, the way KillerNotes' Killculator does.
                      No header and no close button by design: the rail star is the handle and
                      the rows are the whole content. A hairline on top is the only separator,
@@ -330,11 +356,11 @@
                 </Border>
 
                 <!-- RESIZE GRIP. A Thumb rather than a GridSplitter: a splitter resizes the two
-                     columns either side of it, and this column's neighbour is the 24px rail,
+                     columns either side of it, and this column's neighbor is the 24px rail,
                      which must never move. Driving TreeCol's width by hand lets the star column
                      absorb the change instead, and keeps the drag from fighting the collapse
                      animation, which sets that same Width property (TreePanel.cs).
-                     Spans both rows so the whole edge is grabbable, favourites included, and
+                     Spans both rows so the whole edge is grabbable, favorites included, and
                      sits last so it is above the edge fades. -->
                 <Thumb x:Name="TreeResizeGrip" Grid.RowSpan="2" Panel.ZIndex="50"
                        HorizontalAlignment="Right" Width="5" Cursor="SizeWE"
@@ -390,6 +416,49 @@
                     <Button x:Name="BookmarksBtn" Style="{StaticResource RailButton}" Content="&#xE734;"
                             FontSize="12" Margin="0,0,0,10" Click="BookmarksBtn_Click"
                             ToolTip="{DynamicResource Str_TT_Bookmarks}"/>
+                    <!-- E8A1 (list): results density. Click cycles Comfortable -> Compact ->
+                         Minimal, the wheel steps through them - the same gesture and the same
+                         glyph KillerNotes uses for its sidebar density (Density.cs). -->
+                    <Button x:Name="DensityBtn" Style="{StaticResource RailButton}" Content="&#xE8A1;"
+                            FontSize="12" Margin="0,0,0,10" Click="Density_Click"
+                            MouseWheel="Density_MouseWheel"
+                            ToolTip="{DynamicResource Str_TT_Density}"/>
+                    <!-- E9A6 (two panes): open or close the second pane, right-click flips
+                         side-by-side / stacked. On the rail rather than in a pane toolbar
+                         because it acts on the WINDOW - in the toolbar there were two of them,
+                         one per pane, doing the identical thing, and either could be shed into
+                         the overflow chevron on a narrow split. Accents while open, like the
+                         search and bookmarks toggles above. -->
+                    <Button x:Name="DualPaneRailBtn" Style="{StaticResource RailButton}" Content="&#xE9A6;"
+                            FontSize="12" Margin="0,0,0,10" Click="DualPane_Click"
+                            MouseRightButtonUp="DualPaneOrient_Click"
+                            ToolTip="{DynamicResource Str_TT_DualPane}"/>
+                    <!-- E756 (command prompt): opens a PowerShell here on a left click, and
+                         right-click picks the shell. Four rows rather than four rail icons -
+                         the rail is family furniture and a column of near-identical prompts
+                         would read as clutter, while the pair you actually reach for most is
+                         one click and one chord away regardless (F8 / Ctrl+F8). -->
+                    <Button x:Name="TerminalRailBtn" Style="{StaticResource RailButton}" Content="&#xE756;"
+                            FontSize="12" Margin="0,0,0,10" Click="TerminalRail_Click"
+                            ToolTip="{DynamicResource Str_TT_Terminal}">
+                        <Button.ContextMenu>
+                            <ContextMenu Placement="Top">
+                                <MenuItem Header="{DynamicResource Str_Term_PowerShell}" Click="RailShellPs_Click" InputGestureText="F8">
+                                    <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE756;"/></MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="{DynamicResource Str_Term_PowerShellAdmin}" Click="RailShellPsAdmin_Click" InputGestureText="Ctrl+F8">
+                                    <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE7EF;"/></MenuItem.Icon>
+                                </MenuItem>
+                                <Separator/>
+                                <MenuItem Header="{DynamicResource Str_Term_Cmd}" Click="RailShellCmd_Click" InputGestureText="Shift+F8">
+                                    <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE756;"/></MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="{DynamicResource Str_Term_CmdAdmin}" Click="RailShellCmdAdmin_Click" InputGestureText="Ctrl+Shift+F8">
+                                    <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE7EF;"/></MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
                     <!-- "?" (a literal, in Consolas): the shortcuts card, F1. Sits directly above
                          the globe, which is where KillerNotes and KillerScan put it - the rail
                          order is family furniture, so it has to match. -->
@@ -680,10 +749,45 @@
             </Grid>
             <!-- end COLUMN 5 search panel -->
 
-            <!-- COLUMN 3 - TAB STRIP + RESULTS. One tab = one whole search (folder, terms,
-                 filters, results). Tab visuals mirror KillerPDF: active tab takes the pane
-                 background with a 3px accent stripe on top and a soft shadow. -->
-            <local:FilePane x:Name="LeftPane" Grid.Column="3"/>
+            <!-- COLUMN 3 - THE PANES. One tab = one whole search or one folder. Tab visuals
+                 mirror KillerPDF: active tab takes the pane background with a 3px accent
+                 stripe on top and a soft shadow.
+                 PaneHost carries BOTH panes on one 3x3 grid rather than one grid per
+                 orientation. Side-by-side uses the columns and collapses the rows; stacked
+                 uses the rows and collapses the columns; DualPane.cs moves RightPane and the
+                 splitter between the two slots. One host means the panes are never rebuilt
+                 when the orientation flips, so neither one loses its tabs or its scroll
+                 position. Second pane is Collapsed until asked for, and its column/row is 0
+                 wide, so a single-pane window lays out exactly as it did before. -->
+            <Grid Grid.Column="3" x:Name="PaneHost">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="PaneColA" Width="*" MinWidth="180"/>
+                    <ColumnDefinition x:Name="PaneColSplit" Width="0"/>
+                    <ColumnDefinition x:Name="PaneColB" Width="0" MinWidth="0"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition x:Name="PaneRowA" Height="*" MinHeight="120"/>
+                    <RowDefinition x:Name="PaneRowSplit" Height="0"/>
+                    <RowDefinition x:Name="PaneRowB" Height="0" MinHeight="0"/>
+                </Grid.RowDefinitions>
+
+                <local:FilePane x:Name="LeftPane" Grid.Column="0" Grid.Row="0"/>
+
+                <!-- Both splitters exist; DualPane.cs shows whichever the orientation needs.
+                     ResizeBehavior is PreviousAndNext so the drag moves the boundary between
+                     the two panes and nothing else. -->
+                <GridSplitter x:Name="PaneSplitV" Grid.Column="1" Grid.Row="0" Width="6"
+                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                              Background="Transparent" Cursor="SizeWE" Visibility="Collapsed"
+                              ResizeBehavior="PreviousAndNext" ResizeDirection="Columns"/>
+                <GridSplitter x:Name="PaneSplitH" Grid.Row="1" Grid.Column="0" Height="6"
+                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                              Background="Transparent" Cursor="SizeNS" Visibility="Collapsed"
+                              ResizeBehavior="PreviousAndNext" ResizeDirection="Rows"/>
+
+                <local:FilePane x:Name="RightPane" Grid.Column="2" Grid.Row="0"
+                                Visibility="Collapsed"/>
+            </Grid>
         </Grid>
 
         <!-- ══════════ ROW 2 - FOOTER (blends with the sidebar/panes, no divider line) ══════════ -->
@@ -705,7 +809,12 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Border Grid.ColumnSpan="2" IsHitTestVisible="False" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
-            <Grid Grid.Column="0" VerticalAlignment="Center" Margin="16,0,12,0">
+            <!-- 10.5 left, not the 16 the rest of the family uses: the status dot is the first
+                 thing in this row and it should sit on the same vertical line as the icon rail
+                 above it (RailCol, 24 wide, so its icons center at 12). The dot is 3 wide, so
+                 the row starts at 12 - 1.5. Everything after it moves with it, which is the
+                 "tiny bit left" this is for. -->
+            <Grid Grid.Column="0" VerticalAlignment="Center" Margin="10.5,0,12,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
@@ -863,7 +972,7 @@
                                             <TextBlock Text="{DynamicResource Str_About_Version}" Foreground="{DynamicResource DimTextBrush}" FontFamily="Consolas" FontSize="10"/>
                                             <!-- One row, two ends: the version in the accent on the left, the
                                                  release date muted and italic hard right against the panel edge.
-                                                 Bottom-aligned rather than centred so the two sizes sit on a
+                                                 Bottom-aligned rather than centered so the two sizes sit on a
                                                  shared baseline. Only the version text is clickable. -->
                                             <Grid Margin="0,1,0,0">
                                                 <TextBlock x:Name="AboutVersionBlock" Foreground="{DynamicResource PrimaryBrush}"
@@ -915,6 +1024,64 @@
                     </Grid>
                 </Border>
             </Grid>
+        </Grid>
+
+        <!-- ══════════ FONTS OVERLAY (dim backdrop + centered card) ══════════ -->
+        <!-- One slot per surface that has its own face. Deliberately a dialog and not part of
+             the theme flyout: a system font list runs to hundreds of entries, and a flyout is
+             for things you pick at a glance. Built to take more rows without restructuring. -->
+        <Grid x:Name="FontsOverlay" Grid.RowSpan="3" Panel.ZIndex="9000" Visibility="Collapsed"
+              Background="#88000000" MouseLeftButtonDown="FontsOverlay_Click">
+            <Border Width="420" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource CardBorderBrush}"
+                    BorderThickness="1" CornerRadius="8" MouseLeftButtonDown="FontsCard_Click">
+                <Border.Effect><DropShadowEffect Color="Black" BlurRadius="30" ShadowDepth="6" Direction="270" Opacity="0.6"/></Border.Effect>
+                <Grid>
+                <Border IsHitTestVisible="False" CornerRadius="7" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                <StackPanel Margin="24,20">
+                    <Grid Margin="0,0,0,14">
+                        <TextBlock Text="{DynamicResource Str_Fonts_Title}" Style="{StaticResource SectionHeader}"
+                                   FontSize="13" Margin="0" VerticalAlignment="Center"/>
+                        <Button Content="&#xE8BB;" Click="FontsClose_Click" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                Width="30" Height="26" FontSize="10" FontFamily="Segoe MDL2 Assets"
+                                Style="{StaticResource DangerButton}" BorderThickness="0"/>
+                    </Grid>
+
+                    <TextBlock Text="{DynamicResource Str_Fonts_App}" Foreground="{DynamicResource DimTextBrush}"
+                               FontFamily="Consolas" FontSize="10" Margin="0,0,0,4"/>
+                    <ComboBox x:Name="FontAppCombo" Height="26" FontSize="12" Margin="0,0,0,14"
+                              SelectionChanged="FontCombo_Changed" PreviewMouseWheel="FontCombo_Wheel"/>
+
+                    <TextBlock Text="{DynamicResource Str_Fonts_Terminal}" Foreground="{DynamicResource DimTextBrush}"
+                               FontFamily="Consolas" FontSize="10" Margin="0,0,0,4"/>
+                    <ComboBox x:Name="FontTermCombo" Height="26" FontSize="12"
+                              SelectionChanged="FontCombo_Changed" PreviewMouseWheel="FontCombo_Wheel"/>
+
+                    <!-- Size is the terminal's alone: the rest of the app grows through the
+                         wordmark zoom (AppScale.cs), and a shell is the one surface people want
+                         tuned away from everything else - denser for a long build log, larger
+                         for a prompt they stare at. Ctrl+wheel inside a terminal still nudges
+                         that one tab on top of this. -->
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Slider x:Name="FontTermSize" Style="{StaticResource ThinSlider}"
+                                Minimum="8" Maximum="28" SmallChange="1" LargeChange="1"
+                                IsSnapToTickEnabled="True" TickFrequency="1"
+                                ValueChanged="FontTermSize_Changed"/>
+                        <TextBlock x:Name="FontTermSizeLabel" Grid.Column="1" Margin="10,0,0,0"
+                                   MinWidth="26" TextAlignment="Right" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource MutedTextBrush}"
+                                   FontFamily="Consolas" FontSize="11"/>
+                    </Grid>
+
+                    <TextBlock Text="{DynamicResource Str_Fonts_Hint}" Foreground="{DynamicResource DimTextBrush}"
+                               FontSize="10.5" TextWrapping="Wrap" Margin="0,14,0,0"/>
+                </StackPanel>
+                </Grid>
+            </Border>
         </Grid>
 
         <!-- ══════════ PATTERN HELP OVERLAY (dim backdrop + centered cheat-sheet card) ══════════ -->
@@ -1085,10 +1252,20 @@
                                 Style="{StaticResource KsViewToggle}" Click="KsViewKeyboard_Click"/>
                     </StackPanel>
 
-                    <!-- Both filled in code: BuildShortcutsList (ShortcutsOverlay.cs) and
+                    <!-- Scrolls, and its MaxHeight is set in code against the window's own height
+                         (ApplyShortcutView). The card is centered with no height of its own, so
+                         once the list outgrew the window the overflow was simply clipped and the
+                         last group silently lost rows - which is exactly how the VIEW group came
+                         to show only its first line.
+                         Both hosts filled in code: BuildShortcutsList (ShortcutsOverlay.cs) and
                          BuildKeyboardView (KeyboardMapOverlay.cs), each once and lazily. -->
-                    <StackPanel x:Name="ShortcutListHost"/>
-                    <StackPanel x:Name="ShortcutKeyboardHost" Visibility="Collapsed"/>
+                    <ScrollViewer x:Name="ShortcutScroll" VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                    <StackPanel>
+                        <StackPanel x:Name="ShortcutListHost"/>
+                        <StackPanel x:Name="ShortcutKeyboardHost" Visibility="Collapsed"/>
+                    </StackPanel>
+                    </ScrollViewer>
 
                     <TextBlock Text="{DynamicResource Str_Ks_Hint}" Foreground="{DynamicResource DimTextBrush}"
                                FontSize="10.5" TextWrapping="Wrap" Margin="0,10,0,0"/>
@@ -1096,6 +1273,56 @@
                 </Grid>
             </Border>
         </Grid>
+
+        <!-- Tab drag layer (PaneDrag.cs). Lives at the WINDOW level, not inside a pane,
+             because a tab being dragged between panes is over neither of them for most of the
+             journey - parented to a pane it would be clipped at that pane's edge.
+             Hit-test transparent throughout, or the ghost would sit under the cursor and stop
+             the drop from ever finding the pane beneath it. -->
+        <Canvas x:Name="DragLayer" Grid.RowSpan="3" Panel.ZIndex="90"
+                IsHitTestVisible="False" Visibility="Collapsed">
+            <!-- A half-real copy of the tab, carrying the same accent lip and glyph so it is
+                 obviously THE tab rather than a generic drag box. -->
+            <Border x:Name="TabDragGhost" Opacity="0.72" CornerRadius="6,6,0,0" Padding="12,2,10,5"
+                    Background="{DynamicResource PaneBrush}"
+                    BorderThickness="0,3,0,0" BorderBrush="{DynamicResource PrimaryBrush}">
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" BlurRadius="14" ShadowDepth="3"
+                                      Direction="270" Opacity="0.5"/>
+                </Border.Effect>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="TabDragGhostGlyph" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                               Margin="0,0,5,0" VerticalAlignment="Center"
+                               Foreground="{DynamicResource MutedTextBrush}"/>
+                    <TextBlock x:Name="TabDragGhostText" FontFamily="Consolas" FontSize="11.5"
+                               FontWeight="Bold" VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextBrush}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Where it would land. Only shown over the target strip, because anywhere else
+                 in the pane means "append" and there is no gap to point at. -->
+            <Border x:Name="TabDropCaret" Width="2" Visibility="Collapsed"
+                    Background="{DynamicResource PrimaryBrush}"/>
+        </Canvas>
+
+        <!-- Elevation halo: an accent ring around the whole window when this process is
+             running as administrator (Elevation.cs). Drawn as an overlay rather than as a
+             border on RootGrid, because a Grid has no border to give it, and hit-test
+             transparent so it cannot swallow a click on the chrome underneath.
+             Two rings, not a blur: the outer solid one is the signal, the inner translucent
+             one softens it into a glow. A DropShadowEffect would be clipped by the window
+             edge anyway, and bitmap effects over this window would cost ClearType. -->
+        <!-- CornerRadius 8 / 6: Windows 11 rounds every top-level window itself (this one asks
+             WindowChrome for CornerRadius 0, so the rounding is the DWM's, not ours). A square
+             ring inside a rounded window gets its corners sliced off by that rounding and the
+             accent reads as four broken lines instead of one loop. On Windows 10, where the
+             window really is square, a rounded ring costs a couple of pixels at each corner -
+             the cheaper of the two errors, and the one nobody notices. -->
+        <Border x:Name="ElevationHalo" Grid.RowSpan="3" Panel.ZIndex="100" CornerRadius="8"
+                Visibility="Collapsed" IsHitTestVisible="False" BorderThickness="2">
+            <Border x:Name="ElevationHaloInner" BorderThickness="1" CornerRadius="6" Opacity="0.35"/>
+        </Border>
 
     </Grid>
 </Window>

@@ -28,7 +28,7 @@
     <sys:String x:Key="Str_TT_SearchPanel">Show or hide the search panel  (Ctrl+Shift+S)</sys:String>
     <sys:String x:Key="Str_TT_TreePanel">Show or hide the folder tree</sys:String>
     <sys:String x:Key="Str_TT_CollapseSidebar">Collapse the side panels</sys:String>
-    <!-- Favourites (Bookmarks.cs) -->
+    <!-- Favorites (Bookmarks.cs) -->
     <sys:String x:Key="Str_TT_Bookmarks">Saved locations  (Ctrl+B)</sys:String>
     <sys:String x:Key="Str_TT_Favorite">Save this folder</sys:String>
     <sys:String x:Key="Str_TT_ShowHidden">Show hidden and system items</sys:String>
@@ -97,9 +97,15 @@
     <sys:String x:Key="Str_Sort_Found">as found</sys:String>
     <sys:String x:Key="Str_TT_FilterResults">Filter these results (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_Pipe">Search within these results</sys:String>
+    <sys:String x:Key="Str_TT_DualPane">Second pane  |  right-click to flip side-by-side / stacked</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">More tools</sys:String>
+    <sys:String x:Key="Str_TT_Sort">Sort by</sys:String>
+    <sys:String x:Key="Str_Nav_ThisPc">This PC</sys:String>
     <sys:String x:Key="Str_Menu_PipeTab">Search within these results</sys:String>
     <sys:String x:Key="Str_Pipe_Scope">{0} results from {1}  |  {2}</sys:String>
     <sys:String x:Key="Str_Status_NoPipe">No results to search within yet.</sys:String>
+
+    <sys:String x:Key="Str_Status_ElevateFailed">Could not start an elevated shell: {0}</sys:String>
 
     <!-- Portable install + quit dialog -->
     <sys:String x:Key="Str_Portable">PORTABLE</sys:String>
@@ -143,6 +149,8 @@
     <!-- Results context menu (ResultsMenu.cs). Copy commands act on the whole selection. -->
     <sys:String x:Key="Str_Menu_OpenAdmin">Open as administrator</sys:String>
     <sys:String x:Key="Str_Menu_SearchHere">Search inside this folder</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminal">Open terminal here</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminalAdmin">Open terminal here as administrator</sys:String>
     <sys:String x:Key="Str_Menu_ExcludeFolder">Exclude this folder</sys:String>
     <sys:String x:Key="Str_Menu_CopyPath">Copy full path</sys:String>
     <sys:String x:Key="Str_Menu_CopyName">Copy file name</sys:String>
@@ -196,6 +204,9 @@
 
     <!-- HTML report (exported in the app's current language) -->
     <sys:String x:Key="Str_Rpt_Meta">Generated {0} &#183; {1} files &#183; {2} matches</sys:String>
+    <!-- Browsing export: a folder listing counts items and has no matches or query -->
+    <sys:String x:Key="Str_Rpt_MetaList">Generated {0} &#183; {1} items</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">Listing of {0}.</sys:String>
     <sys:String x:Key="Str_Rpt_Query">Searched {0} for {1}.</sys:String>
     <sys:String x:Key="Str_Rpt_TermName">file names containing {0}</sys:String>
     <sys:String x:Key="Str_Rpt_TermContent">file contents containing {0}</sys:String>
@@ -239,9 +250,60 @@
     <sys:String x:Key="Str_Ks_SearchPanel">show or hide the search panel</sys:String>
     <sys:String x:Key="Str_Ks_ExpandAll">expand every result</sys:String>
     <sys:String x:Key="Str_Ks_CollapseAll">collapse every result</sys:String>
+    <sys:String x:Key="Str_Ks_Shell">open a PowerShell tab in this folder</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmd">open a CMD tab in this folder</sys:String>
+    <sys:String x:Key="Str_Ks_ShellAdmin">open PowerShell as administrator</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmdAdmin">open CMD as administrator</sys:String>
     <sys:String x:Key="Str_Ks_ExportHtml">export the results as HTML</sys:String>
     <sys:String x:Key="Str_Ks_ExportCsv">export the results as CSV</sys:String>
     <sys:String x:Key="Str_Ks_Hint">Shortcuts work anywhere in the window. Open dropdowns, the date box, and the results filter keep Enter for themselves.</sys:String>
+
+    <!-- Font dialog, reached from the row under the theme flyout -->
+    <sys:String x:Key="Str_Fonts_Row">Fonts...</sys:String>
+    <sys:String x:Key="Str_Fonts_Title">FONTS</sys:String>
+    <sys:String x:Key="Str_Fonts_App">APP</sys:String>
+    <sys:String x:Key="Str_Fonts_Terminal">TERMINAL</sys:String>
+    <sys:String x:Key="Str_Fonts_Default">Default</sys:String>
+    <sys:String x:Key="Str_Fonts_Hint">Roll the wheel over a list to browse faces. Every change applies straight away.</sys:String>
+    <sys:String x:Key="Str_Fonts_Unreadable">{0} has no readable letters - keeping the previous font</sys:String>
+
+    <!-- Title-bar caption on an elevated window, beside the wordmark -->
+    <sys:String x:Key="Str_Title_Elevated">- Escalated Privileges</sys:String>
+    <sys:String x:Key="Str_Ks_MenuBar">hide or show the pane menubar</sys:String>
+    <sys:String x:Key="Str_Ks_NewWindow">open a new window</sys:String>
+
+    <!-- Recently visited folders, behind the address bar's chevron (Recents.cs) -->
+    <sys:String x:Key="Str_TT_Recents">Recently visited folders</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">No recent folders yet</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">Clear the list</sys:String>
+
+    <!-- Results density, on the rail (Density.cs) -->
+    <sys:String x:Key="Str_TT_Density">Results density - click to cycle, wheel to step</sys:String>
+    <sys:String x:Key="Str_St_DensityRoomy">Density: roomy</sys:String>
+    <sys:String x:Key="Str_St_DensityFull">Density: comfortable</sys:String>
+    <sys:String x:Key="Str_St_DensityCompact">Density: compact</sys:String>
+    <sys:String x:Key="Str_St_DensityTight">Density: tight</sys:String>
+    <sys:String x:Key="Str_St_DensityMin">Density: minimal</sys:String>
+
+    <!-- Terminal right-click menu (Terminal/TerminalMenu.cs) -->
+    <sys:String x:Key="Str_Term_Copy">Copy</sys:String>
+    <sys:String x:Key="Str_Term_Paste">Paste</sys:String>
+    <sys:String x:Key="Str_Term_SelectAll">Select all</sys:String>
+    <sys:String x:Key="Str_Term_Clear">Clear</sys:String>
+    <sys:String x:Key="Str_Term_NewShell">New terminal</sys:String>
+    <sys:String x:Key="Str_Term_OpenFolder">Open folder here</sys:String>
+    <sys:String x:Key="Str_Term_Fonts">Fonts...</sys:String>
+    <sys:String x:Key="Str_Term_EditPrompt">Edit prompt...</sys:String>
+    <sys:String x:Key="Str_Term_ResetPrompt">Reset prompt</sys:String>
+    <sys:String x:Key="Str_Term_Close">Close terminal</sys:String>
+    <sys:String x:Key="Str_Dlg_ResetPromptMsg">Put the shipped prompt script back? Your edits to this file will be lost.</sys:String>
+    <sys:String x:Key="Str_Btn_Reset">Reset</sys:String>
+    <!-- Rail button: left click opens PowerShell, right click picks -->
+    <sys:String x:Key="Str_TT_Terminal">Open a terminal  (F8)  -  right-click to choose</sys:String>
+    <sys:String x:Key="Str_Term_PowerShell">PowerShell</sys:String>
+    <sys:String x:Key="Str_Term_PowerShellAdmin">PowerShell as administrator</sys:String>
+    <sys:String x:Key="Str_Term_Cmd">Command Prompt</sys:String>
+    <sys:String x:Key="Str_Term_CmdAdmin">Command Prompt as administrator</sys:String>
 
     <!-- Shortcuts card: category headings, the LIST / KEYBOARD toggle, and the keyboard's hint -->
     <sys:String x:Key="Str_Ks_About">show the about card</sys:String>

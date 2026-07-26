@@ -20,6 +20,12 @@ namespace KillerFind
                 ApplyThemeBorder(this);   // retint the DWM frame border to the new palette
                 UpdateThemeSwatchSelection();
                 UpdateAccentSwatches();
+
+                // A shell resolves its colors ONCE, when its palette is built - it has to, since
+                // it paints thousands of cells a frame and cannot carry a DynamicResource per
+                // cell. So a theme switch has to tell it to rebuild, or every open terminal
+                // keeps the colors of the theme it was opened under (TerminalTabs.cs).
+                RefreshTerminalThemes();
             }
         }
 
@@ -30,6 +36,10 @@ namespace KillerFind
                 ThemeManager.ApplyAccent(ThemeManager.Current, accent);
                 UpdateThemeSwatchSelection();
                 UpdateAccentSwatches();
+
+                // The accent is a shell's cursor and selection color, so this needs the rebuild
+                // as much as a full theme switch does.
+                RefreshTerminalThemes();
             }
         }
 

@@ -789,6 +789,89 @@
         </Setter>
     </Style>
 
+    <!-- A full-width row inside a popup menu: transparent until hovered, then the menu's own
+         hover fill. Needed because a Button with no Style keeps the default WPF template, whose
+         hover is the system light blue - setting Background alone does not reach it, since the
+         template's own trigger paints over whatever the property says. -->
+    <Style x:Key="MenuRowButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource MenuTextBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="6,5"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="4"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Bd" Property="Background" Value="{DynamicResource MenuHoverBrush}"/></Trigger>
+                        <Trigger Property="IsPressed"   Value="True"><Setter TargetName="Bd" Property="Background" Value="{DynamicResource RowSelectedBrush}"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Compact horizontal slider. The default WPF Slider brings its own chrome, tick bar and
+         system colors, none of which belong on a themed card - so the template is a thin track
+         with an accent fill up to the thumb, and a small round grip. The fill is a second Border
+         inside the same cell driven by the RepeatButton's width, which is what actually reports
+         the value's position without a converter. -->
+    <Style x:Key="ThinSlider" TargetType="Slider">
+        <Setter Property="Height" Value="20"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="IsMoveToPointEnabled" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Slider">
+                    <Grid VerticalAlignment="Center">
+                        <Border Height="3" CornerRadius="1.5" VerticalAlignment="Center"
+                                Background="{DynamicResource InputBorderBrush}"/>
+                        <Track x:Name="PART_Track">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Command="Slider.DecreaseLarge" Focusable="False">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Border Height="3" CornerRadius="1.5" VerticalAlignment="Center"
+                                                    Background="{DynamicResource PrimaryBrush}"/>
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Command="Slider.IncreaseLarge" Focusable="False">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Border Background="Transparent"/>
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb x:Name="Grip" Width="13" Height="13" Focusable="False">
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Ellipse x:Name="knob" Fill="{DynamicResource PrimaryBrush}"
+                                                     Stroke="{DynamicResource SurfaceBrush}" StrokeThickness="2"/>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="knob" Property="StrokeThickness" Value="1"/></Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <SolidColorBrush x:Key="DangerRed" Color="#e04444"/>
 
     <Style x:Key="ChromeButton" TargetType="Button">
@@ -819,7 +902,12 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="Bd" Background="Transparent"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                    <!-- Top-right corner rounded to 8, the radius Windows 11 rounds the window
+                         itself to. This button sits IN that corner, so a square red fill runs
+                         past the curve and the DWM slices the overhang off, leaving a chewed
+                         edge on hover. Only the top-right is rounded: the other three sit
+                         against the title bar and must stay flush. -->
+                    <Border x:Name="Bd" Background="Transparent" CornerRadius="0,8,0,0"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Bd" Property="Background" Value="{DynamicResource DangerRed}"/>
@@ -991,7 +1079,7 @@
                              x=7.5-8.5. A bare Path would be positioned by layout instead, and
                              the alignment this whole style exists for would drift.
                              The two states are separate geometries rather than one chevron on a
-                             RotateTransform: rotating about the bounding-box centre swings the
+                             RotateTransform: rotating about the bounding-box center swings the
                              arms back across the line, which is what drew an X over it.
                              FILL is what makes the line read as a zigzag rather than something
                              with a chevron laid over it - an unclosed figure still fills as if
@@ -1014,7 +1102,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
-                            <!-- Points down, vertex landing on x=8 - the line's centre - so the
+                            <!-- Points down, vertex landing on x=8 - the line's center - so the
                                  line runs into the point of the V rather than off to one side.
                                  Arm length and angle match the collapsed chevron (these are its
                                  own three points rotated 90 degrees, worked out by hand: a
@@ -1047,7 +1135,7 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <!-- 16px gutter carries the expander AND the connecting lines, so
-                                 the lines land dead centre on the triangle at every depth. -->
+                                 the lines land dead center on the triangle at every depth. -->
                             <ColumnDefinition Width="16"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>

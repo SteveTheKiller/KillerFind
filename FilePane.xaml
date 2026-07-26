@@ -27,9 +27,23 @@
                    declaration order alone, and the 1px the pane is pulled up by (its -1 top
                    margin) lands its border ON TOP of the strip instead of behind it - which is
                    exactly the hairline that kept showing under the active tab. -->
-              <Border Grid.Row="0" x:Name="TabBar" Panel.ZIndex="20" Margin="0,6,8,0" Background="{DynamicResource BackgroundBrush}" Visibility="Collapsed">
+              <Border Grid.Row="0" x:Name="TabBar" Panel.ZIndex="20" Margin="0,6,8,0"
+                      Background="{DynamicResource BackgroundBrush}" Visibility="Collapsed">
                <Grid>
                 <Border IsHitTestVisible="False" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                <!-- The line across the top of the pane: PaneBorderBrush normally, the accent
+                     when this pane has focus (DualPane.cs), exactly mirroring the pane border
+                     it continues.
+                     A 1px strip INSIDE the band, not a BorderThickness on TabBar itself: a
+                     Border draws its own border outside the content area, so the active tab
+                     could never reach it and the accent ran straight under the tab, boxing it
+                     in instead of joining it to the pane.
+                     Declared before the tabs so they paint over it. Every tab carries a 1px
+                     bottom margin that keeps it clear of this line; the ACTIVE tab alone drops
+                     that margin and covers its own segment, which is what breaks the line
+                     exactly at the tab - the browser-tab join.
+                     Declared after the band's shadow gradient too, or the gradient's 35% black
+                     bottom would wash the accent out. -->
                 <!-- KillerPDF's tab-strip fade: shadow rising from the pane below, so the band
                      darkens toward the bottom and the tabs read as sitting in front of it.
                      The horizontal OpacityMask cross-fades the shadow out at both ends so it
@@ -51,6 +65,16 @@
                         </LinearGradientBrush>
                     </Border.OpacityMask>
                 </Border>
+                <!-- Not a flat 1px strip: the pane's top corners are rounded under an INACTIVE
+                     tab (Tabs.cs), and a straight line ran past the curve and stopped dead at
+                     the pane's outer edge. This is the pane's top border drawn again, radii and
+                     all - 7px tall with a -6 bottom margin, so its 1px TOP edge lands in the
+                     band's last row and its curved sides drop out of the band and land exactly
+                     on the pane's own left/right border, same brush, same pixels. Tabs.cs keeps
+                     the radii in step with the pane's. -->
+                <Border x:Name="TabBarRing" Height="7" VerticalAlignment="Bottom" Margin="0,0,0,-6"
+                        BorderThickness="1,1,1,0" CornerRadius="6,6,0,0" IsHitTestVisible="False"
+                        BorderBrush="{DynamicResource PaneBorderBrush}"/>
                 <DockPanel LastChildFill="True">
                 <!-- Horizontal scrolling is DISABLED, not hidden: hidden still measures the
                      content at infinite width, which would let the tabs size to their own
@@ -61,6 +85,22 @@
                 <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled"
                               FocusVisualStyle="{x:Null}">
                     <ItemsControl x:Name="TabStrip">
+                        <!-- The ACTIVE tab draws above its neighbors. Items paint in index
+                             order, so the tab to the right of the active one was painting over
+                             the active tab's 1px right border and the ring stopped dead at that
+                             side - which is why a middle tab lost its right edge while the last
+                             tab, having no neighbor after it, kept both. Raising the container
+                             makes the raised tab's whole outline (and its shadow) land on top,
+                             which is what a browser tab strip does anyway. -->
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="ContentPresenter">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                        <Setter Property="Panel.ZIndex" Value="1"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
                         <ItemsControl.ItemsPanel>
                             <!-- Tabs share the bar equally and fill it, browser-style, instead of
                                  hugging their titles and leaving dead space on the right. -->
@@ -79,7 +119,10 @@
                                      separates one tab from the next, and the margin only served
                                      to stop the last tab reaching the strip's right edge - which
                                      is the pane's edge, so it left a 1px step under the corner. -->
-                                <Border x:Name="tabBd" CornerRadius="6,6,0,0" Margin="0,3,0,0" Padding="12,4,5,5"
+                                <!-- 1px bottom margin keeps an inactive tab clear of the ring
+                                     line at the foot of the band; the active tab drops it and
+                                     covers its own segment. -->
+                                <Border x:Name="tabBd" CornerRadius="6,6,0,0" Margin="0,3,0,1" Padding="12,4,5,5"
                                         MinWidth="60"
                                         Cursor="Hand" Background="{DynamicResource BackgroundBrush}"
                                         BorderThickness="0,0,1,0" BorderBrush="{DynamicResource CardBorderBrush}"
@@ -105,6 +148,14 @@
                                             <Button DockPanel.Dock="Right" Content="x" Style="{StaticResource DangerButton}" Width="18" Height="18" Margin="6,0,0,0"
                                                     FocusVisualStyle="{x:Null}"
                                                     ToolTip="{DynamicResource Str_TT_CloseTab}" Tag="{Binding}" Click="CloseTab_Click"/>
+                                            <!-- Shell tabs carry a glyph so a terminal is not
+                                                 mistaken for a folder at a glance. Collapsed
+                                                 for every other kind of tab, so nothing about
+                                                 a folder tab moves. -->
+                                            <TextBlock x:Name="tabGlyph" DockPanel.Dock="Left"
+                                                       Text="{Binding TabGlyph}" FontFamily="Segoe MDL2 Assets"
+                                                       FontSize="10" Margin="0,0,5,0" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource MutedTextBrush}"/>
                                             <TextBlock x:Name="tabLbl" Text="{Binding Title}" FontFamily="Consolas" FontSize="11"
                                                        Foreground="{DynamicResource MutedTextBrush}" VerticalAlignment="Center"
                                                        TextTrimming="CharacterEllipsis"/>
@@ -112,6 +163,9 @@
                                     </Grid>
                                 </Border>
                                 <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding TabGlyph}" Value="">
+                                        <Setter TargetName="tabGlyph" Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
                                     <!-- Last tab drops its right border: that 1px is a divider
                                          BETWEEN tabs, and on the strip's right edge it reads as a
                                          stray rule instead. Declared BEFORE the IsActive trigger
@@ -123,6 +177,9 @@
                                     <DataTrigger Binding="{Binding IsActive}" Value="True">
                                         <Setter TargetName="tabBd" Property="Background" Value="{DynamicResource PaneBrush}"/>
                                         <Setter TargetName="tabBd" Property="BorderThickness" Value="0,3,0,0"/>
+                                        <!-- Reaches the foot of the band so its PaneBrush breaks
+                                             the ring line where the tab is. -->
+                                        <Setter TargetName="tabBd" Property="Margin" Value="0,3,0,0"/>
                                         <!-- Top padding gives back the 3px the accent stripe takes,
                                              so the title doesn't drop when a tab activates. -->
                                         <Setter TargetName="tabBd" Property="Padding" Value="12,1,5,5"/>
@@ -136,12 +193,56 @@
                                         <Setter TargetName="tabLbl" Property="FontWeight" Value="Bold"/>
                                         <Setter TargetName="tabLbl" Property="FontSize" Value="11.5"/>
                                     </DataTrigger>
+                                    <!-- Unfocused pane: the lip goes to the dimmed accent, the
+                                         same treatment the site's feature cards use - resting
+                                         cards carry a darker tab-edge lip and only the hovered
+                                         one lights to full accent. At full brightness both panes
+                                         claimed to be the live one. Only the BRUSH changes, and
+                                         with no side borders on an unfocused pane the brush is
+                                         the lip. Mutually exclusive with PaneFocused below. -->
+                                    <DataTrigger Binding="{Binding PaneDimmed}" Value="True">
+                                        <Setter TargetName="tabBd" Property="BorderBrush" Value="{DynamicResource TabEdgeBrush}"/>
+                                    </DataTrigger>
+                                    <!-- Focused pane: the ring continues UP both sides of the
+                                         active tab, so the tab and the pane read as one outlined
+                                         surface instead of the ring stopping dead at the strip.
+                                         Declared LAST on purpose - PaneFocused implies IsActive,
+                                         both triggers match, and with multiple matches the last
+                                         one wins. Put earlier, IsActive would overwrite the
+                                         thickness straight back to a top-only stripe.
+                                         Padding drops 1px each side to pay for the new borders,
+                                         so the title does not shift when focus arrives. -->
+                                    <DataTrigger Binding="{Binding PaneFocused}" Value="True">
+                                        <Setter TargetName="tabBd" Property="BorderThickness" Value="1,3,1,0"/>
+                                        <Setter TargetName="tabBd" Property="Padding" Value="11,1,4,5"/>
+                                    </DataTrigger>
                                 </DataTemplate.Triggers>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
                 </DockPanel>
+                <!-- The ring's two vertical ends, drawn by the BAND rather than by the tab.
+                     A tab's own left/right border sits on the strip's clip edge when it is the
+                     first or last tab, and the ScrollViewer cuts it: the UniformGrid divides a
+                     fractional band width, so the outermost border lands a hair outside the
+                     viewport and vanishes. Whether it survives depends on the split width, which
+                     is why it came and went. These are anchored to the band's own edges, so
+                     there is no arithmetic to land wrong.
+                     Declared after the strip so they draw over the tabs, and only shown when the
+                     tab that owns that edge is the active one (DualPane.cs) - an inactive tab
+                     leaves the pane's corner rounded and there is nothing to continue.
+                     Top margin 9 = the tab's own 3 plus its 6px corner radius, so each strip
+                     starts where the tab's side actually becomes vertical. Square-topped at 3 it
+                     stood proud of the rounded corner as a little spike. Inside the arc the
+                     tab's border is inset from the band edge, so it is nowhere near the clip and
+                     draws itself fine. -->
+                <Border x:Name="TabEdgeLeft" Width="1" HorizontalAlignment="Left" Margin="0,9,0,0"
+                        IsHitTestVisible="False" Visibility="Collapsed"
+                        Background="{DynamicResource PrimaryBrush}"/>
+                <Border x:Name="TabEdgeRight" Width="1" HorizontalAlignment="Right" Margin="0,9,0,0"
+                        IsHitTestVisible="False" Visibility="Collapsed"
+                        Background="{DynamicResource PrimaryBrush}"/>
                </Grid>
               </Border>
 
@@ -166,13 +267,18 @@
                    ApplySearchPanel (SearchPanel.cs) reassigns this margin and repeats the -1. -->
               <Border x:Name="ResultsPane" Grid.Row="1" Margin="0,-1,8,0" Background="{DynamicResource PaneBrush}"
                     BorderBrush="{DynamicResource PaneBorderBrush}" BorderThickness="1" CornerRadius="6" Effect="{StaticResource PaneShadow}">
-              <Grid>
+              <!-- Clipped to the pane's own rounded corners (PaneClip.cs). A Border with a
+                   CornerRadius does NOT clip its child, so anything that reaches the top of the
+                   pane squares those corners off. Nothing did while the location row was always
+                   there - the row's own background filled the corner - but F10 hides it, and
+                   then the terminal and the results list run straight into the curve. -->
+              <Grid x:Name="PaneContent" SizeChanged="PaneContent_SizeChanged">
                 <!-- Same treatment as KillerPDF's document pane: the whole content pane is grain-wrapped. -->
                 <Border IsHitTestVisible="False" CornerRadius="5" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
               <DockPanel>
                 <!-- Location row: the tab's folder on the left (click to change), tab-level
                      actions on the right: pipe, export, close tab. -->
-                <Grid DockPanel.Dock="Top">
+                <Grid x:Name="LocationRow" DockPanel.Dock="Top" SizeChanged="ToolStrip_SizeChanged">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
@@ -180,13 +286,53 @@
                     </Grid.ColumnDefinitions>
                     <!-- Back / forward / up. Browser order and browser glyphs, because that is
                          what everyone's hand already expects at the top left. -->
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="8,0,2,0" VerticalAlignment="Center">
+                    <StackPanel x:Name="NavStrip" Grid.Column="0" Orientation="Horizontal" Margin="8,0,2,0" VerticalAlignment="Center">
                         <Button x:Name="NavBackBtn" Style="{StaticResource ViewToggleBtn}" Content="&#xE72B;"
                                 ToolTip="{DynamicResource Str_TT_Back}" Click="NavBack_Click"/>
                         <Button x:Name="NavForwardBtn" Style="{StaticResource ViewToggleBtn}" Content="&#xE72A;" Margin="2,0"
                                 ToolTip="{DynamicResource Str_TT_Forward}" Click="NavForward_Click"/>
                         <Button x:Name="NavUpBtn" Style="{StaticResource ViewToggleBtn}" Content="&#xE74A;"
                                 ToolTip="{DynamicResource Str_TT_Up}" Click="NavUp_Click"/>
+                        <!-- Favorite: sits immediately LEFT of the address, the way a browser
+                             puts its bookmark star next to the URL, so saving where you are is
+                             one reach from the path you are reading rather than across the row.
+                             E735 filled when saved, E734 outline when not (Bookmarks.cs).
+                             Bare glyph, no button chrome: a boxed outline here would read as a
+                             fourth nav button and compete with back/forward/up. It still gets a
+                             hover tint and a hit area from the transparent border. -->
+                        <Button x:Name="FavoriteStarBtn" Content="&#xE734;" Width="22" Height="22" Padding="0"
+                                Margin="6,0,2,0" FontFamily="Segoe MDL2 Assets" FontSize="13"
+                                VerticalAlignment="Center" Cursor="Hand"
+                                ToolTip="{DynamicResource Str_TT_Favorite}" Click="FavoriteStar_Click">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
+                                    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" CornerRadius="3">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                        </Trigger>
+                                        <!-- Tag="on" is set by Bookmarks.cs alongside the filled
+                                             glyph, so a saved location reads as accent even
+                                             before you hover it. -->
+                                        <Trigger Property="Tag" Value="on">
+                                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
                     </StackPanel>
                     <Border Grid.Column="1" x:Name="ScopeBar" CornerRadius="5,0,0,0" Padding="12,7,8,5"
                             Cursor="Hand" ToolTip="{DynamicResource Str_TT_Scope}" MouseLeftButtonUp="ScopeBar_Click">
@@ -204,6 +350,7 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>   <!-- recents chevron -->
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="{DynamicResource Str_Lbl_In}" Foreground="{DynamicResource MutedTextBrush}"
                                        FontFamily="{DynamicResource MonoFont}" FontSize="11" VerticalAlignment="Center" Margin="0,0,8,0"/>
@@ -227,9 +374,35 @@
                                      Padding="4,1" VerticalAlignment="Center"
                                      VerticalContentAlignment="Center"
                                      KeyDown="AddressBox_KeyDown" LostFocus="AddressBox_LostFocus"/>
+                            <!-- Recents chevron, on the right edge of the row (Recents.cs). Its
+                                 own button rather than opening the list on every address click:
+                                 clicking the row means "let me type a path", and a list that
+                                 covered the box you just asked to type in would be in the way.
+                                 Collapsed while searching - a search tab has no folder history
+                                 to offer, and the row is the search root there. -->
+                            <!-- ViewToggleBtn, not a bare Button: an unstyled Button keeps WPF's
+                                 default template and its system-blue hover, which is what made
+                                 this square light up against the theme. -->
+                            <Button x:Name="RecentsBtn" Grid.Column="2" Content="&#xE70D;"
+                                    Style="{StaticResource ViewToggleBtn}"
+                                    Width="20" Height="20" Padding="0" Margin="4,0,0,0"
+                                    FontFamily="Segoe MDL2 Assets" FontSize="9"
+                                    VerticalAlignment="Center"
+                                    ToolTip="{DynamicResource Str_TT_Recents}"
+                                    Click="Recents_Click">
+                                <Button.ContextMenu>
+                                    <ContextMenu x:Name="RecentsMenu"/>
+                                </Button.ContextMenu>
+                            </Button>
                         </Grid>
                     </Border>
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,4,8,2">
+                    <!-- The strip sheds into an overflow menu when the pane is too narrow to hold
+                         it (PaneToolbar.cs). Buttons are MOVED between here and OverflowPanel
+                         rather than duplicated, so a shed button keeps its handler, its tooltip
+                         and its lit/unlit Tag with no second copy to keep in step.
+                         SizeChanged drives it; the chevron only appears once something is shed. -->
+                    <StackPanel Grid.Column="2" x:Name="ToolStrip" Orientation="Horizontal"
+                                VerticalAlignment="Center" Margin="8,4,8,2">
                         <!-- View modes: cards / tile grid / flat rows under sortable columns.
                              Folded up from the row below, so this strip now carries everything
                              that acts on the listing. -->
@@ -239,18 +412,49 @@
                                 VerticalAlignment="Center" ToolTip="{DynamicResource Str_TT_ViewIcons}" Click="ViewIcons_Click"/>
                         <Button x:Name="ViewDetailsBtn" Style="{StaticResource ViewToggleBtn}" Content="&#xE700;" Margin="0,0,8,0"
                                 VerticalAlignment="Center" ToolTip="{DynamicResource Str_TT_ViewDetails}" Click="ViewDetails_Click"/>
-                        <!-- Sort: field + direction -->
-                        <ComboBox x:Name="SortCombo" Width="118" Height="24" FontSize="11" VerticalAlignment="Center"
-                                  Margin="0,0,4,0" SelectionChanged="SortCombo_Changed">
-                            <!-- Collapsed while browsing (ViewOptions.cs): "as found" is the
-                                 engine's discovery order, which means nothing in a folder
-                                 listing that was enumerated in one pass. -->
-                            <ComboBoxItem x:Name="SortFoundItem" Content="{DynamicResource Str_Sort_Found}"/>
-                            <ComboBoxItem Content="{DynamicResource Str_Col_Name}"/>
-                            <ComboBoxItem Content="{DynamicResource Str_Col_Folder}"/>
-                            <ComboBoxItem Content="{DynamicResource Str_Col_Size}"/>
-                            <ComboBoxItem Content="{DynamicResource Str_Col_Modified}"/>
-                        </ComboBox>
+                        <!-- Sort: key + direction. The key is ONE icon with a flyout, the same
+                             shape as export - the 118px combo was the widest control in this
+                             strip and the first thing to crush the location path beside it. -->
+                        <Button x:Name="SortBtn" Content="&#xE8CB;" Width="26" Height="24" Padding="0" Margin="0,0,2,0"
+                                FontFamily="Segoe MDL2 Assets" FontSize="11" Style="{StaticResource SurfaceButton}"
+                                VerticalAlignment="Center" ToolTip="{DynamicResource Str_TT_Sort}" Click="SortMenu_Click"/>
+                        <!-- Same flyout construction as export: StaysOpen="False" so an outside
+                             click dismisses it, and the shadow on its own border so the text
+                             never renders through a bitmap effect or it loses ClearType. -->
+                        <Popup x:Name="SortPopup" PlacementTarget="{Binding ElementName=SortBtn}" Placement="Bottom"
+                               StaysOpen="False" AllowsTransparency="True" HorizontalOffset="-14" VerticalOffset="-2">
+                            <Grid Margin="14">
+                                <Border Background="{DynamicResource MenuBackgroundBrush}" CornerRadius="6" IsHitTestVisible="False">
+                                    <Border.Effect><DropShadowEffect Color="Black" BlurRadius="22" ShadowDepth="4" Direction="270" Opacity="0.55"/></Border.Effect>
+                                </Border>
+                                <Border Background="{DynamicResource MenuBackgroundBrush}" BorderBrush="{DynamicResource MenuBorderBrush}"
+                                        BorderThickness="1" CornerRadius="6" Padding="6">
+                                    <!-- The chosen key lights accent through SurfaceButton's
+                                         Tag="on" trigger, so Tag is spoken for - the index
+                                         rides on CommandParameter instead (Results.cs). -->
+                                    <StackPanel MinWidth="104">
+                                        <!-- Collapsed while browsing (ViewOptions.cs): "as found" is the
+                                             engine's discovery order, which means nothing in a folder
+                                             listing that was enumerated in one pass. -->
+                                        <Button x:Name="SortFoundItem" CommandParameter="0" Content="{DynamicResource Str_Sort_Found}"
+                                                Style="{StaticResource SurfaceButton}" HorizontalContentAlignment="Left"
+                                                Padding="10,3" FontSize="11" Margin="0,0,0,3" Click="SortItem_Click"/>
+                                        <Button x:Name="SortNameItem" CommandParameter="1" Content="{DynamicResource Str_Col_Name}"
+                                                Style="{StaticResource SurfaceButton}" HorizontalContentAlignment="Left"
+                                                Padding="10,3" FontSize="11" Margin="0,0,0,3" Click="SortItem_Click"/>
+                                        <Button x:Name="SortFolderItem" CommandParameter="2" Content="{DynamicResource Str_Col_Folder}"
+                                                Style="{StaticResource SurfaceButton}" HorizontalContentAlignment="Left"
+                                                Padding="10,3" FontSize="11" Margin="0,0,0,3" Click="SortItem_Click"/>
+                                        <Button x:Name="SortSizeItem" CommandParameter="3" Content="{DynamicResource Str_Col_Size}"
+                                                Style="{StaticResource SurfaceButton}" HorizontalContentAlignment="Left"
+                                                Padding="10,3" FontSize="11" Margin="0,0,0,3" Click="SortItem_Click"/>
+                                        <Button x:Name="SortModifiedItem" CommandParameter="4" Content="{DynamicResource Str_Col_Modified}"
+                                                Style="{StaticResource SurfaceButton}" HorizontalContentAlignment="Left"
+                                                Padding="10,3" FontSize="11" Click="SortItem_Click"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Popup>
                         <Button x:Name="SortDirButton" Content="&#xE70E;" Width="24" Height="24" Padding="0" Margin="0,0,6,0"
                                 FontFamily="Segoe MDL2 Assets" FontSize="10" Style="{StaticResource SurfaceButton}"
                                 VerticalAlignment="Center" Click="SortDir_Click"/>
@@ -262,12 +466,6 @@
                             <TextBlock x:Name="ExpandAllGlyph" Text="&#xE740;" FontFamily="Segoe MDL2 Assets" FontSize="11"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Button>
-                        <!-- Favourite: browser convention, reflects and toggles wherever this tab
-                         currently is. E735 filled when saved, E734 outline when not
-                         (Bookmarks.cs). -->
-                        <Button x:Name="FavouriteStarBtn" Content="&#xE734;" Width="26" Height="24" Padding="0" Margin="0,0,6,0"
-                                FontFamily="Segoe MDL2 Assets" FontSize="11" Style="{StaticResource SurfaceButton}"
-                                ToolTip="{DynamicResource Str_TT_Favorite}" Click="FavouriteStar_Click"/>
                         <!-- View options (ViewOptions.cs). Both accent while on, via the
                              Tag="on" trigger SurfaceButton carries. -->
                         <Button x:Name="ShowHiddenBtn" Content="&#xE7B3;" Width="26" Height="24" Padding="0" Margin="0,0,6,0"
@@ -282,6 +480,10 @@
                         <Button x:Name="PipeBtn" Content="&#xE71C;" Width="26" Height="24" Padding="0" Margin="0,0,6,0"
                                 FontFamily="Segoe MDL2 Assets" FontSize="11" Style="{StaticResource SurfaceButton}"
                                 ToolTip="{DynamicResource Str_TT_Pipe}" Click="PipeButton_Click"/>
+                        <!-- Dual pane moved to the icon rail (MainWindow.xaml). It was the one
+                             control in this strip that acts on the WINDOW rather than on this
+                             pane, so there were two of them - one per pane - both doing the
+                             identical thing, and either could be shed into the overflow. -->
                         <!-- Export: ONE icon, the format picked from a flyout. Two text buttons
                              (CSV + HTML) took enough of this row to crush the location path
                              beside them; a 26px icon sits with the rest of the toolbar. -->
@@ -313,6 +515,28 @@
                                 </Border>
                             </Grid>
                         </Popup>
+                        <!-- Overflow chevron. Collapsed until something is actually shed, so a
+                             wide pane looks exactly as it did. Kept LAST in the strip and
+                             excluded from the shed list, or it could push itself out. -->
+                        <Button x:Name="OverflowBtn" Content="&#xE712;" Width="20" Height="24" Padding="0"
+                                FontFamily="Segoe MDL2 Assets" FontSize="11" Style="{StaticResource SurfaceButton}"
+                                Visibility="Collapsed" ToolTip="{DynamicResource Str_TT_MoreTools}"
+                                Click="Overflow_Click"/>
+                        <Popup x:Name="OverflowPopup" PlacementTarget="{Binding ElementName=OverflowBtn}"
+                               Placement="Bottom" StaysOpen="False" AllowsTransparency="True"
+                               HorizontalOffset="-14" VerticalOffset="-2">
+                            <Grid Margin="14">
+                                <Border Background="{DynamicResource MenuBackgroundBrush}" CornerRadius="4" IsHitTestVisible="False">
+                                    <Border.Effect><DropShadowEffect Color="Black" BlurRadius="12" ShadowDepth="2" Direction="270" Opacity="0.5"/></Border.Effect>
+                                </Border>
+                                <Border Background="{DynamicResource MenuBackgroundBrush}" BorderBrush="{DynamicResource MenuBorderBrush}"
+                                        BorderThickness="1" CornerRadius="4" Padding="6">
+                                    <!-- Horizontal: the shed items are icon buttons, and stacking
+                                         them would make a tall thin column of unlabelled glyphs. -->
+                                    <StackPanel x:Name="OverflowPanel" Orientation="Horizontal"/>
+                                </Border>
+                            </Grid>
+                        </Popup>
                         <!-- No close button here. Every tab carries its own x in the strip, and
                              with a single tab the strip is hidden and there is nothing to close
                              to - you close the window. Ctrl+W still works either way. -->
@@ -334,11 +558,12 @@
                 <!-- Styled to match KillerScan's DataGrid column headers (MainWindow.xaml,
                      DataGrid.ColumnHeaderStyle): TableHeaderBrush behind, MutedTextBrush type at
                      11, and the accent stripe underneath as a 1px HeaderLineBrush bottom border
-                     rather than the pane's own grey. Top corners rounded to 5 so the band sits
+                     rather than the pane's own gray. Top corners rounded to 5 so the band sits
                      inside the pane's CornerRadius 6 instead of squaring it off. -->
                 <Border x:Name="DetailsHeader" DockPanel.Dock="Top" Visibility="Collapsed"
                         Background="{DynamicResource TableHeaderBrush}" BorderBrush="{DynamicResource HeaderLineBrush}"
-                        BorderThickness="0,0,0,1" CornerRadius="5,5,0,0" Padding="10,4,26,4">
+                        BorderThickness="0,0,0,1" CornerRadius="5,5,0,0"
+                        Padding="{Binding HeaderPad, Source={x:Static local:ResultsViewState.Current}}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="26"/>
@@ -427,6 +652,18 @@
                 <Grid>
                 <Border x:Name="ResultsSurfaceGrain" IsHitTestVisible="False" CornerRadius="0"
                         Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                <!-- A shell tab draws here instead of the listing. Declared BEFORE the list so
+                     the list's context menus and drag handlers keep working normally when it is
+                     the one showing; only one of the two is ever visible.
+                     The terminal paints PaneBrush itself, and the grain goes on TOP of it, so a
+                     shell sits on the same textured surface as the rest of the pane rather than
+                     looking like a black hole cut into it. -->
+                <Grid x:Name="TerminalHost" Visibility="Collapsed">
+                    <ContentControl x:Name="TerminalSlot" Focusable="False"/>
+                    <Border IsHitTestVisible="False"
+                            Background="{DynamicResource GrainTileBrush}"
+                            Opacity="{DynamicResource GrainOpacity}"/>
+                </Grid>
                 <ListBox x:Name="ResultsList" Background="Transparent" BorderThickness="0" Padding="8,4,8,0" Focusable="False"
                          FocusVisualStyle="{x:Null}" SelectionMode="Extended"
                          VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
@@ -463,6 +700,17 @@
                             </MenuItem>
                             <MenuItem Header="{DynamicResource Str_Menu_SearchHere}"    Click="MenuSearchHere_Click"     InputGestureText="F3">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE721;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <!-- Shells, grouped with the other "act on this folder" verbs above
+                                 rather than with the file commands: a terminal opens ON a folder,
+                                 the same way Show in Explorer and Search inside this folder do.
+                                 The keyboard had these from the start (F8 / Ctrl+F8) and the
+                                 menu did not, which made the whole feature keyboard-only. -->
+                            <MenuItem Header="{DynamicResource Str_Menu_OpenTerminal}"  Click="MenuTerminal_Click"       InputGestureText="F8">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE756;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource Str_Menu_OpenTerminalAdmin}" Click="MenuTerminalAdmin_Click" InputGestureText="Ctrl+F8">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE7EF;"/></MenuItem.Icon>
                             </MenuItem>
                             <MenuItem Header="{DynamicResource Str_Menu_ExcludeFolder}" Click="MenuExcludeFolder_Click"  InputGestureText="Ctrl+Shift+E">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE738;"/></MenuItem.Icon>
@@ -549,7 +797,9 @@
                              depends on both the file and the current size, and containers get
                              recycled onto different files as the grid scrolls (ResultsView.cs). -->
                         <DataTemplate x:Key="TileTemplate" DataType="{x:Type models:SearchResult}">
-                            <Border CornerRadius="4" Margin="3" Padding="4,6" Cursor="Hand"
+                            <Border CornerRadius="4" Cursor="Hand"
+                                    Margin="{Binding TileMargin, Source={x:Static local:ResultsViewState.Current}}"
+                                    Padding="{Binding TilePad, Source={x:Static local:ResultsViewState.Current}}"
                                     Tag="{Binding FilePath}" ToolTip="{Binding FilePath}"
                                     PreviewMouseLeftButtonDown="ResultHeader_MouseDown">
                                 <Border.Style>
@@ -571,11 +821,13 @@
                                            MaxWidth="{Binding TileSize, Source={x:Static local:ResultsViewState.Current}}"
                                            Height="{Binding TileSize, Source={x:Static local:ResultsViewState.Current}}"
                                            local:TileArt.Path="{Binding FilePath}"
+                                           local:TileArt.IsDirectory="{Binding IsDirectory}"
                                            local:TileArt.Size="{Binding TileSize, Source={x:Static local:ResultsViewState.Current}}"/>
                                     <TextBlock Text="{Binding FileName}" Foreground="{DynamicResource TextBrush}"
                                                FontFamily="{DynamicResource MonoFont}" FontSize="10.5"
                                                TextAlignment="Center" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
-                                               MaxHeight="30" Margin="2,6,2,0"/>
+                                               MaxHeight="30"
+                                               Margin="{Binding TileNamePad, Source={x:Static local:ResultsViewState.Current}}"/>
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
@@ -584,7 +836,8 @@
                              headers above. Column widths and the scrollbar-clearing right pad
                              are duplicated from DetailsHeader; change both together. -->
                         <DataTemplate x:Key="DetailsRowTemplate" DataType="{x:Type models:SearchResult}">
-                            <Border Padding="10,3,26,3" Cursor="Hand" Tag="{Binding FilePath}"
+                            <Border Cursor="Hand" Tag="{Binding FilePath}"
+                                    Padding="{Binding RowPad, Source={x:Static local:ResultsViewState.Current}}"
                                     PreviewMouseLeftButtonDown="ResultHeader_MouseDown">
                                 <Border.Style>
                                     <Style TargetType="Border">
@@ -654,7 +907,8 @@
                             <Border Style="{StaticResource Card}" BorderThickness="1" Padding="0" Margin="2,0,4,8" Effect="{StaticResource ShadowBar}">
                                 <StackPanel>
                                     <Border BorderBrush="{DynamicResource PrimaryPressedBrush}" BorderThickness="2,0,0,0" CornerRadius="3,3,0,0"
-                                            Padding="10,6" Cursor="Hand" Tag="{Binding FilePath}"
+                                            Padding="{Binding CardPad, Source={x:Static local:ResultsViewState.Current}}"
+                                        Cursor="Hand" Tag="{Binding FilePath}"
                                             ToolTip="{DynamicResource Str_TT_Result}" MouseLeftButtonUp="ResultHeader_Click"
                                             PreviewMouseLeftButtonDown="ResultHeader_MouseDown">
                                         <Border.Style>

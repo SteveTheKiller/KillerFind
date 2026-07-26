@@ -91,9 +91,15 @@
     <sys:String x:Key="Str_Sort_Found">検出順</sys:String>
     <sys:String x:Key="Str_TT_FilterResults">この結果を絞り込む (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_Pipe">この結果の中を検索</sys:String>
+    <sys:String x:Key="Str_TT_DualPane">2 つ目のペイン  |  右クリックで左右 / 上下を切り替え</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">その他のツール</sys:String>
+    <sys:String x:Key="Str_TT_Sort">並べ替え</sys:String>
+    <sys:String x:Key="Str_Nav_ThisPc">PC</sys:String>
     <sys:String x:Key="Str_Menu_PipeTab">この結果の中を検索</sys:String>
     <sys:String x:Key="Str_Pipe_Scope">{1} からの {0} 件  |  {2}</sys:String>
     <sys:String x:Key="Str_Status_NoPipe">まだ検索できる結果がありません。</sys:String>
+
+    <sys:String x:Key="Str_Status_ElevateFailed">管理者シェルを開始できませんでした: {0}</sys:String>
 
     <!-- Portable install + quit dialog -->
     <sys:String x:Key="Str_Portable">ポータブル</sys:String>
@@ -136,6 +142,8 @@
     <sys:String x:Key="Str_Menu_ShowExplorer">エクスプローラーで表示</sys:String>
     <sys:String x:Key="Str_Menu_OpenAdmin">管理者として開く</sys:String>
     <sys:String x:Key="Str_Menu_SearchHere">このフォルダー内を検索</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminal">ここでターミナルを開く</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminalAdmin">ここで管理者としてターミナルを開く</sys:String>
     <sys:String x:Key="Str_Menu_ExcludeFolder">このフォルダーを除外</sys:String>
     <sys:String x:Key="Str_Menu_CopyPath">フルパスをコピー</sys:String>
     <sys:String x:Key="Str_Menu_CopyName">ファイル名をコピー</sys:String>
@@ -186,6 +194,8 @@
 
     <!-- HTML report -->
     <sys:String x:Key="Str_Rpt_Meta">生成 {0} &#183; {1} ファイル &#183; {2} 件の一致</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">生成 {0} &#183; {1} 件</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">{0} の一覧。</sys:String>
     <sys:String x:Key="Str_Rpt_Query">{0} を {1} で検索しました。</sys:String>
     <sys:String x:Key="Str_Rpt_TermName">{0} を含むファイル名</sys:String>
     <sys:String x:Key="Str_Rpt_TermContent">{0} を含むファイル内容</sys:String>
@@ -228,9 +238,60 @@
     <sys:String x:Key="Str_Ks_SearchPanel">検索パネルの表示を切り替え</sys:String>
     <sys:String x:Key="Str_Ks_ExpandAll">すべての結果を展開</sys:String>
     <sys:String x:Key="Str_Ks_CollapseAll">すべての結果を折りたたむ</sys:String>
+    <sys:String x:Key="Str_Ks_Shell">このフォルダーで PowerShell タブを開く</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmd">このフォルダーで CMD タブを開く</sys:String>
+    <sys:String x:Key="Str_Ks_ShellAdmin">PowerShell を管理者として開く</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmdAdmin">CMD を管理者として開く</sys:String>
     <sys:String x:Key="Str_Ks_ExportHtml">結果を HTML で書き出し</sys:String>
     <sys:String x:Key="Str_Ks_ExportCsv">結果を CSV で書き出し</sys:String>
     <sys:String x:Key="Str_Ks_Hint">ショートカットはウィンドウ内のどこでも使えます。開いているドロップダウン、日付入力、結果フィルターでは Enter がそれぞれの動作に使われます。</sys:String>
+
+    <!-- Font dialog, reached from the row under the theme flyout -->
+    <sys:String x:Key="Str_Fonts_Row">フォント...</sys:String>
+    <sys:String x:Key="Str_Fonts_Title">フォント</sys:String>
+    <sys:String x:Key="Str_Fonts_App">アプリ</sys:String>
+    <sys:String x:Key="Str_Fonts_Terminal">ターミナル</sys:String>
+    <sys:String x:Key="Str_Fonts_Default">既定</sys:String>
+    <sys:String x:Key="Str_Fonts_Hint">リストの上でホイールを回すとフォントを切り替えられます。変更はすぐに反映されます。</sys:String>
+    <sys:String x:Key="Str_Fonts_Unreadable">{0} には読める文字がありません - 前のフォントのままにします</sys:String>
+
+    <!-- Title-bar caption on an elevated window, beside the wordmark -->
+    <sys:String x:Key="Str_Title_Elevated">- 昇格された特権</sys:String>
+    <sys:String x:Key="Str_Ks_MenuBar">ペインのバーの表示を切り替え</sys:String>
+    <sys:String x:Key="Str_Ks_NewWindow">新しいウィンドウを開く</sys:String>
+
+    <!-- Recently visited folders, behind the address bar's chevron (Recents.cs) -->
+    <sys:String x:Key="Str_TT_Recents">最近開いたフォルダー</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">最近のフォルダーはまだありません</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">履歴を消去</sys:String>
+
+    <!-- Results density, on the rail (Density.cs) -->
+    <sys:String x:Key="Str_TT_Density">結果の表示密度 - クリックで切り替え、ホイールで調整</sys:String>
+    <sys:String x:Key="Str_St_DensityRoomy">密度: 広め</sys:String>
+    <sys:String x:Key="Str_St_DensityFull">密度: ゆったり</sys:String>
+    <sys:String x:Key="Str_St_DensityCompact">密度: コンパクト</sys:String>
+    <sys:String x:Key="Str_St_DensityTight">密度: 詰めて</sys:String>
+    <sys:String x:Key="Str_St_DensityMin">密度: 最小</sys:String>
+
+    <!-- Terminal right-click menu (Terminal/TerminalMenu.cs) -->
+    <sys:String x:Key="Str_Term_Copy">コピー</sys:String>
+    <sys:String x:Key="Str_Term_Paste">貼り付け</sys:String>
+    <sys:String x:Key="Str_Term_SelectAll">すべて選択</sys:String>
+    <sys:String x:Key="Str_Term_Clear">クリア</sys:String>
+    <sys:String x:Key="Str_Term_NewShell">新しいターミナル</sys:String>
+    <sys:String x:Key="Str_Term_OpenFolder">このフォルダーを開く</sys:String>
+    <sys:String x:Key="Str_Term_Fonts">フォント...</sys:String>
+    <sys:String x:Key="Str_Term_EditPrompt">プロンプトを編集...</sys:String>
+    <sys:String x:Key="Str_Term_ResetPrompt">プロンプトをリセット</sys:String>
+    <sys:String x:Key="Str_Term_Close">ターミナルを閉じる</sys:String>
+    <sys:String x:Key="Str_Dlg_ResetPromptMsg">付属のプロンプト スクリプトに戻しますか? このファイルへの変更は失われます。</sys:String>
+    <sys:String x:Key="Str_Btn_Reset">リセット</sys:String>
+    <!-- Rail button: left click opens PowerShell, right click picks -->
+    <sys:String x:Key="Str_TT_Terminal">ターミナルを開く  (F8)  -  右クリックで選択</sys:String>
+    <sys:String x:Key="Str_Term_PowerShell">PowerShell</sys:String>
+    <sys:String x:Key="Str_Term_PowerShellAdmin">PowerShell を管理者として</sys:String>
+    <sys:String x:Key="Str_Term_Cmd">コマンド プロンプト</sys:String>
+    <sys:String x:Key="Str_Term_CmdAdmin">コマンド プロンプトを管理者として</sys:String>
 
     <!-- ショートカットカード: カテゴリ見出し、リスト / キーボード切り替え、ヒント -->
     <sys:String x:Key="Str_Ks_About">バージョン情報を表示</sys:String>

@@ -96,7 +96,24 @@ namespace KillerFind
 
         private MenuItem? _favMenuItem;
 
-        // Favourites are folders, so this acts on the seed itself when it is one and on the
+        // ── Shells ───────────────────────────────────────────────
+        // Same folder rule as Favorites below: a shell opens ON the seed when it is a folder and
+        // in the PARENT when it is a file, which is what MenuFolder already answers. Right
+        // clicking a file and asking for a terminal means "a terminal where this file lives" -
+        // nobody wants a shell cd'd into a .txt.
+        internal void MenuTerminal_Click(object sender, RoutedEventArgs e)
+            => OpenShellAt(MenuFolder(), elevated: false);
+
+        internal void MenuTerminalAdmin_Click(object sender, RoutedEventArgs e)
+            => OpenShellAt(MenuFolder(), elevated: true);
+
+        private void OpenShellAt(string? folder, bool elevated)
+        {
+            if (folder == null) return;
+            OpenShell(Terminal.TerminalProfile.PowerShell(elevated), folder);   // TerminalTabs.cs
+        }
+
+        // Favorites are folders, so this acts on the seed itself when it is one and on the
         // parent when it is a file - which is what MenuFolder already means (Bookmarks.cs).
         internal void MenuFavorite_Click(object sender, RoutedEventArgs e)
         {

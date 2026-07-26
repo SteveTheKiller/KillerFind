@@ -53,20 +53,14 @@ namespace KillerFind
             // a different button rather than the same one lit up.
             SearchPanelBtn.Tag = _searchOpen ? "on" : null;
 
-            // No gap: the panel butts straight against the results pane. The pane's own 8px
-            // right margin goes with it, or the two would still add up to a visible trench -
-            // that margin exists to hold the pane off the WINDOW edge, and while the panel is
-            // open there is no window edge there to hold it off.
-            // -1 top, matching the XAML: the pane's top border stays tucked under the tab strip
-            // so the active tab and the pane read as one surface. Losing it here would put the
-            // seam back the moment the search panel opened.
-            Pane.ResultsPane.Margin    = new Thickness(0, -1, _searchOpen ? 0 : 8, 0);
-            Pane.TabFadeGhost.Margin   = Pane.ResultsPane.Margin;
-
-            // The tab strip has to travel with the pane it sits on. It was left behind here, so
-            // opening the search panel moved the pane 8px right and left the strip where it was -
-            // the tabs then hung off the pane's right edge instead of lining up with it.
-            Pane.TabBar.Margin         = new Thickness(0, 6, _searchOpen ? 0 : 8, 0);
+            // No gap: the panel butts straight against the results pane, so the pane's edge
+            // margin goes with it, or the two would add up to a visible trench. The tab strip
+            // travels with the pane it sits on, or the tabs hang off the pane's right edge.
+            //
+            // Both panes are set, and the dual-pane gutter is applied in the same pass
+            // (DualPane.cs). Doing it here through Pane only ever corrected whichever half had
+            // focus, which is why the other one kept the wrong margin.
+            ApplyPaneMargins();
 
             // Right-hand panel, so its contents stay pinned to the RIGHT edge during the tween.
             SlideColumn(SearchCol, SearchPanel, _searchOpen,

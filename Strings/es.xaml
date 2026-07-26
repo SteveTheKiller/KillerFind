@@ -73,9 +73,15 @@
     <sys:String x:Key="Str_Sort_Found">sin ordenar</sys:String>
     <sys:String x:Key="Str_TT_FilterResults">Filtrar estos resultados (Ctrl+F)</sys:String>
     <sys:String x:Key="Str_TT_Pipe">Buscar dentro de estos resultados</sys:String>
+    <sys:String x:Key="Str_TT_DualPane">Segundo panel  |  clic derecho para alternar lado a lado / apilado</sys:String>
+    <sys:String x:Key="Str_TT_MoreTools">Más herramientas</sys:String>
+    <sys:String x:Key="Str_TT_Sort">Ordenar por</sys:String>
+    <sys:String x:Key="Str_Nav_ThisPc">Este equipo</sys:String>
     <sys:String x:Key="Str_Menu_PipeTab">Buscar dentro de estos resultados</sys:String>
     <sys:String x:Key="Str_Pipe_Scope">{0} resultados de {1}  |  {2}</sys:String>
     <sys:String x:Key="Str_Status_NoPipe">Aún no hay resultados donde buscar.</sys:String>
+
+    <sys:String x:Key="Str_Status_ElevateFailed">No se pudo iniciar un shell con privilegios elevados: {0}</sys:String>
 
     <!-- Portable install + quit dialog -->
     <sys:String x:Key="Str_Portable">PORTÁTIL</sys:String>
@@ -145,6 +151,8 @@
 
     <!-- HTML report -->
     <sys:String x:Key="Str_Rpt_Meta">Generado {0} &#183; {1} archivos &#183; {2} coincidencias</sys:String>
+    <sys:String x:Key="Str_Rpt_MetaList">Generado {0} &#183; {1} elementos</sys:String>
+    <sys:String x:Key="Str_Rpt_Listing">Contenido de {0}.</sys:String>
     <sys:String x:Key="Str_Rpt_Query">Buscado en {0}: {1}.</sys:String>
     <sys:String x:Key="Str_Rpt_TermName">nombres de archivo que contienen {0}</sys:String>
     <sys:String x:Key="Str_Rpt_TermContent">contenidos de archivo que contienen {0}</sys:String>
@@ -187,9 +195,60 @@
     <sys:String x:Key="Str_Ks_SearchPanel">mostrar u ocultar el panel de búsqueda</sys:String>
     <sys:String x:Key="Str_Ks_ExpandAll">expandir todos los resultados</sys:String>
     <sys:String x:Key="Str_Ks_CollapseAll">contraer todos los resultados</sys:String>
+    <sys:String x:Key="Str_Ks_Shell">abrir una pestaña de PowerShell en esta carpeta</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmd">abrir una pestaña de CMD en esta carpeta</sys:String>
+    <sys:String x:Key="Str_Ks_ShellAdmin">abrir PowerShell como administrador</sys:String>
+    <sys:String x:Key="Str_Ks_ShellCmdAdmin">abrir CMD como administrador</sys:String>
     <sys:String x:Key="Str_Ks_ExportHtml">exportar los resultados como HTML</sys:String>
     <sys:String x:Key="Str_Ks_ExportCsv">exportar los resultados como CSV</sys:String>
     <sys:String x:Key="Str_Ks_Hint">Los atajos funcionan en toda la ventana. Las listas desplegables abiertas, el campo de fecha y el filtro de resultados se quedan con Enter.</sys:String>
+
+    <!-- Font dialog, reached from the row under the theme flyout -->
+    <sys:String x:Key="Str_Fonts_Row">Fuentes...</sys:String>
+    <sys:String x:Key="Str_Fonts_Title">FUENTES</sys:String>
+    <sys:String x:Key="Str_Fonts_App">APLICACIÓN</sys:String>
+    <sys:String x:Key="Str_Fonts_Terminal">TERMINAL</sys:String>
+    <sys:String x:Key="Str_Fonts_Default">Predeterminada</sys:String>
+    <sys:String x:Key="Str_Fonts_Hint">Gire la rueda sobre una lista para explorar las fuentes. Cada cambio se aplica al instante.</sys:String>
+    <sys:String x:Key="Str_Fonts_Unreadable">{0} no tiene letras legibles - se mantiene la fuente anterior</sys:String>
+
+    <!-- Title-bar caption on an elevated window, beside the wordmark -->
+    <sys:String x:Key="Str_Title_Elevated">- Privilegios elevados</sys:String>
+    <sys:String x:Key="Str_Ks_MenuBar">mostrar u ocultar la barra del panel</sys:String>
+    <sys:String x:Key="Str_Ks_NewWindow">abrir una ventana nueva</sys:String>
+
+    <!-- Recently visited folders, behind the address bar's chevron (Recents.cs) -->
+    <sys:String x:Key="Str_TT_Recents">Carpetas visitadas recientemente</sys:String>
+    <sys:String x:Key="Str_Recents_Empty">Aún no hay carpetas recientes</sys:String>
+    <sys:String x:Key="Str_Recents_Clear">Borrar la lista</sys:String>
+
+    <!-- Results density, on the rail (Density.cs) -->
+    <sys:String x:Key="Str_TT_Density">Densidad de resultados - clic para cambiar, rueda para ajustar</sys:String>
+    <sys:String x:Key="Str_St_DensityRoomy">Densidad: amplia</sys:String>
+    <sys:String x:Key="Str_St_DensityFull">Densidad: cómoda</sys:String>
+    <sys:String x:Key="Str_St_DensityCompact">Densidad: compacta</sys:String>
+    <sys:String x:Key="Str_St_DensityTight">Densidad: ajustada</sys:String>
+    <sys:String x:Key="Str_St_DensityMin">Densidad: mínima</sys:String>
+
+    <!-- Terminal right-click menu (Terminal/TerminalMenu.cs) -->
+    <sys:String x:Key="Str_Term_Copy">Copiar</sys:String>
+    <sys:String x:Key="Str_Term_Paste">Pegar</sys:String>
+    <sys:String x:Key="Str_Term_SelectAll">Seleccionar todo</sys:String>
+    <sys:String x:Key="Str_Term_Clear">Limpiar</sys:String>
+    <sys:String x:Key="Str_Term_NewShell">Nueva terminal</sys:String>
+    <sys:String x:Key="Str_Term_OpenFolder">Abrir esta carpeta</sys:String>
+    <sys:String x:Key="Str_Term_Fonts">Fuentes...</sys:String>
+    <sys:String x:Key="Str_Term_EditPrompt">Editar el prompt...</sys:String>
+    <sys:String x:Key="Str_Term_ResetPrompt">Restablecer el prompt</sys:String>
+    <sys:String x:Key="Str_Term_Close">Cerrar terminal</sys:String>
+    <sys:String x:Key="Str_Dlg_ResetPromptMsg">¿Restaurar el script del prompt original? Se perderán los cambios que hizo en este archivo.</sys:String>
+    <sys:String x:Key="Str_Btn_Reset">Restablecer</sys:String>
+    <!-- Rail button: left click opens PowerShell, right click picks -->
+    <sys:String x:Key="Str_TT_Terminal">Abrir una terminal  (F8)  -  clic derecho para elegir</sys:String>
+    <sys:String x:Key="Str_Term_PowerShell">PowerShell</sys:String>
+    <sys:String x:Key="Str_Term_PowerShellAdmin">PowerShell como administrador</sys:String>
+    <sys:String x:Key="Str_Term_Cmd">Símbolo del sistema</sys:String>
+    <sys:String x:Key="Str_Term_CmdAdmin">Símbolo del sistema como administrador</sys:String>
 
     <!-- Browsing, drop targets and the results context menu (2.0) -->
     <sys:String x:Key="Str_Scope_Dropped">archivos soltados</sys:String>
@@ -212,6 +271,8 @@
     <sys:String x:Key="Str_Status_BadPath">No se puede abrir {0}</sys:String>
     <sys:String x:Key="Str_Menu_OpenAdmin">Abrir como administrador</sys:String>
     <sys:String x:Key="Str_Menu_SearchHere">Buscar en esta carpeta</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminal">Abrir terminal aquí</sys:String>
+    <sys:String x:Key="Str_Menu_OpenTerminalAdmin">Abrir terminal aquí como administrador</sys:String>
     <sys:String x:Key="Str_Menu_ExcludeFolder">Excluir esta carpeta</sys:String>
     <sys:String x:Key="Str_Menu_CopyPath">Copiar ruta completa</sys:String>
     <sys:String x:Key="Str_Menu_CopyName">Copiar nombre de archivo</sys:String>

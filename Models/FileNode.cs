@@ -33,7 +33,7 @@ namespace KillerFind.Models
             set { _hasMatches = value; Notify(); Notify(nameof(NodeForeground)); }
         }
 
-        /// <summary>Foreground colour string used by the DataTemplate.</summary>
+        /// <summary>Foreground color string used by the DataTemplate.</summary>
         public string NodeForeground => HasMatches ? "#1ea54c"
                                       : IsDirectory ? "#e8e8e8"
                                       : "#555555";
