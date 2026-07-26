@@ -559,6 +559,11 @@ namespace KillerFind
             // showing, so those stay with the app.
             if (TerminalHasFocus && !IsWindowChord(e, ctrl, shift, alt)) return;
 
+            // A FOCUSED DOCUMENT OWNS THE KEYBOARD too, for exactly the same reasons and with
+            // exactly the same list - plus Ctrl+S, which the shell cannot be given because over
+            // a pty it is XOFF (EditorTabs.cs IsEditorChord).
+            if (EditorHasFocus && !IsEditorChord(e, ctrl, shift, alt)) return;
+
             // Alt+1-0 jumps to a saved location. Alt chords arrive as Key.System with the real
             // key parked in SystemKey, so they have to be unwrapped before anything can match -
             // and they are checked first, ahead of every e.Key test below, which would all see
@@ -640,6 +645,30 @@ namespace KillerFind
             else if (e.Key == System.Windows.Input.Key.F && ctrl && shift)
             {
                 PipeButton_Click(this, new RoutedEventArgs());   // Results.cs
+                e.Handled = true;
+            }
+            else if (ctrl && !shift && !alt && e.Key == System.Windows.Input.Key.OemComma)
+            {
+                // Ctrl+comma: edit the preferred PowerShell host's $PROFILE (ProfileMenu.cs).
+                // A chord rather than a bare key even though single keys are the house style -
+                // F1 through F12 are all spoken for, and Ctrl+comma is what most things that
+                // have a settings key use.
+                EditPreferredProfile();
+                e.Handled = true;
+            }
+            else if (e.Key == System.Windows.Input.Key.G && ctrl && !shift && _active.Editor != null)
+            {
+                // Go to line, the chord every editor uses. Guarded on there being a document for
+                // the same reason Ctrl+S is (EditorBar.cs).
+                EditorGoto_Click(this, new RoutedEventArgs());
+                e.Handled = true;
+            }
+            else if (e.Key == System.Windows.Input.Key.S && ctrl && !shift && _active.Editor != null)
+            {
+                // Ctrl+S saves the document. Guarded on there BEING one rather than handled
+                // unconditionally, so the chord stays free on every other kind of tab instead of
+                // being quietly swallowed by a no-op (EditorTabs.cs).
+                SaveActiveEditor();
                 e.Handled = true;
             }
             else if (e.Key == System.Windows.Input.Key.S && ctrl && shift)
@@ -903,6 +932,15 @@ namespace KillerFind
             else if (e.Key == System.Windows.Input.Key.F6 && !ctrl && !shift && !alt)
             {
                 FromKeyboard(MenuShowInExplorer_Click);
+                e.Handled = true;
+            }
+            else if (e.Key == System.Windows.Input.Key.F7 && !ctrl && !shift && !alt)
+            {
+                // Edit the selected file in a tab. A bare F-key rather than a Ctrl chord because
+                // that is the house style, and F7 was the one still free - F4, the file
+                // manager's traditional edit key, has been the address bar here since before
+                // there was an editor to give it to.
+                FromKeyboard(MenuEdit_Click);          // ResultsMenu.cs
                 e.Handled = true;
             }
             else if (ctrl && !shift && e.Key == System.Windows.Input.Key.D)

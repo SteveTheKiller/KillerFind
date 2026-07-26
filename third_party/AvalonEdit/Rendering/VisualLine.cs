@@ -756,7 +756,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			return true;
 		}
 
-		private VisualLineDrawingVisual visual;
+		// Built on the first Render call and reused after that; a line that is never drawn keeps
+		// this null.
+		private VisualLineDrawingVisual? visual;
 
 		internal VisualLineDrawingVisual Render()
 		{

@@ -1019,7 +1019,8 @@ namespace ICSharpCode.AvalonEdit
 		}
 		#endregion
 
-		object IServiceProvider.GetService(Type serviceType)
+		// Null is the documented answer for a service nobody registered.
+		object? IServiceProvider.GetService(Type serviceType)
 		{
 			return TextArea.GetService(serviceType);
 		}

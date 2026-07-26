@@ -89,9 +89,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		/// <summary>
 		/// Gets the VisualLine that contains this object. This property is only available after the object
-		/// was added to the text view.
+		/// was added to the text view; it is null before that.
 		/// </summary>
-		public VisualLine VisualLine { get; internal set; }
+		public VisualLine? VisualLine { get; internal set; }
 
 		/// <inheritdoc/>
 		public override LineBreakCondition BreakBefore => LineBreakCondition.BreakDesired;

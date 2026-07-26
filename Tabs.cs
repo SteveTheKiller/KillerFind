@@ -115,6 +115,8 @@ namespace KillerFind
             Pane.ResultsList.ItemsSource = t.Results;
 
             ApplyTerminalView(t);   // TerminalTabs.cs - a shell tab shows a pty, not a listing
+            ApplyEditorView(t);     // EditorTabs.cs   - and a document tab shows a document
+            ApplyPaneBars(t);       // PaneBars.cs     - each of the three wears its own bar
 
             Pane.RootPathBox.Text             = t.RootPath;
             Pane.ScopePathLabel.Text          = t.PipeFiles != null ? t.PipeLabel
@@ -232,6 +234,11 @@ namespace KillerFind
 
         private void CloseTab(SearchTab t)
         {
+            // The one close that can destroy something: unsaved typing exists nowhere else, so
+            // a document tab gets asked first (EditorTabs.cs). Ahead of the fade, because the
+            // dialog has to be able to call the whole thing off.
+            if (!ConfirmDiscard(t)) return;
+
             t.Cts?.Cancel();   // stop its search; the engine winds down gracefully
 
             // Fade the tab CHIP out first (when the bar is visible), then remove.
@@ -256,6 +263,7 @@ namespace KillerFind
             if (!_tabs.Contains(t)) return;   // guard against a double-fire
 
             CloseTerminal(t);   // TerminalTabs.cs - a shell tab has a pty to end
+            CloseEditor(t);     // EditorTabs.cs   - a document tab has a control to unhook
 
             // Only closing the ACTIVE tab changes what the pane shows - fade that.
             var snap = t == _active ? SnapshotPane() : null;

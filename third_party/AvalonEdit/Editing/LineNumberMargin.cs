@@ -219,7 +219,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			pos.X = 0;
 			pos.Y = pos.Y.CoerceValue(0, TextView!.ActualHeight);
 			pos.Y += TextView.VerticalOffset;
-			VisualLine vl = TextView.GetVisualLineFromVisualTop(pos.Y);
+			VisualLine? vl = TextView.GetVisualLineFromVisualTop(pos.Y);
 			if (vl == null) {
 				return SimpleSegment.Invalid;
 			}

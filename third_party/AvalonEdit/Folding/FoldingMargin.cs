@@ -420,7 +420,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 		private int GetTextLineIndexFromOffset(List<TextLine> textLines, int offset)
 		{
 			int lineNumber = TextView!.Document.GetLineByOffset(offset).LineNumber;
-			VisualLine vl = TextView.GetVisualLine(lineNumber);
+			VisualLine? vl = TextView.GetVisualLine(lineNumber);
 			if (vl != null) {
 				int relOffset = offset - vl.FirstDocumentLine.Offset;
 				TextLine line = vl.GetTextLine(vl.GetVisualColumn(relOffset));

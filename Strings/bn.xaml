@@ -356,4 +356,59 @@
     <sys:String x:Key="Str_Menu_Delete">মুছুন  (Shift: স্থায়ীভাবে)</sys:String>
     <sys:String x:Key="Str_Menu_NewFolder">নতুন ফোল্ডার</sys:String>
 
+
+    <!-- 2.0.0: editor tabs, the document and shell bars, and $PROFILE editing -->
+    <sys:String x:Key="Str_Fonts_Editor">এডিটরের লেখা</sys:String>
+
+    <sys:String x:Key="Str_Prof_Edit">PowerShell প্রোফাইল সম্পাদনা করুন</sys:String>
+    <sys:String x:Key="Str_Prof_Asking">{0}-কে তার প্রোফাইলের অবস্থান জিজ্ঞাসা করা হচ্ছে...</sys:String>
+    <sys:String x:Key="Str_Prof_Failed">{0} সাড়া দেয়নি - এর প্রোফাইল খুঁজে পাওয়া যায়নি।</sys:String>
+    <sys:String x:Key="Str_Prof_None">কোনো PowerShell পাওয়া যায়নি</sys:String>
+
+    <sys:String x:Key="Str_Menu_Edit">সম্পাদনা</sys:String>
+    <sys:String x:Key="Str_Ed_TooBig">{0} সম্পাদনা করার জন্য অত্যধিক বড় ({1} MB)।</sys:String>
+    <sys:String x:Key="Str_TT_EdSave">সংরক্ষণ  (Ctrl+S)</sys:String>
+    <sys:String x:Key="Str_TT_EdUndo">পূর্বাবস্থা  (Ctrl+Z)</sys:String>
+    <sys:String x:Key="Str_TT_EdRedo">পুনরায় করুন  (Ctrl+Y)</sys:String>
+    <sys:String x:Key="Str_TT_EdFind">খুঁজুন  (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_EdGoto">লাইনে যান  (Ctrl+G)</sys:String>
+    <sys:String x:Key="Str_TT_EdWrap">ওয়ার্ড র‍্যাপ</sys:String>
+    <sys:String x:Key="Str_TT_EdSettings">এডিটর সেটিংস</sys:String>
+    <sys:String x:Key="Str_Ed_GotoLabel">লাইন</sys:String>
+
+    <sys:String x:Key="Str_Ed_OptLineNumbers">লাইন নম্বর</sys:String>
+    <sys:String x:Key="Str_Ed_OptCurrentLine">বর্তমান লাইন হাইলাইট করুন</sys:String>
+    <sys:String x:Key="Str_Ed_OptWhitespace">স্পেস ও ট্যাব দেখান</sys:String>
+    <sys:String x:Key="Str_Ed_OptSpaces">ট্যাবের বদলে স্পেস দিন</sys:String>
+    <sys:String x:Key="Str_Ed_OptWrap">ওয়ার্ড র‍্যাপ</sys:String>
+    <sys:String x:Key="Str_Ed_OptIndent">ইন্ডেন্ট</sys:String>
+    <sys:String x:Key="Str_Ed_OptFonts">ফন্ট ও আকার...</sys:String>
+
+    <sys:String x:Key="Str_Ed_Undo">পূর্বাবস্থা</sys:String>
+    <sys:String x:Key="Str_Ed_Redo">পুনরায় করুন</sys:String>
+    <sys:String x:Key="Str_Ed_Cut">কাটুন</sys:String>
+    <sys:String x:Key="Str_Ed_Copy">কপি করুন</sys:String>
+    <sys:String x:Key="Str_Ed_Paste">পেস্ট করুন</sys:String>
+    <sys:String x:Key="Str_Ed_SelectAll">সব নির্বাচন করুন</sys:String>
+    <sys:String x:Key="Str_Ed_Find">খুঁজুন...</sys:String>
+    <sys:String x:Key="Str_Ed_Goto">লাইনে যান...</sys:String>
+    <sys:String x:Key="Str_Ed_Save">সংরক্ষণ</sys:String>
+    <sys:String x:Key="Str_Ed_Settings">সেটিংস...</sys:String>
+    <sys:String x:Key="Str_Ed_CloseTab">ফাইল বন্ধ করুন</sys:String>
+
+    <sys:String x:Key="Str_TT_TermCwd">এই ফোল্ডারটি একটি ট্যাবে খুলুন</sys:String>
+    <sys:String x:Key="Str_TT_TermNew">নতুন টার্মিনাল  (F8)</sys:String>
+    <sys:String x:Key="Str_TT_TermAdmin">প্রশাসক হিসেবে নতুন টার্মিনাল  (Ctrl+F8)</sys:String>
+    <sys:String x:Key="Str_TT_TermFolder">এই ফোল্ডারটি একটি ট্যাবে খুলুন</sys:String>
+    <sys:String x:Key="Str_TT_TermClear">পরিষ্কার করুন</sys:String>
+    <sys:String x:Key="Str_TT_TermFonts">ফন্ট...</sys:String>
+
+    <sys:String x:Key="Str_Ed_WrapOn">ওয়ার্ড র‍্যাপ চালু।</sys:String>
+    <sys:String x:Key="Str_Ed_WrapOff">ওয়ার্ড র‍্যাপ বন্ধ - লম্বা লাইন দেখতে স্ক্রোল করুন।</sys:String>
+    <sys:String x:Key="Str_Ed_Saved">{0} সংরক্ষিত হয়েছে।</sys:String>
+    <sys:String x:Key="Str_Ed_SaveFailed">{0} সংরক্ষণ করা যায়নি: {1}</sys:String>
+    <sys:String x:Key="Str_Ed_OpenFailed">{0} খোলা যায়নি: {1}</sys:String>
+    <sys:String x:Key="Str_Dlg_DiscardMsg">সংরক্ষণ না করেই ফাইলটি বন্ধ করবেন? আপনার পরিবর্তনগুলি হারিয়ে যাবে।</sys:String>
+    <sys:String x:Key="Str_Btn_Discard">বাতিল করুন</sys:String>
+
 </ResourceDictionary>

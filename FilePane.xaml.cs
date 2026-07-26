@@ -146,6 +146,7 @@ namespace KillerFind
 
         // ── Results context menu ─────────────────────────────────
         private void MenuOpen_Click(object s, RoutedEventArgs e)           => Owner.MenuOpen_Click(s, e);
+        private void MenuEdit_Click(object s, RoutedEventArgs e)           => Owner.MenuEdit_Click(s, e);
         private void MenuOpenWith_Click(object s, RoutedEventArgs e)       => Owner.MenuOpenWith_Click(s, e);
         private void MenuOpenAdmin_Click(object s, RoutedEventArgs e)      => Owner.MenuOpenAdmin_Click(s, e);
         private void MenuShowInExplorer_Click(object s, RoutedEventArgs e) => Owner.MenuShowInExplorer_Click(s, e);
@@ -167,5 +168,29 @@ namespace KillerFind
         private void MenuRename_Click(object s, RoutedEventArgs e)         => Owner.MenuRename_Click(s, e);
         private void MenuDelete_Click(object s, RoutedEventArgs e)         => Owner.MenuDelete_Click(s, e);
         private void MenuNewFolder_Click(object s, RoutedEventArgs e)      => Owner.MenuNewFolder_Click(s, e);
+
+        // ── Document bar + gear (EditorBar.cs) ───────────────────
+        private void EditorSave_Click(object s, RoutedEventArgs e)         => Owner.EditorSave_Click(s, e);
+        private void EditorUndo_Click(object s, RoutedEventArgs e)         => Owner.EditorUndo_Click(s, e);
+        private void EditorRedo_Click(object s, RoutedEventArgs e)         => Owner.EditorRedo_Click(s, e);
+        private void EditorFind_Click(object s, RoutedEventArgs e)         => Owner.EditorFind_Click(s, e);
+        private void EditorGoto_Click(object s, RoutedEventArgs e)         => Owner.EditorGoto_Click(s, e);
+        private void EditorGotoBox_KeyDown(object s, KeyEventArgs e)       => Owner.EditorGotoBox_KeyDown(s, e);
+        private void EditorWrap_Click(object s, RoutedEventArgs e)         => Owner.EditorWrap_Click(s, e);
+        private void EditorGear_Click(object s, RoutedEventArgs e)         => Owner.EditorGear_Click(s, e);
+        private void EdOptLineNumbers_Click(object s, RoutedEventArgs e)   => Owner.EdOptLineNumbers_Click(s, e);
+        private void EdOptCurrentLine_Click(object s, RoutedEventArgs e)   => Owner.EdOptCurrentLine_Click(s, e);
+        private void EdOptWhitespace_Click(object s, RoutedEventArgs e)    => Owner.EdOptWhitespace_Click(s, e);
+        private void EdOptSpaces_Click(object s, RoutedEventArgs e)        => Owner.EdOptSpaces_Click(s, e);
+        private void EdIndent_Click(object s, RoutedEventArgs e)           => Owner.EdIndent_Click(s, e);
+        private void EdOptFonts_Click(object s, RoutedEventArgs e)         => Owner.EdOptFonts_Click(s, e);
+
+        // ── Shell bar (TerminalBar.cs) ───────────────────────────
+        private void TermCwd_Click(object s, MouseButtonEventArgs e)       => Owner.TermCwd_Click(s, e);
+        private void TermNew_Click(object s, RoutedEventArgs e)            => Owner.TermNew_Click(s, e);
+        private void TermAdmin_Click(object s, RoutedEventArgs e)          => Owner.TermAdmin_Click(s, e);
+        private void TermFolder_Click(object s, RoutedEventArgs e)         => Owner.TermFolder_Click(s, e);
+        private void TermClear_Click(object s, RoutedEventArgs e)          => Owner.TermClear_Click(s, e);
+        private void TermFonts_Click(object s, RoutedEventArgs e)          => Owner.TermFonts_Click(s, e);
     }
 }

@@ -207,7 +207,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Occurs when a text editor option has changed.
 		/// </summary>
-		public event PropertyChangedEventHandler OptionChanged;
+		public event PropertyChangedEventHandler? OptionChanged;
 
 		/// <summary>
 		/// Raises the <see cref="OptionChanged"/> event.
@@ -285,9 +285,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		#region Builtin ElementGenerators
 		//		NewLineElementGenerator newLineElementGenerator;
-		private SingleCharacterElementGenerator singleCharacterElementGenerator;
-		private LinkElementGenerator linkElementGenerator;
-		private MailLinkElementGenerator mailLinkElementGenerator;
+		// Each is null while the matching TextEditorOptions flag is off.
+		private SingleCharacterElementGenerator? singleCharacterElementGenerator;
+		private LinkElementGenerator? linkElementGenerator;
+		private MailLinkElementGenerator? mailLinkElementGenerator;
 
 		private void UpdateBuiltinElementGeneratorsFromOptions()
 		{
@@ -299,7 +300,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			AddRemoveDefaultElementGeneratorOnDemand(ref mailLinkElementGenerator, options.EnableEmailHyperlinks);
 		}
 
-		private void AddRemoveDefaultElementGeneratorOnDemand<T>(ref T generator, bool demand)
+		// The ref parameter is nullable: null is how "this generator is switched off" is stored,
+		// and switching it off is half of what this method does.
+		private void AddRemoveDefaultElementGeneratorOnDemand<T>(ref T? generator, bool demand)
 			where T : VisualLineElementGenerator, IBuiltinElementGenerator, new()
 		{
 			bool hasGenerator = generator != null;
@@ -308,7 +311,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 					generator = new T();
 					this.ElementGenerators.Add(generator);
 				} else {
-					this.ElementGenerators.Remove(generator);
+					this.ElementGenerators.Remove(generator!);
 					generator = null;
 				}
 			}
@@ -471,9 +474,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		private void MeasureInlineObjects()
 		{
-			// As part of MeasureOverride(), re-measure the inline objects
+			// As part of MeasureOverride(), re-measure the inline objects.
+			// Every run in this list has been added to the text view, which is what sets its
+			// VisualLine (RemoveInlineObjectRun clears it on the way out).
 			foreach (InlineObjectRun inlineObject in inlineObjects) {
-				if (inlineObject.VisualLine.IsDisposed) {
+				if (inlineObject.VisualLine!.IsDisposed) {
 					// Don't re-measure inline objects that are going to be removed anyways.
 					// If the inline object will be reused in a different VisualLine, we'll measure it in the AddInlineObject() call.
 					continue;
@@ -514,7 +519,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 			inlineObjects.RemoveAll(
 				ior => {
-					if (visualLinesWithOutstandingInlineObjects.Contains(ior.VisualLine)) {
+					// Same as in MeasureInlineObjects: a run in this list has a VisualLine.
+					if (visualLinesWithOutstandingInlineObjects.Contains(ior.VisualLine!)) {
 						RemoveInlineObjectRun(ior, false);
 						return true;
 					}
@@ -531,7 +537,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				// When the inline element that has the focus is removed, WPF will reset the
 				// focus to the main window without raising appropriate LostKeyboardFocus events.
 				// To work around this, we manually set focus to the next focusable parent.
-				UIElement element = this;
+				// The walk ends at the visual root, where GetParent returns null.
+				UIElement? element = this;
 				while (element != null && !element.Focusable) {
 					element = VisualTreeHelper.GetParent(element) as UIElement;
 				}
@@ -730,7 +737,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		#endregion
 
 		#region InvalidateMeasure(DispatcherPriority)
-		private DispatcherOperation invalidateMeasureOperation;
+		// Null when no low-priority measure pass is queued, which is the resting state.
+		private DispatcherOperation? invalidateMeasureOperation;
 
 		private void InvalidateMeasure(DispatcherPriority priority)
 		{
@@ -763,7 +771,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Gets the visual line that contains the document line with the specified number.
 		/// Returns null if the document line is outside the visible range.
 		/// </summary>
-		public VisualLine GetVisualLine(int documentLineNumber)
+		public VisualLine? GetVisualLine(int documentLineNumber)
 		{
 			// TODO: EnsureVisualLines() ?
 			foreach (VisualLine visualLine in allVisualLines) {
@@ -793,13 +801,15 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 			VerifyAccess();
 
-			VisualLine l = GetVisualLine(documentLine.LineNumber);
+			VisualLine? l = GetVisualLine(documentLine.LineNumber);
 			if (l == null) {
 				TextRunProperties globalTextRunProperties = CreateGlobalTextRunProperties();
 				VisualLineTextParagraphProperties paragraphProperties = CreateParagraphProperties(globalTextRunProperties);
 
-				while (heightTree.GetIsCollapsed(documentLine.LineNumber)) {
-					documentLine = documentLine.PreviousLine;
+				// A document is required to get this far (checked above), so the height tree is
+				// there; and the first line is never collapsed, so the walk always terminates.
+				while (heightTree!.GetIsCollapsed(documentLine.LineNumber)) {
+					documentLine = documentLine.PreviousLine!;
 				}
 
 				l = BuildVisualLine(documentLine,
@@ -818,9 +828,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		#region Visual Lines (fields and properties)
 		private List<VisualLine> allVisualLines = [];
-		private ReadOnlyCollection<VisualLine> visibleVisualLines;
+		// Null means "the visual lines are invalid", which is what VisualLinesValid reports and
+		// what the VisualLines property below throws over.
+		private ReadOnlyCollection<VisualLine>? visibleVisualLines;
 		private double clippedPixelsOnTop;
-		private List<VisualLine> newVisualLines;
+		// Only non-null while a measure pass is building the next set of lines.
+		private List<VisualLine>? newVisualLines;
 
 		/// <summary>
 		/// Gets the currently visible visual lines.
@@ -854,12 +867,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Occurs when the TextView is about to be measured and will regenerate its visual lines.
 		/// This event may be used to mark visual lines as invalid that would otherwise be reused.
 		/// </summary>
-		public event EventHandler<VisualLineConstructionStartEventArgs> VisualLineConstructionStarting;
+		public event EventHandler<VisualLineConstructionStartEventArgs>? VisualLineConstructionStarting;
 
 		/// <summary>
 		/// Occurs when the TextView was measured and changed its visual lines.
 		/// </summary>
-		public event EventHandler VisualLinesChanged;
+		public event EventHandler? VisualLinesChanged;
 
 		/// <summary>
 		/// If the visual lines are invalid, creates new visual lines for the visible part
@@ -957,7 +970,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				}
 			}
 
-			textLayer.SetVisualLines(visibleVisualLines);
+			// CreateAndMeasureVisualLines, called above, always fills this in.
+			textLayer.SetVisualLines(visibleVisualLines!);
 
 			SetScrollData(availableSize,
 						  new Size(maxWidth, heightTreeHeight),
@@ -977,7 +991,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			VisualLineTextParagraphProperties paragraphProperties = CreateParagraphProperties(globalTextRunProperties);
 
 			Debug.WriteLine("Measure availableSize=" + availableSize + ", scrollOffset=" + scrollOffset);
-			DocumentLine firstLineInView = heightTree.GetLineByVisualPosition(scrollOffset.Y);
+			// Measure only runs with a document, and the height tree exists exactly then.
+			DocumentLine firstLineInView = heightTree!.GetLineByVisualPosition(scrollOffset.Y);
 
 			// number of pixels clipped from the first visual line(s)
 			clippedPixelsOnTop = scrollOffset.Y - heightTree.GetVisualPosition(firstLineInView);
@@ -990,7 +1005,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 			VisualLineElementGenerator[] elementGeneratorsArray = [.. elementGenerators];
 			IVisualLineTransformer[] lineTransformersArray = [.. lineTransformers];
-			DocumentLine nextLine = firstLineInView;
+			// Null once the walk runs past the last line, which is what ends the loop.
+			DocumentLine? nextLine = firstLineInView;
 			double maxWidth = 0;
 			double yPos = -clippedPixelsOnTop;
 			while (yPos < availableSize.Height && nextLine != null) {
@@ -1035,8 +1051,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		#endregion
 
 		#region BuildVisualLine
-		private TextFormatter formatter;
-		internal TextViewCachedElements cachedElements;
+		// Both live and die with the document (see OnDocumentChanged), so both are null while
+		// there is none.
+		private TextFormatter? formatter;
+		internal TextViewCachedElements? cachedElements;
 
 		private TextRunProperties CreateGlobalTextRunProperties()
 		{
@@ -1067,7 +1085,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 								   IVisualLineTransformer[] lineTransformersArray,
 								   Size availableSize)
 		{
-			if (heightTree.GetIsCollapsed(documentLine.LineNumber)) {
+			// Reached only from the measure pass and GetOrConstructVisualLine, both of which
+			// require a document - so the height tree is there.
+			if (heightTree!.GetIsCollapsed(documentLine.LineNumber)) {
 				throw new InvalidOperationException("Trying to build visual line from collapsed line");
 			}
 
@@ -1075,7 +1095,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 			VisualLine visualLine = new(this, documentLine);
 			VisualLineTextSource textSource = new(visualLine) {
-				Document = document,
+				Document = document!,
 				GlobalTextRunProperties = globalTextRunProperties,
 				TextView = this
 			};
@@ -1084,7 +1104,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 			if (visualLine.FirstDocumentLine != visualLine.LastDocumentLine) {
 				// Check whether the lines are collapsed correctly:
-				double firstLinePos = heightTree.GetVisualPosition(visualLine.FirstDocumentLine.NextLine);
+				// The two document lines differ, so the first one is not the last in the document.
+				double firstLinePos = heightTree.GetVisualPosition(visualLine.FirstDocumentLine.NextLine!);
 				double lastLinePos = heightTree.GetVisualPosition(visualLine.LastDocumentLine.NextLine ?? visualLine.LastDocumentLine);
 				if (!firstLinePos.IsClose(lastLinePos)) {
 					for (int i = visualLine.FirstDocumentLine.LineNumber + 1; i <= visualLine.LastDocumentLine.LineNumber; i++) {
@@ -1100,12 +1121,15 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 			// now construct textLines:
 			int textOffset = 0;
-			TextLineBreak lastLineBreak = null;
+			// Null for the first text line of the visual line; each pass hands the previous
+			// line's break to the next one.
+			TextLineBreak? lastLineBreak = null;
 			List<TextLine> textLines = [];
 			paragraphProperties.indent = 0;
 			paragraphProperties.firstLineInParagraph = true;
 			while (textOffset <= visualLine.VisualLengthWithEndOfLineMarker) {
-				TextLine textLine = formatter.FormatLine(
+				// The formatter is created alongside the document, which this pass requires.
+				TextLine textLine = formatter!.FormatLine(
 					textSource,
 					textOffset,
 					availableSize.Width,
@@ -1255,8 +1279,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		protected override void OnRender(DrawingContext drawingContext)
 		{
 			RenderBackground(drawingContext, KnownLayer.Background);
-			foreach (VisualLine line in visibleVisualLines) {
-				Brush currentBrush = null;
+			// WPF only renders after a successful measure, which is what fills this in.
+			foreach (VisualLine line in visibleVisualLines!) {
+				// Null until an element with a background turns up, and reset whenever the brush
+				// changes - that is what marks the end of a run to paint.
+				Brush? currentBrush = null;
 				int startVC = 0;
 				int length = 0;
 				foreach (VisualLineElement element in line.Elements) {
@@ -1270,7 +1297,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 								builder.AddRectangle(this, rect);
 							}
 
-							Geometry geometry = builder.CreateGeometry();
+							Geometry? geometry = builder.CreateGeometry();
 							if (geometry != null) {
 								drawingContext.DrawGeometry(currentBrush, null, geometry);
 							}
@@ -1291,7 +1318,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 						builder.AddRectangle(this, rect);
 					}
 
-					Geometry geometry = builder.CreateGeometry();
+					Geometry? geometry = builder.CreateGeometry();
 					if (geometry != null) {
 						drawingContext.DrawGeometry(currentBrush, null, geometry);
 					}
@@ -1410,7 +1437,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Occurs when the scroll offset has changed.
 		/// </summary>
-		public event EventHandler ScrollOffsetChanged;
+		public event EventHandler? ScrollOffsetChanged;
 
 		private void SetScrollOffset(Vector vector)
 		{
@@ -1428,7 +1455,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 		}
 
-		ScrollViewer IScrollInfo.ScrollOwner { get; set; }
+		// Null while the text view is not inside a ScrollViewer, which is a supported arrangement.
+		ScrollViewer? IScrollInfo.ScrollOwner { get; set; }
 
 		void IScrollInfo.LineUp()
 		{
@@ -1704,7 +1732,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <inheritdoc/>
 		protected override void OnQueryCursor(QueryCursorEventArgs e)
 		{
-			VisualLineElement element = GetVisualLineElementFromPosition(e.GetPosition(this) + scrollOffset);
+			VisualLineElement? element = GetVisualLineElementFromPosition(e.GetPosition(this) + scrollOffset);
 			element?.OnQueryCursor(e);
 		}
 
@@ -1714,7 +1742,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			base.OnMouseDown(e);
 			if (!e.Handled) {
 				EnsureVisualLines();
-				VisualLineElement element = GetVisualLineElementFromPosition(e.GetPosition(this) + scrollOffset);
+				VisualLineElement? element = GetVisualLineElementFromPosition(e.GetPosition(this) + scrollOffset);
 				element?.OnMouseDown(e);
 			}
 		}
@@ -1725,7 +1753,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			base.OnMouseUp(e);
 			if (!e.Handled) {
 				EnsureVisualLines();
-				VisualLineElement element = GetVisualLineElementFromPosition(e.GetPosition(this) + scrollOffset);
+				VisualLineElement? element = GetVisualLineElementFromPosition(e.GetPosition(this) + scrollOffset);
 				element?.OnMouseUp(e);
 			}
 		}
@@ -1737,7 +1765,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Returns null if there is no visual line for the position (e.g. the position is outside the visible
 		/// text area).
 		/// </summary>
-		public VisualLine GetVisualLineFromVisualTop(double visualTop)
+		public VisualLine? GetVisualLineFromVisualTop(double visualTop)
 		{
 			// TODO: change this method to also work outside the visible range -
 			// required to make GetPosition work as expected!
@@ -1767,9 +1795,10 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			return heightTree.GetVisualPosition(heightTree.GetLineByNumber(line));
 		}
 
-		private VisualLineElement GetVisualLineElementFromPosition(Point visualPosition)
+		// Null when the position is outside the visible text, or lands past the last element.
+		private VisualLineElement? GetVisualLineElementFromPosition(Point visualPosition)
 		{
-			VisualLine vl = GetVisualLineFromVisualTop(visualPosition.Y);
+			VisualLine? vl = GetVisualLineFromVisualTop(visualPosition.Y);
 			if (vl != null) {
 				int column = vl.GetVisualColumnFloor(visualPosition);
 				//				Debug.WriteLine(vl.FirstDocumentLine.LineNumber + " vc " + column);
@@ -1824,7 +1853,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				throw ThrowUtil.NoDocumentAssigned();
 			}
 
-			VisualLine line = GetVisualLineFromVisualTop(visualPosition.Y);
+			VisualLine? line = GetVisualLineFromVisualTop(visualPosition.Y);
 			if (line == null) {
 				return null;
 			}
@@ -1846,7 +1875,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				throw ThrowUtil.NoDocumentAssigned();
 			}
 
-			VisualLine line = GetVisualLineFromVisualTop(visualPosition.Y);
+			VisualLine? line = GetVisualLineFromVisualTop(visualPosition.Y);
 			if (line == null) {
 				return null;
 			}
@@ -1872,9 +1901,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// If the service is not found in the <see cref="Services"/> container,
 		/// this method will also look for it in the current document's service provider.
 		/// </summary>
-		public virtual object GetService(Type serviceType)
+		// Null when neither container knows the service, which is the ordinary "not registered"
+		// answer an IServiceProvider gives.
+		public virtual object? GetService(Type serviceType)
 		{
-			object instance = Services.GetService(serviceType);
+			object? instance = Services.GetService(serviceType);
 			if (instance == null && document != null) {
 				instance = document.ServiceProvider.GetService(serviceType);
 			}
@@ -1883,13 +1914,13 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 		private void ConnectToTextView(object obj)
 		{
-			ITextViewConnect c = obj as ITextViewConnect;
+			ITextViewConnect? c = obj as ITextViewConnect;
 			c?.AddToTextView(this);
 		}
 
 		private void DisconnectFromTextView(object obj)
 		{
-			ITextViewConnect c = obj as ITextViewConnect;
+			ITextViewConnect? c = obj as ITextViewConnect;
 			c?.RemoveFromTextView(this);
 		}
 		#endregion

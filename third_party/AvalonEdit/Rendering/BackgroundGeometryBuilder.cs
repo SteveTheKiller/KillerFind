@@ -304,7 +304,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		}
 
 		private readonly PathFigureCollection figures = [];
-		private PathFigure figure;
+		// Null between figures: CloseFigure clears it, and the next rectangle starts a new one.
+		private PathFigure? figure;
 		private int insertionIndex;
 		private double lastTop, lastBottom;
 		private double lastLeft, lastRight;
@@ -400,7 +401,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Creates the geometry.
 		/// Returns null when the geometry is empty!
 		/// </summary>
-		public Geometry CreateGeometry()
+		public Geometry? CreateGeometry()
 		{
 			CloseFigure();
 			if (figures.Count != 0) {

@@ -35,6 +35,9 @@ function Restore-Prompt {
 
 $script:KFEsc = [char]27
 
+# Cleared by the first prompt. See the blank-line note in the prompt function.
+$script:KFFirstPrompt = $true
+
 # The mark you type at, and the separator between segments. Single glyphs, so
 # they are easy to swap - a Nerd Font gives you far more choice here than the
 # stock console fonts do.
@@ -229,7 +232,12 @@ function prompt {
 
     # Two lines, so what you type always starts at the same column no matter how
     # deep the folder or how long the branch name.
-    Write-Host ''
+    #
+    # The blank one separates this block from the output above it - except on the
+    # FIRST prompt, where there is no output above it and the gap is just a wasted
+    # row at the top of a fresh shell. It used to be hidden by the banner sitting
+    # in it; with the banner gone it was the first thing you saw.
+    if ($script:KFFirstPrompt) { $script:KFFirstPrompt = $false } else { Write-Host '' }
     Write-Host $line
 
     # The mark carries the exit code, which is the fastest possible read of
@@ -247,20 +255,25 @@ function prompt {
 }
 
 # ── Banner ──────────────────────────────────────────────────────────────────
-# Once per shell, not once per prompt. Says which KillerFind this is, what it
-# is wearing, and whether you are elevated - the three things worth knowing
-# about a shell you did not start from a shortcut.
+# Only when it says something you cannot already see.
+#
+# It used to open every shell with the app name, its version and the theme. All
+# three are on screen already - the wordmark is in the title bar, the version is
+# on the About card, and the theme is the colors you are looking at - so the line
+# was spending the first row of every terminal restating them.
+#
+# Elevation is the exception and the reason this is not simply deleted: getting
+# it wrong is the one mistake a shell can make that costs you something, and the
+# tab's shield glyph is small and easy to miss halfway down a build log.
+#
+# KF_BANNER=0 switches even that off.
 function script:KFBanner {
+    if ($env:KF_ADMIN -ne '1') { return }
+
     $accent = script:KFRole 'ACCENT' '#e8485a'
-    $dim    = script:KFRole 'DIM'    '#e2b58a'
     $reset  = "$($script:KFEsc)[0m"
 
-    $line = $accent + 'KillerFind' + $reset + $dim + ' v' + $env:KF_VERSION
-    if ($env:KF_THEME) { $line += '  ' + $env:KF_THEME.ToLower() }
-    if ($env:KF_ADMIN -eq '1') { $line += $reset + $accent + '  escalated privileges' }
-    $line += $reset
-
-    Write-Host $line
+    Write-Host ($accent + 'escalated privileges' + $reset)
 }
 
 if ($env:KF_BANNER -ne '0') { script:KFBanner }

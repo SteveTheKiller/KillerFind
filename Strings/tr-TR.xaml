@@ -356,4 +356,59 @@
     <sys:String x:Key="Str_Menu_Delete">Sil  (Shift: kalıcı olarak)</sys:String>
     <sys:String x:Key="Str_Menu_NewFolder">Yeni klasör</sys:String>
 
+
+    <!-- 2.0.0: editor tabs, the document and shell bars, and $PROFILE editing -->
+    <sys:String x:Key="Str_Fonts_Editor">DÜZENLEYİCİ METNİ</sys:String>
+
+    <sys:String x:Key="Str_Prof_Edit">PowerShell profilini düzenle</sys:String>
+    <sys:String x:Key="Str_Prof_Asking">{0} uygulamasına profilinin yeri soruluyor...</sys:String>
+    <sys:String x:Key="Str_Prof_Failed">{0} yanıt vermedi - profili bulunamadı.</sys:String>
+    <sys:String x:Key="Str_Prof_None">PowerShell bulunamadı</sys:String>
+
+    <sys:String x:Key="Str_Menu_Edit">Düzenle</sys:String>
+    <sys:String x:Key="Str_Ed_TooBig">{0} düzenlenemeyecek kadar büyük ({1} MB).</sys:String>
+    <sys:String x:Key="Str_TT_EdSave">Kaydet  (Ctrl+S)</sys:String>
+    <sys:String x:Key="Str_TT_EdUndo">Geri al  (Ctrl+Z)</sys:String>
+    <sys:String x:Key="Str_TT_EdRedo">Yinele  (Ctrl+Y)</sys:String>
+    <sys:String x:Key="Str_TT_EdFind">Bul  (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_EdGoto">Satıra git  (Ctrl+G)</sys:String>
+    <sys:String x:Key="Str_TT_EdWrap">Sözcük kaydırma</sys:String>
+    <sys:String x:Key="Str_TT_EdSettings">Düzenleyici ayarları</sys:String>
+    <sys:String x:Key="Str_Ed_GotoLabel">satır</sys:String>
+
+    <sys:String x:Key="Str_Ed_OptLineNumbers">Satır numaraları</sys:String>
+    <sys:String x:Key="Str_Ed_OptCurrentLine">Geçerli satırı vurgula</sys:String>
+    <sys:String x:Key="Str_Ed_OptWhitespace">Boşlukları ve sekmeleri göster</sys:String>
+    <sys:String x:Key="Str_Ed_OptSpaces">Sekme yerine boşluk ekle</sys:String>
+    <sys:String x:Key="Str_Ed_OptWrap">Sözcük kaydırma</sys:String>
+    <sys:String x:Key="Str_Ed_OptIndent">GİRİNTİ</sys:String>
+    <sys:String x:Key="Str_Ed_OptFonts">Yazı tipi ve boyut...</sys:String>
+
+    <sys:String x:Key="Str_Ed_Undo">Geri al</sys:String>
+    <sys:String x:Key="Str_Ed_Redo">Yinele</sys:String>
+    <sys:String x:Key="Str_Ed_Cut">Kes</sys:String>
+    <sys:String x:Key="Str_Ed_Copy">Kopyala</sys:String>
+    <sys:String x:Key="Str_Ed_Paste">Yapıştır</sys:String>
+    <sys:String x:Key="Str_Ed_SelectAll">Tümünü seç</sys:String>
+    <sys:String x:Key="Str_Ed_Find">Bul...</sys:String>
+    <sys:String x:Key="Str_Ed_Goto">Satıra git...</sys:String>
+    <sys:String x:Key="Str_Ed_Save">Kaydet</sys:String>
+    <sys:String x:Key="Str_Ed_Settings">Ayarlar...</sys:String>
+    <sys:String x:Key="Str_Ed_CloseTab">Dosyayı kapat</sys:String>
+
+    <sys:String x:Key="Str_TT_TermCwd">Bu klasörü bir sekmede aç</sys:String>
+    <sys:String x:Key="Str_TT_TermNew">Yeni terminal  (F8)</sys:String>
+    <sys:String x:Key="Str_TT_TermAdmin">Yönetici olarak yeni terminal  (Ctrl+F8)</sys:String>
+    <sys:String x:Key="Str_TT_TermFolder">Bu klasörü bir sekmede aç</sys:String>
+    <sys:String x:Key="Str_TT_TermClear">Temizle</sys:String>
+    <sys:String x:Key="Str_TT_TermFonts">Yazı tipleri...</sys:String>
+
+    <sys:String x:Key="Str_Ed_WrapOn">Sözcük kaydırma açık.</sys:String>
+    <sys:String x:Key="Str_Ed_WrapOff">Sözcük kaydırma kapalı - uzun satırları görmek için kaydırın.</sys:String>
+    <sys:String x:Key="Str_Ed_Saved">{0} kaydedildi.</sys:String>
+    <sys:String x:Key="Str_Ed_SaveFailed">{0} kaydedilemedi: {1}</sys:String>
+    <sys:String x:Key="Str_Ed_OpenFailed">{0} açılamadı: {1}</sys:String>
+    <sys:String x:Key="Str_Dlg_DiscardMsg">Bu dosya kaydedilmeden kapatılsın mı? Değişiklikleriniz kaybolacak.</sys:String>
+    <sys:String x:Key="Str_Btn_Discard">At</sys:String>
+
 </ResourceDictionary>

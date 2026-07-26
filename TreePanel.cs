@@ -43,6 +43,48 @@ namespace KillerFind
             // layout rather than set once.
             FolderTree.SizeChanged += (_, _) => SyncTreeFade();
             FolderTree.Loaded      += (_, _) => SyncTreeFade();
+
+            // Both edge fades follow the scroll position. ScrollChanged is handled at the
+            // TreeView rather than dug out of its template: it bubbles, so the inner ScrollViewer
+            // is reached without needing to have found it first. Loaded and SizeChanged are
+            // covered too, for the passes where nothing scrolled but the extent moved.
+            FolderTree.AddHandler(System.Windows.Controls.ScrollViewer.ScrollChangedEvent,
+                new System.Windows.Controls.ScrollChangedEventHandler((_, _) => SyncTreeEdgeFades()));
+
+            FolderTree.SizeChanged += (_, _) => SyncTreeEdgeFades();
+            FolderTree.Loaded      += (_, _) => SyncTreeEdgeFades();
+        }
+
+        /// <summary>
+        /// Fade each edge only while there is something PAST it, ramped over the fade's own
+        /// height: none at the very top, none at the very bottom, full in between.
+        /// </summary>
+        /// <remarks>
+        /// A proportional ramp rather than a flip at the ends. The fade exists to dissolve a row
+        /// that is half gone, so at one pixel of scroll it should be one pixel's worth of fade;
+        /// a hard on/off would pop the moment the wheel moved.
+        ///
+        /// The bottom one used to be pinned on, on the theory that a lazy load changing the
+        /// content height would make it blink. It does not: the remaining distance is computed
+        /// from the extent, and ScrollChanged fires when the extent changes as well as when the
+        /// offset does, so an expanding folder just moves the ramp. Pinned on, it was drawing a
+        /// fade over the last row of a tree that had nothing below it.
+        /// </remarks>
+        private void SyncTreeEdgeFades()
+        {
+            var sv = FindDescendant<System.Windows.Controls.ScrollViewer>(FolderTree);
+            if (sv == null) return;
+
+            TreeFadeTop.Opacity    = Ramp(sv.VerticalOffset, TreeFadeTop.Height, 18);
+            TreeFadeBottom.Opacity = Ramp(sv.ExtentHeight - sv.ViewportHeight - sv.VerticalOffset,
+                                          TreeFadeBottom.Height, 22);
+        }
+
+        // Height is NaN until the border has been laid out, hence the fallback.
+        private static double Ramp(double distance, double height, double fallback)
+        {
+            double h = double.IsNaN(height) || height <= 0 ? fallback : height;
+            return Math.Min(1, Math.Max(0, distance) / h);
         }
 
         /// <summary>

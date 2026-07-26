@@ -501,7 +501,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 
 			pos += textView.ScrollOffset;
-			VisualLine line = textView.GetVisualLineFromVisualTop(pos.Y);
+			VisualLine? line = textView.GetVisualLineFromVisualTop(pos.Y);
 			if (line != null) {
 				int visualColumn = line.GetVisualColumn(pos, textArea.Selection.EnableVirtualSpace);
 				int wordStartVC = line.GetNextCaretPosition(visualColumn + 1, LogicalDirection.Backward, CaretPositioningMode.WordStartOrSymbol, textArea.Selection.EnableVirtualSpace);
@@ -540,7 +540,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 
 			pos += textView.ScrollOffset;
-			VisualLine line = textView.GetVisualLineFromVisualTop(pos.Y);
+			VisualLine? line = textView.GetVisualLineFromVisualTop(pos.Y);
 			if (line != null) {
 				return new SimpleSegment(line.StartOffset, line.LastDocumentLine.EndOffset - line.StartOffset);
 			} else {
@@ -571,7 +571,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 				pos.Y = textView.DocumentHeight - ExtensionMethods.Epsilon;
 			}
 
-			VisualLine line = textView.GetVisualLineFromVisualTop(pos.Y);
+			VisualLine? line = textView.GetVisualLineFromVisualTop(pos.Y);
 			if (line != null) {
 				visualColumn = line.GetVisualColumn(pos, textArea.Selection.EnableVirtualSpace, out isAtEndOfLine);
 				return line.GetRelativeOffset(visualColumn) + line.FirstDocumentLine.Offset;
@@ -598,7 +598,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 				pos.Y = textView.DocumentHeight - ExtensionMethods.Epsilon;
 			}
 
-			VisualLine line = textView.GetVisualLineFromVisualTop(pos.Y);
+			VisualLine? line = textView.GetVisualLineFromVisualTop(pos.Y);
 			if (line != null) {
 				visualColumn = line.GetVisualColumn(line.TextLines.First(), pos.X, textArea.Selection.EnableVirtualSpace);
 				return line.GetRelativeOffset(visualColumn) + line.FirstDocumentLine.Offset;

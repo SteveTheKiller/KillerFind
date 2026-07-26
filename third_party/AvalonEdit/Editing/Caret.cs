@@ -472,7 +472,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			}
 
 			if (caretAdorner != null && textView != null) {
-				VisualLine visualLine = textView.GetVisualLine(position.Line);
+				VisualLine? visualLine = textView.GetVisualLine(position.Line);
 				if (visualLine != null) {
 					Rect caretRect = this.textArea.OverstrikeMode ? CalcCaretOverstrikeRectangle(visualLine) : CalcCaretRectangle(visualLine);
 					// Create Win32 caret so that Windows knows where our managed caret is. This is necessary for

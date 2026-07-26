@@ -354,4 +354,59 @@
     <sys:String x:Key="Str_Menu_Delete">削除  (Shift: 完全に)</sys:String>
     <sys:String x:Key="Str_Menu_NewFolder">新しいフォルダー</sys:String>
 
+
+    <!-- 2.0.0: editor tabs, the document and shell bars, and $PROFILE editing -->
+    <sys:String x:Key="Str_Fonts_Editor">エディターのテキスト</sys:String>
+
+    <sys:String x:Key="Str_Prof_Edit">PowerShell プロファイルを編集</sys:String>
+    <sys:String x:Key="Str_Prof_Asking">{0} にプロファイルの場所を問い合わせています...</sys:String>
+    <sys:String x:Key="Str_Prof_Failed">{0} が応答しません - プロファイルが見つかりませんでした。</sys:String>
+    <sys:String x:Key="Str_Prof_None">PowerShell が見つかりません</sys:String>
+
+    <sys:String x:Key="Str_Menu_Edit">編集</sys:String>
+    <sys:String x:Key="Str_Ed_TooBig">{0} は大きすぎて編集できません ({1} MB)。</sys:String>
+    <sys:String x:Key="Str_TT_EdSave">保存  (Ctrl+S)</sys:String>
+    <sys:String x:Key="Str_TT_EdUndo">元に戻す  (Ctrl+Z)</sys:String>
+    <sys:String x:Key="Str_TT_EdRedo">やり直し  (Ctrl+Y)</sys:String>
+    <sys:String x:Key="Str_TT_EdFind">検索  (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_EdGoto">指定行へ移動  (Ctrl+G)</sys:String>
+    <sys:String x:Key="Str_TT_EdWrap">折り返し</sys:String>
+    <sys:String x:Key="Str_TT_EdSettings">エディターの設定</sys:String>
+    <sys:String x:Key="Str_Ed_GotoLabel">行</sys:String>
+
+    <sys:String x:Key="Str_Ed_OptLineNumbers">行番号</sys:String>
+    <sys:String x:Key="Str_Ed_OptCurrentLine">現在の行を強調表示</sys:String>
+    <sys:String x:Key="Str_Ed_OptWhitespace">スペースとタブを表示</sys:String>
+    <sys:String x:Key="Str_Ed_OptSpaces">タブではなくスペースを挿入</sys:String>
+    <sys:String x:Key="Str_Ed_OptWrap">折り返し</sys:String>
+    <sys:String x:Key="Str_Ed_OptIndent">インデント</sys:String>
+    <sys:String x:Key="Str_Ed_OptFonts">フォントとサイズ...</sys:String>
+
+    <sys:String x:Key="Str_Ed_Undo">元に戻す</sys:String>
+    <sys:String x:Key="Str_Ed_Redo">やり直し</sys:String>
+    <sys:String x:Key="Str_Ed_Cut">切り取り</sys:String>
+    <sys:String x:Key="Str_Ed_Copy">コピー</sys:String>
+    <sys:String x:Key="Str_Ed_Paste">貼り付け</sys:String>
+    <sys:String x:Key="Str_Ed_SelectAll">すべて選択</sys:String>
+    <sys:String x:Key="Str_Ed_Find">検索...</sys:String>
+    <sys:String x:Key="Str_Ed_Goto">指定行へ移動...</sys:String>
+    <sys:String x:Key="Str_Ed_Save">保存</sys:String>
+    <sys:String x:Key="Str_Ed_Settings">設定...</sys:String>
+    <sys:String x:Key="Str_Ed_CloseTab">ファイルを閉じる</sys:String>
+
+    <sys:String x:Key="Str_TT_TermCwd">このフォルダーをタブで開く</sys:String>
+    <sys:String x:Key="Str_TT_TermNew">新しいターミナル  (F8)</sys:String>
+    <sys:String x:Key="Str_TT_TermAdmin">管理者として新しいターミナル  (Ctrl+F8)</sys:String>
+    <sys:String x:Key="Str_TT_TermFolder">このフォルダーをタブで開く</sys:String>
+    <sys:String x:Key="Str_TT_TermClear">クリア</sys:String>
+    <sys:String x:Key="Str_TT_TermFonts">フォント...</sys:String>
+
+    <sys:String x:Key="Str_Ed_WrapOn">折り返しオン。</sys:String>
+    <sys:String x:Key="Str_Ed_WrapOff">折り返しオフ - 長い行はスクロールして表示します。</sys:String>
+    <sys:String x:Key="Str_Ed_Saved">{0} を保存しました。</sys:String>
+    <sys:String x:Key="Str_Ed_SaveFailed">{0} を保存できませんでした: {1}</sys:String>
+    <sys:String x:Key="Str_Ed_OpenFailed">{0} を開けませんでした: {1}</sys:String>
+    <sys:String x:Key="Str_Dlg_DiscardMsg">保存せずにこのファイルを閉じますか? 変更内容は失われます。</sys:String>
+    <sys:String x:Key="Str_Btn_Discard">破棄</sys:String>
+
 </ResourceDictionary>

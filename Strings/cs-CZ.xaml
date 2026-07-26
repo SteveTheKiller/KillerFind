@@ -354,4 +354,59 @@
     <sys:String x:Key="Str_Menu_Delete">Smazat  (Shift: trvale)</sys:String>
     <sys:String x:Key="Str_Menu_NewFolder">Nová složka</sys:String>
 
+
+    <!-- 2.0.0: editor tabs, the document and shell bars, and $PROFILE editing -->
+    <sys:String x:Key="Str_Fonts_Editor">TEXT EDITORU</sys:String>
+
+    <sys:String x:Key="Str_Prof_Edit">Upravit profil PowerShellu</sys:String>
+    <sys:String x:Key="Str_Prof_Asking">Dotaz na {0}, kde má profil...</sys:String>
+    <sys:String x:Key="Str_Prof_Failed">{0} neodpověděl - profil se nepodařilo najít.</sys:String>
+    <sys:String x:Key="Str_Prof_None">Žádný PowerShell nenalezen</sys:String>
+
+    <sys:String x:Key="Str_Menu_Edit">Upravit</sys:String>
+    <sys:String x:Key="Str_Ed_TooBig">{0} je příliš velký na úpravy ({1} MB).</sys:String>
+    <sys:String x:Key="Str_TT_EdSave">Uložit  (Ctrl+S)</sys:String>
+    <sys:String x:Key="Str_TT_EdUndo">Zpět  (Ctrl+Z)</sys:String>
+    <sys:String x:Key="Str_TT_EdRedo">Znovu  (Ctrl+Y)</sys:String>
+    <sys:String x:Key="Str_TT_EdFind">Najít  (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_EdGoto">Přejít na řádek  (Ctrl+G)</sys:String>
+    <sys:String x:Key="Str_TT_EdWrap">Zalamování řádků</sys:String>
+    <sys:String x:Key="Str_TT_EdSettings">Nastavení editoru</sys:String>
+    <sys:String x:Key="Str_Ed_GotoLabel">řádek</sys:String>
+
+    <sys:String x:Key="Str_Ed_OptLineNumbers">Čísla řádků</sys:String>
+    <sys:String x:Key="Str_Ed_OptCurrentLine">Zvýraznit aktuální řádek</sys:String>
+    <sys:String x:Key="Str_Ed_OptWhitespace">Zobrazit mezery a tabulátory</sys:String>
+    <sys:String x:Key="Str_Ed_OptSpaces">Vkládat mezery místo tabulátorů</sys:String>
+    <sys:String x:Key="Str_Ed_OptWrap">Zalamování řádků</sys:String>
+    <sys:String x:Key="Str_Ed_OptIndent">ODSAZENÍ</sys:String>
+    <sys:String x:Key="Str_Ed_OptFonts">Písmo a velikost...</sys:String>
+
+    <sys:String x:Key="Str_Ed_Undo">Zpět</sys:String>
+    <sys:String x:Key="Str_Ed_Redo">Znovu</sys:String>
+    <sys:String x:Key="Str_Ed_Cut">Vyjmout</sys:String>
+    <sys:String x:Key="Str_Ed_Copy">Kopírovat</sys:String>
+    <sys:String x:Key="Str_Ed_Paste">Vložit</sys:String>
+    <sys:String x:Key="Str_Ed_SelectAll">Vybrat vše</sys:String>
+    <sys:String x:Key="Str_Ed_Find">Najít...</sys:String>
+    <sys:String x:Key="Str_Ed_Goto">Přejít na řádek...</sys:String>
+    <sys:String x:Key="Str_Ed_Save">Uložit</sys:String>
+    <sys:String x:Key="Str_Ed_Settings">Nastavení...</sys:String>
+    <sys:String x:Key="Str_Ed_CloseTab">Zavřít soubor</sys:String>
+
+    <sys:String x:Key="Str_TT_TermCwd">Otevřít tuto složku na kartě</sys:String>
+    <sys:String x:Key="Str_TT_TermNew">Nový terminál  (F8)</sys:String>
+    <sys:String x:Key="Str_TT_TermAdmin">Nový terminál jako správce  (Ctrl+F8)</sys:String>
+    <sys:String x:Key="Str_TT_TermFolder">Otevřít tuto složku na kartě</sys:String>
+    <sys:String x:Key="Str_TT_TermClear">Vymazat</sys:String>
+    <sys:String x:Key="Str_TT_TermFonts">Písma...</sys:String>
+
+    <sys:String x:Key="Str_Ed_WrapOn">Zalamování řádků zapnuto.</sys:String>
+    <sys:String x:Key="Str_Ed_WrapOff">Zalamování řádků vypnuto - dlouhé řádky zobrazíte posunutím.</sys:String>
+    <sys:String x:Key="Str_Ed_Saved">{0} uloženo.</sys:String>
+    <sys:String x:Key="Str_Ed_SaveFailed">Nepodařilo se uložit {0}: {1}</sys:String>
+    <sys:String x:Key="Str_Ed_OpenFailed">Nepodařilo se otevřít {0}: {1}</sys:String>
+    <sys:String x:Key="Str_Dlg_DiscardMsg">Zavřít soubor bez uložení? Vaše změny budou ztraceny.</sys:String>
+    <sys:String x:Key="Str_Btn_Discard">Zahodit</sys:String>
+
 </ResourceDictionary>

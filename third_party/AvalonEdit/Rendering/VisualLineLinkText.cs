@@ -34,12 +34,15 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <summary>
 		/// Gets/Sets the URL that is navigated to when the link is clicked.
 		/// </summary>
-		public Uri NavigateUri { get; set; }
+		// Set by the generator right after construction; a link element without one would have
+		// nothing to navigate to.
+		public Uri NavigateUri { get; set; } = null!;
 
 		/// <summary>
 		/// Gets/Sets the window name where the URL will be opened.
+		/// Null means the default target.
 		/// </summary>
-		public string TargetName { get; set; }
+		public string? TargetName { get; set; }
 
 		/// <summary>
 		/// Gets/Sets whether the user needs to press Control to click the link.
@@ -105,7 +108,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				RequestNavigateEventArgs args = new(this.NavigateUri, this.TargetName) {
 					RoutedEvent = Hyperlink.RequestNavigateEvent
 				};
-				FrameworkElement element = e.Source as FrameworkElement;
+				FrameworkElement? element = e.Source as FrameworkElement;
 				// allow user code to handle the navigation request
 				element?.RaiseEvent(args);
 				if (!args.Handled) {

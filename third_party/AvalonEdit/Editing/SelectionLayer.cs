@@ -62,7 +62,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 			foreach (SelectionSegment segment in textArea.Selection.Segments) {
 				geoBuilder.AddSegment(textView, segment);
 			}
-			Geometry geometry = geoBuilder.CreateGeometry();
+			Geometry? geometry = geoBuilder.CreateGeometry();
 			if (geometry != null) {
 				drawingContext.DrawGeometry(textArea.SelectionBrush, selectionBorder, geometry);
 			}

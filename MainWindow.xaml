@@ -229,10 +229,14 @@
                      so it fades to an exact match for the sidebar (never darker, grain intact)
                      instead of a flat black band. Inset 12px on the right to clear the
                      scrollbar, and hit-test-transparent so the tree still takes clicks under it.
-                     Always on rather than toggled from scroll position: unlike KillerNotes'
-                     single list this panel has a scrollbar on both axes, and a fade that blinks
-                     in and out as a lazy load changes the content height reads as a glitch. -->
-                <Border Grid.Row="0" Height="18" VerticalAlignment="Top" Margin="0,0,12,0" IsHitTestVisible="False">
+                     Each one is only there while there is something PAST it - none at the very
+                     top, none at the very bottom, the way the sites do it. A fade over an edge
+                     that is already flush just looks like that row has been smudged. Both ramp
+                     in over their own height as a row slides under them
+                     (TreePanel.SyncTreeEdgeFades), so they arrive exactly as fast as they become
+                     true and neither pops. -->
+                <Border x:Name="TreeFadeTop" Grid.Row="0" Height="18" Opacity="0"
+                        VerticalAlignment="Top" Margin="0,0,12,0" IsHitTestVisible="False">
                     <Border.OpacityMask>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                             <GradientStop Color="#FF000000" Offset="0"/>
@@ -248,7 +252,8 @@
                      horizontal scrollbar the content's bottom edge moves UP by its height, and a
                      fade pinned to the row would sit over the scrollbar instead of over the last
                      row it is meant to be fading out. -->
-                <Border x:Name="TreeFadeBottom" Grid.Row="0" Height="22" VerticalAlignment="Bottom" Margin="0,0,12,0" IsHitTestVisible="False">
+                <Border x:Name="TreeFadeBottom" Grid.Row="0" Height="22" Opacity="0"
+                        VerticalAlignment="Bottom" Margin="0,0,12,0" IsHitTestVisible="False">
                     <Border.OpacityMask>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                             <GradientStop Color="#00000000" Offset="0"/>
@@ -455,6 +460,18 @@
                                 </MenuItem>
                                 <MenuItem Header="{DynamicResource Str_Term_CmdAdmin}" Click="RailShellCmdAdmin_Click" InputGestureText="Ctrl+Shift+F8">
                                     <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE7EF;"/></MenuItem.Icon>
+                                </MenuItem>
+                                <Separator/>
+                                <!-- Rows are built as the submenu OPENS (ProfileMenu.cs), from
+                                     the PowerShell hosts actually installed - PowerShell 7 gets
+                                     installed on a machine mid-session often enough that a fixed
+                                     pair would go on lying for the rest of the session. The
+                                     placeholder child is what makes WPF draw the arrow and fire
+                                     SubmenuOpened at all; it is replaced before it is seen. -->
+                                <MenuItem Header="{DynamicResource Str_Prof_Edit}" InputGestureText="Ctrl+,"
+                                          SubmenuOpened="RailProfileMenu_Opened">
+                                    <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE70F;"/></MenuItem.Icon>
+                                    <MenuItem/>
                                 </MenuItem>
                             </ContextMenu>
                         </Button.ContextMenu>
@@ -1057,12 +1074,12 @@
                     <ComboBox x:Name="FontTermCombo" Height="26" FontSize="12"
                               SelectionChanged="FontCombo_Changed" PreviewMouseWheel="FontCombo_Wheel"/>
 
-                    <!-- Size is the terminal's alone: the rest of the app grows through the
-                         wordmark zoom (AppScale.cs), and a shell is the one surface people want
-                         tuned away from everything else - denser for a long build log, larger
-                         for a prompt they stare at. Ctrl+wheel inside a terminal still nudges
-                         that one tab on top of this. -->
-                    <Grid Margin="0,10,0,0">
+                    <!-- Size belongs to the two surfaces that show a WALL of monospaced text and
+                         nothing else: a shell and a document. The rest of the app grows through
+                         the wordmark zoom (AppScale.cs) instead, because a file list wants to
+                         stay in proportion with its chrome. Ctrl+wheel inside either still
+                         nudges the same value from the keyboard. -->
+                    <Grid Margin="0,10,0,14">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
@@ -1072,6 +1089,29 @@
                                 IsSnapToTickEnabled="True" TickFrequency="1"
                                 ValueChanged="FontTermSize_Changed"/>
                         <TextBlock x:Name="FontTermSizeLabel" Grid.Column="1" Margin="10,0,0,0"
+                                   MinWidth="26" TextAlignment="Right" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource MutedTextBrush}"
+                                   FontFamily="Consolas" FontSize="11"/>
+                    </Grid>
+
+                    <!-- Editor text. Fixed-width only, filtered the same way the terminal list
+                         is: a proportional face does not merely look wrong over code, it puts
+                         every line number and every column of an indented block out of line. -->
+                    <TextBlock Text="{DynamicResource Str_Fonts_Editor}" Foreground="{DynamicResource DimTextBrush}"
+                               FontFamily="Consolas" FontSize="10" Margin="0,0,0,4"/>
+                    <ComboBox x:Name="FontEditorCombo" Height="26" FontSize="12"
+                              SelectionChanged="FontCombo_Changed" PreviewMouseWheel="FontCombo_Wheel"/>
+
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Slider x:Name="FontEditorSize" Style="{StaticResource ThinSlider}"
+                                Minimum="8" Maximum="28" SmallChange="1" LargeChange="1"
+                                IsSnapToTickEnabled="True" TickFrequency="1"
+                                ValueChanged="FontEditorSize_Changed"/>
+                        <TextBlock x:Name="FontEditorSizeLabel" Grid.Column="1" Margin="10,0,0,0"
                                    MinWidth="26" TextAlignment="Right" VerticalAlignment="Center"
                                    Foreground="{DynamicResource MutedTextBrush}"
                                    FontFamily="Consolas" FontSize="11"/>

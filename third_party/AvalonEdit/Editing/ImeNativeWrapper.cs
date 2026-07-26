@@ -185,7 +185,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		private static Rect GetCharacterBounds(this TextView textView, TextViewPosition pos, HwndSource source)
 		{
-			VisualLine vl = textView.GetVisualLine(pos.Line);
+			VisualLine? vl = textView.GetVisualLine(pos.Line);
 			if (vl == null) {
 				return EMPTY_RECT;
 			}

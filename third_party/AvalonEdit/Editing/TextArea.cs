@@ -1101,7 +1101,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// Gets the requested service.
 		/// </summary>
 		/// <returns>Returns the requested service instance, or null if the service cannot be found.</returns>
-		public virtual object GetService(Type serviceType)
+		public virtual object? GetService(Type serviceType)
 		{
 			return TextView.GetService(serviceType);
 		}

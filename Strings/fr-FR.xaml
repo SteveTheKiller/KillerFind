@@ -356,4 +356,59 @@
     <sys:String x:Key="Str_Menu_Delete">Supprimer  (Maj : définitivement)</sys:String>
     <sys:String x:Key="Str_Menu_NewFolder">Nouveau dossier</sys:String>
 
+
+    <!-- 2.0.0: editor tabs, the document and shell bars, and $PROFILE editing -->
+    <sys:String x:Key="Str_Fonts_Editor">TEXTE DE L'ÉDITEUR</sys:String>
+
+    <sys:String x:Key="Str_Prof_Edit">Modifier le profil PowerShell</sys:String>
+    <sys:String x:Key="Str_Prof_Asking">Demande à {0} où se trouve son profil...</sys:String>
+    <sys:String x:Key="Str_Prof_Failed">{0} n'a pas répondu - profil introuvable.</sys:String>
+    <sys:String x:Key="Str_Prof_None">Aucun PowerShell trouvé</sys:String>
+
+    <sys:String x:Key="Str_Menu_Edit">Modifier</sys:String>
+    <sys:String x:Key="Str_Ed_TooBig">{0} est trop volumineux pour être modifié ({1} Mo).</sys:String>
+    <sys:String x:Key="Str_TT_EdSave">Enregistrer  (Ctrl+S)</sys:String>
+    <sys:String x:Key="Str_TT_EdUndo">Annuler  (Ctrl+Z)</sys:String>
+    <sys:String x:Key="Str_TT_EdRedo">Rétablir  (Ctrl+Y)</sys:String>
+    <sys:String x:Key="Str_TT_EdFind">Rechercher  (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_EdGoto">Aller à la ligne  (Ctrl+G)</sys:String>
+    <sys:String x:Key="Str_TT_EdWrap">Retour à la ligne</sys:String>
+    <sys:String x:Key="Str_TT_EdSettings">Paramètres de l'éditeur</sys:String>
+    <sys:String x:Key="Str_Ed_GotoLabel">ligne</sys:String>
+
+    <sys:String x:Key="Str_Ed_OptLineNumbers">Numéros de ligne</sys:String>
+    <sys:String x:Key="Str_Ed_OptCurrentLine">Mettre en évidence la ligne active</sys:String>
+    <sys:String x:Key="Str_Ed_OptWhitespace">Afficher les espaces et les tabulations</sys:String>
+    <sys:String x:Key="Str_Ed_OptSpaces">Insérer des espaces, pas des tabulations</sys:String>
+    <sys:String x:Key="Str_Ed_OptWrap">Retour à la ligne</sys:String>
+    <sys:String x:Key="Str_Ed_OptIndent">INDENTATION</sys:String>
+    <sys:String x:Key="Str_Ed_OptFonts">Police et taille...</sys:String>
+
+    <sys:String x:Key="Str_Ed_Undo">Annuler</sys:String>
+    <sys:String x:Key="Str_Ed_Redo">Rétablir</sys:String>
+    <sys:String x:Key="Str_Ed_Cut">Couper</sys:String>
+    <sys:String x:Key="Str_Ed_Copy">Copier</sys:String>
+    <sys:String x:Key="Str_Ed_Paste">Coller</sys:String>
+    <sys:String x:Key="Str_Ed_SelectAll">Tout sélectionner</sys:String>
+    <sys:String x:Key="Str_Ed_Find">Rechercher...</sys:String>
+    <sys:String x:Key="Str_Ed_Goto">Aller à la ligne...</sys:String>
+    <sys:String x:Key="Str_Ed_Save">Enregistrer</sys:String>
+    <sys:String x:Key="Str_Ed_Settings">Paramètres...</sys:String>
+    <sys:String x:Key="Str_Ed_CloseTab">Fermer le fichier</sys:String>
+
+    <sys:String x:Key="Str_TT_TermCwd">Ouvrir ce dossier dans un onglet</sys:String>
+    <sys:String x:Key="Str_TT_TermNew">Nouveau terminal  (F8)</sys:String>
+    <sys:String x:Key="Str_TT_TermAdmin">Nouveau terminal en tant qu'administrateur  (Ctrl+F8)</sys:String>
+    <sys:String x:Key="Str_TT_TermFolder">Ouvrir ce dossier dans un onglet</sys:String>
+    <sys:String x:Key="Str_TT_TermClear">Effacer</sys:String>
+    <sys:String x:Key="Str_TT_TermFonts">Polices...</sys:String>
+
+    <sys:String x:Key="Str_Ed_WrapOn">Retour à la ligne activé.</sys:String>
+    <sys:String x:Key="Str_Ed_WrapOff">Retour à la ligne désactivé - faites défiler pour voir les lignes longues.</sys:String>
+    <sys:String x:Key="Str_Ed_Saved">{0} enregistré.</sys:String>
+    <sys:String x:Key="Str_Ed_SaveFailed">Impossible d'enregistrer {0} : {1}</sys:String>
+    <sys:String x:Key="Str_Ed_OpenFailed">Impossible d'ouvrir {0} : {1}</sys:String>
+    <sys:String x:Key="Str_Dlg_DiscardMsg">Fermer ce fichier sans enregistrer ? Vos modifications seront perdues.</sys:String>
+    <sys:String x:Key="Str_Btn_Discard">Abandonner</sys:String>
+
 </ResourceDictionary>

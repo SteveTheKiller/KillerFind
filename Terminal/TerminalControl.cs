@@ -120,6 +120,92 @@ namespace KillerFind.Terminal
             "Cascadia Mono", "Cascadia Code", "Consolas", "Lucida Console", "Courier New",
         ];
 
+        // ── The fallback face ────────────────────────────────────
+        // NO stock Windows monospaced font has the powerline separators or the git branch mark,
+        // and Consolas does not even have the prompt's chevron - so on a machine that has never
+        // had a Nerd Font installed, the shipped prompt came out as a row of boxes. Bundling a
+        // whole Nerd Font to fix that costs 2.6 MB, 99% of which is icons nobody's prompt draws.
+        //
+        // So the exe carries twenty-six glyphs instead (Fonts/KillerGlyphs.ttf, 2.9 KB) and a
+        // cell is drawn from them only when the CHOSEN face has nothing for that codepoint. The
+        // user's font choice is untouched; it just stops being able to fail on those glyphs.
+        private static GlyphTypeface? _fallbackFace;
+        private static bool _fallbackTried;
+
+        private GlyphTypeface? _fallback;
+
+        /// <summary>Horizontal stretch that makes a fallback glyph fill the chosen font's cell.</summary>
+        /// <remarks>
+        /// The two faces have different advance widths - the fallback is half an em, Consolas is
+        /// nearer 0.55 - and a powerline separator is a solid triangle that has to butt against
+        /// the next cell. Left unscaled it leaves a hairline gap exactly where the eye is drawn.
+        /// </remarks>
+        private double _fallbackScale = 1;
+
+        /// <summary>Why the fallback did not load, empty when it did. Surfaced by KF_GLYPHS.</summary>
+        internal static string FallbackStatus { get; private set; } = string.Empty;
+
+        /// <summary>
+        /// The bundled face, resolved once per process.
+        /// </summary>
+        /// <remarks>
+        /// THREE URI forms, tried in order, because there is no way to test this from a headless
+        /// session - WPF's font cache refuses to initialise outside an interactive one, so every
+        /// form throws there whether it is right or wrong. Rather than ship one guess, all three
+        /// spellings that reach a Resource in this assembly are tried:
+        ///
+        ///   1. GlyphTypeface straight off the pack URI, assembly named. No family-name lookup
+        ///      at all, so a mismatch between the font's name table and the string here cannot
+        ///      break it.
+        ///   2. FontFamily against the assembly's component root - the code equivalent of the
+        ///      wordmark font's XAML form in Controls.xaml.
+        ///   3. FontFamily against the application root, which is what most examples show but
+        ///      which resolves against the ENTRY assembly and so is the most fragile of the three.
+        ///
+        /// The first that yields a face with the powerline separator in it wins.
+        /// </remarks>
+        private static GlyphTypeface? Fallback()
+        {
+            if (_fallbackTried) return _fallbackFace;
+            _fallbackTried = true;
+
+            var errors = new List<string>();
+
+            try
+            {
+                var gt = new GlyphTypeface(
+                    new Uri("pack://application:,,,/KillerFind;component/Fonts/KillerGlyphs.ttf"));
+                if (gt.CharacterToGlyphMap.ContainsKey(0xE0B0)) { _fallbackFace = gt; return gt; }
+                errors.Add("direct: loaded but no E0B0");
+            }
+            catch (Exception ex) { errors.Add("direct: " + ex.Message); }
+
+            foreach (var root in new[] { "pack://application:,,,/KillerFind;component/",
+                                         "pack://application:,,,/" })
+            {
+                try
+                {
+                    var fam = new FontFamily(new Uri(root), "./Fonts/#KillerGlyphs");
+                    var tf = new Typeface(fam, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
+                    if (tf.TryGetGlyphTypeface(out var gt)
+                        && gt.CharacterToGlyphMap.ContainsKey(0xE0B0))
+                    {
+                        _fallbackFace = gt;
+                        return gt;
+                    }
+                    errors.Add(root + ": no face");
+                }
+                catch (Exception ex) { errors.Add(root + ": " + ex.Message); }
+            }
+
+            // Swallowed as far as the UI goes - a missing fallback must never stop a shell
+            // opening - but recorded, because "the glyphs are boxes" is otherwise indis-
+            // tinguishable from "this font has no glyphs", which is the whole thing this
+            // feature exists to tell apart.
+            FallbackStatus = string.Join(" | ", errors);
+            return null;
+        }
+
         /// <summary>
         /// Re-resolve the typeface and repaint. Called when the font dialog changes the terminal
         /// slot, so an open shell picks the new face up live rather than on the next tab.
@@ -133,18 +219,21 @@ namespace KillerFind.Terminal
 
         private void LoadFont()
         {
-            // The user's pick from the font dialog is tried first; the chain below is what
-            // answers when the setting is empty, or names a font that is not installed here.
-            // Each candidate still has to pass the glyph checks, so a proportional or broken
-            // face falls through to Cascadia rather than shearing the grid.
-            var chosen = MainWindow.TerminalFontFamily;
+            // Tried in order: the user's pick from the font dialog, then the app's preferred
+            // face if this machine has it (Fonts.cs DefaultMonoFont - empty when it does not),
+            // then the chain below. Each candidate still has to pass the glyph checks, so a
+            // proportional or broken face falls through rather than shearing the grid.
+            var head = new List<string>(2);
+            if (!string.IsNullOrEmpty(MainWindow.TerminalFontFamily)) head.Add(MainWindow.TerminalFontFamily);
+            if (!string.IsNullOrEmpty(MainWindow.DefaultMonoFont))    head.Add(MainWindow.DefaultMonoFont);
+
             string[] order;
-            if (string.IsNullOrEmpty(chosen)) order = FontOrder;
+            if (head.Count == 0) order = FontOrder;
             else
             {
-                order = new string[FontOrder.Length + 1];
-                order[0] = chosen;
-                FontOrder.CopyTo(order, 1);
+                order = new string[head.Count + FontOrder.Length];
+                head.CopyTo(order, 0);
+                FontOrder.CopyTo(order, head.Count);
             }
 
             foreach (var name in order)
@@ -160,6 +249,18 @@ namespace KillerFind.Terminal
                     _cellW = Math.Round(gt.AdvanceWidths[gt.CharacterToGlyphMap['M']] * _fontSize, 2);
                     _cellH = Math.Ceiling(gt.Height * _fontSize);
                     _baseline = Math.Round(gt.Baseline * _fontSize, 2);
+
+                    // Measured against the fallback's OWN advance rather than assumed to be half
+                    // an em, so re-subsetting the font from a different source cannot quietly put
+                    // every powerline separator a few pixels short.
+                    _fallback = Fallback();
+                    _fallbackScale = 1;
+                    if (_fallback != null
+                        && _fallback.CharacterToGlyphMap.TryGetValue(0xE0B0, out ushort probe))
+                    {
+                        double own = _fallback.AdvanceWidths[probe] * _fontSize;
+                        if (own > 0.01) _fallbackScale = Math.Round(_cellW / own, 4);
+                    }
                     return;
                 }
                 catch { /* try the next face */ }
@@ -169,9 +270,37 @@ namespace KillerFind.Terminal
         // ═══════════════════════════════════════════════════════════
         //  SESSION
         // ═══════════════════════════════════════════════════════════
+        /// <summary>
+        /// A row of the bundled glyphs plus a verdict, printed into the buffer.
+        /// </summary>
+        /// <remarks>
+        /// Set KF_GLYPHS=1 to get it on every shell. It exists because the fallback cannot be
+        /// tested anywhere except in a running window - WPF will not initialise a font cache in
+        /// a headless session - and "those are boxes" otherwise gives no way to tell a fallback
+        /// that failed to load from a font that simply has no glyphs.
+        /// </remarks>
+        private void GlyphSelfTest()
+        {
+            if (Environment.GetEnvironmentVariable("KF_GLYPHS") != "1") return;
+
+            string sample = string.Concat(
+                ((char)0xE0B0).ToString(), " ", ((char)0xE0A0).ToString(), " ",
+                ((char)0x276F).ToString(), " ", ((char)0x2191).ToString(),
+                ((char)0x2193).ToString(), " ", ((char)0x00B1).ToString());
+
+            string verdict = _fallback != null
+                ? "fallback loaded, scale " + _fallbackScale.ToString("0.###",
+                      System.Globalization.CultureInfo.InvariantCulture)
+                : "FALLBACK NOT LOADED - " + (FallbackStatus.Length > 0 ? FallbackStatus : "unknown");
+
+            WriteLocal("\r\n  glyph check  " + sample + "   (" + verdict + ")\r\n"
+                     + "  any box above is a codepoint neither your font nor the bundled one has\r\n\r\n");
+        }
+
         public void Start(string commandLine, string workingDir)
         {
             ApplySize();
+            GlyphSelfTest();
 
             try
             {
@@ -370,17 +499,27 @@ namespace KillerFind.Terminal
                 var flags = line[c].Flags;
                 int start = c;
 
+                // Which face this run is drawn from. A GlyphRun carries exactly ONE typeface, so
+                // a cell that has to come from the bundled fallback breaks the run.
+                var face = FaceFor(gt, line[c].Ch);
+                bool viaFallback = !ReferenceEquals(face, gt);
+
                 var indices = new List<ushort>();
                 var widths = new List<double>();
 
                 while (c < line.Length && line[c].Ch != 0 && line[c].Ch != ' '
-                       && CellFg(line[c]) == fg && line[c].Flags == flags)
+                       && CellFg(line[c]) == fg && line[c].Flags == flags
+                       && ReferenceEquals(FaceFor(gt, line[c].Ch), face)
+                       // A fallback cell is taken ONE at a time: it is drawn inside a horizontal
+                       // scale anchored at the run's origin, and that transform would misplace
+                       // every cell after the first.
+                       && (indices.Count == 0 || !viaFallback))
                 {
-                    // A codepoint the face has no glyph for becomes a box rather than
-                    // vanishing silently, which is how you notice a missing font.
+                    // A codepoint neither face has becomes a box rather than vanishing silently,
+                    // which is how you notice a missing font.
                     int cp = line[c].Ch;
-                    if (!gt.CharacterToGlyphMap.TryGetValue(cp, out ushort gi))
-                        gt.CharacterToGlyphMap.TryGetValue(0x25A1, out gi);
+                    if (!face.CharacterToGlyphMap.TryGetValue(cp, out ushort gi))
+                        face.CharacterToGlyphMap.TryGetValue(0x25A1, out gi);
 
                     indices.Add(gi);
                     widths.Add(_cellW);
@@ -396,6 +535,11 @@ namespace KillerFind.Terminal
                         : fg);
                 brush.Freeze();
 
+                // Stretch a fallback glyph out to the chosen font's cell width, anchored at this
+                // cell's own left edge so nothing downstream of it moves.
+                bool stretch = viaFallback && Math.Abs(_fallbackScale - 1) > 0.005;
+                if (stretch) dc.PushTransform(new ScaleTransform(_fallbackScale, 1, x, 0));
+
                 // Phosphor bleed: the same run again, translucent and a hair low, UNDER the
                 // crisp one. Not a blur effect - a bitmap effect over text destroys ClearType,
                 // which is the family rule, and an offset copy reads as bleed anyway.
@@ -404,12 +548,14 @@ namespace KillerFind.Terminal
                     var glow = new SolidColorBrush(
                         Color.FromArgb((byte)(70 * _palette.Glow), fg.R, fg.G, fg.B));
                     glow.Freeze();
-                    var under = MakeRun(gt, indices, widths, new Point(x, y + _baseline + 0.7));
+                    var under = MakeRun(face, indices, widths, new Point(x, y + _baseline + 0.7));
                     if (under != null) dc.DrawGlyphRun(glow, under);
                 }
 
-                var run = MakeRun(gt, indices, widths, new Point(x, y + _baseline));
+                var run = MakeRun(face, indices, widths, new Point(x, y + _baseline));
                 if (run != null) dc.DrawGlyphRun(brush, run);
+
+                if (stretch) dc.Pop();
 
                 double w = (c - start) * _cellW;
                 if ((flags & CellFlags.Underline) != 0)
@@ -417,6 +563,21 @@ namespace KillerFind.Terminal
                 if ((flags & CellFlags.Strike) != 0)
                     dc.DrawRectangle(brush, null, new Rect(x, y + _baseline * 0.65, w, 1));
             }
+        }
+
+        /// <summary>
+        /// The face <paramref name="cp"/> is drawn from: the chosen one, or the bundled fallback
+        /// when the chosen one has no glyph for it.
+        /// </summary>
+        /// <remarks>
+        /// Returns the primary for a codepoint NEITHER face has, so the box-drawing substitution
+        /// in the caller happens against the font the rest of the line is in.
+        /// </remarks>
+        private GlyphTypeface FaceFor(GlyphTypeface primary, int cp)
+        {
+            if (primary.CharacterToGlyphMap.ContainsKey(cp)) return primary;
+            if (_fallback != null && _fallback.CharacterToGlyphMap.ContainsKey(cp)) return _fallback;
+            return primary;
         }
 
         /// <summary>

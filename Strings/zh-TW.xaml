@@ -356,4 +356,59 @@
     <sys:String x:Key="Str_Menu_Delete">刪除  (Shift：永久刪除)</sys:String>
     <sys:String x:Key="Str_Menu_NewFolder">新資料夾</sys:String>
 
+
+    <!-- 2.0.0: editor tabs, the document and shell bars, and $PROFILE editing -->
+    <sys:String x:Key="Str_Fonts_Editor">編輯器文字</sys:String>
+
+    <sys:String x:Key="Str_Prof_Edit">編輯 PowerShell 設定檔</sys:String>
+    <sys:String x:Key="Str_Prof_Asking">正在詢問 {0} 設定檔的位置...</sys:String>
+    <sys:String x:Key="Str_Prof_Failed">{0} 未回應 - 找不到其設定檔。</sys:String>
+    <sys:String x:Key="Str_Prof_None">找不到 PowerShell</sys:String>
+
+    <sys:String x:Key="Str_Menu_Edit">編輯</sys:String>
+    <sys:String x:Key="Str_Ed_TooBig">{0} 太大，無法編輯（{1} MB）。</sys:String>
+    <sys:String x:Key="Str_TT_EdSave">儲存  (Ctrl+S)</sys:String>
+    <sys:String x:Key="Str_TT_EdUndo">復原  (Ctrl+Z)</sys:String>
+    <sys:String x:Key="Str_TT_EdRedo">重做  (Ctrl+Y)</sys:String>
+    <sys:String x:Key="Str_TT_EdFind">尋找  (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_EdGoto">移至行  (Ctrl+G)</sys:String>
+    <sys:String x:Key="Str_TT_EdWrap">自動換行</sys:String>
+    <sys:String x:Key="Str_TT_EdSettings">編輯器設定</sys:String>
+    <sys:String x:Key="Str_Ed_GotoLabel">行</sys:String>
+
+    <sys:String x:Key="Str_Ed_OptLineNumbers">行號</sys:String>
+    <sys:String x:Key="Str_Ed_OptCurrentLine">醒目提示目前的行</sys:String>
+    <sys:String x:Key="Str_Ed_OptWhitespace">顯示空格與定位字元</sys:String>
+    <sys:String x:Key="Str_Ed_OptSpaces">插入空格而非定位字元</sys:String>
+    <sys:String x:Key="Str_Ed_OptWrap">自動換行</sys:String>
+    <sys:String x:Key="Str_Ed_OptIndent">縮排</sys:String>
+    <sys:String x:Key="Str_Ed_OptFonts">字型與大小...</sys:String>
+
+    <sys:String x:Key="Str_Ed_Undo">復原</sys:String>
+    <sys:String x:Key="Str_Ed_Redo">重做</sys:String>
+    <sys:String x:Key="Str_Ed_Cut">剪下</sys:String>
+    <sys:String x:Key="Str_Ed_Copy">複製</sys:String>
+    <sys:String x:Key="Str_Ed_Paste">貼上</sys:String>
+    <sys:String x:Key="Str_Ed_SelectAll">全選</sys:String>
+    <sys:String x:Key="Str_Ed_Find">尋找...</sys:String>
+    <sys:String x:Key="Str_Ed_Goto">移至行...</sys:String>
+    <sys:String x:Key="Str_Ed_Save">儲存</sys:String>
+    <sys:String x:Key="Str_Ed_Settings">設定...</sys:String>
+    <sys:String x:Key="Str_Ed_CloseTab">關閉檔案</sys:String>
+
+    <sys:String x:Key="Str_TT_TermCwd">在分頁中開啟此資料夾</sys:String>
+    <sys:String x:Key="Str_TT_TermNew">新增終端機  (F8)</sys:String>
+    <sys:String x:Key="Str_TT_TermAdmin">以系統管理員身分新增終端機  (Ctrl+F8)</sys:String>
+    <sys:String x:Key="Str_TT_TermFolder">在分頁中開啟此資料夾</sys:String>
+    <sys:String x:Key="Str_TT_TermClear">清除</sys:String>
+    <sys:String x:Key="Str_TT_TermFonts">字型...</sys:String>
+
+    <sys:String x:Key="Str_Ed_WrapOn">自動換行已開啟。</sys:String>
+    <sys:String x:Key="Str_Ed_WrapOff">自動換行已關閉 - 捲動以檢視較長的行。</sys:String>
+    <sys:String x:Key="Str_Ed_Saved">已儲存 {0}。</sys:String>
+    <sys:String x:Key="Str_Ed_SaveFailed">無法儲存 {0}：{1}</sys:String>
+    <sys:String x:Key="Str_Ed_OpenFailed">無法開啟 {0}：{1}</sys:String>
+    <sys:String x:Key="Str_Dlg_DiscardMsg">不儲存就關閉此檔案？您的變更將會遺失。</sys:String>
+    <sys:String x:Key="Str_Btn_Discard">捨棄</sys:String>
+
 </ResourceDictionary>

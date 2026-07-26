@@ -117,7 +117,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		}
 
 		/// <inheritdoc/>
-		public override CultureInfo CultureInfo => cultureInfo;
+		public override CultureInfo? CultureInfo => cultureInfo;
 
 		/// <summary>
 		/// Sets the <see cref="CultureInfo"/>.

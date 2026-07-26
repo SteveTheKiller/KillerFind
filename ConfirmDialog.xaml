@@ -104,8 +104,13 @@
                     <Button Content="{DynamicResource Str_Btn_Cancel}" Click="Cancel_Click"
                             Style="{StaticResource SurfaceButton}"
                             MinWidth="86" Margin="0,0,8,0"/>
+                    <!-- OutlineButton, not PrimaryButton. A solid accent block sits in this card
+                         as a painted-on rectangle that never changes - PrimaryButton's hover is
+                         a translucent white tint over the accent, which on half the palettes is
+                         no visible feedback at all. Hollow with an accent fill on hover is the
+                         family's other confirm treatment and it reads as a button. -->
                     <Button x:Name="OkBtn" Click="OK_Click"
-                            Style="{StaticResource PrimaryButton}"
+                            Style="{StaticResource OutlineButton}"
                             MinWidth="86"/>
                 </StackPanel>
             </Grid>

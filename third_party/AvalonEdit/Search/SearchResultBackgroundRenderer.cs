@@ -81,7 +81,7 @@ namespace ICSharpCode.AvalonEdit.Search
 					CornerRadius = markerCornerRadius
 				};
 				geoBuilder.AddSegment(textView, result);
-				Geometry geometry = geoBuilder.CreateGeometry();
+				Geometry? geometry = geoBuilder.CreateGeometry();
 				if (geometry != null) {
 					drawingContext.DrawGeometry(markerBrush, markerPen, geometry);
 				}

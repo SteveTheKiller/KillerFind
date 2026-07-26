@@ -263,6 +263,7 @@
     <sys:String x:Key="Str_Fonts_Title">FONTS</sys:String>
     <sys:String x:Key="Str_Fonts_App">APP</sys:String>
     <sys:String x:Key="Str_Fonts_Terminal">TERMINAL</sys:String>
+    <sys:String x:Key="Str_Fonts_Editor">EDITOR TEXT</sys:String>
     <sys:String x:Key="Str_Fonts_Default">Default</sys:String>
     <sys:String x:Key="Str_Fonts_Hint">Roll the wheel over a list to browse faces. Every change applies straight away.</sys:String>
     <sys:String x:Key="Str_Fonts_Unreadable">{0} has no readable letters - keeping the previous font</sys:String>
@@ -298,6 +299,62 @@
     <sys:String x:Key="Str_Term_Close">Close terminal</sys:String>
     <sys:String x:Key="Str_Dlg_ResetPromptMsg">Put the shipped prompt script back? Your edits to this file will be lost.</sys:String>
     <sys:String x:Key="Str_Btn_Reset">Reset</sys:String>
+
+    <!-- PowerShell $PROFILE (ProfileMenu.cs, Terminal/ShellProfiles.cs) -->
+    <sys:String x:Key="Str_Prof_Edit">Edit PowerShell profile</sys:String>
+    <sys:String x:Key="Str_Prof_Asking">Asking {0} where its profile is...</sys:String>
+    <sys:String x:Key="Str_Prof_Failed">{0} did not answer - could not find its profile.</sys:String>
+    <sys:String x:Key="Str_Prof_None">No PowerShell found</sys:String>
+
+    <!-- Editor tabs (EditorTabs.cs, Editing/EditorControl.cs) -->
+    <sys:String x:Key="Str_Menu_Edit">Edit</sys:String>
+    <sys:String x:Key="Str_Ed_TooBig">{0} is too big to edit ({1} MB).</sys:String>
+    <sys:String x:Key="Str_TT_EdSave">Save  (Ctrl+S)</sys:String>
+    <sys:String x:Key="Str_TT_EdUndo">Undo  (Ctrl+Z)</sys:String>
+    <sys:String x:Key="Str_TT_EdRedo">Redo  (Ctrl+Y)</sys:String>
+    <sys:String x:Key="Str_TT_EdFind">Find  (Ctrl+F)</sys:String>
+    <sys:String x:Key="Str_TT_EdGoto">Go to line  (Ctrl+G)</sys:String>
+    <sys:String x:Key="Str_TT_EdWrap">Word wrap</sys:String>
+    <sys:String x:Key="Str_TT_EdSettings">Editor settings</sys:String>
+    <sys:String x:Key="Str_Ed_GotoLabel">line</sys:String>
+
+    <!-- Gear flyout -->
+    <sys:String x:Key="Str_Ed_OptLineNumbers">Line numbers</sys:String>
+    <sys:String x:Key="Str_Ed_OptCurrentLine">Highlight current line</sys:String>
+    <sys:String x:Key="Str_Ed_OptWhitespace">Show spaces and tabs</sys:String>
+    <sys:String x:Key="Str_Ed_OptSpaces">Insert spaces, not tabs</sys:String>
+    <sys:String x:Key="Str_Ed_OptWrap">Word wrap</sys:String>
+    <sys:String x:Key="Str_Ed_OptIndent">INDENT</sys:String>
+    <sys:String x:Key="Str_Ed_OptFonts">Font and size...</sys:String>
+
+    <!-- Right-click menu (Editing/EditorMenu.cs) -->
+    <sys:String x:Key="Str_Ed_Undo">Undo</sys:String>
+    <sys:String x:Key="Str_Ed_Redo">Redo</sys:String>
+    <sys:String x:Key="Str_Ed_Cut">Cut</sys:String>
+    <sys:String x:Key="Str_Ed_Copy">Copy</sys:String>
+    <sys:String x:Key="Str_Ed_Paste">Paste</sys:String>
+    <sys:String x:Key="Str_Ed_SelectAll">Select all</sys:String>
+    <sys:String x:Key="Str_Ed_Find">Find...</sys:String>
+    <sys:String x:Key="Str_Ed_Goto">Go to line...</sys:String>
+    <sys:String x:Key="Str_Ed_Save">Save</sys:String>
+    <sys:String x:Key="Str_Ed_Settings">Settings...</sys:String>
+    <sys:String x:Key="Str_Ed_CloseTab">Close file</sys:String>
+
+    <!-- Shell bar (TerminalBar.cs) -->
+    <sys:String x:Key="Str_TT_TermCwd">Open this folder in a tab</sys:String>
+    <sys:String x:Key="Str_TT_TermNew">New terminal  (F8)</sys:String>
+    <sys:String x:Key="Str_TT_TermAdmin">New terminal as administrator  (Ctrl+F8)</sys:String>
+    <sys:String x:Key="Str_TT_TermFolder">Open this folder in a tab</sys:String>
+    <sys:String x:Key="Str_TT_TermClear">Clear</sys:String>
+    <sys:String x:Key="Str_TT_TermFonts">Fonts...</sys:String>
+    <sys:String x:Key="Str_Ed_WrapOn">Word wrap on.</sys:String>
+    <sys:String x:Key="Str_Ed_WrapOff">Word wrap off - scroll to see long lines.</sys:String>
+    <sys:String x:Key="Str_Ed_Saved">Saved {0}.</sys:String>
+    <sys:String x:Key="Str_Ed_SaveFailed">Could not save {0}: {1}</sys:String>
+    <sys:String x:Key="Str_Ed_OpenFailed">Could not open {0}: {1}</sys:String>
+    <sys:String x:Key="Str_Dlg_DiscardMsg">Close this file without saving? Your changes will be lost.</sys:String>
+    <sys:String x:Key="Str_Btn_Discard">Discard</sys:String>
+
     <!-- Rail button: left click opens PowerShell, right click picks -->
     <sys:String x:Key="Str_TT_Terminal">Open a terminal  (F8)  -  right-click to choose</sys:String>
     <sys:String x:Key="Str_Term_PowerShell">PowerShell</sys:String>

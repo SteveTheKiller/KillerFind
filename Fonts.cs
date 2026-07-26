@@ -44,6 +44,28 @@ namespace KillerFind
         // would silently refuse and then disagree with the label.
         internal const double TermSizeMin = 8, TermSizeMax = 28, TermSizeDefault = 12;
 
+        /// <summary>
+        /// The face the terminal and the editor use when the user has not picked one.
+        /// </summary>
+        /// <remarks>
+        /// A Nerd Font, because the shipped prompt draws powerline separators and a git branch
+        /// glyph and neither exists in a stock console face - on Cascadia they arrive as boxes.
+        /// It is a bitmap-style face at 12pt, which is what the terminal and a document both
+        /// want and what the results list does not, so it is these two slots and not the app one.
+        /// </remarks>
+        private const string PreferredMonoFont = "ProFont IIx Nerd Font";
+
+        /// <summary>
+        /// <see cref="PreferredMonoFont"/> when it is installed here, empty otherwise.
+        /// </summary>
+        /// <remarks>
+        /// Gated on being installed rather than named unconditionally: this app ships to
+        /// machines that have never heard of it, and a default pointing at a missing family
+        /// would give every one of them the fallback chain with a dead first entry - no error
+        /// anybody could act on, just a font they did not choose failing quietly.
+        /// </remarks>
+        internal static string DefaultMonoFont { get; private set; } = string.Empty;
+
         private bool _fontsBuilt;
         private bool _fontsSyncing;
 
@@ -65,6 +87,10 @@ namespace KillerFind
         // ═══════════════════════════════════════════════════════════
         private void InitFonts()
         {
+            // Resolved once, before anything asks: a shell or a document built later reads this
+            // rather than re-scanning the installed families every time it needs a fallback.
+            DefaultMonoFont = IsInstalled(PreferredMonoFont) ? PreferredMonoFont : string.Empty;
+
             ApplyAppFont(Services.ThemeManager.GetSetting(SetFontApp) ?? string.Empty);
             TerminalFontFamily = Services.ThemeManager.GetSetting(SetFontTerm) ?? string.Empty;
 
@@ -75,6 +101,24 @@ namespace KillerFind
                                                out double sz)
                              ? ClampTermSize(sz)
                              : TermSizeDefault;
+        }
+
+        /// <summary>True when <paramref name="family"/> is installed on this machine.</summary>
+        /// <remarks>
+        /// A name scan over the installed families, not the readability or fixed-width guards
+        /// below: those resolve a typeface per family and are why the terminal list is built
+        /// lazily on first open rather than at startup. This one runs once and reads a string.
+        /// </remarks>
+        private static bool IsInstalled(string family)
+        {
+            try
+            {
+                foreach (var f in System.Windows.Media.Fonts.SystemFontFamilies)
+                    if (string.Equals(f.Source, family, StringComparison.OrdinalIgnoreCase))
+                        return true;
+            }
+            catch { }
+            return false;
         }
 
         private static double ClampTermSize(double v) =>
@@ -219,8 +263,14 @@ namespace KillerFind
             }
 
             _fontsSyncing = true;
-            FontAppCombo.ItemsSource  = WithDefault(all,  ShippedAppFont());
-            FontTermCombo.ItemsSource = WithDefault(mono, "Cascadia Mono");
+            // Each default row names what that slot ACTUALLY falls back to, which for the two
+            // monospaced slots is the preferred face when this machine has it and the old chain
+            // when it does not - so the row never promises a font that is not there.
+            string monoDefault = DefaultMonoFont;
+
+            FontAppCombo.ItemsSource    = WithDefault(all,  ShippedAppFont());
+            FontTermCombo.ItemsSource   = WithDefault(mono, monoDefault.Length > 0 ? monoDefault : "Cascadia Mono");
+            FontEditorCombo.ItemsSource = WithDefault(mono, monoDefault.Length > 0 ? monoDefault : ShippedAppFont());
             _fontsSyncing = false;
         }
 
@@ -240,15 +290,41 @@ namespace KillerFind
         private void SyncFontCombos()
         {
             _fontsSyncing = true;
-            Select(FontAppCombo,  Services.ThemeManager.GetSetting(SetFontApp) ?? string.Empty);
-            Select(FontTermCombo, TerminalFontFamily);
-            FontTermSize.Value = TerminalFontSize;
+            Select(FontAppCombo,    Services.ThemeManager.GetSetting(SetFontApp) ?? string.Empty);
+            Select(FontTermCombo,   TerminalFontFamily);
+            Select(FontEditorCombo, Editing.EditorOptions.FontFamily);
+
+            FontTermSize.Value   = TerminalFontSize;
+            FontEditorSize.Value = Editing.EditorOptions.FontSize;
             ShowTermSize();
+            ShowEditorSize();
             _fontsSyncing = false;
         }
 
         private void ShowTermSize() =>
             FontTermSizeLabel.Text = TerminalFontSize.ToString("0", CultureInfo.InvariantCulture);
+
+        private void ShowEditorSize() =>
+            FontEditorSizeLabel.Text = Editing.EditorOptions.FontSize.ToString("0", CultureInfo.InvariantCulture);
+
+        /// <summary>
+        /// Editor point size. Pushed to every open document as well as saved, the same way the
+        /// terminal slider behaves - and it is the same value Ctrl+wheel over a document moves,
+        /// so the two can never disagree (Editing/EditorOptions.cs).
+        /// </summary>
+        private void FontEditorSize_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            // Fires once during InitializeComponent, when Minimum="8" coerces the value up off
+            // zero - before the readout beside it exists and before the settings have been read.
+            // Same guard, and the same reason, as the terminal slider above.
+            if (!_fontsBuilt) return;
+
+            Editing.EditorOptions.FontSize = Editing.EditorOptions.ClampFont(e.NewValue);
+            ShowEditorSize();
+            if (_fontsSyncing) return;   // the dialog opening is not a user edit
+
+            ApplyEditorOptions();        // EditorBar.cs - saves and repaints every open document
+        }
 
         /// <summary>
         /// Terminal point size. Pushed to every OPEN shell as well as saved for the next one,
@@ -292,8 +368,10 @@ namespace KillerFind
                 if (_active != null) SetTabStatusKey(_active, "Str_Fonts_Unreadable", c.Display);
                 _fontsSyncing = true;
                 Select(cb, ReferenceEquals(cb, FontAppCombo)
-                    ? Services.ThemeManager.GetSetting(SetFontApp) ?? string.Empty
-                    : TerminalFontFamily);
+                        ? Services.ThemeManager.GetSetting(SetFontApp) ?? string.Empty
+                     : ReferenceEquals(cb, FontEditorCombo)
+                        ? Editing.EditorOptions.FontFamily
+                        : TerminalFontFamily);
                 _fontsSyncing = false;
                 return;
             }
@@ -302,6 +380,14 @@ namespace KillerFind
             {
                 Services.ThemeManager.SetSetting(SetFontApp, c.Value);
                 ApplyAppFont(c.Value);
+            }
+            else if (ReferenceEquals(cb, FontEditorCombo))
+            {
+                // Saved and applied through EditorOptions rather than written here: that class
+                // is what pushes a font onto an editor, and two writers for one setting is how
+                // the dialog and the document end up disagreeing.
+                Editing.EditorOptions.FontFamily = c.Value;
+                ApplyEditorOptions();     // EditorBar.cs
             }
             else
             {

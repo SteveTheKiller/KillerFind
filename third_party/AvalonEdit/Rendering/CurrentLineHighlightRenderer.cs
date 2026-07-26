@@ -80,7 +80,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 			BackgroundGeometryBuilder builder = new();
 
-			VisualLine visualLine = this.textView.GetVisualLine(line);
+			VisualLine? visualLine = this.textView.GetVisualLine(line);
 			if (visualLine == null) {
 				return;
 			}
@@ -89,7 +89,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 
 			builder.AddRectangle(textView, new Rect(0, linePosY, textView.ActualWidth, visualLine.Height));
 
-			Geometry geometry = builder.CreateGeometry();
+			Geometry? geometry = builder.CreateGeometry();
 			if (geometry != null) {
 				drawingContext.DrawGeometry(this.BackgroundBrush, this.BorderPen, geometry);
 			}

@@ -356,4 +356,59 @@
     <sys:String x:Key="Str_Menu_Delete">Löschen  (Umschalt: endgültig)</sys:String>
     <sys:String x:Key="Str_Menu_NewFolder">Neuer Ordner</sys:String>
 
+
+    <!-- 2.0.0: editor tabs, the document and shell bars, and $PROFILE editing -->
+    <sys:String x:Key="Str_Fonts_Editor">EDITORTEXT</sys:String>
+
+    <sys:String x:Key="Str_Prof_Edit">PowerShell-Profil bearbeiten</sys:String>
+    <sys:String x:Key="Str_Prof_Asking">{0} wird nach dem Profilpfad gefragt...</sys:String>
+    <sys:String x:Key="Str_Prof_Failed">{0} hat nicht geantwortet - Profil nicht gefunden.</sys:String>
+    <sys:String x:Key="Str_Prof_None">Kein PowerShell gefunden</sys:String>
+
+    <sys:String x:Key="Str_Menu_Edit">Bearbeiten</sys:String>
+    <sys:String x:Key="Str_Ed_TooBig">{0} ist zu groß zum Bearbeiten ({1} MB).</sys:String>
+    <sys:String x:Key="Str_TT_EdSave">Speichern  (Strg+S)</sys:String>
+    <sys:String x:Key="Str_TT_EdUndo">Rückgängig  (Strg+Z)</sys:String>
+    <sys:String x:Key="Str_TT_EdRedo">Wiederholen  (Strg+Y)</sys:String>
+    <sys:String x:Key="Str_TT_EdFind">Suchen  (Strg+F)</sys:String>
+    <sys:String x:Key="Str_TT_EdGoto">Gehe zu Zeile  (Strg+G)</sys:String>
+    <sys:String x:Key="Str_TT_EdWrap">Zeilenumbruch</sys:String>
+    <sys:String x:Key="Str_TT_EdSettings">Editoreinstellungen</sys:String>
+    <sys:String x:Key="Str_Ed_GotoLabel">Zeile</sys:String>
+
+    <sys:String x:Key="Str_Ed_OptLineNumbers">Zeilennummern</sys:String>
+    <sys:String x:Key="Str_Ed_OptCurrentLine">Aktuelle Zeile hervorheben</sys:String>
+    <sys:String x:Key="Str_Ed_OptWhitespace">Leerzeichen und Tabs anzeigen</sys:String>
+    <sys:String x:Key="Str_Ed_OptSpaces">Leerzeichen statt Tabs einfügen</sys:String>
+    <sys:String x:Key="Str_Ed_OptWrap">Zeilenumbruch</sys:String>
+    <sys:String x:Key="Str_Ed_OptIndent">EINZUG</sys:String>
+    <sys:String x:Key="Str_Ed_OptFonts">Schriftart und Größe...</sys:String>
+
+    <sys:String x:Key="Str_Ed_Undo">Rückgängig</sys:String>
+    <sys:String x:Key="Str_Ed_Redo">Wiederholen</sys:String>
+    <sys:String x:Key="Str_Ed_Cut">Ausschneiden</sys:String>
+    <sys:String x:Key="Str_Ed_Copy">Kopieren</sys:String>
+    <sys:String x:Key="Str_Ed_Paste">Einfügen</sys:String>
+    <sys:String x:Key="Str_Ed_SelectAll">Alles auswählen</sys:String>
+    <sys:String x:Key="Str_Ed_Find">Suchen...</sys:String>
+    <sys:String x:Key="Str_Ed_Goto">Gehe zu Zeile...</sys:String>
+    <sys:String x:Key="Str_Ed_Save">Speichern</sys:String>
+    <sys:String x:Key="Str_Ed_Settings">Einstellungen...</sys:String>
+    <sys:String x:Key="Str_Ed_CloseTab">Datei schließen</sys:String>
+
+    <sys:String x:Key="Str_TT_TermCwd">Diesen Ordner in einem Tab öffnen</sys:String>
+    <sys:String x:Key="Str_TT_TermNew">Neues Terminal  (F8)</sys:String>
+    <sys:String x:Key="Str_TT_TermAdmin">Neues Terminal als Administrator  (Strg+F8)</sys:String>
+    <sys:String x:Key="Str_TT_TermFolder">Diesen Ordner in einem Tab öffnen</sys:String>
+    <sys:String x:Key="Str_TT_TermClear">Leeren</sys:String>
+    <sys:String x:Key="Str_TT_TermFonts">Schriftarten...</sys:String>
+
+    <sys:String x:Key="Str_Ed_WrapOn">Zeilenumbruch an.</sys:String>
+    <sys:String x:Key="Str_Ed_WrapOff">Zeilenumbruch aus - scrollen, um lange Zeilen zu sehen.</sys:String>
+    <sys:String x:Key="Str_Ed_Saved">{0} gespeichert.</sys:String>
+    <sys:String x:Key="Str_Ed_SaveFailed">{0} konnte nicht gespeichert werden: {1}</sys:String>
+    <sys:String x:Key="Str_Ed_OpenFailed">{0} konnte nicht geöffnet werden: {1}</sys:String>
+    <sys:String x:Key="Str_Dlg_DiscardMsg">Datei ohne Speichern schließen? Ihre Änderungen gehen verloren.</sys:String>
+    <sys:String x:Key="Str_Btn_Discard">Verwerfen</sys:String>
+
 </ResourceDictionary>

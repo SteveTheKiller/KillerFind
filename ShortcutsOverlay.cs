@@ -73,6 +73,8 @@ namespace KillerFind
             // only be restating the menu row word for word, and duplicating the wording across
             // ten locale files is how the two drift apart. Locale key count is unchanged.
             ("File",   "Enter",           "Str_Menu_OpenFile"),
+            ("File",   "F7",              "Str_Menu_Edit"),
+            ("File",   "Ctrl+,",          "Str_Prof_Edit"),
             ("File",   "Ctrl+Shift+O",    "Str_Menu_OpenWith"),
             ("File",   "Ctrl+Shift+Enter","Str_Menu_OpenAdmin"),
             ("File",   "F6",              "Str_Menu_ShowExplorer"),

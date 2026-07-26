@@ -167,13 +167,15 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <inheritdoc/>
 		public override TextEmbeddedObjectMetrics Format(double remainingParagraphWidth)
 		{
-			FormattedText formattedText = Element.formattedText;
+			// No FormattedText means the element carries a TextLine instead - CreateTextRun has
+			// already run by the time the formatter asks for metrics, so one of the two is set.
+			FormattedText? formattedText = Element.formattedText;
 			if (formattedText != null) {
 				return new TextEmbeddedObjectMetrics(formattedText.WidthIncludingTrailingWhitespace,
 													 formattedText.Height,
 													 formattedText.Baseline);
 			} else {
-				TextLine text = Element.textLine;
+				TextLine text = Element.textLine!;
 				return new TextEmbeddedObjectMetrics(text.WidthIncludingTrailingWhitespace,
 													 text.Height,
 													 text.Baseline);
@@ -183,11 +185,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// <inheritdoc/>
 		public override Rect ComputeBoundingBox(bool rightToLeft, bool sideways)
 		{
-			FormattedText formattedText = Element.formattedText;
+			// Same either-or as in Format above.
+			FormattedText? formattedText = Element.formattedText;
 			if (formattedText != null) {
 				return new Rect(0, 0, formattedText.WidthIncludingTrailingWhitespace, formattedText.Height);
 			} else {
-				TextLine text = Element.textLine;
+				TextLine text = Element.textLine!;
 				return new Rect(0, 0, text.WidthIncludingTrailingWhitespace, text.Height);
 			}
 		}
@@ -199,7 +202,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				origin.Y -= Element.formattedText.Baseline;
 				drawingContext.DrawText(Element.formattedText, origin);
 			} else {
-				origin.Y -= Element.textLine.Baseline;
+				// Same either-or again.
+				origin.Y -= Element.textLine!.Baseline;
 				Element.textLine.Draw(drawingContext, origin, InvertAxes.None);
 			}
 		}

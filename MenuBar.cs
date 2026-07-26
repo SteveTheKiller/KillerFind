@@ -146,6 +146,7 @@ namespace KillerFind
         {
             var t = Pane.Active;
             if (t != null && t.IsTerminal && t.Term != null) t.Term.Focus();
+            else if (t != null && t.Editor != null) t.Editor.TextArea.Focus();
             else Pane.ResultsList.Focus();
         }
     }

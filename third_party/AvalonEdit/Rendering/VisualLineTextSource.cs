@@ -92,7 +92,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 					newlineText = "?";
 				}
 			}
-			return new FormattedTextRun(new FormattedTextElement(TextView.cachedElements.GetTextForNonPrintableCharacter(newlineText, this), 0), GlobalTextRunProperties);
+			// cachedElements exists whenever the text view has a document, which it must to be
+			// formatting a line at all.
+			return new FormattedTextRun(new FormattedTextElement(TextView.cachedElements!.GetTextForNonPrintableCharacter(newlineText, this), 0), GlobalTextRunProperties);
 		}
 
 		public override TextSpan<CultureSpecificCharacterBufferRange> GetPrecedingText(int textSourceCharacterIndexLimit)

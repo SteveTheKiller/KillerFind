@@ -162,6 +162,17 @@ namespace KillerFind
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(p!) { UseShellExecute = true });
         }
 
+        // Opens the file in an editor TAB (EditorTabs.cs), never through its association. That
+        // distinction is the whole point on a .ps1: a script opened through the shell RUNS, and
+        // "let me look at this" quietly executing it is not a risk worth taking to save a line.
+        // File only - there is nothing to edit about a folder.
+        internal void MenuEdit_Click(object sender, RoutedEventArgs e)
+        {
+            string? p = MenuFile();
+            if (p == null || !File.Exists(p)) { SetTabStatusKey(_active, "Str_Status_FileOnly"); return; }
+            OpenForEditing(p);
+        }
+
         internal void MenuOpenWith_Click(object sender, RoutedEventArgs e)
         {
             // OpenAs_RunDLL takes the rest of the command line as the path - no quotes, even

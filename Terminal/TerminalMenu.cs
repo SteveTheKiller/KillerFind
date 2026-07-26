@@ -22,6 +22,17 @@ namespace KillerFind.Terminal
         private ContextMenu? _menu;
         private MenuItem? _copyItem;
 
+        /// <summary>
+        /// Raised as the Edit profile submenu opens, carrying the row for the window to fill.
+        /// </summary>
+        /// <remarks>
+        /// Filled by the window rather than here on purpose: knowing which PowerShell hosts are
+        /// on this machine means probing the filesystem and starting processes, and this class
+        /// draws glyphs onto a DrawingContext. It hands over the row and lets the window decide
+        /// what goes in it (ProfileMenu.cs).
+        /// </remarks>
+        internal event Action<MenuItem>? ProfileSubmenuOpening;
+
         protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
         {
             Focus();
@@ -103,6 +114,25 @@ namespace KillerFind.Terminal
 
             Row(m, "Str_Term_ResetPrompt", Glyph(0xE777), null,
                 () => MenuCommand?.Invoke(TerminalMenuCommand.ResetPrompt));
+
+            // The user's $PROFILE, which is a DIFFERENT file from the prompt above it and a far
+            // more common thing to want: the prompt script is ours and only runs in here, while
+            // the profile is theirs and runs in every shell they open anywhere.
+            //
+            // A submenu because the two PowerShell hosts do not share one, and picking the wrong
+            // one is most of the "why is my profile not loading" in the world. Its rows arrive
+            // as it opens; the placeholder child is only what makes WPF draw the arrow and fire
+            // SubmenuOpened at all, and it is replaced before it can be seen.
+            var profile = new MenuItem { InputGestureText = "Ctrl+," };
+            profile.SetResourceReference(HeaderedItemsControl.HeaderProperty, "Str_Prof_Edit");
+
+            var profileIcon = new TextBlock { Text = Glyph(0xE70F) };
+            profileIcon.SetResourceReference(FrameworkElement.StyleProperty, "MenuGlyph");
+            profile.Icon = profileIcon;
+
+            profile.Items.Add(new MenuItem());
+            profile.SubmenuOpened += (_, _) => ProfileSubmenuOpening?.Invoke(profile);
+            m.Items.Add(profile);
 
             m.Items.Add(new Separator());
             Row(m, "Str_Term_Close", Glyph(0xE8BB), "Ctrl+W",

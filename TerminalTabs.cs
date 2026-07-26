@@ -220,12 +220,17 @@ namespace KillerFind
                 }
             }));
 
+            // The Edit profile submenu is filled by the window as it opens, from the PowerShell
+            // hosts actually on this machine (ProfileMenu.cs). Subscribed here rather than at
+            // menu-build time because the menu is not built until the first right-click.
+            term.ProfileSubmenuOpening += BuildProfileMenu;
+
             // And the folder follows a cd, so the OTHER pane can be pointed at it later.
             term.Buffer.DirectoryChanged += dir => Dispatcher.BeginInvoke(new Action(() =>
             {
                 tab.CurrentFolder = dir;
                 tab.RootPath = dir;
-                if (ReferenceEquals(Pane.Active, tab)) Pane.ScopePathLabel.Text = dir;
+                SyncTerminalBar(tab);   // TerminalBar.cs - the cwd readout is the shell's own now
             }));
 
             term.Exited += _ => Dispatcher.BeginInvoke(new Action(() =>
@@ -259,6 +264,7 @@ namespace KillerFind
             Pane.TerminalSlot.Content = shell ? t.Term : null;
 
             ApplyPaneToolbarMode(shell);
+            if (shell) SyncTerminalBar(t);   // TerminalBar.cs - the shell's own strip
 
             if (shell)
             {
@@ -361,6 +367,12 @@ namespace KillerFind
                 case System.Windows.Input.Key.T:            // new tab
                 case System.Windows.Input.Key.OemTilde:     // open another shell
                     return true;
+
+                // Ctrl+comma edits $PROFILE (ProfileMenu.cs). The window's, even from inside a
+                // shell - editing your profile is the one thing you are most likely to want
+                // WHILE looking at a prompt, and PSReadLine does not bind it.
+                case System.Windows.Input.Key.OemComma:
+                    return !shift;
 
                 // Ctrl+PageUp/Down moves between tabs, but adding SHIFT makes it the
                 // terminal's own scrollback paging (Windows Terminal's binding), so the shift

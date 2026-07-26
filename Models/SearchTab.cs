@@ -31,6 +31,16 @@ namespace KillerFind.Models
         /// <summary>True when this tab is a shell rather than a folder or a search.</summary>
         public bool IsTerminal => Term != null;
 
+        // ── Editing (Editing/) ───────────────────────────────────
+        // A document tab owns its editor, and the editor owns the text, the undo stack and the
+        // caret. Held here rather than rebuilt on activation for the same reason the shell is:
+        // rebuilding it on every tab switch would throw away all three, and unsaved changes with
+        // them. Internal, not public: EditorControl is internal, and this model is public.
+        internal KillerFind.Editing.EditorControl? Editor;
+
+        /// <summary>True when this tab is a document rather than a folder, search or shell.</summary>
+        public bool IsEditor => Editor != null;
+
         // ── Browsing (Browse.cs) ─────────────────────────────────
         // A tab is either showing a folder's contents or a search's results, in the same
         // Results collection. IsBrowsing says which, so the sort can put folders first and the

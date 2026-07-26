@@ -26,6 +26,10 @@ namespace KillerFind
                 // cell. So a theme switch has to tell it to rebuild, or every open terminal
                 // keeps the colors of the theme it was opened under (TerminalTabs.cs).
                 RefreshTerminalThemes();
+
+                // An open document resolves its colors the same way and for the same reason
+                // (EditorTabs.cs, Editing/EditorControl.ApplyTheme).
+                RefreshEditorThemes();
             }
         }
 
@@ -38,8 +42,10 @@ namespace KillerFind
                 UpdateAccentSwatches();
 
                 // The accent is a shell's cursor and selection color, so this needs the rebuild
-                // as much as a full theme switch does.
+                // as much as a full theme switch does - and it is a document's caret, selection
+                // and current-line wash for the same reason.
                 RefreshTerminalThemes();
+                RefreshEditorThemes();
             }
         }
 
