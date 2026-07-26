@@ -217,7 +217,6 @@
     <sys:String x:Key="Str_Menu_CopyName">複製檔案名稱</sys:String>
     <sys:String x:Key="Str_Menu_CopyFolder">複製資料夾路徑</sys:String>
     <sys:String x:Key="Str_Menu_CopyLines">複製符合的行</sys:String>
-    <sys:String x:Key="Str_Menu_CopyFile">複製檔案</sys:String>
     <sys:String x:Key="Str_Menu_CopyHash">複製 SHA-256</sys:String>
     <sys:String x:Key="Str_Menu_Properties">內容</sys:String>
     <sys:String x:Key="Str_Menu_ShellMenu">更多 Windows 選項...</sys:String>

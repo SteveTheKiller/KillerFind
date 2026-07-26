@@ -1,3 +1,6 @@
+using System.Collections.ObjectModel;
+using KillerFind.Models;
+
 namespace KillerFind
 {
     // Which pane the window's commands act on. Partial of MainWindow.
@@ -17,5 +20,31 @@ namespace KillerFind
         /// finishes.
         /// </summary>
         internal FilePane Pane => _focus ??= LeftPane;
+
+        /// <summary>
+        /// Point every command at <paramref name="pane"/>. Raised by a click anywhere inside a
+        /// pane (FilePane's ctor).
+        /// </summary>
+        internal void FocusPane(FilePane pane)
+        {
+            if (_focus == pane) return;   // always true while there is one pane
+            _focus = pane;
+
+            // The window chrome - search panel, footer line, nav buttons - shows the focused
+            // pane's tab, so moving focus has to re-point it at that pane's active tab.
+            if (pane.Active != null) ActivateTab(pane.Active);
+        }
+
+        // Tabs belong to a PANE, not to the window (FilePane.Tabs / FilePane.Active). These two
+        // keep the old field names so the ~100 call sites across Tabs.cs, Session.cs, Results.cs
+        // and the rest read exactly as they did - they now just resolve against whichever pane
+        // has focus instead of against one window-wide collection.
+        private ObservableCollection<SearchTab> _tabs => Pane.Tabs;
+
+        private SearchTab _active
+        {
+            get => Pane.Active;
+            set => Pane.Active = value;
+        }
     }
 }

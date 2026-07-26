@@ -148,7 +148,6 @@
     <sys:String x:Key="Str_Menu_CopyName">Copy file name</sys:String>
     <sys:String x:Key="Str_Menu_CopyFolder">Copy folder path</sys:String>
     <sys:String x:Key="Str_Menu_CopyLines">Copy matched lines</sys:String>
-    <sys:String x:Key="Str_Menu_CopyFile">Copy file</sys:String>
     <sys:String x:Key="Str_Menu_CopyHash">Copy SHA-256</sys:String>
     <sys:String x:Key="Str_Menu_Properties">Properties</sys:String>
     <sys:String x:Key="Str_Menu_ShellMenu">More Windows options...</sys:String>

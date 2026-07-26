@@ -217,7 +217,6 @@
     <sys:String x:Key="Str_Menu_CopyName">ফাইলের নাম কপি করুন</sys:String>
     <sys:String x:Key="Str_Menu_CopyFolder">ফোল্ডারের পাথ কপি করুন</sys:String>
     <sys:String x:Key="Str_Menu_CopyLines">মিলে যাওয়া লাইন কপি করুন</sys:String>
-    <sys:String x:Key="Str_Menu_CopyFile">ফাইল কপি করুন</sys:String>
     <sys:String x:Key="Str_Menu_CopyHash">SHA-256 কপি করুন</sys:String>
     <sys:String x:Key="Str_Menu_Properties">বৈশিষ্ট্য</sys:String>
     <sys:String x:Key="Str_Menu_ShellMenu">Windows-এর আরও অপশন...</sys:String>

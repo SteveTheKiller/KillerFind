@@ -21,8 +21,9 @@ namespace KillerFind
     //   Chrome.cs / ThemeFlyout.cs / About.cs / Language.cs - shell, theme, about, locale
     public partial class MainWindow : Window
     {
-        private readonly ObservableCollection<SearchTab> _tabs = [];
-        private SearchTab _active = null!;   // set in the ctor before anything reads it
+        // _tabs and _active used to live here. They are per-PANE state now (FilePane.Tabs /
+        // FilePane.Active), reached through the same-named shims in Panes.cs so every call site
+        // reads unchanged. Two panes each own their own strip and their own active search.
 
         public MainWindow()
         {
@@ -687,12 +688,6 @@ namespace KillerFind
                 Clear_Click(this, new RoutedEventArgs());
                 e.Handled = true;
             }
-            else if (ctrl && shift && e.Key == System.Windows.Input.Key.C)
-            {
-                // The checkbox is the single source of truth - CaptureTab reads it.
-                CaseSensitiveCheck.IsChecked = CaseSensitiveCheck.IsChecked != true;
-                e.Handled = true;
-            }
             else if (ctrl && e.Key == System.Windows.Input.Key.T)
             {
                 NewTab_Click(this, new RoutedEventArgs());
@@ -733,12 +728,98 @@ namespace KillerFind
                 AddFilter_Click(this, new RoutedEventArgs());
                 e.Handled = true;
             }
-            else if (ctrl && e.Key == System.Windows.Input.Key.O)
+            else if (ctrl && !shift && e.Key == System.Windows.Input.Key.O)
             {
+                // !shift matters: without it this swallows Ctrl+Shift+O (Open with), because
+                // this branch sits ahead of it in the chain.
                 OpenFolderPicker();
                 e.Handled = true;
             }
-            else if (e.Key == System.Windows.Input.Key.Enter)
+            // ── Results context-menu commands (ResultsMenu.cs) ───
+            // Conventions first: where Windows or Explorer already owns a chord for one of
+            // these, that chord wins, because a hand trained anywhere else arrives expecting it.
+            // Alt+Enter (Properties), Shift+F10 (shell menu), F3 (search), Ctrl+D (favourite)
+            // and Ctrl+Shift+C (copy as path) are all Windows'. Ctrl+Shift+Enter and plain Enter
+            // live in the Enter branch below, where they share the key with running a search.
+            //
+            // The rest have no convention to inherit and carry provisional Ctrl+Shift chords so
+            // that every menu row is reachable and shows up on the F1 card - those are the ones
+            // to re-cut once the overlay makes the whole map visible.
+            //
+            // All of them go through FromKeyboard, never straight at the handler: see the note
+            // on that method about the stale right-click seed.
+            else if (e.Key == System.Windows.Input.Key.F10 && shift)
+            {
+                FromKeyboard(MenuShell_Click);         // Windows' own context-menu key
+                e.Handled = true;
+            }
+            else if (e.Key == System.Windows.Input.Key.F3 && !ctrl && !shift && !alt)
+            {
+                FromKeyboard(MenuSearchHere_Click);    // Explorer's search key
+                e.Handled = true;
+            }
+            else if (e.Key == System.Windows.Input.Key.F6 && !ctrl && !shift && !alt)
+            {
+                FromKeyboard(MenuShowInExplorer_Click);
+                e.Handled = true;
+            }
+            else if (ctrl && !shift && e.Key == System.Windows.Input.Key.D)
+            {
+                FromKeyboard(MenuFavorite_Click);      // the browser bookmark chord
+                e.Handled = true;
+            }
+            else if (ctrl && shift && e.Key == System.Windows.Input.Key.C)
+            {
+                // Windows 11's "Copy as path". This chord used to toggle case-sensitivity,
+                // which moved to Alt+C - the convention has the stronger claim on it.
+                FromKeyboard(MenuCopyPath_Click);
+                e.Handled = true;
+            }
+            else if (ctrl && shift && e.Key == System.Windows.Input.Key.O)
+            {
+                FromKeyboard(MenuOpenWith_Click);
+                e.Handled = true;
+            }
+            else if (ctrl && shift && e.Key == System.Windows.Input.Key.E)
+            {
+                FromKeyboard(MenuExcludeFolder_Click);
+                e.Handled = true;
+            }
+            else if (ctrl && shift && e.Key == System.Windows.Input.Key.M)
+            {
+                FromKeyboard(MenuCopyName_Click);
+                e.Handled = true;
+            }
+            else if (ctrl && shift && e.Key == System.Windows.Input.Key.D)
+            {
+                FromKeyboard(MenuCopyFolder_Click);
+                e.Handled = true;
+            }
+            else if (ctrl && shift && e.Key == System.Windows.Input.Key.Y)
+            {
+                FromKeyboard(MenuCopyLines_Click);
+                e.Handled = true;
+            }
+            else if (ctrl && shift && e.Key == System.Windows.Input.Key.H)
+            {
+                FromKeyboard(MenuCopyHash_Click);
+                e.Handled = true;
+            }
+            else if (alt && !ctrl && !shift
+                     && (e.Key == System.Windows.Input.Key.C
+                         || (e.Key == System.Windows.Input.Key.System && e.SystemKey == System.Windows.Input.Key.C)))
+            {
+                // Case-sensitivity, moved off Ctrl+Shift+C so Windows' copy-as-path can have it.
+                // Alt chords arrive as Key.System with the real key in SystemKey.
+                CaseSensitiveCheck.IsChecked = CaseSensitiveCheck.IsChecked != true;
+                e.Handled = true;
+            }
+            // Alt+Enter arrives as Key.System with Enter parked in SystemKey, exactly like the
+            // Alt chords at the top of this method - so matching on e.Key alone would never see
+            // it and Properties would silently do nothing.
+            else if (e.Key == System.Windows.Input.Key.Enter
+                     || (e.Key == System.Windows.Input.Key.System
+                         && e.SystemKey == System.Windows.Input.Key.Enter))
             {
                 // Let open dropdowns, the date box, and the filter box handle Enter
                 // themselves, otherwise they can never commit.
@@ -747,6 +828,19 @@ namespace KillerFind
                     e.OriginalSource is System.Windows.Controls.Primitives.DatePickerTextBox ||
                     ReferenceEquals(e.OriginalSource, Pane.ResultFilterBox))
                     return;
+
+                // Enter now has to serve two masters. In the results list with something
+                // selected it OPENS, which is what Enter does in every file manager. Anywhere
+                // else - the search panel, an empty list, no selection - it still runs the
+                // search. Ctrl+Shift+Enter opens elevated, the Start menu's chord.
+                if (ResultsListHasFocus() && Pane.ResultsList.SelectedItems.Count > 0)
+                {
+                    if (ctrl && shift) FromKeyboard(MenuOpenAdmin_Click);
+                    else if (alt)      FromKeyboard(MenuProperties_Click);
+                    else               FromKeyboard(MenuOpen_Click);
+                    e.Handled = true;
+                    return;
+                }
 
                 Search_Click(this, new RoutedEventArgs());
                 e.Handled = true;

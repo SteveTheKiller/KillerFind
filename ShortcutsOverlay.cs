@@ -23,7 +23,7 @@ namespace KillerFind
             ("Search", "Ctrl+E",         "Str_Ks_FocusSearch"),
             ("Search", "Ctrl+N",         "Str_Ks_AddTerm"),
             ("Search", "F7",             "Str_Ks_AddFilter"),
-            ("Search", "Ctrl+Shift+C",   "Str_Ks_CaseSensitive"),
+            ("Search", "Alt+C",          "Str_Ks_CaseSensitive"),
             ("Search", "Ctrl+F",         "Str_Ks_FilterResults"),
             ("Search", "Ctrl+Shift+F",   "Str_Ks_Pipe"),
 
@@ -56,6 +56,26 @@ namespace KillerFind
             ("Edit",   "Ctrl+Shift+N",   "Str_Ks_NewFolder"),
             ("Edit",   "Ctrl+Shift+L",   "Str_Ks_Clear"),
             ("Edit",   "Esc",            "Str_Ks_Esc"),
+
+            // Results context-menu commands. These reuse the MENU's own Str_Menu_* strings as
+            // their labels rather than adding a parallel set of Str_Ks_* keys: the card would
+            // only be restating the menu row word for word, and duplicating the wording across
+            // ten locale files is how the two drift apart. Locale key count is unchanged.
+            ("File",   "Enter",           "Str_Menu_OpenFile"),
+            ("File",   "Ctrl+Shift+O",    "Str_Menu_OpenWith"),
+            ("File",   "Ctrl+Shift+Enter","Str_Menu_OpenAdmin"),
+            ("File",   "F6",              "Str_Menu_ShowExplorer"),
+            ("File",   "F3",              "Str_Menu_SearchHere"),
+            ("File",   "Ctrl+Shift+E",    "Str_Menu_ExcludeFolder"),
+            ("File",   "Ctrl+D",          "Str_Menu_AddFavorite"),
+            ("File",   "Alt+Enter",       "Str_Menu_Properties"),
+            ("File",   "Shift+F10",       "Str_Menu_ShellMenu"),
+
+            ("Edit",   "Ctrl+Shift+C",   "Str_Menu_CopyPath"),
+            ("Edit",   "Ctrl+Shift+M",   "Str_Menu_CopyName"),
+            ("Edit",   "Ctrl+Shift+D",   "Str_Menu_CopyFolder"),
+            ("Edit",   "Ctrl+Shift+Y",   "Str_Menu_CopyLines"),
+            ("Edit",   "Ctrl+Shift+H",   "Str_Menu_CopyHash"),
 
             ("Help",   "F1",             "Str_Ks_Help"),
             ("Help",   "F12",            "Str_Ks_About"),

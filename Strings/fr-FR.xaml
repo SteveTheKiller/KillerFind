@@ -217,7 +217,6 @@
     <sys:String x:Key="Str_Menu_CopyName">Copier le nom du fichier</sys:String>
     <sys:String x:Key="Str_Menu_CopyFolder">Copier le chemin du dossier</sys:String>
     <sys:String x:Key="Str_Menu_CopyLines">Copier les lignes trouvées</sys:String>
-    <sys:String x:Key="Str_Menu_CopyFile">Copier le fichier</sys:String>
     <sys:String x:Key="Str_Menu_CopyHash">Copier le SHA-256</sys:String>
     <sys:String x:Key="Str_Menu_Properties">Propriétés</sys:String>
     <sys:String x:Key="Str_Menu_ShellMenu">Plus d'options Windows...</sys:String>

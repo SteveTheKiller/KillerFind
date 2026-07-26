@@ -23,6 +23,29 @@ namespace KillerFind
     {
         private SearchResult? _menuSeed;
 
+        /// <summary>
+        /// True when keyboard focus is inside the results list. The file commands and Enter only
+        /// take over there - in the search panel or the address bar those keys mean what they
+        /// always meant.
+        /// </summary>
+        private bool ResultsListHasFocus() => Pane.ResultsList.IsKeyboardFocusWithin;
+
+        /// <summary>
+        /// Run a context-menu command from the KEYBOARD rather than from the menu.
+        ///
+        /// Clearing the seed first is the whole point: _menuSeed still holds whatever was last
+        /// RIGHT-CLICKED, and FilesForCommand deliberately prefers a seed that sits outside the
+        /// selection (that is what makes right-clicking an unselected row act on that row). Left
+        /// set, a keyboard command would act on a row that was right-clicked ages ago instead of
+        /// on the current selection. Null seed makes FilesForCommand fall through to exactly the
+        /// selection, which is what a keypress means.
+        /// </summary>
+        private void FromKeyboard(Action<object, RoutedEventArgs> cmd)
+        {
+            _menuSeed = null;
+            cmd(this, new RoutedEventArgs());
+        }
+
         internal void ResultsList_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             var item = ItemUnder(e.OriginalSource as System.Windows.DependencyObject);
@@ -245,32 +268,11 @@ namespace KillerFind
             PutOnClipboard(sb.ToString(), "Str_Status_CopiedLines", lines.ToString("N0"));
         }
 
-        // Puts the files themselves on the clipboard, so Ctrl+V in Explorer pastes real copies.
-        // CF_HDROP plus the Preferred DropEffect blob: without that blob Explorer picks its own
-        // idea of copy versus move, and a move would take the original away.
-        internal void MenuCopyFile_Click(object sender, RoutedEventArgs e)
-        {
-            // Folders included: CF_HDROP carries either, and Explorer pastes a folder copy
-            // exactly as happily as a file copy.
-            var files = MenuFiles().Where(Exists).ToArray();
-            if (files.Length == 0) return;
-
-            try
-            {
-                var list = new System.Collections.Specialized.StringCollection();
-                foreach (var f in files) list.Add(f);
-
-                var data = new DataObject();
-                data.SetFileDropList(list);
-
-                var effect = new MemoryStream(BitConverter.GetBytes((int)DragDropEffects.Copy));
-                data.SetData("Preferred DropEffect", effect);
-
-                Clipboard.SetDataObject(data, true);
-                SetTabStatusKey(_active, "Str_Status_CopiedFiles", files.Length.ToString("N0"));
-            }
-            catch { SetTabStatusKey(_active, "Str_Status_ClipboardBusy"); }
-        }
+        // MenuCopyFile_Click lived here: CF_HDROP plus the Preferred DropEffect blob, put on the
+        // clipboard so Ctrl+V in Explorer pastes real copies. It was character for character what
+        // FileCommands.PutFilesOnClipboard(DragDropEffects.Copy) already does for Ctrl+C - same
+        // drop list, same blob, same Str_Status_CopiedFiles - so the menu carried one command
+        // under two names. Removed; Copy (Ctrl+C) is the one that stays.
 
         // ── Hash ─────────────────────────────────────────────────
         // Off the UI thread: this reads the whole file, and results can be gigabytes.

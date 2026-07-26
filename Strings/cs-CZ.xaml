@@ -141,7 +141,6 @@
     <sys:String x:Key="Str_Menu_CopyName">Kopírovat název souboru</sys:String>
     <sys:String x:Key="Str_Menu_CopyFolder">Kopírovat cestu ke složce</sys:String>
     <sys:String x:Key="Str_Menu_CopyLines">Kopírovat nalezené řádky</sys:String>
-    <sys:String x:Key="Str_Menu_CopyFile">Kopírovat soubor</sys:String>
     <sys:String x:Key="Str_Menu_CopyHash">Kopírovat SHA-256</sys:String>
     <sys:String x:Key="Str_Menu_Properties">Vlastnosti</sys:String>
     <sys:String x:Key="Str_Menu_ShellMenu">Další možnosti Windows...</sys:String>

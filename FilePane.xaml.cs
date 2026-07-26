@@ -1,6 +1,8 @@
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using KillerFind.Models;
 
 namespace KillerFind
 {
@@ -16,13 +18,30 @@ namespace KillerFind
     // MainWindow's handlers are `internal` rather than `private` for the same reason.
     public partial class FilePane : UserControl
     {
-        public FilePane() => InitializeComponent();
+        public FilePane()
+        {
+            InitializeComponent();
+
+            // Clicking anywhere in a pane makes it the one every command acts on. Preview, so
+            // it lands before the click is handled by whatever was actually hit - a button in
+            // this pane must not run against the other pane's tab.
+            PreviewMouseDown += (_, _) => Owner.FocusPane(this);
+        }
 
         // Resolved on first use, not in the constructor: the pane is built during the window's
         // InitializeComponent, before there is a window to find. Every handler runs long after
         // load, so by the time any of them fires the tree is up.
         private MainWindow? _owner;
         internal MainWindow Owner => _owner ??= (MainWindow)Window.GetWindow(this)!;
+
+        // ── Per-pane tab state ───────────────────────────────────
+        // A tab belongs to a PANE, not to the window: two panes each show their own strip and
+        // their own active search. These used to be MainWindow fields; the window now reaches
+        // them through Panes.cs, which resolves to whichever pane has focus. Moving the state
+        // here is what makes the second pane a layout change rather than a rewrite.
+        internal ObservableCollection<SearchTab> Tabs { get; } = [];
+
+        internal SearchTab Active { get; set; } = null!;   // set before anything reads it
 
         // ── Navigation + address bar ─────────────────────────────
         private void NavBack_Click(object s, RoutedEventArgs e)            => Owner.NavBack_Click(s, e);
@@ -93,7 +112,6 @@ namespace KillerFind
         private void MenuCopyName_Click(object s, RoutedEventArgs e)       => Owner.MenuCopyName_Click(s, e);
         private void MenuCopyFolder_Click(object s, RoutedEventArgs e)     => Owner.MenuCopyFolder_Click(s, e);
         private void MenuCopyLines_Click(object s, RoutedEventArgs e)      => Owner.MenuCopyLines_Click(s, e);
-        private void MenuCopyFile_Click(object s, RoutedEventArgs e)       => Owner.MenuCopyFile_Click(s, e);
         private void MenuCopyHash_Click(object s, RoutedEventArgs e)       => Owner.MenuCopyHash_Click(s, e);
         private void MenuProperties_Click(object s, RoutedEventArgs e)     => Owner.MenuProperties_Click(s, e);
         private void MenuShell_Click(object s, RoutedEventArgs e)          => Owner.MenuShell_Click(s, e);

@@ -443,80 +443,87 @@
                              right-click records what is under the pointer and each command asks
                              FilesForCommand what to act on, which is what lets a command work on
                              a whole selection ("copy 12 paths") instead of a single Tag.
-                             Flat rather than nested because this app's MenuItem template has no
-                             submenu popup, so a Copy submenu would silently never open. -->
+                             Flat rather than nested. That USED to be forced - the MenuItem
+                             template had no submenu popup, so a Copy submenu would silently
+                             never open - but the template carries KillerPDF's SubPopup now, so
+                             nesting the six Copy items is on the table if this list grows. -->
                         <ContextMenu x:Key="ResultMenu">
-                            <MenuItem Header="{DynamicResource Str_Menu_OpenFile}"      Click="MenuOpen_Click">
+                            <MenuItem Header="{DynamicResource Str_Menu_OpenFile}"      Click="MenuOpen_Click"           InputGestureText="Enter">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8E5;"/></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{DynamicResource Str_Menu_OpenWith}"      Click="MenuOpenWith_Click">
+                            <MenuItem Header="{DynamicResource Str_Menu_OpenWith}"      Click="MenuOpenWith_Click"       InputGestureText="Ctrl+Shift+O">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE7AC;"/></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{DynamicResource Str_Menu_OpenAdmin}"     Click="MenuOpenAdmin_Click">
+                            <MenuItem Header="{DynamicResource Str_Menu_OpenAdmin}"     Click="MenuOpenAdmin_Click"      InputGestureText="Ctrl+Shift+Enter">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE7EF;"/></MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
-                            <MenuItem Header="{DynamicResource Str_Menu_ShowExplorer}"  Click="MenuShowInExplorer_Click">
+                            <MenuItem Header="{DynamicResource Str_Menu_ShowExplorer}"  Click="MenuShowInExplorer_Click" InputGestureText="F6">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE838;"/></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{DynamicResource Str_Menu_SearchHere}"    Click="MenuSearchHere_Click">
+                            <MenuItem Header="{DynamicResource Str_Menu_SearchHere}"    Click="MenuSearchHere_Click"     InputGestureText="F3">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE721;"/></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{DynamicResource Str_Menu_ExcludeFolder}" Click="MenuExcludeFolder_Click">
+                            <MenuItem Header="{DynamicResource Str_Menu_ExcludeFolder}" Click="MenuExcludeFolder_Click"  InputGestureText="Ctrl+Shift+E">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE738;"/></MenuItem.Icon>
                             </MenuItem>
                             <!-- Header swaps between add and remove as the menu opens, so one
                                  item covers both directions (ResultsMenu.cs). -->
                             <MenuItem Tag="fav" Header="{DynamicResource Str_Menu_AddFavorite}"
-                                      Click="MenuFavorite_Click">
+                                      Click="MenuFavorite_Click" InputGestureText="Ctrl+D">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE734;"/></MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
-                            <MenuItem Header="{DynamicResource Str_Menu_CopyPath}"      Click="MenuCopyPath_Click">
+                            <MenuItem Header="{DynamicResource Str_Menu_CopyPath}"      Click="MenuCopyPath_Click"   InputGestureText="Ctrl+Shift+C">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE71B;"/></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{DynamicResource Str_Menu_CopyName}"      Click="MenuCopyName_Click">
+                            <MenuItem Header="{DynamicResource Str_Menu_CopyName}"      Click="MenuCopyName_Click"   InputGestureText="Ctrl+Shift+M">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8AC;"/></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{DynamicResource Str_Menu_CopyFolder}"    Click="MenuCopyFolder_Click">
+                            <MenuItem Header="{DynamicResource Str_Menu_CopyFolder}"    Click="MenuCopyFolder_Click" InputGestureText="Ctrl+Shift+D">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8B7;"/></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{DynamicResource Str_Menu_CopyLines}"     Click="MenuCopyLines_Click">
+                            <MenuItem Header="{DynamicResource Str_Menu_CopyLines}"     Click="MenuCopyLines_Click"  InputGestureText="Ctrl+Shift+Y">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8A5;"/></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{DynamicResource Str_Menu_CopyFile}"      Click="MenuCopyFile_Click">
-                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8C8;"/></MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem Header="{DynamicResource Str_Menu_CopyHash}"      Click="MenuCopyHash_Click">
+                            <!-- "Copy file" used to sit here. It was PutFilesOnClipboard(Copy)
+                                 written twice - same CF_HDROP, same Preferred DropEffect blob,
+                                 same status key as Ctrl+C / Copy below. Removed as redundant. -->
+                            <MenuItem Header="{DynamicResource Str_Menu_CopyHash}"      Click="MenuCopyHash_Click"   InputGestureText="Ctrl+Shift+H">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE72E;"/></MenuItem.Icon>
                             </MenuItem>
                             <!-- File operations (FileCommands.cs). Cut / Copy / Paste sit above
                                  the destructive pair, and New folder last, so Delete never lands
                                  where the eye expects Paste. -->
                             <Separator/>
-                            <MenuItem Header="{DynamicResource Str_Menu_Cut}"           Click="MenuCut_Click">
+                            <!-- InputGestureText is the literal chord, never a localized string:
+                                 a key name is the same in every language, and this is how
+                                 KillerPDF's MakeMenuItem passes it. Each one below is a binding
+                                 that really exists in Window_PreviewKeyDown - an item showing a
+                                 shortcut that does nothing is worse than showing none. -->
+                            <MenuItem Header="{DynamicResource Str_Menu_Cut}"           Click="MenuCut_Click"       InputGestureText="Ctrl+X">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8C6;"/></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{DynamicResource Str_Menu_Copy}"          Click="MenuCopy_Click">
+                            <MenuItem Header="{DynamicResource Str_Menu_Copy}"          Click="MenuCopy_Click"      InputGestureText="Ctrl+C">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8C8;"/></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{DynamicResource Str_Menu_Paste}"         Click="MenuPaste_Click">
+                            <MenuItem Header="{DynamicResource Str_Menu_Paste}"         Click="MenuPaste_Click"     InputGestureText="Ctrl+V">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE77F;"/></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{DynamicResource Str_Menu_Rename}"        Click="MenuRename_Click">
+                            <MenuItem Header="{DynamicResource Str_Menu_Rename}"        Click="MenuRename_Click"    InputGestureText="F2">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8AC;"/></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{DynamicResource Str_Menu_Delete}"        Click="MenuDelete_Click">
+                            <MenuItem Header="{DynamicResource Str_Menu_Delete}"        Click="MenuDelete_Click"    InputGestureText="Delete">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE74D;"/></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{DynamicResource Str_Menu_NewFolder}"     Click="MenuNewFolder_Click">
+                            <MenuItem Header="{DynamicResource Str_Menu_NewFolder}"     Click="MenuNewFolder_Click" InputGestureText="Ctrl+Shift+N">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8F4;"/></MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
-                            <MenuItem Header="{DynamicResource Str_Menu_Properties}"    Click="MenuProperties_Click">
+                            <MenuItem Header="{DynamicResource Str_Menu_Properties}"    Click="MenuProperties_Click" InputGestureText="Alt+Enter">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE946;"/></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{DynamicResource Str_Menu_ShellMenu}"     Click="MenuShell_Click">
+                            <MenuItem Header="{DynamicResource Str_Menu_ShellMenu}"     Click="MenuShell_Click"      InputGestureText="Shift+F10">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE712;"/></MenuItem.Icon>
                             </MenuItem>
                         </ContextMenu>

@@ -577,6 +577,14 @@
         </Style.Triggers>
     </Style>
 
+    <!-- Ported to KillerPDF's context menu surface value for value (KillerPDF MainWindow.xaml,
+         the ContextMenu style): Grid Margin 5, CornerRadius 4, Padding 4, and a 12/2/0.55-ish
+         shadow at Opacity 0.5. It used to carry KillerFind's own flyout shadow - 22 blur, 4
+         depth, radius 6 - which is nearly double the blur and double the drop, and read as a
+         much heavier halo than the rest of the family.
+         The shadow still lives on its OWN border behind the content, never on the one the menu
+         text renders inside: a DropShadowEffect rasterizes its whole subtree through a bitmap
+         pass and the text loses ClearType. KillerPDF splits it the same way. -->
     <Style TargetType="ContextMenu">
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="HasDropShadow" Value="False"/>
@@ -584,25 +592,19 @@
         <Setter Property="BorderBrush" Value="{DynamicResource MenuBorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-        <Setter Property="Padding" Value="0,4"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ContextMenu">
-                    <!-- The shadow lives on its OWN border behind the content, never on the one
-                         the menu text renders inside: a DropShadowEffect rasterizes its whole
-                         subtree through a bitmap pass, so the text loses ClearType. Same split
-                         as KillerPDF's ContextMenu and the family About card. The Margin moved
-                         from the border to this Grid so the shadow still has room to render
-                         inside the popup rather than being clipped at its edge. -->
-                    <Grid Margin="6">
-                        <Border CornerRadius="6" Background="{TemplateBinding Background}" IsHitTestVisible="False">
-                            <Border.Effect><DropShadowEffect Color="Black" BlurRadius="22" ShadowDepth="4" Direction="270" Opacity="0.55"/></Border.Effect>
+                    <Grid Margin="5">
+                        <Border CornerRadius="4" Background="{TemplateBinding Background}" IsHitTestVisible="False">
+                            <Border.Effect><DropShadowEffect Color="Black" BlurRadius="12" ShadowDepth="2" Direction="270" Opacity="0.5"/></Border.Effect>
                         </Border>
-                        <Border CornerRadius="6" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
+                        <Border CornerRadius="4" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" Padding="4" SnapsToDevicePixels="True">
                             <Grid>
-                                <Border IsHitTestVisible="False" CornerRadius="5" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
-                                <StackPanel IsItemsHost="True" Margin="{TemplateBinding Padding}" KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                                <Border IsHitTestVisible="False" CornerRadius="4" Margin="-4"
+                                        Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                                <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
                             </Grid>
                         </Border>
                     </Grid>
@@ -611,48 +613,113 @@
         </Setter>
     </Style>
 
-    <!-- Menu icon glyph. Segoe MDL2 at 13px sits right against 12px menu text, and it takes
-         MenuTextBrush so it dims and accents with its row rather than staying a constant tone. -->
+    <!-- Menu icon glyph, matched to KillerPDF's MakeMenuItem (ContextMenu.cs): Segoe MDL2 at 12,
+         TextSecondary - MutedTextBrush here - left-aligned in the 16px gutter. It was 13px in
+         MenuTextBrush, which oversized it for the gutter AND made it accent along with the row
+         on hover; KillerPDF's icons hold a constant secondary tone. HorizontalAlignment is gone
+         because the template's icon presenter aligns Left, the way KillerPDF's does. -->
     <Style x:Key="MenuGlyph" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
-        <Setter Property="FontSize" Value="13"/>
-        <Setter Property="Foreground" Value="{DynamicResource MenuTextBrush}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="HorizontalAlignment" Value="Center"/>
     </Style>
 
+    <!-- Ported wholesale from KillerPDF's MenuItem template (MainWindow.xaml), brush names
+         translated. What changed from KillerFind's own version:
+           - Padding 24,7 -> 8,6,10,6. The old row carried 24px of padding IN FRONT of a 28px
+             icon gutter, so text started roughly twice as far in as KillerPDF's.
+           - Icon gutter: an Auto column holding an 18px presenter plus a 10px margin -> a fixed
+             16px column, which is also the check-glyph column. Items with no icon no longer
+             collapse the gutter, so every row's text lines up whether or not it has an icon.
+           - Highlight gets CornerRadius 3 instead of a square block running edge to edge, and
+             no longer recolors the text to the accent - KillerPDF moves the background only.
+           - InputGestureText column and submenu arrow: KillerFind's template had NEITHER, so a
+             shortcut hint on a menu item silently rendered nothing and a submenu had no
+             affordance. Both are here now, with the same collapse-when-empty trigger.
+           - Submenu popup mirrors the ContextMenu surface and fades (PopupAnimation), which was
+             the one fade KillerPDF had that KillerFind could not match for want of submenus. -->
     <Style TargetType="MenuItem">
         <Setter Property="OverridesDefaultStyle" Value="True"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{DynamicResource MenuTextBrush}"/>
+        <Setter Property="FontFamily" Value="Segoe UI"/>
         <Setter Property="FontSize" Value="12"/>
-        <Setter Property="Padding" Value="24,7"/>
+        <Setter Property="Padding" Value="8,6,10,6"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="MenuItem">
-                    <Border x:Name="bg" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
-                        <!-- Icon gutter (family standard, see KillerScan App.xaml). The column is
-                             Auto and the presenter collapses when an item has no Icon, so the
-                             menus that don't use icons keep their exact previous layout - a
-                             collapsed element contributes neither width nor margin. -->
+                    <Border x:Name="MenuBd" Background="{TemplateBinding Background}"
+                            Padding="{TemplateBinding Padding}" CornerRadius="3" SnapsToDevicePixels="True">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="16"/>
                                 <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <ContentPresenter x:Name="ico" Grid.Column="0" ContentSource="Icon"
-                                              Width="18" Margin="0,0,10,0"
-                                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <!-- Icon slot: MenuItem.Icon renders in the same 16px gutter the
+                                 check glyph uses. -->
+                            <ContentPresenter x:Name="IconPresenter" Grid.Column="0" ContentSource="Icon"
+                                              VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                            <TextBlock x:Name="Check" Grid.Column="0" Text="&#xE73E;"
+                                       FontFamily="Segoe MDL2 Assets" FontSize="11"
+                                       Foreground="{DynamicResource PrimaryBrush}"
+                                       VerticalAlignment="Center" HorizontalAlignment="Left"
+                                       Visibility="Collapsed"/>
                             <ContentPresenter Grid.Column="1" ContentSource="Header" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="Gesture" Grid.Column="2" Text="{TemplateBinding InputGestureText}"
+                                       Foreground="{DynamicResource MutedTextBrush}" FontSize="11"
+                                       VerticalAlignment="Center" Margin="24,0,0,0"/>
+                            <TextBlock x:Name="SubArrow" Grid.Column="3" Text="&#xE76C;"
+                                       FontFamily="Segoe MDL2 Assets" FontSize="8"
+                                       Foreground="{DynamicResource MutedTextBrush}"
+                                       VerticalAlignment="Center" Margin="12,0,0,0"
+                                       Visibility="Collapsed"/>
+                            <Popup x:Name="SubPopup" AllowsTransparency="True" Placement="Right"
+                                   HorizontalOffset="-4" Focusable="False" PopupAnimation="Fade"
+                                   IsOpen="{TemplateBinding IsSubmenuOpen}">
+                                <!-- Mirrors the ContextMenu surface so submenus match the parent. -->
+                                <Grid Margin="5">
+                                    <Border Background="{DynamicResource MenuBackgroundBrush}" CornerRadius="4" IsHitTestVisible="False">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="Black" BlurRadius="12" ShadowDepth="2" Direction="270" Opacity="0.5"/>
+                                        </Border.Effect>
+                                    </Border>
+                                    <Border Background="{DynamicResource MenuBackgroundBrush}"
+                                            BorderBrush="{DynamicResource MenuBorderBrush}"
+                                            BorderThickness="1" CornerRadius="4" Padding="4">
+                                        <Grid>
+                                            <Border IsHitTestVisible="False" Opacity="{DynamicResource GrainOpacity}"
+                                                    CornerRadius="4" Margin="-4" Background="{DynamicResource GrainTileBrush}"/>
+                                            <ItemsPresenter/>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                            </Popup>
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsHighlighted" Value="True">
-                            <Setter TargetName="bg" Property="Background" Value="{DynamicResource MenuHoverBrush}"/>
-                            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                            <Setter TargetName="MenuBd" Property="Background" Value="{DynamicResource MenuHoverBrush}"/>
                         </Trigger>
-                        <Trigger Property="Icon" Value="{x:Null}">
-                            <Setter TargetName="ico" Property="Visibility" Value="Collapsed"/>
+                        <!-- Collapse the shortcut column when there is no gesture, so items
+                             without one do not reserve its 24px left margin as phantom padding. -->
+                        <Trigger Property="InputGestureText" Value="">
+                            <Setter TargetName="Gesture" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Check" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="IconPresenter" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                        <Trigger Property="Role" Value="SubmenuHeader">
+                            <Setter TargetName="SubArrow" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="Role" Value="TopLevelHeader">
+                            <Setter TargetName="SubArrow" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="MenuBd" Property="Opacity" Value="0.4"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

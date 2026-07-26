@@ -217,7 +217,6 @@
     <sys:String x:Key="Str_Menu_CopyName">Dosya adını kopyala</sys:String>
     <sys:String x:Key="Str_Menu_CopyFolder">Klasör yolunu kopyala</sys:String>
     <sys:String x:Key="Str_Menu_CopyLines">Eşleşen satırları kopyala</sys:String>
-    <sys:String x:Key="Str_Menu_CopyFile">Dosyayı kopyala</sys:String>
     <sys:String x:Key="Str_Menu_CopyHash">SHA-256 değerini kopyala</sys:String>
     <sys:String x:Key="Str_Menu_Properties">Özellikler</sys:String>
     <sys:String x:Key="Str_Menu_ShellMenu">Diğer Windows seçenekleri...</sys:String>
