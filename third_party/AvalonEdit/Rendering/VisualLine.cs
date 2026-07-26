@@ -751,8 +751,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			double pos = 0;
 			foreach (TextLine textLine in visualLine.TextLines) {
 				if (flow == FlowDirection.LeftToRight) {
-				textLine.Draw(drawingContext, new Point(0, pos), InvertAxes.None);
-				} else  {
+					textLine.Draw(drawingContext, new Point(0, pos), InvertAxes.None);
+				} else {
 					// Invert Axis for RightToLeft (Arabic language) support
 					textLine.Draw(drawingContext, new Point(0, pos), InvertAxes.Horizontal);
 				}

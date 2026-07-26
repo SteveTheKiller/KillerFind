@@ -27,9 +27,9 @@ namespace ICSharpCode.AvalonEdit.Document
 	// Originally, this was a separate class, with a reference to the documentLine. The documentLine had a reference
 	// back to the node. To save memory, the same object is used for both the documentLine and the line node.
 	// This saves 16 bytes per line (8 byte object overhead + two pointers).
-//	sealed class LineNode
-//	{
-//		internal readonly DocumentLine documentLine;
+	//	sealed class LineNode
+	//	{
+	//		internal readonly DocumentLine documentLine;
 	partial class DocumentLine
 	{
 		internal DocumentLine left, right, parent;

@@ -340,48 +340,48 @@ namespace ICSharpCode.AvalonEdit.Editing
 			int textLineIndex = visualLine.TextLines.IndexOf(textLine);
 			switch (direction) {
 				case CaretMovementType.LineUp: {
-					// Move up: move to the previous TextLine in the same visual line
-					// or move to the last TextLine of the previous visual line
-					int prevLineNumber = visualLine.FirstDocumentLine.LineNumber - 1;
-					if (textLineIndex > 0) {
-						targetLine = visualLine.TextLines[textLineIndex - 1];
-					} else if (prevLineNumber >= 1) {
-						DocumentLine prevLine = textView.Document.GetLineByNumber(prevLineNumber);
-						targetVisualLine = textView.GetOrConstructVisualLine(prevLine);
-						targetLine = targetVisualLine.TextLines[targetVisualLine.TextLines.Count - 1];
-					} else {
-						targetLine = null;
+						// Move up: move to the previous TextLine in the same visual line
+						// or move to the last TextLine of the previous visual line
+						int prevLineNumber = visualLine.FirstDocumentLine.LineNumber - 1;
+						if (textLineIndex > 0) {
+							targetLine = visualLine.TextLines[textLineIndex - 1];
+						} else if (prevLineNumber >= 1) {
+							DocumentLine prevLine = textView.Document.GetLineByNumber(prevLineNumber);
+							targetVisualLine = textView.GetOrConstructVisualLine(prevLine);
+							targetLine = targetVisualLine.TextLines[targetVisualLine.TextLines.Count - 1];
+						} else {
+							targetLine = null;
+						}
+						break;
 					}
-					break;
-				}
 				case CaretMovementType.LineDown: {
-					// Move down: move to the next TextLine in the same visual line
-					// or move to the first TextLine of the next visual line
-					int nextLineNumber = visualLine.LastDocumentLine.LineNumber + 1;
-					if (textLineIndex < visualLine.TextLines.Count - 1) {
-						targetLine = visualLine.TextLines[textLineIndex + 1];
-					} else if (nextLineNumber <= textView.Document.LineCount) {
-						DocumentLine nextLine = textView.Document.GetLineByNumber(nextLineNumber);
-						targetVisualLine = textView.GetOrConstructVisualLine(nextLine);
-						targetLine = targetVisualLine.TextLines[0];
-					} else {
-						targetLine = null;
+						// Move down: move to the next TextLine in the same visual line
+						// or move to the first TextLine of the next visual line
+						int nextLineNumber = visualLine.LastDocumentLine.LineNumber + 1;
+						if (textLineIndex < visualLine.TextLines.Count - 1) {
+							targetLine = visualLine.TextLines[textLineIndex + 1];
+						} else if (nextLineNumber <= textView.Document.LineCount) {
+							DocumentLine nextLine = textView.Document.GetLineByNumber(nextLineNumber);
+							targetVisualLine = textView.GetOrConstructVisualLine(nextLine);
+							targetLine = targetVisualLine.TextLines[0];
+						} else {
+							targetLine = null;
+						}
+						break;
 					}
-					break;
-				}
 				case CaretMovementType.PageUp:
 				case CaretMovementType.PageDown: {
-					// Page up/down: find the target line using its visual position
-					double yPos = visualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.LineMiddle);
-					if (direction == CaretMovementType.PageUp)
-						yPos -= textView.RenderSize.Height;
-					else
-						yPos += textView.RenderSize.Height;
-					DocumentLine newLine = textView.GetDocumentLineByVisualTop(yPos);
-					targetVisualLine = textView.GetOrConstructVisualLine(newLine);
-					targetLine = targetVisualLine.GetTextLineByVisualYPosition(yPos);
-					break;
-				}
+						// Page up/down: find the target line using its visual position
+						double yPos = visualLine.GetTextLineVisualYPosition(textLine, VisualYPosition.LineMiddle);
+						if (direction == CaretMovementType.PageUp)
+							yPos -= textView.RenderSize.Height;
+						else
+							yPos += textView.RenderSize.Height;
+						DocumentLine newLine = textView.GetDocumentLineByVisualTop(yPos);
+						targetVisualLine = textView.GetOrConstructVisualLine(newLine);
+						targetLine = targetVisualLine.GetTextLineByVisualYPosition(yPos);
+						break;
+					}
 				default:
 					throw new NotSupportedException(direction.ToString());
 			}

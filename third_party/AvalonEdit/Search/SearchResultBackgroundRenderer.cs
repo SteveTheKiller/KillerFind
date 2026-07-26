@@ -48,7 +48,10 @@ namespace ICSharpCode.AvalonEdit.Search
 		}
 
 		public Brush MarkerBrush { get; set; }
-		public Pen MarkerPen { get; set; }
+
+		// Nullable for real: the constructor sets it to null and nothing else assigns it unless
+		// a caller wants an outline, so an unannotated Pen was a promise this class never kept.
+		public Pen? MarkerPen { get; set; }
 		public double MarkerCornerRadius { get; set; }
 
 		public void Draw(TextView textView, DrawingContext drawingContext)
@@ -69,7 +72,7 @@ namespace ICSharpCode.AvalonEdit.Search
 			int viewEnd = visualLines.Last().LastDocumentLine.EndOffset;
 
 			Brush markerBrush = MarkerBrush;
-			Pen markerPen = MarkerPen;
+			Pen? markerPen = MarkerPen;
 			double markerCornerRadius = MarkerCornerRadius;
 			double markerPenThickness = markerPen != null ? markerPen.Thickness : 0;
 

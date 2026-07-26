@@ -36,13 +36,20 @@ namespace ICSharpCode.AvalonEdit.Search
 	/// </summary>
 	public class SearchPanel : Control
 	{
-		TextArea textArea;
-		SearchInputHandler handler;
-		TextDocument currentDocument;
-		SearchResultBackgroundRenderer renderer;
-		TextBox searchTextBox;
-		Popup dropdownPopup;
-		SearchPanelAdorner adorner;
+		// Install is the only way to get one of these (the constructor is private) and it always
+		// runs AttachInternal, so these four are never observed unset: null! rather than a null
+		// check at every use.
+		TextArea textArea = null!;
+		SearchInputHandler handler = null!;
+		SearchResultBackgroundRenderer renderer = null!;
+		SearchPanelAdorner adorner = null!;
+
+		// These three genuinely can be null and the code already tests them for it. The template
+		// parts are whatever OnApplyTemplate found, which is nothing at all until a template has
+		// been applied, and a TextArea with no document leaves currentDocument null.
+		TextDocument? currentDocument;
+		TextBox? searchTextBox;
+		Popup? dropdownPopup;
 
 		#region DependencyProperties
 		/// <summary>
@@ -192,11 +199,14 @@ namespace ICSharpCode.AvalonEdit.Search
 			DefaultStyleKeyProperty.OverrideMetadata(typeof(SearchPanel), new FrameworkPropertyMetadata(typeof(SearchPanel)));
 		}
 
-		ISearchStrategy strategy;
+		// Assigned by UpdateSearch, which the SearchPattern callback runs before DoSearch can
+		// reach it: DoSearch only touches strategy once SearchPattern is non-empty, and setting
+		// SearchPattern is what assigns this.
+		ISearchStrategy strategy = null!;
 
 		static void SearchPatternChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			SearchPanel panel = d as SearchPanel;
+			SearchPanel? panel = d as SearchPanel;
 			if (panel != null) {
 				panel.ValidateSearchText();
 				panel.UpdateSearch();
@@ -211,7 +221,9 @@ namespace ICSharpCode.AvalonEdit.Search
 			if (renderer.CurrentResults.Any())
 				messageView.IsOpen = false;
 			strategy = SearchStrategyFactory.Create(SearchPattern ?? "", !MatchCase, WholeWords, UseRegex ? SearchMode.RegEx : SearchMode.Normal);
-			OnSearchOptionsChanged(new SearchOptionsChangedEventArgs(SearchPattern, MatchCase, UseRegex, WholeWords));
+			// SearchPattern is a nullable dependency property and the line above already guards
+			// it; the event args declare it non-null, so it was one unset box away from an NRE.
+			OnSearchOptionsChanged(new SearchOptionsChangedEventArgs(SearchPattern ?? "", MatchCase, UseRegex, WholeWords));
 			DoSearch(true);
 		}
 
@@ -478,7 +490,7 @@ namespace ICSharpCode.AvalonEdit.Search
 		/// <summary>
 		/// Fired when SearchOptions are changed inside the SearchPanel.
 		/// </summary>
-		public event EventHandler<SearchOptionsChangedEventArgs> SearchOptionsChanged;
+		public event EventHandler<SearchOptionsChangedEventArgs>? SearchOptionsChanged;
 
 		/// <summary>
 		/// Raises the <see cref="SearchPanel.SearchOptionsChanged" /> event.

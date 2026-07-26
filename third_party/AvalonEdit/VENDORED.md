@@ -21,6 +21,37 @@ Keep this list current. An upgrade is a fresh extract of the new tag with these 
    `/KillerFind;component/third_party/AvalonEdit/...`. The source is compiled into KillerFind.exe,
    so at runtime there is no ICSharpCode.AvalonEdit assembly for the original URIs to name.
 
+2. **Nullable annotation pass.** The tree was written years before nullable reference types and
+   arrived with 2142 warnings under KillerFind's `<Nullable>enable</Nullable>`. Every one is being
+   annotated rather than suppressed: `?` where null is real and the code already tests for it,
+   `= null!` where a field is genuinely assigned before any caller can see it, and a real fix
+   wherever the compiler found an actual hole. Folders finished so far: **Indentation, Search**.
+
+3. **Whitespace normalized to their own convention.** `third_party/.editorconfig` declares the
+   style this tree is actually written in (tabs, LF, Allman on types and methods only), which is
+   what lets IDE0055 measure it against its own standard instead of the .NET default. 19 files
+   were inconsistent with that convention and were normalized by `dotnet format whitespace`;
+   the other 195 were already correct and were not touched. The tree was deliberately NOT
+   reformatted to KillerFind's own four-space style: keeping upstream's formatting is what lets
+   a fresh extract of the next release be diffed against this copy to see only the changes in
+   this list.
+
+4. `Rendering/GlobalTextRunProperties.cs`: dropped the internal `backgroundBrush` field. Nothing
+   in the assembly ever assigned it (CS0649), so `BackgroundBrush` could only ever return null;
+   it now returns null outright, the shape `TextDecorations` and `TextEffects` already used.
+
+5. `Search/SearchPanel.cs`: `UpdateSearch` passed the nullable `SearchPattern` dependency
+   property straight into `SearchOptionsChangedEventArgs`, whose parameter is non-null, one line
+   after guarding the same value with `?? ""` for the strategy factory. Now guarded in both
+   places. A search panel raising the event with an unset pattern would have thrown.
+
+6. `Search/SearchResultBackgroundRenderer.cs`: `MarkerPen` is `Pen?`. The constructor sets it to
+   null and `Draw` tests it for null, so the unannotated `Pen` was a promise the class never kept.
+
+7. `Indentation/CSharp/IndentationReformatter.cs`: `wordBuilder` and `blocks` are initialized at
+   their declaration. `Init()` assigned them and `Reformat` calls `Init` first, but `Step` is
+   public and reachable without it, which was a null dereference waiting for a caller.
+
 ## How it is wired into the build
 
 `KillerFind.csproj` removes `third_party\**` from every default glob and then adds it back

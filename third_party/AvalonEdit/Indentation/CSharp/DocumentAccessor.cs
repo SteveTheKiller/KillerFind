@@ -73,8 +73,12 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 		}
 
 		int num;
-		string text;
-		DocumentLine line;
+
+		// Both are only meaningful once MoveNext has returned true, which is this accessor's
+		// contract. null! rather than nullable so callers that honour it are not pushed through
+		// a null check the contract already rules out.
+		string text = null!;
+		DocumentLine line = null!;
 
 		/// <inheritdoc/>
 		public bool IsReadOnly {

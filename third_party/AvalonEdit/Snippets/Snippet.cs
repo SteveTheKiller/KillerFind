@@ -41,9 +41,9 @@ namespace ICSharpCode.AvalonEdit.Snippets
 			int insertionPosition = textArea.Caret.Offset;
 
 			if (selection != null) // if something is selected
-				// use selection start instead of caret position,
-				// because caret could be at end of selection or anywhere inside.
-				// Removal of the selected text causes the caret position to be invalid.
+								   // use selection start instead of caret position,
+								   // because caret could be at end of selection or anywhere inside.
+								   // Removal of the selected text causes the caret position to be invalid.
 				insertionPosition = selection.Offset + TextUtilities.GetWhitespaceAfter(textArea.Document, selection.Offset).Length;
 
 			InsertionContext context = new InsertionContext(textArea, insertionPosition);

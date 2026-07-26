@@ -40,7 +40,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// Creates a new instance of a LineNumberMargin
 		/// </summary>
 		public LineNumberMargin()
-			:base()
+			: base()
 		{
 			// override Property Value Inheritance, and always render
 			// the line number margin left-to-right

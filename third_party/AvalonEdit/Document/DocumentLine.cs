@@ -66,29 +66,29 @@ namespace ICSharpCode.AvalonEdit.Document
 		#endregion
 
 		#region Events
-//		/// <summary>
-//		/// Is raised when the line is deleted.
-//		/// </summary>
-//		public event EventHandler Deleted;
-//
-//		/// <summary>
-//		/// Is raised when the line's text changes.
-//		/// </summary>
-//		public event EventHandler TextChanged;
-//
-//		/// <summary>
-//		/// Raises the Deleted or TextChanged event.
-//		/// </summary>
-//		internal void RaiseChanged()
-//		{
-//			if (IsDeleted) {
-//				if (Deleted != null)
-//					Deleted(this, EventArgs.Empty);
-//			} else {
-//				if (TextChanged != null)
-//					TextChanged(this, EventArgs.Empty);
-//			}
-//		}
+		//		/// <summary>
+		//		/// Is raised when the line is deleted.
+		//		/// </summary>
+		//		public event EventHandler Deleted;
+		//
+		//		/// <summary>
+		//		/// Is raised when the line's text changes.
+		//		/// </summary>
+		//		public event EventHandler TextChanged;
+		//
+		//		/// <summary>
+		//		/// Raises the Deleted or TextChanged event.
+		//		/// </summary>
+		//		internal void RaiseChanged()
+		//		{
+		//			if (IsDeleted) {
+		//				if (Deleted != null)
+		//					Deleted(this, EventArgs.Empty);
+		//			} else {
+		//				if (TextChanged != null)
+		//					TextChanged(this, EventArgs.Empty);
+		//			}
+		//		}
 		#endregion
 
 		#region Properties stored in tree

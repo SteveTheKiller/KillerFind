@@ -38,10 +38,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		void BeforeRemoveLine(DocumentLine line);
 
-//		/// <summary>
-//		/// Is called immediately after a document line is removed.
-//		/// </summary>
-//		void AfterRemoveLine(DocumentLine line);
+		//		/// <summary>
+		//		/// Is called immediately after a document line is removed.
+		//		/// </summary>
+		//		void AfterRemoveLine(DocumentLine line);
 
 		/// <summary>
 		/// Is called immediately before a document line changes length.

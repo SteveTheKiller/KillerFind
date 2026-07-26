@@ -187,12 +187,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			node.lineNode.collapsedSections = null;
 			EndRemoval();
 		}
-		
-//		void ILineTracker.AfterRemoveLine(DocumentLine line)
-//		{
-//
-//		}
-		
+
+		//		void ILineTracker.AfterRemoveLine(DocumentLine line)
+		//		{
+		//
+		//		}
+
 		void ILineTracker.LineInserted(DocumentLine insertionPos, DocumentLine newLine)
 		{
 			InsertAfter(GetNode(insertionPos), newLine);
@@ -258,9 +258,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			if (node.IsDirectlyCollapsed)
 				totalHeight = 0;
 			if (totalCount != node.totalCount
-			    || !totalHeight.IsClose(node.totalHeight)
-			    || mode == UpdateAfterChildrenChangeRecursionMode.WholeBranch)
-			{
+				|| !totalHeight.IsClose(node.totalHeight)
+				|| mode == UpdateAfterChildrenChangeRecursionMode.WholeBranch) {
 				node.totalCount = totalCount;
 				node.totalHeight = totalHeight;
 				if (node.parent != null && mode != UpdateAfterChildrenChangeRecursionMode.None)
@@ -404,11 +403,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 					if (cs.Start == node.documentLine || cs.End == node.documentLine)
 						continue;
 					if (node.left == null
-					    || (node.left.collapsedSections != null && node.left.collapsedSections.Contains(cs)))
-					{
+						|| (node.left.collapsedSections != null && node.left.collapsedSections.Contains(cs))) {
 						if (node.right == null
-						    || (node.right.collapsedSections != null && node.right.collapsedSections.Contains(cs)))
-						{
+							|| (node.right.collapsedSections != null && node.right.collapsedSections.Contains(cs))) {
 							// all children of node contain cs: -> merge!
 							if (node.left != null) node.left.RemoveDirectlyCollapsed(cs);
 							if (node.right != null) node.right.RemoveDirectlyCollapsed(cs);
@@ -878,39 +875,34 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			}
 
 			if (parentNode.color == BLACK
-			    && sibling.color == BLACK
-			    && GetColor(sibling.left) == BLACK
-			    && GetColor(sibling.right) == BLACK)
-			{
+				&& sibling.color == BLACK
+				&& GetColor(sibling.left) == BLACK
+				&& GetColor(sibling.right) == BLACK) {
 				sibling.color = RED;
 				FixTreeOnDelete(parentNode, parentNode.parent);
 				return;
 			}
 
 			if (parentNode.color == RED
-			    && sibling.color == BLACK
-			    && GetColor(sibling.left) == BLACK
-			    && GetColor(sibling.right) == BLACK)
-			{
+				&& sibling.color == BLACK
+				&& GetColor(sibling.left) == BLACK
+				&& GetColor(sibling.right) == BLACK) {
 				sibling.color = RED;
 				parentNode.color = BLACK;
 				return;
 			}
 
 			if (node == parentNode.left &&
-			    sibling.color == BLACK &&
-			    GetColor(sibling.left) == RED &&
-			    GetColor(sibling.right) == BLACK)
-			{
+				sibling.color == BLACK &&
+				GetColor(sibling.left) == RED &&
+				GetColor(sibling.right) == BLACK) {
 				sibling.color = RED;
 				sibling.left.color = BLACK;
 				RotateRight(sibling);
-			}
-			else if (node == parentNode.right &&
-			         sibling.color == BLACK &&
-			         GetColor(sibling.right) == RED &&
-			         GetColor(sibling.left) == BLACK)
-			{
+			} else if (node == parentNode.right &&
+					   sibling.color == BLACK &&
+					   GetColor(sibling.right) == RED &&
+					   GetColor(sibling.left) == BLACK) {
 				sibling.color = RED;
 				sibling.right.color = BLACK;
 				RotateLeft(sibling);

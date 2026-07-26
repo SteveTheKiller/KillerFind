@@ -76,8 +76,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				if (e.VisualColumn > visualEndColumn)
 					break;
 				if (e.VisualColumn < visualStartColumn &&
-				    e.VisualColumn + e.VisualLength > visualStartColumn)
-				{
+					e.VisualColumn + e.VisualLength > visualStartColumn) {
 					if (e.CanSplit) {
 						e.Split(visualStartColumn, CurrentElements, i--);
 						continue;

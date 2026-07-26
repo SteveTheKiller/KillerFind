@@ -304,28 +304,28 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 							break;
 						case '!': // negative lookahead
 							{
-							StringBuilder whatmatch = new StringBuilder();
-							++i;
-							while (i < expr.Length && expr[i] != '@') {
-								whatmatch.Append(expr[i++]);
+								StringBuilder whatmatch = new StringBuilder();
+								++i;
+								while (i < expr.Length && expr[i] != '@') {
+									whatmatch.Append(expr[i++]);
+								}
+								b.Append("(?!(");
+								b.Append(Regex.Escape(whatmatch.ToString()));
+								b.Append("))");
 							}
-							b.Append("(?!(");
-							b.Append(Regex.Escape(whatmatch.ToString()));
-							b.Append("))");
-						}
-						break;
+							break;
 						case '-': // negative lookbehind
 							{
-							StringBuilder whatmatch = new StringBuilder();
-							++i;
-							while (i < expr.Length && expr[i] != '@') {
-								whatmatch.Append(expr[i++]);
+								StringBuilder whatmatch = new StringBuilder();
+								++i;
+								while (i < expr.Length && expr[i] != '@') {
+									whatmatch.Append(expr[i++]);
+								}
+								b.Append("(?<!(");
+								b.Append(Regex.Escape(whatmatch.ToString()));
+								b.Append("))");
 							}
-							b.Append("(?<!(");
-							b.Append(Regex.Escape(whatmatch.ToString()));
-							b.Append("))");
-						}
-						break;
+							break;
 						case '@':
 							b.Append("@");
 							break;

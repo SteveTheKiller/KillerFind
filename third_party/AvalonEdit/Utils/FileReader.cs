@@ -141,7 +141,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 					case 0xfffe: // Unicode BOM (UTF-16 LE or UTF-32 LE)
 					case 0xfeff: // UTF-16 BE BOM
 					case 0xefbb: // start of UTF-8 BOM
-						// StreamReader autodetection works
+								 // StreamReader autodetection works
 						stream.Position = 0;
 						return new StreamReader(stream);
 					default:

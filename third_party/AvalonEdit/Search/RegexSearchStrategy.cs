@@ -74,7 +74,9 @@ namespace ICSharpCode.AvalonEdit.Search
 
 	class SearchResult : TextSegment, ISearchResult
 	{
-		public Match Data { get; set; }
+		// Assigned by the FindAll iterator that constructs every instance of this type, so it is
+		// never observed unset. null! keeps ReplaceWith free of a null check that cannot fire.
+		public Match Data { get; set; } = null!;
 
 		public string ReplaceWith(string replacement)
 		{

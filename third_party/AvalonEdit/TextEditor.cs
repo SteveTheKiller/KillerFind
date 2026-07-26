@@ -1155,7 +1155,7 @@ namespace ICSharpCode.AvalonEdit
 						remainingHeight -= vl.Height;
 					}
 				}
-				
+
 				Point p = textArea.TextView.GetVisualPosition(new TextViewPosition(line, Math.Max(1, column)), yPositionMode);
 				double verticalPos = p.Y - referencedVerticalViewPortOffset;
 				if (Math.Abs(verticalPos - scrollViewer.VerticalOffset) > minimumScrollFraction * scrollViewer.ViewportHeight) {

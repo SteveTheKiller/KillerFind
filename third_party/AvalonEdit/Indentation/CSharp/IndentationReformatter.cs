@@ -114,8 +114,10 @@ namespace ICSharpCode.AvalonEdit.Indentation.CSharp
 			}
 		}
 
-		StringBuilder wordBuilder;
-		Stack<Block> blocks; // blocks contains all blocks outside of the current
+		// Init() assigns both and Reformat calls Init first, but Step is public and reachable
+		// without it, so they start valid rather than null! and a stray Step cannot throw.
+		StringBuilder wordBuilder = new StringBuilder();
+		Stack<Block> blocks = new Stack<Block>(); // blocks contains all blocks outside of the current
 		Block block;  // block is the current block
 
 		bool inString;

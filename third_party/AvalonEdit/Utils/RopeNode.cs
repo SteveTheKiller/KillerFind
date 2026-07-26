@@ -39,7 +39,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 		// Fields for pointers to sub-nodes. Only non-null for concat nodes (height>=1)
 		internal RopeNode<T> left, right;
 		internal volatile bool isShared; // specifies whether this node is shared between multiple ropes
-		// the total length of all text in this subtree
+										 // the total length of all text in this subtree
 		internal int length;
 		// the height of this subtree: 0 for leaf nodes; 1+max(left.height,right.height) for concat nodes
 		internal byte height;

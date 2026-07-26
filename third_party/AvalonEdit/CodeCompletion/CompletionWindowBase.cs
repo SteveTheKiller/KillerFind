@@ -333,7 +333,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			TextView textView = this.TextArea.TextView;
 			if (PresentationSource.FromVisual(textView) == null)
 				return;
-			
+
 			// PointToScreen returns device dependent units (physical pixels)
 			Point location = textView.PointToScreen(visualLocation - textView.ScrollOffset);
 			Point locationTop = textView.PointToScreen(visualLocationTop - textView.ScrollOffset);

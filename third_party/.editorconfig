@@ -1,0 +1,45 @@
+# Vendored third-party source. This file RAISES the bar for this tree, it does not lower it.
+#
+# The IDE analyzers report most findings at suggestion severity, which Visual Studio draws as a
+# blue squiggle and MSBuild never prints. Elevating them to warning here is what makes them
+# visible to a build, and so fixable and countable. KillerFind's own code sits outside this
+# folder and keeps exactly the severities it has today.
+#
+# The formatting block below is NOT a suppression. IDE0055 has no opinion of its own - it
+# compares against whatever convention is declared, and with nothing declared it assumes the
+# .NET default of four spaces and flags all 111,945 lines of a tree that is consistently
+# tab-indented. What follows states the convention this code is actually written in, so the rule
+# measures it against its own standard and still fires on anything that breaks it. Keeping
+# upstream's formatting is deliberate: it is what lets a fresh extract of the next release be
+# diffed against this copy to see only the changes we made (AvalonEdit/VENDORED.md lists them).
+
+[*.cs]
+
+# Every analyzer finding is a warning in here, so nothing hides at suggestion severity.
+dotnet_analyzer_diagnostic.severity = warning
+
+# ---- the convention this tree is written in (SharpDevelop house style) ----
+indent_style = tab
+indent_size = 4
+tab_width = 4
+# LF, which is what the upstream tree ships. Declaring crlf here (the Windows default, and what
+# KillerFind's own files use) accounted for 29,540 formatting findings on its own.
+end_of_line = lf
+insert_final_newline = true
+
+# Allman for types, methods and local functions; same-line for everything else, including
+# properties, accessors and control blocks. That is what the source does, throughout.
+csharp_new_line_before_open_brace = types, methods, local_functions
+csharp_new_line_before_else = false
+csharp_new_line_before_catch = false
+csharp_new_line_before_finally = false
+csharp_new_line_before_members_in_object_initializers = false
+csharp_new_line_before_members_in_anonymous_types = false
+
+# ---- documented exceptions ----
+# IDE0130 wants the namespace to match the folder. The folder is third_party\AvalonEdit and the
+# namespace is ICSharpCode.AvalonEdit; satisfying it would mean renaming the namespace of every
+# file, breaking every using in the tree and changing the API of the code we vendored. This is
+# the one rule here that cannot be satisfied rather than merely being unfixed. Also in
+# AvalonEdit/VENDORED.md.
+dotnet_diagnostic.IDE0130.severity = none
