@@ -39,7 +39,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		}
 
 		/// <inheritdoc/>
-		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+		// Matches TypeConverter's own annotations: the result is null when the name matches no
+		// registered definition, and the base method is nullable throughout.
+		public override object? ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			if (value is string definitionName) {
 				return HighlightingManager.Instance.GetDefinition(definitionName);
@@ -59,7 +61,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		}
 
 		/// <inheritdoc/>
-		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+		public override object? ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is IHighlightingDefinition definition && destinationType == typeof(string)) {
 				return definition.Name;

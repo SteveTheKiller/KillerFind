@@ -31,9 +31,13 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 	/// </summary>
 	public class HighlightingColorizer : DocumentColorizingTransformer
 	{
-		private readonly IHighlightingDefinition definition;
-		private TextView textView;
-		private IHighlighter highlighter;
+		// definition is null when the protected constructor was used and CreateHighlighter is
+		// overridden instead. textView is null until the colorizer is added to one, and again
+		// after it is removed. highlighter is null between DeregisterServices and the next
+		// RegisterServices, and for a colorizer whose text view has no document.
+		private readonly IHighlightingDefinition? definition;
+		private TextView? textView;
+		private IHighlighter? highlighter;
 		private readonly bool isFixedHighlighter;
 
 		/// <summary>
@@ -184,7 +188,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			}
 		}
 
-		private DocumentLine lastColorizedLine;
+		// Null outside a Colorize pass; it is cleared at both ends of one.
+		private DocumentLine? lastColorizedLine;
 
 		/// <inheritdoc/>
 		protected override void Colorize(ITextRunConstructionContext context)
@@ -220,7 +225,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 					}
 
 					ChangeLinePart(section.Offset, section.Offset + section.Length,
-								   visualLineElement => ApplyColorToElement(visualLineElement, section.Color));
+								   // IsEmptyColor above already skipped the sections with no color.
+								   visualLineElement => ApplyColorToElement(visualLineElement, section.Color!));
 				}
 			}
 			this.lastColorizedLine = line;
@@ -230,7 +236,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// Gets whether the color is empty (has no effect on a VisualLineTextElement).
 		/// For example, the C# "Punctuation" is an empty color.
 		/// </summary>
-		internal static bool IsEmptyColor(HighlightingColor color)
+		internal static bool IsEmptyColor(HighlightingColor? color)
 		{
 			if (color == null) {
 				return true;
@@ -350,14 +356,16 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			// so it will always invalidate the next visual line when a folded line is constructed
 			// and the highlighting stack has changed.
 
+			// This only runs while a highlighter is registered, which happens only after the
+			// colorizer has a text view with a document.
 			if (fromLineNumber == toLineNumber) {
-				textView.Redraw(textView.Document.GetLineByNumber(fromLineNumber));
+				textView!.Redraw(textView.Document.GetLineByNumber(fromLineNumber));
 			} else {
 				// If there are multiple lines marked as changed; only the first one really matters
 				// for the highlighting during rendering.
 				// However this callback is also called outside of the rendering process, e.g. when a highlighter
 				// decides to re-highlight some section based on external feedback (e.g. semantic highlighting).
-				DocumentLine fromLine = textView.Document.GetLineByNumber(fromLineNumber);
+				DocumentLine fromLine = textView!.Document.GetLineByNumber(fromLineNumber);
 				DocumentLine toLine = textView.Document.GetLineByNumber(toLineNumber);
 				int startOffset = fromLine.Offset;
 				textView.Redraw(startOffset, toLine.EndOffset - startOffset);

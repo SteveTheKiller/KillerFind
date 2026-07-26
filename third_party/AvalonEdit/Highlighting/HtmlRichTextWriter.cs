@@ -35,7 +35,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 	{
 		private readonly TextWriter htmlWriter;
 		private readonly HtmlOptions options;
-		private readonly Stack<string> endTagStack = new();
+		// Element type is nullable: a span that needed no HTML tag pushes null, so that EndSpan
+		// still pops one entry per BeginSpan and writes nothing for those.
+		private readonly Stack<string?> endTagStack = new();
 		private bool spaceNeedsEscaping = true;
 		private bool hasSpace;
 		private bool needIndentation = true;
@@ -50,7 +52,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// disposing the HtmlRichTextWriter will not dispose the underlying htmlWriter!
 		/// </param>
 		/// <param name="options">Options that control the HTML output.</param>
-		public HtmlRichTextWriter(TextWriter htmlWriter, HtmlOptions options = null)
+		public HtmlRichTextWriter(TextWriter htmlWriter, HtmlOptions? options = null)
 		{
 			this.htmlWriter = htmlWriter ?? throw new ArgumentNullException("htmlWriter");
 			this.options = options ?? new HtmlOptions();
@@ -234,12 +236,15 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		}
 
 		/// <inheritdoc/>
-		public override void BeginSpan(HighlightingColor highlightingColor)
+		public override void BeginSpan(HighlightingColor? highlightingColor)
 		{
 			WriteIndentationAndSpace();
-			if (options.ColorNeedsSpanForStyling(highlightingColor)) {
+			// The base signature accepts null, but nothing that reaches an HTML writer produces a
+			// colorless section, and HtmlOptions treats null as an error. Left as-is deliberately:
+			// swallowing it here would hide a malformed section instead of reporting it.
+			if (options.ColorNeedsSpanForStyling(highlightingColor!)) {
 				htmlWriter.Write("<span");
-				options.WriteStyleAttributeForColor(htmlWriter, highlightingColor);
+				options.WriteStyleAttributeForColor(htmlWriter, highlightingColor!);
 				htmlWriter.Write('>');
 				endTagStack.Push("</span>");
 			} else {

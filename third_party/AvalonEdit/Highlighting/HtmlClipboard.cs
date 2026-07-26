@@ -103,7 +103,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 
 			StringBuilder html = new();
 			int segmentEndOffset = segment.EndOffset;
-			IDocumentLine line = document.GetLineByOffset(segment.Offset);
+			IDocumentLine? line = document.GetLineByOffset(segment.Offset);
 			while (line != null && line.Offset < segmentEndOffset) {
 				HighlightedLine highlightedLine;
 				if (highlighter != null) {

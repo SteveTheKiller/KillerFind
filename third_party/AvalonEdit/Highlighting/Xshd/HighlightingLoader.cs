@@ -70,7 +70,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			}
 		}
 
-		internal static XmlReader GetValidatingReader(XmlReader input, bool ignoreWhitespace, XmlSchemaSet schemaSet)
+		// A null schemaSet means "do not validate", which is how the skipValidation path calls it.
+		internal static XmlReader GetValidatingReader(XmlReader input, bool ignoreWhitespace, XmlSchemaSet? schemaSet)
 		{
 			XmlReaderSettings settings = new() {
 				CloseInput = true,

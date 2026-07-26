@@ -187,7 +187,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// Applies the HighlightingColor to the specified range of text.
 		/// If the color specifies <c>null</c> for some properties, existing highlighting is preserved.
 		/// </summary>
-		public void ApplyHighlighting(int offset, int length, HighlightingColor color)
+		// A null color applies nothing, which the body already treats as the no-op case.
+		public void ApplyHighlighting(int offset, int length, HighlightingColor? color)
 		{
 			if (color == null || color.IsEmptyForMerge) {
 				// Optimization: don't split the HighlightingState when we're not changing

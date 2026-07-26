@@ -40,7 +40,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <summary>
 		/// Gets the highlighting color associated with the highlighted section.
 		/// </summary>
-		public HighlightingColor Color { get; set; }
+		// Null for a section produced by a span or rule that sets no color of its own; the
+		// colorizer skips those (HighlightingColorizer.IsEmptyColor).
+		public HighlightingColor? Color { get; set; }
 
 		/// <inheritdoc/>
 		public override string ToString()

@@ -48,7 +48,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 				}
 
 				ChangeLinePart(section.Offset, section.Offset + section.Length,
-							   visualLineElement => HighlightingColorizer.ApplyColorToElement(visualLineElement, section.Color, CurrentContext));
+							   // IsEmptyColor above already skipped the sections with no color.
+							   visualLineElement => HighlightingColorizer.ApplyColorToElement(visualLineElement, section.Color!, CurrentContext));
 			}
 		}
 	}

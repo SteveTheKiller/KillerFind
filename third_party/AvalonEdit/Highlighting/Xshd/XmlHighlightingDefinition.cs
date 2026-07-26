@@ -57,7 +57,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 			xshd.AcceptElements(new TranslateElementVisitor(this, rnev.ruleSets, resolver));
 
 			foreach (XshdProperty p in xshd.Elements.OfType<XshdProperty>()) {
-				propDict.Add(p.Name, p.Value);
+				// The schema requires both attributes on a <Property>, so neither is null here.
+				propDict.Add(p.Name!, p.Value!);
 			}
 		}
 
@@ -375,7 +376,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 						endRegex = "($|" + endRegex + ")";
 					}
 				}
-				HighlightingColor wholeSpanColor = GetColor(span, span.SpanColorReference);
+				HighlightingColor? wholeSpanColor = GetColor(span, span.SpanColorReference);
 				return new HighlightingSpan {
 					StartExpression = CreateRegex(span, span.BeginRegex, span.BeginRegexType),
 					EndExpression = CreateRegex(span, endRegex, span.EndRegexType),

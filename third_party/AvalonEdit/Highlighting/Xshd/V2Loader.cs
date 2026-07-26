@@ -332,7 +332,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting.Xshd
 		// null for an attribute the file does not set, and answer null for "not specified".
 		private static HighlightingBrush? ParseColor(IXmlLineInfo? lineInfo, string? color)
 		{
-			if (string.IsNullOrEmpty(color)) {
+			// Spelled out rather than string.IsNullOrEmpty: on net48 that method carries no
+			// NotNullWhen annotation, so the compiler does not learn anything from it.
+			if (color == null || color.Length == 0) {
 				return null;
 			}
 

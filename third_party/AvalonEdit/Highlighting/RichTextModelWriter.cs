@@ -115,10 +115,15 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		}
 
 		/// <inheritdoc/>
-		public override void BeginSpan(HighlightingColor highlightingColor)
+		public override void BeginSpan(HighlightingColor? highlightingColor)
 		{
 			BeginColorSpan();
-			currentColor.MergeWith(highlightingColor);
+			// A colorless section still opens a span (so EndSpan stays balanced); there is simply
+			// nothing to merge into it.
+			if (highlightingColor != null) {
+				currentColor.MergeWith(highlightingColor);
+			}
+
 			currentColor.Freeze();
 		}
 	}

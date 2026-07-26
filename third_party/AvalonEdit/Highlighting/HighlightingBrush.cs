@@ -38,13 +38,13 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// Gets the real brush.
 		/// </summary>
 		/// <param name="context">The construction context. context can be null!</param>
-		public abstract Brush GetBrush(ITextRunConstructionContext context);
+		public abstract Brush GetBrush(ITextRunConstructionContext? context);
 
 		/// <summary>
 		/// Gets the color of the brush.
 		/// </summary>
 		/// <param name="context">The construction context. context can be null!</param>
-		public virtual Color? GetColor(ITextRunConstructionContext context)
+		public virtual Color? GetColor(ITextRunConstructionContext? context)
 		{
 			if (GetBrush(context) is SolidColorBrush scb) {
 				return scb.Color;
@@ -74,7 +74,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		public SimpleHighlightingBrush(Color color) : this(new SolidColorBrush(color)) { }
 
 		/// <inheritdoc/>
-		public override Brush GetBrush(ITextRunConstructionContext context)
+		public override Brush GetBrush(ITextRunConstructionContext? context)
 		{
 			return brush;
 		}
@@ -87,7 +87,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 
 		private SimpleHighlightingBrush(SerializationInfo info, StreamingContext context)
 		{
-			this.brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(info.GetString("color")));
+			// The value was written by GetObjectData below, so it round-trips.
+			this.brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(info.GetString("color"))!);
 			brush.Freeze();
 		}
 
@@ -97,7 +98,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		}
 
 		/// <inheritdoc/>
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (obj is not SimpleHighlightingBrush other) {
 				return false;
@@ -128,9 +129,10 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			this.property = property;
 		}
 
-		public override Brush GetBrush(ITextRunConstructionContext context)
+		public override Brush GetBrush(ITextRunConstructionContext? context)
 		{
-			return (Brush)property.GetValue(null, null);
+			// A static SystemColors brush property never returns null.
+			return (Brush)property.GetValue(null, null)!;
 		}
 
 		public override string ToString()
@@ -140,10 +142,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 
 		private SystemColorHighlightingBrush(SerializationInfo info, StreamingContext context)
 		{
-			property = typeof(SystemColors).GetProperty(info.GetString("propertyName"));
-			if (property == null) {
-				throw new ArgumentException("Error deserializing SystemColorHighlightingBrush");
-			}
+			property = typeof(SystemColors).GetProperty(info.GetString("propertyName"))
+				?? throw new ArgumentException("Error deserializing SystemColorHighlightingBrush");
 		}
 
 		void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
@@ -151,7 +151,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			info.AddValue("propertyName", property.Name);
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (obj is not SystemColorHighlightingBrush other) {
 				return false;

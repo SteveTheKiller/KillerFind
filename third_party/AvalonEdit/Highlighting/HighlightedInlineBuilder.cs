@@ -39,7 +39,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 	[Obsolete("Use RichText / RichTextModel instead")]
 	public sealed class HighlightedInlineBuilder
 	{
-		private static HighlightingBrush MakeBrush(Brush b)
+		// Null for anything that is not a solid color brush - gradients and image brushes have no
+		// HighlightingBrush equivalent, and the callers treat null as "leave this unset".
+		private static HighlightingBrush? MakeBrush(Brush b)
 		{
 			if (b is SolidColorBrush scb) {
 				return new SimpleHighlightingBrush(scb);
@@ -133,7 +135,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		{
 			int startIndex = GetIndexForOffset(offset);
 			int endIndex = GetIndexForOffset(offset + length);
-			HighlightingBrush hbrush = MakeBrush(brush);
+			// Null for a brush with no HighlightingBrush equivalent, which clears the foreground.
+			HighlightingBrush? hbrush = MakeBrush(brush);
 			for (int i = startIndex; i < endIndex; i++) {
 				stateChanges[i].Foreground = hbrush;
 			}
@@ -146,7 +149,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		{
 			int startIndex = GetIndexForOffset(offset);
 			int endIndex = GetIndexForOffset(offset + length);
-			HighlightingBrush hbrush = MakeBrush(brush);
+			// Same here: null clears the background.
+			HighlightingBrush? hbrush = MakeBrush(brush);
 			for (int i = startIndex; i < endIndex; i++) {
 				stateChanges[i].Background = hbrush;
 			}

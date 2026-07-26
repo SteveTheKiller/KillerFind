@@ -152,7 +152,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 #endif
 		}
 
-		private void Insert(ref int pos, ref int newSectionStart, int insertionEndPos, HighlightingColor color, Stack<int> insertionStack)
+		// color is whatever the section being merged carries, which may be nothing.
+		private void Insert(ref int pos, ref int newSectionStart, int insertionEndPos, HighlightingColor? color, Stack<int> insertionStack)
 		{
 			if (newSectionStart >= insertionEndPos) {
 				// nothing to insert here
@@ -191,9 +192,10 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			internal readonly int Offset;
 			internal readonly int Nesting;
 			internal readonly bool IsEnd;
-			internal readonly HighlightingColor Color;
+			// Carries whatever the section had, which may be nothing.
+			internal readonly HighlightingColor? Color;
 
-			public HtmlElement(int offset, int nesting, bool isEnd, HighlightingColor color)
+			public HtmlElement(int offset, int nesting, bool isEnd, HighlightingColor? color)
 			{
 				this.Offset = offset;
 				this.Nesting = nesting;
@@ -284,7 +286,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <summary>
 		/// Produces HTML code for the line, with &lt;span class="colorName"&gt; tags.
 		/// </summary>
-		public string ToHtml(HtmlOptions options = null)
+		public string ToHtml(HtmlOptions? options = null)
 		{
 			StringWriter stringWriter = new(CultureInfo.InvariantCulture);
 			using (HtmlRichTextWriter htmlWriter = new(stringWriter, options)) {
@@ -296,7 +298,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <summary>
 		/// Produces HTML code for a section of the line, with &lt;span class="colorName"&gt; tags.
 		/// </summary>
-		public string ToHtml(int startOffset, int endOffset, HtmlOptions options = null)
+		public string ToHtml(int startOffset, int endOffset, HtmlOptions? options = null)
 		{
 			StringWriter stringWriter = new(CultureInfo.InvariantCulture);
 			using (HtmlRichTextWriter htmlWriter = new(stringWriter, options)) {
@@ -321,7 +323,10 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			HighlightedInlineBuilder builder = new(Document.GetText(DocumentLine));
 			int startOffset = DocumentLine.Offset;
 			foreach (HighlightedSection section in Sections) {
-				builder.SetHighlighting(section.Offset - startOffset, section.Length, section.Color);
+				// SetHighlighting rejects null, and a section without a color has nothing to apply.
+				if (section.Color != null) {
+					builder.SetHighlighting(section.Offset - startOffset, section.Length, section.Color);
+				}
 			}
 			return builder;
 		}

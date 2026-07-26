@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -51,7 +52,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <c>model.DocumentLength</c> should correspond to <c>text.Length</c>.
 		/// This parameter may be null, in which case the RichText instance just holds plain text.
 		/// </param>
-		public RichText(string text, RichTextModel model = null)
+		public RichText(string text, RichTextModel? model = null)
 		{
 			this.Text = text ?? throw new ArgumentNullException("text");
 			if (model != null) {
@@ -60,7 +61,8 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 				stateChanges = new HighlightingColor[sections.Length];
 				for (int i = 0; i < sections.Length; i++) {
 					stateChangeOffsets[i] = sections[i].Offset;
-					stateChanges[i] = sections[i].Color;
+					// A RichTextModel section always carries a color; Empty stands in for "none".
+					stateChanges[i] = sections[i].Color ?? HighlightingColor.Empty;
 				}
 			} else {
 				stateChangeOffsets = [0];
@@ -196,7 +198,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <summary>
 		/// Produces HTML code for the line, with &lt;span style="..."&gt; tags.
 		/// </summary>
-		public string ToHtml(HtmlOptions options = null)
+		public string ToHtml(HtmlOptions? options = null)
 		{
 			StringWriter stringWriter = new(CultureInfo.InvariantCulture);
 			using (HtmlRichTextWriter htmlWriter = new(stringWriter, options)) {
@@ -208,7 +210,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <summary>
 		/// Produces HTML code for a section of the line, with &lt;span style="..."&gt; tags.
 		/// </summary>
-		public string ToHtml(int offset, int length, HtmlOptions options = null)
+		public string ToHtml(int offset, int length, HtmlOptions? options = null)
 		{
 			StringWriter stringWriter = new(CultureInfo.InvariantCulture);
 			using (HtmlRichTextWriter htmlWriter = new(stringWriter, options)) {
@@ -269,7 +271,9 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// <summary>
 		/// Implicit conversion from string to RichText.
 		/// </summary>
-		public static implicit operator RichText(string text)
+		// Null in, null out - callers convert optional strings through this.
+		[return: NotNullIfNotNull(nameof(text))]
+		public static implicit operator RichText?(string? text)
 		{
 			if (text != null) {
 				return new RichText(text);

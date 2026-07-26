@@ -96,9 +96,10 @@ namespace ICSharpCode.AvalonEdit.Utils
 		}
 
 		/// <summary>
-		/// Begin a highlighted span.
+		/// Begin a highlighted span. A null color means the section carries no formatting of its
+		/// own, which is the common case for plain text between highlighted runs.
 		/// </summary>
-		public virtual void BeginSpan(Highlighting.HighlightingColor highlightingColor)
+		public virtual void BeginSpan(Highlighting.HighlightingColor? highlightingColor)
 		{
 			BeginUnhandledSpan();
 		}
