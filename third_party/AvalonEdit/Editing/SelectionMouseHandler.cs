@@ -447,7 +447,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 							return;
 						}
 						if (shift && !textArea.Selection.IsEmpty) {
-							if (startWord.Offset < textArea.Selection.SurroundingSegment.Offset) {
+							if (startWord.Offset < textArea.Selection.SurroundingSegment!.Offset) {
 								textArea.Selection = textArea.Selection.SetEndpoint(new TextViewPosition(textArea.Document.GetLocation(startWord.Offset)));
 							} else if (startWord.EndOffset > textArea.Selection.SurroundingSegment.EndOffset) {
 								textArea.Selection = textArea.Selection.SetEndpoint(new TextViewPosition(textArea.Document.GetLocation(startWord.EndOffset)));

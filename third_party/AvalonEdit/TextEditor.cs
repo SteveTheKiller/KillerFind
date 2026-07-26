@@ -752,7 +752,8 @@ namespace ICSharpCode.AvalonEdit
 				// We'll get the text from the whole surrounding segment.
 				// This is done to ensure that SelectedText.Length == SelectionLength.
 				if (TextArea.Document != null && !TextArea.Selection.IsEmpty) {
-					return TextArea.Document.GetText(TextArea.Selection.SurroundingSegment);
+					// Guarded by the IsEmpty check above: a non-empty selection always has a segment.
+					return TextArea.Document.GetText(TextArea.Selection.SurroundingSegment!);
 				} else {
 					return string.Empty;
 				}
@@ -789,7 +790,7 @@ namespace ICSharpCode.AvalonEdit
 				if (TextArea.Selection.IsEmpty) {
 					return TextArea.Caret.Offset;
 				} else {
-					return TextArea.Selection.SurroundingSegment.Offset;
+					return TextArea.Selection.SurroundingSegment!.Offset;
 				}
 			}
 
@@ -803,7 +804,7 @@ namespace ICSharpCode.AvalonEdit
 		public int SelectionLength {
 			get {
 				if (!TextArea.Selection.IsEmpty) {
-					return TextArea.Selection.SurroundingSegment.Length;
+					return TextArea.Selection.SurroundingSegment!.Length;
 				} else {
 					return 0;
 				}

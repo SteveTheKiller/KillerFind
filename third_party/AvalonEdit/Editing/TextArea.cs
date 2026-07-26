@@ -629,7 +629,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 		#endregion
 
 		#region IScrollInfo implementation
-		private ScrollViewer scrollOwner;
+		// Null until the text area is placed inside a ScrollViewer, and again when it is removed.
+		private ScrollViewer? scrollOwner;
 		private bool canVerticallyScroll, canHorizontallyScroll;
 
 		private void ApplyScrollInfo()
@@ -675,7 +676,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		double IScrollInfo.VerticalOffset => scrollInfo != null ? scrollInfo.VerticalOffset : 0;
 
 		ScrollViewer IScrollInfo.ScrollOwner {
-			get => scrollInfo?.ScrollOwner;
+			get => scrollInfo?.ScrollOwner!;
 			set {
 				if (scrollInfo != null) {
 					scrollInfo.ScrollOwner = value;

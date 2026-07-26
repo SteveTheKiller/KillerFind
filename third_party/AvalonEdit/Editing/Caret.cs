@@ -173,7 +173,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 				// If the caret is at the end of a selection, we don't expand the selection if something
 				// is inserted at the end. Thus we also need to keep the caret in front of the insertion.
 				AnchorMovementType caretMovementType;
-				if (!textArea.Selection.IsEmpty && storedCaretOffset == textArea.Selection.SurroundingSegment.EndOffset) {
+				if (!textArea.Selection.IsEmpty && storedCaretOffset == textArea.Selection.SurroundingSegment!.EndOffset) {
 					caretMovementType = AnchorMovementType.BeforeInsertion;
 				} else {
 					caretMovementType = AnchorMovementType.Default;
