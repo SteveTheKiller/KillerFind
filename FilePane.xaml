@@ -95,6 +95,13 @@
                                     <DataTrigger Binding="{Binding IsActive}" Value="True">
                                         <Setter TargetName="tabBd" Property="Background" Value="{DynamicResource PaneBrush}"/>
                                         <Setter TargetName="tabBd" Property="BorderThickness" Value="0,3,0,0"/>
+                                        <!-- The active tab drops 1px into the pane below and rides
+                                             above it, so the pane's top border stops at the tab
+                                             instead of drawing a seam across it. Inactive tabs keep
+                                             the border under them - that contrast is what makes the
+                                             active one read as joined to the pane. -->
+                                        <Setter TargetName="tabBd" Property="Margin" Value="0,3,1,-1"/>
+                                        <Setter TargetName="tabBd" Property="Panel.ZIndex" Value="5"/>
                                         <!-- Top padding gives back the 3px the accent stripe takes,
                                              so the title doesn't drop when a tab activates. -->
                                         <Setter TargetName="tabBd" Property="Padding" Value="12,1,5,5"/>
@@ -382,6 +389,28 @@
                             </MenuItem>
                             <MenuItem Header="{DynamicResource Str_Menu_CopyHash}"      Click="MenuCopyHash_Click">
                                 <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE72E;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <!-- File operations (FileCommands.cs). Cut / Copy / Paste sit above
+                                 the destructive pair, and New folder last, so Delete never lands
+                                 where the eye expects Paste. -->
+                            <Separator/>
+                            <MenuItem Header="{DynamicResource Str_Menu_Cut}"           Click="MenuCut_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8C6;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource Str_Menu_Copy}"          Click="MenuCopy_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8C8;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource Str_Menu_Paste}"         Click="MenuPaste_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE77F;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource Str_Menu_Rename}"        Click="MenuRename_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8AC;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource Str_Menu_Delete}"        Click="MenuDelete_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE74D;"/></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{DynamicResource Str_Menu_NewFolder}"     Click="MenuNewFolder_Click">
+                                <MenuItem.Icon><TextBlock Style="{StaticResource MenuGlyph}" Text="&#xE8F4;"/></MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
                             <MenuItem Header="{DynamicResource Str_Menu_Properties}"    Click="MenuProperties_Click">

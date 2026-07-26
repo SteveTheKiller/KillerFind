@@ -256,4 +256,44 @@
     <sys:String x:Key="Str_Ks_SelectAll">tüm sonuçları seç</sys:String>
     <sys:String x:Key="Str_Ks_FocusSearch">imleci arama kutusuna getir</sys:String>
 
+    <!-- Dosya islemleri: ilerleme, catismalar ve dugmeleri -->
+    <sys:String x:Key="Str_Fo_Copying">Kopyalanıyor...</sys:String>
+    <sys:String x:Key="Str_Fo_Moving">Taşınıyor...</sys:String>
+    <sys:String x:Key="Str_Fo_Deleting">Siliniyor...</sys:String>
+    <sys:String x:Key="Str_Fo_OfCount">{1} öğeden {0}</sys:String>
+    <sys:String x:Key="Str_Fo_ConflictTitle">{0} burada zaten var. Hangisini tutmak istersiniz?</sys:String>
+    <sys:String x:Key="Str_Fo_Existing">ZATEN BURADA</sys:String>
+    <sys:String x:Key="Str_Fo_Incoming">KOPYALANACAK</sys:String>
+    <sys:String x:Key="Str_Fo_ApplyAll">Bu gruptaki diğer her şey için aynısını yap</sys:String>
+    <sys:String x:Key="Str_Btn_Replace">Değiştir</sys:String>
+    <sys:String x:Key="Str_Btn_Skip">Atla</sys:String>
+    <sys:String x:Key="Str_Btn_KeepBoth">İkisini de tut</sys:String>
+    <sys:String x:Key="Str_Btn_Rename">Yeniden adlandır</sys:String>
+    <sys:String x:Key="Str_Btn_Delete">Sil</sys:String>
+    <sys:String x:Key="Str_Fo_RenameTitle">Yeni ad</sys:String>
+    <sys:String x:Key="Str_Fo_NewFolderName">Yeni klasör</sys:String>
+    <sys:String x:Key="Str_Dlg_DeleteMsg">{0} öğe kalıcı olarak silinsin mi? Bu geri alınamaz - Geri Dönüşüm Kutusu'na gitmezler.</sys:String>
+
+    <!-- Dosya islemi kisayollari ve sonuclari -->
+    <sys:String x:Key="Str_Ks_CutCopyPaste">dosyaları kes / kopyala / yapıştır</sys:String>
+    <sys:String x:Key="Str_Ks_Rename">yeniden adlandır</sys:String>
+    <sys:String x:Key="Str_Ks_Recycle">Geri Dönüşüm Kutusu'na gönder</sys:String>
+    <sys:String x:Key="Str_Ks_DeleteForever">kalıcı olarak sil</sys:String>
+    <sys:String x:Key="Str_Ks_NewFolder">yeni klasör</sys:String>
+    <sys:String x:Key="Str_Status_PasteNeedsFolder">Önce bir klasör açın - arama sekmesinde bunları koyacak bir yer yok</sys:String>
+    <sys:String x:Key="Str_Status_DropIntoSelf">Bir klasör kendi içine bırakılamaz</sys:String>
+    <sys:String x:Key="Str_Status_OpDone">Tamam - {0} öğe</sys:String>
+    <sys:String x:Key="Str_Status_OpCanceled">{0} öğeden sonra iptal edildi</sys:String>
+    <sys:String x:Key="Str_Status_OpPartial">{0} tamam, {1} başarısız</sys:String>
+    <sys:String x:Key="Str_Status_OpFailed">Bu işe yaramadı</sys:String>
+    <sys:String x:Key="Str_Status_RenameFailed">Yeniden adlandırılamadı - {0}</sys:String>
+
+    <!-- Dosya islemleri baglam menusu -->
+    <sys:String x:Key="Str_Menu_Cut">Kes</sys:String>
+    <sys:String x:Key="Str_Menu_Copy">Kopyala</sys:String>
+    <sys:String x:Key="Str_Menu_Paste">Yapıştır</sys:String>
+    <sys:String x:Key="Str_Menu_Rename">Yeniden adlandır</sys:String>
+    <sys:String x:Key="Str_Menu_Delete">Sil  (Shift: kalıcı olarak)</sys:String>
+    <sys:String x:Key="Str_Menu_NewFolder">Yeni klasör</sys:String>
+
 </ResourceDictionary>

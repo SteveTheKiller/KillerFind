@@ -254,4 +254,44 @@
     <sys:String x:Key="Str_Ks_SelectAll">すべての結果を選択</sys:String>
     <sys:String x:Key="Str_Ks_FocusSearch">検索ボックスにカーソルを移動</sys:String>
 
+    <!-- ファイル操作: 進行状況、競合、ボタン -->
+    <sys:String x:Key="Str_Fo_Copying">コピーしています...</sys:String>
+    <sys:String x:Key="Str_Fo_Moving">移動しています...</sys:String>
+    <sys:String x:Key="Str_Fo_Deleting">削除しています...</sys:String>
+    <sys:String x:Key="Str_Fo_OfCount">{1} 件中 {0} 件</sys:String>
+    <sys:String x:Key="Str_Fo_ConflictTitle">{0} は既にここにあります。どちらを残しますか?</sys:String>
+    <sys:String x:Key="Str_Fo_Existing">既にあるもの</sys:String>
+    <sys:String x:Key="Str_Fo_Incoming">コピーするもの</sys:String>
+    <sys:String x:Key="Str_Fo_ApplyAll">この処理の残りすべてに同じ操作を適用する</sys:String>
+    <sys:String x:Key="Str_Btn_Replace">置き換える</sys:String>
+    <sys:String x:Key="Str_Btn_Skip">スキップ</sys:String>
+    <sys:String x:Key="Str_Btn_KeepBoth">両方残す</sys:String>
+    <sys:String x:Key="Str_Btn_Rename">名前の変更</sys:String>
+    <sys:String x:Key="Str_Btn_Delete">削除</sys:String>
+    <sys:String x:Key="Str_Fo_RenameTitle">新しい名前</sys:String>
+    <sys:String x:Key="Str_Fo_NewFolderName">新しいフォルダー</sys:String>
+    <sys:String x:Key="Str_Dlg_DeleteMsg">{0} 件を完全に削除しますか? 元に戻せません。ごみ箱には入りません。</sys:String>
+
+    <!-- ファイル操作のショートカットと結果 -->
+    <sys:String x:Key="Str_Ks_CutCopyPaste">ファイルを切り取り / コピー / 貼り付け</sys:String>
+    <sys:String x:Key="Str_Ks_Rename">名前を変更</sys:String>
+    <sys:String x:Key="Str_Ks_Recycle">ごみ箱に移動</sys:String>
+    <sys:String x:Key="Str_Ks_DeleteForever">完全に削除</sys:String>
+    <sys:String x:Key="Str_Ks_NewFolder">新しいフォルダー</sys:String>
+    <sys:String x:Key="Str_Status_PasteNeedsFolder">先にフォルダーを開いてください。検索タブには貼り付け先がありません</sys:String>
+    <sys:String x:Key="Str_Status_DropIntoSelf">フォルダーを自分自身の中には入れられません</sys:String>
+    <sys:String x:Key="Str_Status_OpDone">完了 - {0} 件</sys:String>
+    <sys:String x:Key="Str_Status_OpCanceled">{0} 件で中止しました</sys:String>
+    <sys:String x:Key="Str_Status_OpPartial">{0} 件完了、{1} 件失敗</sys:String>
+    <sys:String x:Key="Str_Status_OpFailed">実行できませんでした</sys:String>
+    <sys:String x:Key="Str_Status_RenameFailed">名前を変更できません - {0}</sys:String>
+
+    <!-- ファイル操作のコンテキストメニュー -->
+    <sys:String x:Key="Str_Menu_Cut">切り取り</sys:String>
+    <sys:String x:Key="Str_Menu_Copy">コピー</sys:String>
+    <sys:String x:Key="Str_Menu_Paste">貼り付け</sys:String>
+    <sys:String x:Key="Str_Menu_Rename">名前の変更</sys:String>
+    <sys:String x:Key="Str_Menu_Delete">削除  (Shift: 完全に)</sys:String>
+    <sys:String x:Key="Str_Menu_NewFolder">新しいフォルダー</sys:String>
+
 </ResourceDictionary>

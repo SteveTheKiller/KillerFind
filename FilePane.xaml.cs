@@ -96,5 +96,13 @@ namespace KillerFind
         private void MenuCopyHash_Click(object s, RoutedEventArgs e)       => Owner.MenuCopyHash_Click(s, e);
         private void MenuProperties_Click(object s, RoutedEventArgs e)     => Owner.MenuProperties_Click(s, e);
         private void MenuShell_Click(object s, RoutedEventArgs e)          => Owner.MenuShell_Click(s, e);
+
+        // File operations (FileCommands.cs)
+        private void MenuCut_Click(object s, RoutedEventArgs e)            => Owner.MenuCut_Click(s, e);
+        private void MenuCopy_Click(object s, RoutedEventArgs e)           => Owner.MenuCopy_Click(s, e);
+        private void MenuPaste_Click(object s, RoutedEventArgs e)          => Owner.MenuPaste_Click(s, e);
+        private void MenuRename_Click(object s, RoutedEventArgs e)         => Owner.MenuRename_Click(s, e);
+        private void MenuDelete_Click(object s, RoutedEventArgs e)         => Owner.MenuDelete_Click(s, e);
+        private void MenuNewFolder_Click(object s, RoutedEventArgs e)      => Owner.MenuNewFolder_Click(s, e);
     }
 }

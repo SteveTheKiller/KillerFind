@@ -256,4 +256,44 @@
     <sys:String x:Key="Str_Ks_SelectAll">alle Ergebnisse auswählen</sys:String>
     <sys:String x:Key="Str_Ks_FocusSearch">Cursor in das Suchfeld setzen</sys:String>
 
+    <!-- Dateioperationen: Fortschritt, Konflikte und deren Schaltflaechen -->
+    <sys:String x:Key="Str_Fo_Copying">Wird kopiert...</sys:String>
+    <sys:String x:Key="Str_Fo_Moving">Wird verschoben...</sys:String>
+    <sys:String x:Key="Str_Fo_Deleting">Wird gelöscht...</sys:String>
+    <sys:String x:Key="Str_Fo_OfCount">{0} von {1}</sys:String>
+    <sys:String x:Key="Str_Fo_ConflictTitle">{0} ist hier bereits vorhanden. Welche Datei möchten Sie behalten?</sys:String>
+    <sys:String x:Key="Str_Fo_Existing">BEREITS VORHANDEN</sys:String>
+    <sys:String x:Key="Str_Fo_Incoming">WIRD KOPIERT</sys:String>
+    <sys:String x:Key="Str_Fo_ApplyAll">Für alle weiteren Dateien in diesem Vorgang übernehmen</sys:String>
+    <sys:String x:Key="Str_Btn_Replace">Ersetzen</sys:String>
+    <sys:String x:Key="Str_Btn_Skip">Überspringen</sys:String>
+    <sys:String x:Key="Str_Btn_KeepBoth">Beide behalten</sys:String>
+    <sys:String x:Key="Str_Btn_Rename">Umbenennen</sys:String>
+    <sys:String x:Key="Str_Btn_Delete">Löschen</sys:String>
+    <sys:String x:Key="Str_Fo_RenameTitle">Neuer Name</sys:String>
+    <sys:String x:Key="Str_Fo_NewFolderName">Neuer Ordner</sys:String>
+    <sys:String x:Key="Str_Dlg_DeleteMsg">{0} Element(e) endgültig löschen? Das lässt sich nicht rückgängig machen - sie landen nicht im Papierkorb.</sys:String>
+
+    <!-- Tastenkuerzel fuer Dateioperationen und deren Ergebnisse -->
+    <sys:String x:Key="Str_Ks_CutCopyPaste">Dateien ausschneiden / kopieren / einfügen</sys:String>
+    <sys:String x:Key="Str_Ks_Rename">umbenennen</sys:String>
+    <sys:String x:Key="Str_Ks_Recycle">in den Papierkorb verschieben</sys:String>
+    <sys:String x:Key="Str_Ks_DeleteForever">endgültig löschen</sys:String>
+    <sys:String x:Key="Str_Ks_NewFolder">neuer Ordner</sys:String>
+    <sys:String x:Key="Str_Status_PasteNeedsFolder">Öffnen Sie zuerst einen Ordner - auf einer Suchregisterkarte gibt es kein Ziel</sys:String>
+    <sys:String x:Key="Str_Status_DropIntoSelf">Ein Ordner kann nicht in sich selbst abgelegt werden</sys:String>
+    <sys:String x:Key="Str_Status_OpDone">Fertig - {0} Element(e)</sys:String>
+    <sys:String x:Key="Str_Status_OpCanceled">Nach {0} Element(en) abgebrochen</sys:String>
+    <sys:String x:Key="Str_Status_OpPartial">{0} erledigt, {1} fehlgeschlagen</sys:String>
+    <sys:String x:Key="Str_Status_OpFailed">Das hat nicht funktioniert</sys:String>
+    <sys:String x:Key="Str_Status_RenameFailed">Umbenennen nicht möglich - {0}</sys:String>
+
+    <!-- Kontextmenue fuer Dateioperationen -->
+    <sys:String x:Key="Str_Menu_Cut">Ausschneiden</sys:String>
+    <sys:String x:Key="Str_Menu_Copy">Kopieren</sys:String>
+    <sys:String x:Key="Str_Menu_Paste">Einfügen</sys:String>
+    <sys:String x:Key="Str_Menu_Rename">Umbenennen</sys:String>
+    <sys:String x:Key="Str_Menu_Delete">Löschen  (Umschalt: endgültig)</sys:String>
+    <sys:String x:Key="Str_Menu_NewFolder">Neuer Ordner</sys:String>
+
 </ResourceDictionary>

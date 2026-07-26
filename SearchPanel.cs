@@ -60,6 +60,11 @@ namespace KillerFind
             Pane.ResultsPane.Margin    = new Thickness(0, 0, _searchOpen ? 0 : 8, 0);
             Pane.TabFadeGhost.Margin   = Pane.ResultsPane.Margin;
 
+            // The tab strip has to travel with the pane it sits on. It was left behind here, so
+            // opening the search panel moved the pane 8px right and left the strip where it was -
+            // the tabs then hung off the pane's right edge instead of lining up with it.
+            Pane.TabBar.Margin         = new Thickness(0, 6, _searchOpen ? 0 : 8, 0);
+
             // Right-hand panel, so its contents stay pinned to the RIGHT edge during the tween.
             SlideColumn(SearchCol, SearchPanel, _searchOpen,
                         SearchPanelWidth, minOpen: 200, maxOpen: 380,

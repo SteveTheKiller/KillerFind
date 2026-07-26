@@ -256,4 +256,44 @@
     <sys:String x:Key="Str_Ks_SelectAll">সব ফলাফল নির্বাচন করুন</sys:String>
     <sys:String x:Key="Str_Ks_FocusSearch">কার্সার সার্চ বাক্সে রাখুন</sys:String>
 
+    <!-- ফাইল অপারেশন: অগ্রগতি, দ্বন্দ্ব এবং বোতাম -->
+    <sys:String x:Key="Str_Fo_Copying">কপি করা হচ্ছে...</sys:String>
+    <sys:String x:Key="Str_Fo_Moving">সরানো হচ্ছে...</sys:String>
+    <sys:String x:Key="Str_Fo_Deleting">মুছে ফেলা হচ্ছে...</sys:String>
+    <sys:String x:Key="Str_Fo_OfCount">{1} এর মধ্যে {0}</sys:String>
+    <sys:String x:Key="Str_Fo_ConflictTitle">{0} এখানে ইতিমধ্যেই আছে। কোনটি রাখতে চান?</sys:String>
+    <sys:String x:Key="Str_Fo_Existing">ইতিমধ্যেই আছে</sys:String>
+    <sys:String x:Key="Str_Fo_Incoming">কপি করা হবে</sys:String>
+    <sys:String x:Key="Str_Fo_ApplyAll">এই ব্যাচের বাকি সবের জন্য একই কাজ করুন</sys:String>
+    <sys:String x:Key="Str_Btn_Replace">প্রতিস্থাপন</sys:String>
+    <sys:String x:Key="Str_Btn_Skip">এড়িয়ে যান</sys:String>
+    <sys:String x:Key="Str_Btn_KeepBoth">দুটোই রাখুন</sys:String>
+    <sys:String x:Key="Str_Btn_Rename">নাম পরিবর্তন</sys:String>
+    <sys:String x:Key="Str_Btn_Delete">মুছুন</sys:String>
+    <sys:String x:Key="Str_Fo_RenameTitle">নতুন নাম</sys:String>
+    <sys:String x:Key="Str_Fo_NewFolderName">নতুন ফোল্ডার</sys:String>
+    <sys:String x:Key="Str_Dlg_DeleteMsg">{0} টি আইটেম স্থায়ীভাবে মুছবেন? এটি ফেরানো যাবে না - এগুলো রিসাইকেল বিনে যাবে না।</sys:String>
+
+    <!-- ফাইল অপারেশনের শর্টকাট ও ফলাফল -->
+    <sys:String x:Key="Str_Ks_CutCopyPaste">ফাইল কাট / কপি / পেস্ট করুন</sys:String>
+    <sys:String x:Key="Str_Ks_Rename">নাম পরিবর্তন করুন</sys:String>
+    <sys:String x:Key="Str_Ks_Recycle">রিসাইকেল বিনে পাঠান</sys:String>
+    <sys:String x:Key="Str_Ks_DeleteForever">স্থায়ীভাবে মুছুন</sys:String>
+    <sys:String x:Key="Str_Ks_NewFolder">নতুন ফোল্ডার</sys:String>
+    <sys:String x:Key="Str_Status_PasteNeedsFolder">আগে একটি ফোল্ডার খুলুন - সার্চ ট্যাবে রাখার জায়গা নেই</sys:String>
+    <sys:String x:Key="Str_Status_DropIntoSelf">ফোল্ডারকে তার নিজের ভিতরে ফেলা যাবে না</sys:String>
+    <sys:String x:Key="Str_Status_OpDone">সম্পন্ন - {0} টি আইটেম</sys:String>
+    <sys:String x:Key="Str_Status_OpCanceled">{0} টি আইটেমের পর বাতিল</sys:String>
+    <sys:String x:Key="Str_Status_OpPartial">{0} টি সম্পন্ন, {1} টি ব্যর্থ</sys:String>
+    <sys:String x:Key="Str_Status_OpFailed">এটি কাজ করেনি</sys:String>
+    <sys:String x:Key="Str_Status_RenameFailed">নাম পরিবর্তন করা যায়নি - {0}</sys:String>
+
+    <!-- ফাইল অপারেশনের কনটেক্সট মেনু -->
+    <sys:String x:Key="Str_Menu_Cut">কাট</sys:String>
+    <sys:String x:Key="Str_Menu_Copy">কপি</sys:String>
+    <sys:String x:Key="Str_Menu_Paste">পেস্ট</sys:String>
+    <sys:String x:Key="Str_Menu_Rename">নাম পরিবর্তন</sys:String>
+    <sys:String x:Key="Str_Menu_Delete">মুছুন  (Shift: স্থায়ীভাবে)</sys:String>
+    <sys:String x:Key="Str_Menu_NewFolder">নতুন ফোল্ডার</sys:String>
+
 </ResourceDictionary>

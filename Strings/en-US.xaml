@@ -265,4 +265,44 @@
     <sys:String x:Key="Str_Ks_SelectAll">select every result</sys:String>
     <sys:String x:Key="Str_Ks_FocusSearch">put the caret in the search box</sys:String>
 
+    <!-- File operations: progress, conflicts, and their buttons -->
+    <sys:String x:Key="Str_Fo_Copying">Copying...</sys:String>
+    <sys:String x:Key="Str_Fo_Moving">Moving...</sys:String>
+    <sys:String x:Key="Str_Fo_Deleting">Deleting...</sys:String>
+    <sys:String x:Key="Str_Fo_OfCount">{0} of {1}</sys:String>
+    <sys:String x:Key="Str_Fo_ConflictTitle">{0} already exists here. Which one do you want to keep?</sys:String>
+    <sys:String x:Key="Str_Fo_Existing">ALREADY THERE</sys:String>
+    <sys:String x:Key="Str_Fo_Incoming">BEING COPIED IN</sys:String>
+    <sys:String x:Key="Str_Fo_ApplyAll">Do the same for everything else in this batch</sys:String>
+    <sys:String x:Key="Str_Btn_Replace">Replace</sys:String>
+    <sys:String x:Key="Str_Btn_Skip">Skip</sys:String>
+    <sys:String x:Key="Str_Btn_KeepBoth">Keep both</sys:String>
+    <sys:String x:Key="Str_Btn_Rename">Rename</sys:String>
+    <sys:String x:Key="Str_Btn_Delete">Delete</sys:String>
+    <sys:String x:Key="Str_Fo_RenameTitle">New name</sys:String>
+    <sys:String x:Key="Str_Fo_NewFolderName">New folder</sys:String>
+    <sys:String x:Key="Str_Dlg_DeleteMsg">Delete {0} item(s) permanently? This cannot be undone - they do not go to the Recycle Bin.</sys:String>
+
+    <!-- File-operation shortcuts and their outcomes -->
+    <sys:String x:Key="Str_Ks_CutCopyPaste">cut / copy / paste files</sys:String>
+    <sys:String x:Key="Str_Ks_Rename">rename</sys:String>
+    <sys:String x:Key="Str_Ks_Recycle">send to the Recycle Bin</sys:String>
+    <sys:String x:Key="Str_Ks_DeleteForever">delete permanently</sys:String>
+    <sys:String x:Key="Str_Ks_NewFolder">new folder</sys:String>
+    <sys:String x:Key="Str_Status_PasteNeedsFolder">Open a folder first - there is nowhere to put these on a search tab</sys:String>
+    <sys:String x:Key="Str_Status_DropIntoSelf">Cannot drop a folder into itself</sys:String>
+    <sys:String x:Key="Str_Status_OpDone">Done - {0} item(s)</sys:String>
+    <sys:String x:Key="Str_Status_OpCanceled">Canceled after {0} item(s)</sys:String>
+    <sys:String x:Key="Str_Status_OpPartial">{0} done, {1} failed</sys:String>
+    <sys:String x:Key="Str_Status_OpFailed">That did not work</sys:String>
+    <sys:String x:Key="Str_Status_RenameFailed">Could not rename - {0}</sys:String>
+
+    <!-- File-operation context menu -->
+    <sys:String x:Key="Str_Menu_Cut">Cut</sys:String>
+    <sys:String x:Key="Str_Menu_Copy">Copy</sys:String>
+    <sys:String x:Key="Str_Menu_Paste">Paste</sys:String>
+    <sys:String x:Key="Str_Menu_Rename">Rename</sys:String>
+    <sys:String x:Key="Str_Menu_Delete">Delete  (Shift: permanently)</sys:String>
+    <sys:String x:Key="Str_Menu_NewFolder">New folder</sys:String>
+
 </ResourceDictionary>

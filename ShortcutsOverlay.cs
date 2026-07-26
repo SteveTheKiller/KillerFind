@@ -22,7 +22,7 @@ namespace KillerFind
             ("Search", "Enter",          "Str_Ks_Run"),
             ("Search", "Ctrl+E",         "Str_Ks_FocusSearch"),
             ("Search", "Ctrl+N",         "Str_Ks_AddTerm"),
-            ("Search", "Ctrl+Shift+N",   "Str_Ks_AddFilter"),
+            ("Search", "F7",             "Str_Ks_AddFilter"),
             ("Search", "Ctrl+Shift+C",   "Str_Ks_CaseSensitive"),
             ("Search", "Ctrl+F",         "Str_Ks_FilterResults"),
             ("Search", "Ctrl+Shift+F",   "Str_Ks_Pipe"),
@@ -49,6 +49,11 @@ namespace KillerFind
             ("File",   "F8",             "Str_Ks_ExportCsv"),
 
             ("Edit",   "Ctrl+A",         "Str_Ks_SelectAll"),
+            ("Edit",   "Ctrl+X / C / V", "Str_Ks_CutCopyPaste"),
+            ("Edit",   "F2",             "Str_Ks_Rename"),
+            ("Edit",   "Delete",         "Str_Ks_Recycle"),
+            ("Edit",   "Shift+Delete",   "Str_Ks_DeleteForever"),
+            ("Edit",   "Ctrl+Shift+N",   "Str_Ks_NewFolder"),
             ("Edit",   "Ctrl+Shift+L",   "Str_Ks_Clear"),
             ("Edit",   "Esc",            "Str_Ks_Esc"),
 

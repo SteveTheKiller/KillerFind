@@ -49,6 +49,9 @@ namespace KillerFind
                 ["F5"]    = ("View",   "Str_Ks_Refresh"),
                 ["F8"]    = ("File",   "Str_Ks_ExportCsv"),
                 ["F9"]    = ("File",   "Str_Ks_ExportHtml"),
+                ["F2"]    = ("Edit",   "Str_Ks_Rename"),
+                ["F7"]    = ("Search", "Str_Ks_AddFilter"),
+                ["Del"]   = ("Edit",   "Str_Ks_Recycle"),
                 ["F12"]   = ("Help",   "Str_Ks_About"),
                 ["Enter"] = ("Search", "Str_Ks_Run"),
                 ["Esc"]   = ("Edit",   "Str_Ks_Esc"),
@@ -66,6 +69,9 @@ namespace KillerFind
                 ["Tab"]   = ("Tabs",   "Str_Ks_NextTab"),
                 ["E"]     = ("Search", "Str_Ks_FocusSearch"),
                 ["A"]     = ("Edit",   "Str_Ks_SelectAll"),
+                ["C"]     = ("Edit",   "Str_Ks_CutCopyPaste"),
+                ["X"]     = ("Edit",   "Str_Ks_CutCopyPaste"),
+                ["V"]     = ("Edit",   "Str_Ks_CutCopyPaste"),
                 ["Right"] = ("View",   "Str_Ks_ExpandAll"),
                 ["Left"]  = ("View",   "Str_Ks_CollapseAll"),
                 ["D1"]    = ("Tabs",   "Str_Ks_JumpTab"), ["D2"] = ("Tabs", "Str_Ks_JumpTab"),
@@ -76,14 +82,17 @@ namespace KillerFind
             },
             [KbLayer.CtrlShift] = new()
             {
-                ["N"]   = ("Search", "Str_Ks_AddFilter"),
+                ["N"]   = ("Edit",   "Str_Ks_NewFolder"),
                 ["C"]   = ("Search", "Str_Ks_CaseSensitive"),
                 ["F"]   = ("Search", "Str_Ks_Pipe"),
                 ["S"]   = ("View",   "Str_Ks_SearchPanel"),
                 ["L"]   = ("Edit",   "Str_Ks_Clear"),
                 ["Tab"] = ("Tabs",   "Str_Ks_NextTab"),
             },
-            [KbLayer.Shift] = new(),
+            [KbLayer.Shift] = new()
+            {
+                ["Del"] = ("Edit", "Str_Ks_DeleteForever"),
+            },
             [KbLayer.Alt] = new()
             {
                 ["D"]     = ("Nav", "Str_Ks_Address"),
@@ -124,7 +133,7 @@ namespace KillerFind
         private static readonly (KbLayer Layer, string Caption)[] KbLayerButtons =
         [
             (KbLayer.Base, "BASE"), (KbLayer.Ctrl, "CTRL"), (KbLayer.CtrlShift, "CTRL+SHIFT"),
-            (KbLayer.Alt, "ALT"),
+            (KbLayer.Shift, "SHIFT"), (KbLayer.Alt, "ALT"),
         ];
 
         // Modifier keycaps that light up per layer - they define the layer rather than carry a

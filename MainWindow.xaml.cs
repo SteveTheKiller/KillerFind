@@ -598,6 +598,42 @@ namespace KillerFind
                 ExportCsv_Click(this, new RoutedEventArgs());   // Export.cs - CSV
                 e.Handled = true;
             }
+            // ── File operations (FileCommands.cs) ────────────────
+            else if (e.Key == System.Windows.Input.Key.F2 && !ctrl && !alt)
+            {
+                RenameSelection();
+                e.Handled = true;
+            }
+            else if (e.Key == System.Windows.Input.Key.Delete && !ctrl && !alt
+                     && e.OriginalSource is not TextBox && e.OriginalSource is not ComboBox)
+            {
+                // Shift makes it permanent, exactly as in Explorer. Plain Delete recycles.
+                DeleteSelection(permanent: shift);
+                e.Handled = true;
+            }
+            else if (ctrl && shift && e.Key == System.Windows.Input.Key.N)
+            {
+                NewFolderHere();
+                e.Handled = true;
+            }
+            else if (ctrl && !shift && e.Key == System.Windows.Input.Key.C
+                     && e.OriginalSource is not TextBox)
+            {
+                CopySelection();
+                e.Handled = true;
+            }
+            else if (ctrl && !shift && e.Key == System.Windows.Input.Key.X
+                     && e.OriginalSource is not TextBox)
+            {
+                CutSelection();
+                e.Handled = true;
+            }
+            else if (ctrl && !shift && e.Key == System.Windows.Input.Key.V
+                     && e.OriginalSource is not TextBox)
+            {
+                PasteIntoCurrentFolder();
+                e.Handled = true;
+            }
             else if (ctrl && !shift && e.Key == System.Windows.Input.Key.A
                      && e.OriginalSource is not TextBox)
             {
@@ -673,10 +709,19 @@ namespace KillerFind
                 JumpToTab(e.Key - System.Windows.Input.Key.NumPad1 + 1);
                 e.Handled = true;
             }
-            else if (ctrl && e.Key == System.Windows.Input.Key.N)
+            else if (ctrl && !shift && e.Key == System.Windows.Input.Key.N)
             {
-                if (shift) AddFilter_Click(this, new RoutedEventArgs());
-                else       _active.Groups[_active.Groups.Count - 1].Terms.Add(new SearchTerm());
+                // Ctrl+N adds a search term. Explorer uses it for New Window, which KillerFind
+                // has no equivalent of yet - when multi-window lands, this moves and the term
+                // gets a new home the same way the filter just did.
+                _active.Groups[_active.Groups.Count - 1].Terms.Add(new SearchTerm());
+                e.Handled = true;
+            }
+            else if (e.Key == System.Windows.Input.Key.F7)
+            {
+                // Add a filter. It was Ctrl+Shift+N until New Folder claimed that chord back for
+                // Explorer; F7 is free here and a single key, which is the family preference.
+                AddFilter_Click(this, new RoutedEventArgs());
                 e.Handled = true;
             }
             else if (ctrl && e.Key == System.Windows.Input.Key.O)

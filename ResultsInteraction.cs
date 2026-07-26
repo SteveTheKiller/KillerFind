@@ -184,7 +184,10 @@ namespace KillerFind
             data.SetData(DataFormats.FileDrop, paths);          // what Explorer and mail clients read
             data.SetData(DataFormats.UnicodeText, string.Join(Environment.NewLine, paths));
 
-            try { DragDrop.DoDragDrop(Pane.ResultsList, data, DragDropEffects.Copy); }
+            // Copy AND Move offered: the drop target decides, so holding Shift while dropping
+            // into Explorer moves the files instead of copying them. Offering Copy alone made
+            // KillerFind the one place a Shift-drag silently did the wrong thing.
+            try { DragDrop.DoDragDrop(Pane.ResultsList, data, DragDropEffects.Copy | DragDropEffects.Move); }
             catch { /* a drop target that misbehaves is not ours to fix */ }
         }
 
@@ -194,9 +197,27 @@ namespace KillerFind
         // rather than a new capability.
         private void Window_DragOver(object sender, DragEventArgs e)
         {
-            e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop)
-                ? DragDropEffects.Link
-                : DragDropEffects.None;
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effects = DragDropEffects.None;
+                e.Handled = true;
+                return;
+            }
+
+            // Browsing a folder means a drop is real file work, so the cursor has to say which
+            // kind before the mouse comes up - Link would promise a shortcut and then copy.
+            // Shift forces move, Ctrl forces copy, and with neither it follows the volume: a
+            // move within one drive, a copy across drives, which is Explorer's rule.
+            if (TargetFolder() != null)                       // FileCommands.cs
+            {
+                bool ctrl  = (e.KeyStates & DragDropKeyStates.ControlKey) != 0;
+                bool shift = (e.KeyStates & DragDropKeyStates.ShiftKey)   != 0;
+                e.Effects = shift ? DragDropEffects.Move
+                          : ctrl  ? DragDropEffects.Copy
+                          : DragDropEffects.Copy | DragDropEffects.Move;
+            }
+            else e.Effects = DragDropEffects.Link;            // search tab: scope or pipe, as before
+
             e.Handled = true;
         }
 
@@ -204,6 +225,25 @@ namespace KillerFind
         {
             e.Handled = true;
             if (e.Data.GetData(DataFormats.FileDrop) is not string[] dropped || dropped.Length == 0) return;
+
+            // Browsing? Then this is a file operation, not a search gesture (FileCommands.cs).
+            string? target = TargetFolder();
+            if (target != null)
+            {
+                // Anything already sitting in the target folder is dropped onto itself - that is
+                // a no-op in Explorer, not a name collision, so it is filtered out before the
+                // conflict prompt gets a chance to ask about it.
+                var incoming = dropped
+                    .Where(p => !string.Equals(System.IO.Path.GetDirectoryName(p), target,
+                                               StringComparison.OrdinalIgnoreCase))
+                    .ToArray();
+                if (incoming.Length == 0) return;
+
+                bool ctrl  = (e.KeyStates & DragDropKeyStates.ControlKey) != 0;
+                bool shift = (e.KeyStates & DragDropKeyStates.ShiftKey)   != 0;
+                DropOntoFolder(incoming, target, e.AllowedEffects, ctrl, shift);
+                return;
+            }
 
             var folders = dropped.Where(Directory.Exists).ToList();
             var files   = dropped.Where(File.Exists).ToList();

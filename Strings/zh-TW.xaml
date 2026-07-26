@@ -256,4 +256,44 @@
     <sys:String x:Key="Str_Ks_SelectAll">選取所有結果</sys:String>
     <sys:String x:Key="Str_Ks_FocusSearch">將游標移到搜尋框</sys:String>
 
+    <!-- 檔案操作：進度、衝突及其按鈕 -->
+    <sys:String x:Key="Str_Fo_Copying">正在複製...</sys:String>
+    <sys:String x:Key="Str_Fo_Moving">正在移動...</sys:String>
+    <sys:String x:Key="Str_Fo_Deleting">正在刪除...</sys:String>
+    <sys:String x:Key="Str_Fo_OfCount">{0} / {1}</sys:String>
+    <sys:String x:Key="Str_Fo_ConflictTitle">{0} 已存在。要保留哪一個？</sys:String>
+    <sys:String x:Key="Str_Fo_Existing">已存在</sys:String>
+    <sys:String x:Key="Str_Fo_Incoming">即將複製</sys:String>
+    <sys:String x:Key="Str_Fo_ApplyAll">對本批其餘項目執行相同操作</sys:String>
+    <sys:String x:Key="Str_Btn_Replace">取代</sys:String>
+    <sys:String x:Key="Str_Btn_Skip">略過</sys:String>
+    <sys:String x:Key="Str_Btn_KeepBoth">兩者都保留</sys:String>
+    <sys:String x:Key="Str_Btn_Rename">重新命名</sys:String>
+    <sys:String x:Key="Str_Btn_Delete">刪除</sys:String>
+    <sys:String x:Key="Str_Fo_RenameTitle">新名稱</sys:String>
+    <sys:String x:Key="Str_Fo_NewFolderName">新資料夾</sys:String>
+    <sys:String x:Key="Str_Dlg_DeleteMsg">要永久刪除 {0} 個項目嗎？此操作無法復原，它們不會進入資源回收筒。</sys:String>
+
+    <!-- 檔案操作快速鍵及其結果 -->
+    <sys:String x:Key="Str_Ks_CutCopyPaste">剪下 / 複製 / 貼上檔案</sys:String>
+    <sys:String x:Key="Str_Ks_Rename">重新命名</sys:String>
+    <sys:String x:Key="Str_Ks_Recycle">移至資源回收筒</sys:String>
+    <sys:String x:Key="Str_Ks_DeleteForever">永久刪除</sys:String>
+    <sys:String x:Key="Str_Ks_NewFolder">新資料夾</sys:String>
+    <sys:String x:Key="Str_Status_PasteNeedsFolder">請先開啟一個資料夾 - 搜尋分頁沒有可放置的位置</sys:String>
+    <sys:String x:Key="Str_Status_DropIntoSelf">無法將資料夾放入其自身</sys:String>
+    <sys:String x:Key="Str_Status_OpDone">完成 - {0} 個項目</sys:String>
+    <sys:String x:Key="Str_Status_OpCanceled">在 {0} 個項目後取消</sys:String>
+    <sys:String x:Key="Str_Status_OpPartial">{0} 個完成，{1} 個失敗</sys:String>
+    <sys:String x:Key="Str_Status_OpFailed">操作未能完成</sys:String>
+    <sys:String x:Key="Str_Status_RenameFailed">無法重新命名 - {0}</sys:String>
+
+    <!-- 檔案操作右鍵選單 -->
+    <sys:String x:Key="Str_Menu_Cut">剪下</sys:String>
+    <sys:String x:Key="Str_Menu_Copy">複製</sys:String>
+    <sys:String x:Key="Str_Menu_Paste">貼上</sys:String>
+    <sys:String x:Key="Str_Menu_Rename">重新命名</sys:String>
+    <sys:String x:Key="Str_Menu_Delete">刪除  (Shift：永久刪除)</sys:String>
+    <sys:String x:Key="Str_Menu_NewFolder">新資料夾</sys:String>
+
 </ResourceDictionary>

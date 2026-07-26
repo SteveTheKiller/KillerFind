@@ -256,4 +256,44 @@
     <sys:String x:Key="Str_Ks_SelectAll">seleccionar todos los resultados</sys:String>
     <sys:String x:Key="Str_Ks_FocusSearch">poner el cursor en el cuadro de búsqueda</sys:String>
 
+    <!-- Operaciones de archivo: progreso, conflictos y sus botones -->
+    <sys:String x:Key="Str_Fo_Copying">Copiando...</sys:String>
+    <sys:String x:Key="Str_Fo_Moving">Moviendo...</sys:String>
+    <sys:String x:Key="Str_Fo_Deleting">Eliminando...</sys:String>
+    <sys:String x:Key="Str_Fo_OfCount">{0} de {1}</sys:String>
+    <sys:String x:Key="Str_Fo_ConflictTitle">{0} ya existe aquí. ¿Cuál quieres conservar?</sys:String>
+    <sys:String x:Key="Str_Fo_Existing">YA ESTÁ AQUÍ</sys:String>
+    <sys:String x:Key="Str_Fo_Incoming">SE VA A COPIAR</sys:String>
+    <sys:String x:Key="Str_Fo_ApplyAll">Hacer lo mismo con el resto de este lote</sys:String>
+    <sys:String x:Key="Str_Btn_Replace">Reemplazar</sys:String>
+    <sys:String x:Key="Str_Btn_Skip">Omitir</sys:String>
+    <sys:String x:Key="Str_Btn_KeepBoth">Conservar ambos</sys:String>
+    <sys:String x:Key="Str_Btn_Rename">Renombrar</sys:String>
+    <sys:String x:Key="Str_Btn_Delete">Eliminar</sys:String>
+    <sys:String x:Key="Str_Fo_RenameTitle">Nombre nuevo</sys:String>
+    <sys:String x:Key="Str_Fo_NewFolderName">Nueva carpeta</sys:String>
+    <sys:String x:Key="Str_Dlg_DeleteMsg">¿Eliminar {0} elemento(s) de forma permanente? No se puede deshacer: no van a la Papelera de reciclaje.</sys:String>
+
+    <!-- Atajos de operaciones de archivo y sus resultados -->
+    <sys:String x:Key="Str_Ks_CutCopyPaste">cortar / copiar / pegar archivos</sys:String>
+    <sys:String x:Key="Str_Ks_Rename">renombrar</sys:String>
+    <sys:String x:Key="Str_Ks_Recycle">enviar a la Papelera de reciclaje</sys:String>
+    <sys:String x:Key="Str_Ks_DeleteForever">eliminar permanentemente</sys:String>
+    <sys:String x:Key="Str_Ks_NewFolder">nueva carpeta</sys:String>
+    <sys:String x:Key="Str_Status_PasteNeedsFolder">Abre una carpeta primero: en una pestaña de búsqueda no hay dónde ponerlos</sys:String>
+    <sys:String x:Key="Str_Status_DropIntoSelf">No se puede soltar una carpeta dentro de sí misma</sys:String>
+    <sys:String x:Key="Str_Status_OpDone">Listo - {0} elemento(s)</sys:String>
+    <sys:String x:Key="Str_Status_OpCanceled">Cancelado tras {0} elemento(s)</sys:String>
+    <sys:String x:Key="Str_Status_OpPartial">{0} hechos, {1} fallidos</sys:String>
+    <sys:String x:Key="Str_Status_OpFailed">Eso no funcionó</sys:String>
+    <sys:String x:Key="Str_Status_RenameFailed">No se pudo renombrar - {0}</sys:String>
+
+    <!-- Menu contextual de operaciones de archivo -->
+    <sys:String x:Key="Str_Menu_Cut">Cortar</sys:String>
+    <sys:String x:Key="Str_Menu_Copy">Copiar</sys:String>
+    <sys:String x:Key="Str_Menu_Paste">Pegar</sys:String>
+    <sys:String x:Key="Str_Menu_Rename">Renombrar</sys:String>
+    <sys:String x:Key="Str_Menu_Delete">Eliminar  (Mayús: permanentemente)</sys:String>
+    <sys:String x:Key="Str_Menu_NewFolder">Nueva carpeta</sys:String>
+
 </ResourceDictionary>

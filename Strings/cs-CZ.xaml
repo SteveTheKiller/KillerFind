@@ -254,4 +254,44 @@
     <sys:String x:Key="Str_Ks_SelectAll">vybrat všechny výsledky</sys:String>
     <sys:String x:Key="Str_Ks_FocusSearch">umístit kurzor do pole hledání</sys:String>
 
+    <!-- Souborove operace: prubeh, konflikty a tlacitka -->
+    <sys:String x:Key="Str_Fo_Copying">Kopírování...</sys:String>
+    <sys:String x:Key="Str_Fo_Moving">Přesouvání...</sys:String>
+    <sys:String x:Key="Str_Fo_Deleting">Mazání...</sys:String>
+    <sys:String x:Key="Str_Fo_OfCount">{0} z {1}</sys:String>
+    <sys:String x:Key="Str_Fo_ConflictTitle">{0} zde už existuje. Který chcete ponechat?</sys:String>
+    <sys:String x:Key="Str_Fo_Existing">UŽ ZDE JE</sys:String>
+    <sys:String x:Key="Str_Fo_Incoming">BUDE ZKOPÍROVÁNO</sys:String>
+    <sys:String x:Key="Str_Fo_ApplyAll">Provést totéž pro zbytek této dávky</sys:String>
+    <sys:String x:Key="Str_Btn_Replace">Nahradit</sys:String>
+    <sys:String x:Key="Str_Btn_Skip">Přeskočit</sys:String>
+    <sys:String x:Key="Str_Btn_KeepBoth">Ponechat oba</sys:String>
+    <sys:String x:Key="Str_Btn_Rename">Přejmenovat</sys:String>
+    <sys:String x:Key="Str_Btn_Delete">Smazat</sys:String>
+    <sys:String x:Key="Str_Fo_RenameTitle">Nový název</sys:String>
+    <sys:String x:Key="Str_Fo_NewFolderName">Nová složka</sys:String>
+    <sys:String x:Key="Str_Dlg_DeleteMsg">Smazat {0} položek trvale? Nelze vrátit zpět - nepůjdou do koše.</sys:String>
+
+    <!-- Zkratky souborovych operaci a jejich vysledky -->
+    <sys:String x:Key="Str_Ks_CutCopyPaste">vyjmout / kopírovat / vložit soubory</sys:String>
+    <sys:String x:Key="Str_Ks_Rename">přejmenovat</sys:String>
+    <sys:String x:Key="Str_Ks_Recycle">přesunout do koše</sys:String>
+    <sys:String x:Key="Str_Ks_DeleteForever">smazat trvale</sys:String>
+    <sys:String x:Key="Str_Ks_NewFolder">nová složka</sys:String>
+    <sys:String x:Key="Str_Status_PasteNeedsFolder">Nejprve otevřete složku - na kartě hledání není kam je vložit</sys:String>
+    <sys:String x:Key="Str_Status_DropIntoSelf">Složku nelze přetáhnout do sebe sama</sys:String>
+    <sys:String x:Key="Str_Status_OpDone">Hotovo - {0} položek</sys:String>
+    <sys:String x:Key="Str_Status_OpCanceled">Zrušeno po {0} položkách</sys:String>
+    <sys:String x:Key="Str_Status_OpPartial">{0} hotovo, {1} selhalo</sys:String>
+    <sys:String x:Key="Str_Status_OpFailed">To se nepovedlo</sys:String>
+    <sys:String x:Key="Str_Status_RenameFailed">Nelze přejmenovat - {0}</sys:String>
+
+    <!-- Mistni nabidka souborovych operaci -->
+    <sys:String x:Key="Str_Menu_Cut">Vyjmout</sys:String>
+    <sys:String x:Key="Str_Menu_Copy">Kopírovat</sys:String>
+    <sys:String x:Key="Str_Menu_Paste">Vložit</sys:String>
+    <sys:String x:Key="Str_Menu_Rename">Přejmenovat</sys:String>
+    <sys:String x:Key="Str_Menu_Delete">Smazat  (Shift: trvale)</sys:String>
+    <sys:String x:Key="Str_Menu_NewFolder">Nová složka</sys:String>
+
 </ResourceDictionary>
