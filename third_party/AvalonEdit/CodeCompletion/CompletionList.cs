@@ -65,7 +65,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		/// Is raised when the completion list indicates that the user has chosen
 		/// an entry to be completed.
 		/// </summary>
-		public event EventHandler InsertionRequested;
+		public event EventHandler? InsertionRequested;
 
 		/// <summary>
 		/// Raises the InsertionRequested event.
@@ -75,7 +75,9 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			InsertionRequested?.Invoke(this, e);
 		}
 
-		private CompletionListBox listBox;
+		// Comes from GetTemplateChild, so it is null until a template has been applied and stays
+		// null if the template does not carry a PART_ListBox.
+		private CompletionListBox? listBox;
 
 		/// <inheritdoc/>
 		public override void OnApplyTemplate()
@@ -97,14 +99,17 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 					ApplyTemplate();
 				}
 
-				return listBox;
+				// ApplyTemplate is expected to have found PART_ListBox. The property stays
+				// non-nullable because every caller in the completion window treats it as the
+				// list; see the SelectedItem setter, which is where a failed template is handled.
+				return listBox!;
 			}
 		}
 
 		/// <summary>
 		/// Gets the scroll viewer used in this list box.
 		/// </summary>
-		public ScrollViewer ScrollViewer => listBox?.scrollViewer;
+		public ScrollViewer? ScrollViewer => listBox?.scrollViewer;
 
 		private readonly ObservableCollection<ICompletionData> completionData = [];
 
@@ -174,7 +179,11 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			base.OnMouseDoubleClick(e);
 			if (e.ChangedButton == MouseButton.Left) {
 				// only process double clicks on the ListBoxItems, not on the scroll bar
-				if (ExtensionMethods.VisualAncestorsAndSelf(e.OriginalSource as DependencyObject).TakeWhile(obj => obj != this).Any(obj => obj is ListBoxItem)) {
+				// Pattern match rather than an "as" cast: VisualAncestorsAndSelf does not accept
+				// null, and OriginalSource is only a DependencyObject when the click landed on
+				// something in the visual tree.
+				if (e.OriginalSource is DependencyObject source
+					&& ExtensionMethods.VisualAncestorsAndSelf(source).TakeWhile(obj => obj != this).Any(obj => obj is ListBoxItem)) {
 					e.Handled = true;
 					RequestInsertion(e);
 				}
@@ -188,7 +197,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		/// The setter of this property does not scroll to the selected item.
 		/// You might want to also call <see cref="ScrollIntoView"/>.
 		/// </remarks>
-		public ICompletionData SelectedItem {
+		public ICompletionData? SelectedItem {
 			get => (listBox?.SelectedItem) as ICompletionData;
 			set {
 				if (listBox == null && value != null) {
@@ -222,8 +231,10 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		}
 
 		// SelectItem gets called twice for every typed character (once from FormatLine), this helps execute SelectItem only once
-		private string currentText;
-		private ObservableCollection<ICompletionData> currentList;
+		// Both are null until the first SelectItem call, and the filtering below tests them for
+		// exactly that before deciding whether it can narrow the previous result set.
+		private string? currentText;
+		private ObservableCollection<ICompletionData>? currentList;
 
 		/// <summary>
 		/// Selects the best match, and filter the items if turned on using <see cref="IsFiltering" />.
@@ -263,7 +274,9 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 				select new { Item = item, Quality = quality };
 
 			// e.g. "DateTimeKind k = (*cc here suggests DateTimeKind*)"
-			ICompletionData suggestedItem = listBox.SelectedIndex != -1 ? (ICompletionData)listBox.Items[listBox.SelectedIndex] : null;
+			// listBox: SelectItem ran ApplyTemplate above, and everything from here down is only
+			// reachable through it. Same invariant as the ListBox property.
+			ICompletionData? suggestedItem = listBox!.SelectedIndex != -1 ? (ICompletionData)listBox.Items[listBox.SelectedIndex] : null;
 
 			ObservableCollection<ICompletionData> listBoxItems = [];
 			int bestIndex = -1;
@@ -295,7 +308,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 				return;
 			}
 
-			int suggestedIndex = listBox.SelectedIndex;
+			int suggestedIndex = listBox!.SelectedIndex;
 
 			int bestIndex = -1;
 			int bestQuality = -1;
@@ -332,9 +345,9 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		private void SelectIndexCentered(int bestIndex)
 		{
 			if (bestIndex < 0) {
-				listBox.ClearSelection();
+				listBox!.ClearSelection();
 			} else {
-				int firstItem = listBox.FirstVisibleItem;
+				int firstItem = listBox!.FirstVisibleItem;
 				if (bestIndex < firstItem || firstItem + listBox.VisibleItemCount <= bestIndex) {
 					// CenterViewOn does nothing as CompletionListBox.ScrollViewer is null
 					listBox.CenterViewOn(bestIndex);

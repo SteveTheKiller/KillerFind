@@ -32,7 +32,8 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 	/// </summary>
 	public class CompletionWindow : CompletionWindowBase
 	{
-		private ToolTip toolTip = new();
+		// Dropped on close, and tested for null everywhere it is touched afterwards.
+		private ToolTip? toolTip = new();
 
 		/// <summary>
 		/// Gets the completion list used in this completion window.
@@ -74,8 +75,14 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 
 		private void completionList_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			ICompletionData item = CompletionList.SelectedItem;
+			ICompletionData? item = CompletionList.SelectedItem;
 			if (item == null) {
+				return;
+			}
+
+			// toolTip is dropped in OnClosed, so a selection change arriving after the window has
+			// closed would have thrown on every line below this.
+			if (toolTip == null) {
 				return;
 			}
 
@@ -101,7 +108,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			Close();
 			// The window must close before Complete() is called.
 			// If the Complete callback pushes stacked input handlers, we don't want to pop those when the CC window closes.
-			ICompletionData item = CompletionList.SelectedItem;
+			ICompletionData? item = CompletionList.SelectedItem;
 			item?.Complete(this.TextArea, new AnchorSegment(this.TextArea.Document, this.StartOffset, this.EndOffset - this.StartOffset), e);
 		}
 

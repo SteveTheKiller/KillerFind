@@ -28,7 +28,9 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 	/// </summary>
 	public class CompletionListBox : ListBox
 	{
-		internal ScrollViewer scrollViewer;
+		// OnApplyTemplate clears this and only finds it again if the template has the expected
+		// Border/ScrollViewer shape, so a custom template legitimately leaves it null.
+		internal ScrollViewer? scrollViewer;
 
 		/// <inheritdoc/>
 		public override void OnApplyTemplate()

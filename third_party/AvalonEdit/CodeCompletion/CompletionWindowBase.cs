@@ -49,7 +49,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		public TextArea TextArea { get; private set; }
 
 		private readonly Window parentWindow;
-		private TextDocument document;
+		private TextDocument document = null!;
 
 		/// <summary>
 		/// Gets/Sets the start of the text range in which the completion window stays open.
@@ -127,7 +127,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		}
 
 		#region InputHandler
-		private InputHandler myInputHandler;
+		private InputHandler myInputHandler = null!;
 
 		/// <summary>
 		/// A dummy input handler (that justs invokes the default input handler).
@@ -141,8 +141,10 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			public InputHandler(CompletionWindowBase window)
 				: base(window.TextArea)
 			{
-				Debug.Assert(window != null);
-				this.window = window;
+				// Was Debug.Assert(window != null), which does nothing in a release build and
+				// left the field assignment unprovable. base(window.TextArea) has already
+				// dereferenced it by this point, so this only makes the contract explicit.
+				this.window = window ?? throw new ArgumentNullException(nameof(window));
 			}
 
 			public override void Detach()

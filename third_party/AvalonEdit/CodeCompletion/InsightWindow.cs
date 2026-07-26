@@ -97,7 +97,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 	/// </summary>
 	internal sealed class InsightWindowTemplateSelector : DataTemplateSelector
 	{
-		public override DataTemplate SelectTemplate(object item, DependencyObject container)
+		public override DataTemplate? SelectTemplate(object item, DependencyObject container)
 		{
 			if (item is string) {
 				return (DataTemplate)((FrameworkElement)container).FindResource("TextBlockTemplate");
