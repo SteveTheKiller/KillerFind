@@ -54,7 +54,7 @@ namespace ICSharpCode.AvalonEdit.Document
 
 		public void Undo()
 		{
-			OffsetChangeMap map = change.OffsetChangeMapOrNull;
+			OffsetChangeMap? map = change.OffsetChangeMapOrNull;
 			document.Replace(change.Offset, change.InsertionLength, change.RemovedText, map?.Invert());
 		}
 

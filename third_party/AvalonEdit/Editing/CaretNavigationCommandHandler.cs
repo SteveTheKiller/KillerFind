@@ -299,7 +299,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 				return visualLine.GetTextViewPosition(pos);
 			} else {
 				// move to start of next line
-				DocumentLine nextDocumentLine = visualLine.LastDocumentLine.NextLine;
+				DocumentLine? nextDocumentLine = visualLine.LastDocumentLine.NextLine;
 				if (nextDocumentLine != null) {
 					VisualLine nextLine = textView.GetOrConstructVisualLine(nextDocumentLine);
 					pos = nextLine.GetNextCaretPosition(-1, LogicalDirection.Forward, mode, enableVirtualSpace);
@@ -323,7 +323,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 				return visualLine.GetTextViewPosition(pos);
 			} else {
 				// move to end of previous line
-				DocumentLine previousDocumentLine = visualLine.FirstDocumentLine.PreviousLine;
+				DocumentLine? previousDocumentLine = visualLine.FirstDocumentLine.PreviousLine;
 				if (previousDocumentLine != null) {
 					VisualLine previousLine = textView.GetOrConstructVisualLine(previousDocumentLine);
 					pos = previousLine.GetNextCaretPosition(previousLine.VisualLength + 1, LogicalDirection.Backward, mode, enableVirtualSpace);

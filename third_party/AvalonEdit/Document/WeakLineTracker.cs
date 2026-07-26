@@ -25,7 +25,8 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// </summary>
 	public sealed class WeakLineTracker : ILineTracker
 	{
-		private TextDocument textDocument;
+		// Null after Deregister: dropping the reference is how a second Deregister becomes a no-op.
+		private TextDocument? textDocument;
 		private readonly WeakReference targetObject;
 
 		private WeakLineTracker(TextDocument textDocument, ILineTracker targetTracker)

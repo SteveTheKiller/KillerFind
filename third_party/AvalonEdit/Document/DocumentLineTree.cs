@@ -104,7 +104,8 @@ namespace ICSharpCode.AvalonEdit.Document
 			// now build the corresponding balanced tree
 			int height = GetTreeHeight(nodes.Length);
 			Debug.WriteLine("DocumentLineTree will have height: " + height);
-			root = BuildTree(nodes, 0, nodes.Length, height);
+			// nodes.Length > 0 (asserted above), so the full range always builds a node.
+			root = BuildTree(nodes, 0, nodes.Length, height)!;
 			root.color = BLACK;
 #if DEBUG
 			CheckProperties();
@@ -152,11 +153,13 @@ namespace ICSharpCode.AvalonEdit.Document
 		#endregion
 
 		#region GetNodeBy... / Get...FromNode
+		// root is never null here: a document always has at least one line, so the tree always
+		// has at least one node.
 		private LineNode GetNodeByIndex(int index)
 		{
+			LineNode node = root!;
 			Debug.Assert(index >= 0);
-			Debug.Assert(index < root.nodeTotalCount);
-			LineNode node = root;
+			Debug.Assert(index < node.nodeTotalCount);
 			while (true) {
 				if (node.left != null && index < node.left.nodeTotalCount) {
 					node = node.left;
@@ -169,7 +172,8 @@ namespace ICSharpCode.AvalonEdit.Document
 					}
 
 					index--;
-					node = node.right;
+					// index is still within this subtree's count, so the right child is there.
+					node = node.right!;
 				}
 			}
 		}
@@ -190,14 +194,15 @@ namespace ICSharpCode.AvalonEdit.Document
 			return index;
 		}
 
+		// root is never null here, for the same reason as GetNodeByIndex.
 		private LineNode GetNodeByOffset(int offset)
 		{
+			LineNode node = root!;
 			Debug.Assert(offset >= 0);
-			Debug.Assert(offset <= root.nodeTotalLength);
-			if (offset == root.nodeTotalLength) {
-				return root.RightMost;
+			Debug.Assert(offset <= node.nodeTotalLength);
+			if (offset == node.nodeTotalLength) {
+				return node.RightMost;
 			}
-			LineNode node = root;
 			while (true) {
 				if (node.left != null && offset < node.left.nodeTotalLength) {
 					node = node.left;
@@ -210,7 +215,8 @@ namespace ICSharpCode.AvalonEdit.Document
 						return node;
 					}
 
-					node = node.right;
+					// offset is still inside this subtree, so the right child is there.
+					node = node.right!;
 				}
 			}
 		}
@@ -254,7 +260,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		[Conditional("DATACONSISTENCYTEST")]
 		internal void CheckProperties()
 		{
-			Debug.Assert(root.nodeTotalLength == document.TextLength);
+			Debug.Assert(root!.nodeTotalLength == document.TextLength);
 			CheckProperties(root);
 
 			// check red-black property:
@@ -317,11 +323,15 @@ namespace ICSharpCode.AvalonEdit.Document
 		public string GetTreeAsString()
 		{
 			StringBuilder b = new();
-			AppendTreeToString(root, b, 0);
+			if (root != null) {
+				AppendTreeToString(root, b, 0);
+			}
+
 			return b.ToString();
 		}
 
-		private static void AppendTreeToString(LineNode? node, StringBuilder b, int indent)
+		// Not nullable: every call site (root, node.left, node.right) is null-checked first.
+		private static void AppendTreeToString(LineNode node, StringBuilder b, int indent)
 		{
 			if (node.color == RED) {
 				b.Append("RED   ");
@@ -422,8 +432,8 @@ namespace ICSharpCode.AvalonEdit.Document
 			// parentNode is red, so there is a conflict here!
 
 			// because the root is black, parentNode is not the root -> there is a grandparent node
-			LineNode grandparentNode = parentNode.parent;
-			LineNode uncleNode = Sibling(parentNode);
+			LineNode grandparentNode = parentNode.parent!;
+			LineNode? uncleNode = Sibling(parentNode);
 			if (uncleNode != null && uncleNode.color == RED) {
 				parentNode.color = BLACK;
 				uncleNode.color = BLACK;
@@ -433,16 +443,18 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 			// now we know: parent is red but uncle is black
 			// First rotation:
+			// The rotation moves node down one level, so the child it takes over from is there.
 			if (node == parentNode.right && parentNode == grandparentNode.left) {
 				RotateLeft(parentNode);
-				node = node.left;
+				node = node.left!;
 			} else if (node == parentNode.left && parentNode == grandparentNode.right) {
 				RotateRight(parentNode);
-				node = node.right;
+				node = node.right!;
 			}
 			// because node might have changed, reassign variables:
-			parentNode = node.parent;
-			grandparentNode = parentNode.parent;
+			// both still exist - a rotation cannot lift node above its grandparent.
+			parentNode = node.parent!;
+			grandparentNode = parentNode.parent!;
 
 			// Now recolor a bit:
 			parentNode.color = BLACK;
@@ -551,14 +563,16 @@ namespace ICSharpCode.AvalonEdit.Document
 				GetColor(sibling.left) == RED &&
 				GetColor(sibling.right) == BLACK) {
 				sibling.color = RED;
-				sibling.left.color = BLACK;
+				// GetColor returned RED, which only a real node can be.
+				sibling.left!.color = BLACK;
 				RotateRight(sibling);
 			} else if (node == parentNode.right &&
 					   sibling.color == BLACK &&
 					   GetColor(sibling.right) == RED &&
 					   GetColor(sibling.left) == BLACK) {
 				sibling.color = RED;
-				sibling.right.color = BLACK;
+				// Same here: RED means it is there.
+				sibling.right!.color = BLACK;
 				RotateLeft(sibling);
 			}
 			sibling = Sibling(node, parentNode); // update value of sibling after rotation
@@ -580,7 +594,8 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		private void ReplaceNode(LineNode replacedNode, LineNode newNode)
+		// newNode is null when the replaced node simply goes away, which is the delete path.
+		private void ReplaceNode(LineNode replacedNode, LineNode? newNode)
 		{
 			if (replacedNode.parent == null) {
 				Debug.Assert(replacedNode == root);
@@ -600,9 +615,9 @@ namespace ICSharpCode.AvalonEdit.Document
 
 		private void RotateLeft(LineNode p)
 		{
-			// let q be p's right child
-			LineNode q = p.right;
-			Debug.Assert(q != null);
+			// let q be p's right child. It is the node being lifted into p's place, so a null
+			// here is a caller that picked the wrong rotation, not a shape the tree can be in.
+			LineNode q = p.right!;
 			Debug.Assert(q.parent == p);
 			// set q to be the new root
 			ReplaceNode(p, q);
@@ -620,9 +635,8 @@ namespace ICSharpCode.AvalonEdit.Document
 
 		private void RotateRight(LineNode p)
 		{
-			// let q be p's left child
-			LineNode q = p.left;
-			Debug.Assert(q != null);
+			// let q be p's left child - see RotateLeft for why this is not a nullable read.
+			LineNode q = p.left!;
 			Debug.Assert(q.parent == p);
 			// set q to be the new root
 			ReplaceNode(p, q);
@@ -638,17 +652,21 @@ namespace ICSharpCode.AvalonEdit.Document
 			UpdateAfterRotateRight(p);
 		}
 
-		// Both overloads: a node being fixed up always has a sibling, or the black-height property
-		// was already violated before this was called.
-		private static LineNode Sibling(LineNode node)
+		// The uncle. Null IS a legitimate answer here - a red parent's sibling can be the null
+		// leaf - which is why the caller null-checks the result. node.parent is not null: the
+		// caller has already established there is a grandparent.
+		private static LineNode? Sibling(LineNode node)
 		{
 			if (node == node.parent!.left) {
-				return node.parent.right!;
+				return node.parent.right;
 			} else {
-				return node.parent.left!;
+				return node.parent.left;
 			}
 		}
 
+		// The sibling of a node being fixed up after a delete. Never null: a black node was just
+		// removed from this side, so the other side has to carry at least one black node or the
+		// black-height property was already violated before this was called.
 		private static LineNode Sibling(LineNode? node, LineNode parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
@@ -759,7 +777,8 @@ namespace ICSharpCode.AvalonEdit.Document
 		private IEnumerator<DocumentLine> Enumerate()
 		{
 			document.VerifyAccess();
-			DocumentLine line = root.LeftMost;
+			// root is never null: a document always has at least one line.
+			DocumentLine? line = root!.LeftMost;
 			while (line != null) {
 				yield return line;
 				line = line.NextLine;

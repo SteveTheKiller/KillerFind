@@ -365,7 +365,7 @@ namespace ICSharpCode.AvalonEdit.Search
 		/// </summary>
 		public void FindNext()
 		{
-			SearchResult result = renderer.CurrentResults.FindFirstSegmentWithStartAfter(textArea.Caret.Offset + 1) ?? renderer.CurrentResults.FirstSegment;
+			SearchResult? result = renderer.CurrentResults.FindFirstSegmentWithStartAfter(textArea.Caret.Offset + 1) ?? renderer.CurrentResults.FirstSegment;
 			if (result != null) {
 				SelectResult(result);
 			}
@@ -376,7 +376,7 @@ namespace ICSharpCode.AvalonEdit.Search
 		/// </summary>
 		public void FindPrevious()
 		{
-			SearchResult result = renderer.CurrentResults.FindFirstSegmentWithStartAfter(textArea.Caret.Offset);
+			SearchResult? result = renderer.CurrentResults.FindFirstSegmentWithStartAfter(textArea.Caret.Offset);
 			if (result != null) {
 				result = renderer.CurrentResults.GetPreviousSegment(result);
 			}

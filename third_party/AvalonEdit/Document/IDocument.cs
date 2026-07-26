@@ -190,12 +190,12 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Gets the name of the file the document is stored in.
 		/// Could also be a non-existent dummy file name or null if no name has been set.
 		/// </summary>
-		string FileName { get; }
+		string? FileName { get; }
 
 		/// <summary>
 		/// Fired when the file name of the document changes.
 		/// </summary>
-		event EventHandler FileNameChanged;
+		event EventHandler? FileNameChanged;
 	}
 
 	/// <summary>
@@ -223,12 +223,12 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// Gets the previous line. Returns null if this is the first line in the document.
 		/// </summary>
-		IDocumentLine PreviousLine { get; }
+		IDocumentLine? PreviousLine { get; }
 
 		/// <summary>
 		/// Gets the next line. Returns null if this is the last line in the document.
 		/// </summary>
-		IDocumentLine NextLine { get; }
+		IDocumentLine? NextLine { get; }
 
 		/// <summary>
 		/// Gets whether the line was deleted.

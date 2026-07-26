@@ -51,7 +51,9 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// <seealso cref="TextSegmentCollection{T}"/>
 	public class TextSegment : ISegment
 	{
-		internal ISegmentTree ownerTree;
+		// Null until the segment is added to a collection, and null again after it is removed:
+		// a TextSegment is usable on its own, it just cannot move offsets around while detached.
+		internal ISegmentTree? ownerTree;
 		// Structurally nullable: a leaf has no children, the root has no parent.
 		internal TextSegment? left, right, parent;
 
@@ -128,7 +130,7 @@ namespace ICSharpCode.AvalonEdit.Document
 
 				if (this.StartOffset != value) {
 					// need a copy of the variable because ownerTree.Remove() sets this.ownerTree to null
-					ISegmentTree ownerTree = this.ownerTree;
+					ISegmentTree? ownerTree = this.ownerTree;
 					if (ownerTree != null) {
 						ownerTree.Remove(this);
 						nodeLength = value;
@@ -211,14 +213,14 @@ namespace ICSharpCode.AvalonEdit.Document
 		}
 
 		/// <summary>
-		/// Gets the inorder successor of the node.
+		/// Gets the inorder successor of the node, or null if this is the last node.
 		/// </summary>
-		internal TextSegment Successor {
+		internal TextSegment? Successor {
 			get {
 				if (right != null) {
 					return right.LeftMost;
 				} else {
-					TextSegment node = this;
+					TextSegment? node = this;
 					TextSegment oldNode;
 					do {
 						oldNode = node;
@@ -231,14 +233,14 @@ namespace ICSharpCode.AvalonEdit.Document
 		}
 
 		/// <summary>
-		/// Gets the inorder predecessor of the node.
+		/// Gets the inorder predecessor of the node, or null if this is the first node.
 		/// </summary>
-		internal TextSegment Predecessor {
+		internal TextSegment? Predecessor {
 			get {
 				if (left != null) {
 					return left.RightMost;
 				} else {
-					TextSegment node = this;
+					TextSegment? node = this;
 					TextSegment oldNode;
 					do {
 						oldNode = node;

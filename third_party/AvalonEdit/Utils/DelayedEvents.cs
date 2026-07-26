@@ -47,7 +47,9 @@ namespace ICSharpCode.AvalonEdit.Utils
 
 		private readonly Queue<EventCall> eventCalls = new();
 
-		public void DelayedRaise(EventHandler handler, object sender, EventArgs e)
+		// Nullable handler: callers pass an event field straight in, and an event with no
+		// subscribers is null. Dropping it here is the point - it saves every caller a check.
+		public void DelayedRaise(EventHandler? handler, object sender, EventArgs e)
 		{
 			if (handler != null) {
 				eventCalls.Enqueue(new EventCall(handler, sender, e));

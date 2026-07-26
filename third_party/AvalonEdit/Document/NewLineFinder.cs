@@ -17,6 +17,7 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace ICSharpCode.AvalonEdit.Document
@@ -75,7 +76,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <param name="newLineType">The string representing the new line that was found, or null if no new line was found.</param>
 		/// <returns>The position of the first new line starting at or after <paramref name="offset"/>,
 		/// or -1 if no new line was found.</returns>
-		public static int FindNextNewLine(ITextSource text, int offset, out string newLineType)
+		public static int FindNextNewLine(ITextSource text, int offset, out string? newLineType)
 		{
 			if (text == null) {
 				throw new ArgumentNullException("text");
@@ -112,7 +113,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// Normalizes all new lines in <paramref name="input"/> to be <paramref name="newLine"/>.
 		/// </summary>
-		public static string NormalizeNewLines(string input, string newLine)
+		// Null in, null out: callers pass optional text straight through. The attribute says so to
+		// the compiler as well, so a caller passing a real string keeps a non-null result.
+		[return: NotNullIfNotNull(nameof(input))]
+		public static string? NormalizeNewLines(string? input, string newLine)
 		{
 			if (input == null) {
 				return null;
@@ -146,7 +150,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// </summary>
 		public static string GetNewLineFromDocument(IDocument document, int lineNumber)
 		{
-			IDocumentLine line = document.GetLineByNumber(lineNumber);
+			IDocumentLine? line = document.GetLineByNumber(lineNumber);
 			if (line.DelimiterLength == 0) {
 				// at the end of the document, there's no line delimiter, so use the delimiter
 				// from the previous line

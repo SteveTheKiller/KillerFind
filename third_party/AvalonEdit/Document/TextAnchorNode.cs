@@ -62,14 +62,14 @@ namespace ICSharpCode.AvalonEdit.Document
 		}
 
 		/// <summary>
-		/// Gets the inorder successor of the node.
+		/// Gets the inorder successor of the node, or null if this is the last node.
 		/// </summary>
-		internal TextAnchorNode Successor {
+		internal TextAnchorNode? Successor {
 			get {
 				if (right != null) {
 					return right.LeftMost;
 				} else {
-					TextAnchorNode node = this;
+					TextAnchorNode? node = this;
 					TextAnchorNode oldNode;
 					do {
 						oldNode = node;
@@ -82,14 +82,14 @@ namespace ICSharpCode.AvalonEdit.Document
 		}
 
 		/// <summary>
-		/// Gets the inorder predecessor of the node.
+		/// Gets the inorder predecessor of the node, or null if this is the first node.
 		/// </summary>
-		internal TextAnchorNode Predecessor {
+		internal TextAnchorNode? Predecessor {
 			get {
 				if (left != null) {
 					return left.RightMost;
 				} else {
-					TextAnchorNode node = this;
+					TextAnchorNode? node = this;
 					TextAnchorNode oldNode;
 					do {
 						oldNode = node;

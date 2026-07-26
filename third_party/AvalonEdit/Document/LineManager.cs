@@ -35,7 +35,9 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// A copy of the line trackers. We need a copy so that line trackers may remove themselves
 		/// while being notified (used e.g. by WeakLineTracker)
 		/// </summary>
-		private ILineTracker[] lineTrackers;
+		// Starts empty rather than null: the constructor fills it through
+		// UpdateListOfLineTrackers, and [] on an array is Array.Empty, so this costs nothing.
+		private ILineTracker[] lineTrackers = [];
 
 		internal void UpdateListOfLineTrackers()
 		{
@@ -103,7 +105,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			// keep the first document line
 			DocumentLine ls = documentLineTree.GetByNumber(1);
 			// but mark all other lines as deleted, and detach them from the other nodes
-			for (DocumentLine line = ls.NextLine; line != null; line = line.NextLine) {
+			for (DocumentLine? line = ls.NextLine; line != null; line = line.NextLine) {
 				line.isDeleted = true;
 				line.parent = line.left = line.right = null;
 			}
@@ -179,11 +181,13 @@ namespace ICSharpCode.AvalonEdit.Document
 			//startLine.MergedWith(endLine, offset - startLineOffset);
 
 			// remove all lines between startLine (excl.) and endLine (incl.)
-			DocumentLine tmp = startLine.NextLine;
+			// endLine comes after startLine (they differ, checked above), so there is at least one
+			// line to walk and the walk reaches endLine before running off the end.
+			DocumentLine? tmp = startLine.NextLine;
 			DocumentLine lineToRemove;
 			do {
-				lineToRemove = tmp;
-				tmp = tmp.NextLine;
+				lineToRemove = tmp!;
+				tmp = tmp!.NextLine;
 				RemoveLine(lineToRemove);
 			} while (lineToRemove != endLine);
 
@@ -299,8 +303,9 @@ namespace ICSharpCode.AvalonEdit.Document
 					if (newTotalLength >= 2 && document.GetCharAt(lineOffset + newTotalLength - 2) == '\r') {
 						line.DelimiterLength = 2;
 					} else if (newTotalLength == 1 && lineOffset > 0 && document.GetCharAt(lineOffset - 1) == '\r') {
-						// we need to join this line with the previous line
-						DocumentLine previousLine = line.PreviousLine;
+						// we need to join this line with the previous line.
+						// lineOffset > 0, so this line is not the first one and has a predecessor.
+						DocumentLine previousLine = line.PreviousLine!;
 						RemoveLine(line);
 						return SetLineLength(previousLine, previousLine.TotalLength + 1);
 					} else {

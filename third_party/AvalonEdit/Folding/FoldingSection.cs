@@ -64,8 +64,9 @@ namespace ICSharpCode.AvalonEdit.Folding
 				RemoveCollapsedLineSection();
 			} else {
 				collapsedSections ??= new CollapsedLineSection[manager.textViews.Count];
-				// Validate collapsed line sections
-				DocumentLine startLinePlusOne = startLine.NextLine;
+				// Validate collapsed line sections.
+				// startLine != endLine, so startLine is not the last line and has a successor.
+				DocumentLine startLinePlusOne = startLine.NextLine!;
 				for (int i = 0; i < collapsedSections.Length; i++) {
 					CollapsedLineSection? collapsedSection = collapsedSections[i];
 					if (collapsedSection == null || collapsedSection.Start != startLinePlusOne || collapsedSection.End != endLine) {

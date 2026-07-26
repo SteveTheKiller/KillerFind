@@ -51,7 +51,8 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// </example>
 	public sealed class TextAnchor : ITextAnchor
 	{
-		internal TextAnchorNode node;
+		// Null once the anchor has been deleted, which is what IsDeleted reports.
+		internal TextAnchorNode? node;
 
 		internal TextAnchor(TextDocument document)
 		{
@@ -78,7 +79,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		}
 
 		/// <inheritdoc/>
-		public event EventHandler Deleted;
+		public event EventHandler? Deleted;
 
 		internal void OnDeleted(DelayedEvents delayedEvents)
 		{

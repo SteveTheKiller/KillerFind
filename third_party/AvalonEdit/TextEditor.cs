@@ -1090,7 +1090,7 @@ namespace ICSharpCode.AvalonEdit
 					double remainingHeight = referencedVerticalViewPortOffset;
 
 					while (remainingHeight > 0) {
-						DocumentLine prevLine = vl.FirstDocumentLine.PreviousLine;
+						DocumentLine? prevLine = vl.FirstDocumentLine.PreviousLine;
 						if (prevLine == null) {
 							break;
 						}

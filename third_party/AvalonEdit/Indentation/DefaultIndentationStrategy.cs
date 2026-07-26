@@ -39,7 +39,7 @@ namespace ICSharpCode.AvalonEdit.Indentation
 				throw new ArgumentNullException("line");
 			}
 
-			DocumentLine previousLine = line.PreviousLine;
+			DocumentLine? previousLine = line.PreviousLine;
 			if (previousLine != null) {
 				ISegment indentationSegment = TextUtilities.GetWhitespaceAfter(document, previousLine.Offset);
 				string indentation = document.GetText(indentationSegment);

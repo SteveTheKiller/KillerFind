@@ -36,7 +36,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		{
 			this.InsertionOffset = insertionOffset;
 			this.document = document ?? throw new ArgumentNullException("document");
-			IDocumentLine line = document.GetLineByOffset(insertionOffset);
+			IDocumentLine? line = document.GetLineByOffset(insertionOffset);
 			if (line.DelimiterLength == 0) {
 				line = line.PreviousLine;
 			}

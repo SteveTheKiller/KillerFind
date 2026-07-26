@@ -74,7 +74,8 @@ namespace ICSharpCode.AvalonEdit.Utils
 			for (int lineNumber = 1; lineNumber <= document.LineCount; lineNumber++) {
 				IDocumentLine line = document.GetLineByNumber(lineNumber);
 				if (lineNumber > 1) {
-					texts.Add(line.PreviousLine.DelimiterLength == 2 ? "\r\n" : "\n");
+					// Not the first line, so there is a previous one.
+					texts.Add(line.PreviousLine!.DelimiterLength == 2 ? "\r\n" : "\n");
 				}
 
 				if (highlighter != null) {

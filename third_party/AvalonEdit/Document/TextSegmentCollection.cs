@@ -109,7 +109,7 @@ namespace ICSharpCode.AvalonEdit.Document
 
 		private void OnDocumentChanged(DocumentChangeEventArgs e)
 		{
-			OffsetChangeMap map = e.OffsetChangeMapOrNull;
+			OffsetChangeMap? map = e.OffsetChangeMapOrNull;
 			if (map != null) {
 				foreach (OffsetChangeMapEntry entry in map) {
 					UpdateOffsetsInternal(entry);
@@ -160,7 +160,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 
 			// move start offsets of all segments >= offset
-			TextSegment node = FindFirstSegmentWithStartAfter(offset);
+			TextSegment? node = FindFirstSegmentWithStartAfter(offset);
 			if (node != null) {
 				node.nodeLength += length;
 				UpdateAugmentedData(node);
@@ -192,7 +192,7 @@ namespace ICSharpCode.AvalonEdit.Document
 				}
 			}
 			// move start offsets of all segments > offset
-			TextSegment node = FindFirstSegmentWithStartAfter(offset + 1);
+			TextSegment? node = FindFirstSegmentWithStartAfter(offset + 1);
 			if (node != null) {
 				Debug.Assert(node.nodeLength >= change.RemovalLength);
 				node.nodeLength += change.InsertionLength - change.RemovalLength;
@@ -236,8 +236,9 @@ namespace ICSharpCode.AvalonEdit.Document
 				node.nodeLength = node.totalNodeLength = insertionOffset - root.totalNodeLength;
 				InsertAsRight(root.RightMost, node);
 			} else {
-				// insert in middle of tree
-				TextSegment n = FindNode(ref insertionOffset);
+				// insert in middle of tree.
+				// insertionOffset is inside the tree (checked above), so a node contains it.
+				TextSegment n = FindNode(ref insertionOffset)!;
 				Debug.Assert(insertionOffset < n.nodeLength);
 				// split node segment 'n' at offset
 				node.totalNodeLength = node.nodeLength = insertionOffset;
@@ -265,13 +266,13 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Segments are sorted by their start offset.
 		/// Returns null if segment is the last segment.
 		/// </summary>
-		public T GetNextSegment(T segment)
+		public T? GetNextSegment(T segment)
 		{
 			if (!Contains(segment)) {
 				throw new ArgumentException("segment is not inside the segment tree");
 			}
 
-			return (T)segment.Successor;
+			return (T?)segment.Successor;
 		}
 
 		/// <summary>
@@ -279,13 +280,13 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Segments are sorted by their start offset.
 		/// Returns null if segment is the first segment.
 		/// </summary>
-		public T GetPreviousSegment(T segment)
+		public T? GetPreviousSegment(T segment)
 		{
 			if (!Contains(segment)) {
 				throw new ArgumentException("segment is not inside the segment tree");
 			}
 
-			return (T)segment.Predecessor;
+			return (T?)segment.Predecessor;
 		}
 		#endregion
 
@@ -293,12 +294,12 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// Returns the first segment in the collection or null, if the collection is empty.
 		/// </summary>
-		public T FirstSegment => root == null ? null : (T)root.LeftMost;
+		public T? FirstSegment => root == null ? null : (T)root.LeftMost;
 
 		/// <summary>
 		/// Returns the last segment in the collection or null, if the collection is empty.
 		/// </summary>
-		public T LastSegment => root == null ? null : (T)root.RightMost;
+		public T? LastSegment => root == null ? null : (T)root.RightMost;
 		#endregion
 
 		#region FindFirstSegmentWithStartAfter
@@ -306,7 +307,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Gets the first segment with a start offset greater or equal to <paramref name="startOffset"/>.
 		/// Returns null if no such segment is found.
 		/// </summary>
-		public T FindFirstSegmentWithStartAfter(int startOffset)
+		public T? FindFirstSegmentWithStartAfter(int startOffset)
 		{
 			if (root == null) {
 				return null;
@@ -316,26 +317,28 @@ namespace ICSharpCode.AvalonEdit.Document
 				return (T)root.LeftMost;
 			}
 
-			TextSegment s = FindNode(ref startOffset);
+			TextSegment? s = FindNode(ref startOffset);
 			// startOffset means that the previous segment is starting at the offset we were looking for
 			while (startOffset == 0) {
-				TextSegment p = (s == null) ? root.RightMost : s.Predecessor;
 				// There must always be a predecessor: if we were looking for the first node, we would have already
-				// returned it as root.LeftMost above.
-				Debug.Assert(p != null);
+				// returned it as root.LeftMost above. (The assert that used to say so is folded into
+				// the ! - keeping it made p read as possibly-null on the next line.)
+				TextSegment p = ((s == null) ? root.RightMost : s.Predecessor)!;
 				startOffset += p.nodeLength;
 				s = p;
 			}
-			return (T)s;
+			return (T?)s;
 		}
 
 		/// <summary>
 		/// Finds the node at the specified offset.
 		/// After the method has run, offset is relative to the beginning of the returned node.
+		/// Returns null when no node contains the offset.
 		/// </summary>
-		private TextSegment FindNode(ref int offset)
+		private TextSegment? FindNode(ref int offset)
 		{
-			TextSegment n = root;
+			// The only caller checks root for null before calling.
+			TextSegment n = root!;
 			while (true) {
 				if (n.left != null) {
 					if (offset < n.left.totalNodeLength) {
@@ -515,7 +518,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		private void RemoveSegment(TextSegment s)
 		{
 			int oldOffset = s.StartOffset;
-			TextSegment successor = s.Successor;
+			TextSegment? successor = s.Successor;
 			if (successor != null) {
 				successor.nodeLength += s.nodeLength;
 			}
@@ -606,7 +609,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		4. Both children of every red node are black. (So every red node must have a black parent.)
 		5. Every simple path from a node to a descendant leaf contains the same number of black nodes. (Not counting the leaf node.)
 		 */
-		private void CheckNodeProperties(TextSegment node, TextSegment parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
+		private void CheckNodeProperties(TextSegment? node, TextSegment? parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
 		{
 			if (node == null) {
 				return;
@@ -696,12 +699,13 @@ namespace ICSharpCode.AvalonEdit.Document
 
 		private void FixTreeOnInsert(TextSegment node)
 		{
-			Debug.Assert(node != null);
+			// The null assert is gone: the parameter type states it, and keeping it told the
+			// compiler null was possible, which poisoned every dereference below.
 			Debug.Assert(node.color == RED);
 			Debug.Assert(node.left == null || node.left.color == BLACK);
 			Debug.Assert(node.right == null || node.right.color == BLACK);
 
-			TextSegment parentNode = node.parent;
+			TextSegment? parentNode = node.parent;
 			if (parentNode == null) {
 				// we inserted in the root -> the node must be black
 				// since this is a root node, making the node black increments the number of black nodes
@@ -718,8 +722,8 @@ namespace ICSharpCode.AvalonEdit.Document
 			// parentNode is red, so there is a conflict here!
 
 			// because the root is black, parentNode is not the root -> there is a grandparent node
-			TextSegment grandparentNode = parentNode.parent;
-			TextSegment uncleNode = Sibling(parentNode);
+			TextSegment grandparentNode = parentNode.parent!;
+			TextSegment? uncleNode = Sibling(parentNode);
 			if (uncleNode != null && uncleNode.color == RED) {
 				parentNode.color = BLACK;
 				uncleNode.color = BLACK;
@@ -729,16 +733,18 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 			// now we know: parent is red but uncle is black
 			// First rotation:
+			// The rotation moves node down one level, so the child it takes over from is there.
 			if (node == parentNode.right && parentNode == grandparentNode.left) {
 				RotateLeft(parentNode);
-				node = node.left;
+				node = node.left!;
 			} else if (node == parentNode.left && parentNode == grandparentNode.right) {
 				RotateRight(parentNode);
-				node = node.right;
+				node = node.right!;
 			}
 			// because node might have changed, reassign variables:
-			parentNode = node.parent;
-			grandparentNode = parentNode.parent;
+			// both still exist - a rotation cannot lift node above its grandparent.
+			parentNode = node.parent!;
+			grandparentNode = parentNode.parent!;
 
 			// Now recolor a bit:
 			parentNode.color = BLACK;
@@ -785,8 +791,8 @@ namespace ICSharpCode.AvalonEdit.Document
 
 			// now either removedNode.left or removedNode.right is null
 			// get the remaining child
-			TextSegment parentNode = removedNode.parent;
-			TextSegment childNode = removedNode.left ?? removedNode.right;
+			TextSegment? parentNode = removedNode.parent;
+			TextSegment? childNode = removedNode.left ?? removedNode.right;
 			ReplaceNode(removedNode, childNode);
 			if (parentNode != null) {
 				UpdateAugmentedData(parentNode);
@@ -801,7 +807,9 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		private void FixTreeOnDelete(TextSegment node, TextSegment parentNode)
+		// Both nullable: node may be the null leaf that replaced a deleted black node, and
+		// parentNode is null when the tree just lost its root.
+		private void FixTreeOnDelete(TextSegment? node, TextSegment? parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
 			if (parentNode == null) {
@@ -845,14 +853,16 @@ namespace ICSharpCode.AvalonEdit.Document
 				GetColor(sibling.left) == RED &&
 				GetColor(sibling.right) == BLACK) {
 				sibling.color = RED;
-				sibling.left.color = BLACK;
+				// GetColor returned RED, which only a real node can be.
+				sibling.left!.color = BLACK;
 				RotateRight(sibling);
 			} else if (node == parentNode.right &&
 					   sibling.color == BLACK &&
 					   GetColor(sibling.right) == RED &&
 					   GetColor(sibling.left) == BLACK) {
 				sibling.color = RED;
-				sibling.right.color = BLACK;
+				// Same here: RED means it is there.
+				sibling.right!.color = BLACK;
 				RotateLeft(sibling);
 			}
 			sibling = Sibling(node, parentNode); // update value of sibling after rotation
@@ -874,7 +884,8 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		private void ReplaceNode(TextSegment replacedNode, TextSegment newNode)
+		// newNode is null when the replaced node simply goes away, which is the delete path.
+		private void ReplaceNode(TextSegment replacedNode, TextSegment? newNode)
 		{
 			if (replacedNode.parent == null) {
 				Debug.Assert(replacedNode == root);
@@ -894,9 +905,9 @@ namespace ICSharpCode.AvalonEdit.Document
 
 		private void RotateLeft(TextSegment p)
 		{
-			// let q be p's right child
-			TextSegment q = p.right;
-			Debug.Assert(q != null);
+			// let q be p's right child. It is the node being lifted into p's place, so a null
+			// here is a caller that picked the wrong rotation, not a shape the tree can be in.
+			TextSegment q = p.right!;
 			Debug.Assert(q.parent == p);
 			// set q to be the new root
 			ReplaceNode(p, q);
@@ -915,9 +926,8 @@ namespace ICSharpCode.AvalonEdit.Document
 
 		private void RotateRight(TextSegment p)
 		{
-			// let q be p's left child
-			TextSegment q = p.left;
-			Debug.Assert(q != null);
+			// let q be p's left child - see RotateLeft for why this is not a nullable read.
+			TextSegment q = p.left!;
 			Debug.Assert(q.parent == p);
 			// set q to be the new root
 			ReplaceNode(p, q);
@@ -934,26 +944,33 @@ namespace ICSharpCode.AvalonEdit.Document
 			UpdateAugmentedData(q);
 		}
 
-		private static TextSegment Sibling(TextSegment node)
+		// The uncle. Null IS a legitimate answer here - a red parent's sibling can be the null
+		// leaf - which is why the caller null-checks the result. node.parent is not null: the
+		// caller has already established there is a grandparent.
+		private static TextSegment? Sibling(TextSegment node)
 		{
-			if (node == node.parent.left) {
+			if (node == node.parent!.left) {
 				return node.parent.right;
 			} else {
 				return node.parent.left;
 			}
 		}
 
-		private static TextSegment Sibling(TextSegment node, TextSegment parentNode)
+		// The sibling of a node being fixed up after a delete. Never null: a black node was just
+		// removed from this side, so the other side has to carry at least one black node or the
+		// black-height property was already violated before this was called.
+		private static TextSegment Sibling(TextSegment? node, TextSegment parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
 			if (node == parentNode.left) {
-				return parentNode.right;
+				return parentNode.right!;
 			} else {
-				return parentNode.left;
+				return parentNode.left!;
 			}
 		}
 
-		private static bool GetColor(TextSegment node)
+		// Nullable by design: a missing child counts as black.
+		private static bool GetColor(TextSegment? node)
 		{
 			return node != null && node.color;
 		}
@@ -1003,7 +1020,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		public IEnumerator<T> GetEnumerator()
 		{
 			if (root != null) {
-				TextSegment current = root.LeftMost;
+				TextSegment? current = root.LeftMost;
 				while (current != null) {
 					yield return (T)current;
 					// TODO: check if collection was modified during enumeration

@@ -172,9 +172,10 @@ namespace ICSharpCode.AvalonEdit.Editing
 
 		private void CalculateSegments()
 		{
-			DocumentLine nextLine = document.GetLineByNumber(Math.Min(startLine, endLine));
+			DocumentLine? nextLine = document.GetLineByNumber(Math.Min(startLine, endLine));
 			do {
-				VisualLine vl = textArea.TextView.GetOrConstructVisualLine(nextLine);
+				// nextLine is non-null on the first pass and re-checked by the while below.
+				VisualLine vl = textArea.TextView.GetOrConstructVisualLine(nextLine!);
 				int startVC = vl.GetVisualColumn(new Point(startXPos, 0), true);
 				int endVC = vl.GetVisualColumn(new Point(endXPos, 0), true);
 

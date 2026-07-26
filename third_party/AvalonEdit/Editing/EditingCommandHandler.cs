@@ -116,7 +116,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 			TextArea? textArea = GetTextArea(target);
 			if (textArea != null && textArea.Document != null) {
 				using (textArea.Document.RunUpdate()) {
-					DocumentLine start, end;
+					// Both null in the None case, which is why the loop below is guarded.
+					DocumentLine? start, end;
 					if (textArea.Selection.IsEmpty) {
 						if (defaultSegmentType == DefaultSegmentType.CurrentLine) {
 							start = end = textArea.Document.GetLineByNumber(textArea.Caret.Line);
@@ -124,7 +125,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 							start = textArea.Document.Lines.First();
 							end = textArea.Document.Lines.Last();
 						} else {
-							start = end = null!;
+							start = end = null;
 						}
 					} else {
 						ISegment segment = textArea.Selection.SurroundingSegment!;
@@ -137,8 +138,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 					}
 					if (start != null) {
 						transformLine(textArea, start);
+						// end is a line at or after start, so the walk reaches it.
 						while (start != end) {
-							start = start.NextLine;
+							start = start.NextLine!;
 							transformLine(textArea, start);
 						}
 					}
@@ -203,7 +205,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 						// IsMultiline is false for an empty selection, so the segment is there.
 						ISegment segment = textArea.Selection.SurroundingSegment!;
 						DocumentLine start = textArea.Document.GetLineByOffset(segment.Offset);
-						DocumentLine end = textArea.Document.GetLineByOffset(segment.EndOffset);
+						DocumentLine? end = textArea.Document.GetLineByOffset(segment.EndOffset);
 						// don't include the last line if no characters on it are selected
 						if (start != end && end.Offset == segment.EndOffset) {
 							end = end.PreviousLine;
@@ -220,7 +222,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 								break;
 							}
 
-							current = current.NextLine;
+							// end is at or after current, so the walk reaches it.
+							current = current.NextLine!;
 						}
 					} else {
 						string indentationString = textArea.Options.GetIndentationString(textArea.Caret.Column);
@@ -493,12 +496,13 @@ namespace ICSharpCode.AvalonEdit.Editing
 				//  - UnicodeText
 				//  - Text
 				// (but don't try the same format twice)
+				// Each GetData is guarded by the matching GetDataPresent, so none of them is null.
 				if (pastingEventArgs.FormatToApply != null && dataObject.GetDataPresent(pastingEventArgs.FormatToApply)) {
-					text = (string)dataObject.GetData(pastingEventArgs.FormatToApply);
+					text = (string)dataObject.GetData(pastingEventArgs.FormatToApply)!;
 				} else if (pastingEventArgs.FormatToApply != DataFormats.UnicodeText && dataObject.GetDataPresent(DataFormats.UnicodeText)) {
-					text = (string)dataObject.GetData(DataFormats.UnicodeText);
+					text = (string)dataObject.GetData(DataFormats.UnicodeText)!;
 				} else if (pastingEventArgs.FormatToApply != DataFormats.Text && dataObject.GetDataPresent(DataFormats.Text)) {
-					text = (string)dataObject.GetData(DataFormats.Text);
+					text = (string)dataObject.GetData(DataFormats.Text)!;
 				} else {
 					return null; // no text data format
 				}

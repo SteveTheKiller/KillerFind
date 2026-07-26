@@ -32,7 +32,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Gets a version identifier for this text source.
 		/// Returns null for unversioned text sources.
 		/// </summary>
-		ITextSourceVersion Version { get; }
+		ITextSourceVersion? Version { get; }
 
 		/// <summary>
 		/// Creates an immutable snapshot of this text source.
@@ -228,7 +228,8 @@ namespace ICSharpCode.AvalonEdit.Document
 		public static readonly StringTextSource Empty = new(string.Empty);
 
 		private readonly string text;
-		private readonly ITextSourceVersion version;
+		// Null for an unversioned source, which is what the single-argument constructor makes.
+		private readonly ITextSourceVersion? version;
 
 		/// <summary>
 		/// Creates a new StringTextSource with the given text.
@@ -248,7 +249,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		}
 
 		/// <inheritdoc/>
-		public ITextSourceVersion Version => version;
+		public ITextSourceVersion? Version => version;
 
 		/// <inheritdoc/>
 		public int TextLength => text.Length;

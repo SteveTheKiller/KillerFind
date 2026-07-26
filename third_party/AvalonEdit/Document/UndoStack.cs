@@ -168,7 +168,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// use a group descriptor to mark your changes, and on the second action,
 		/// compare LastGroupDescriptor and use <see cref="StartContinuedUndoGroup"/> if you
 		/// want to join the undo groups.</remarks>
-		public object LastGroupDescriptor { get; private set; }
+		public object? LastGroupDescriptor { get; private set; }
 
 		/// <summary>
 		/// Starts grouping changes.
@@ -263,7 +263,9 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		private List<TextDocument> affectedDocuments;
+		// Null outside an undo/redo run: the list is built when the first document is touched and
+		// dropped again once EndUpdate has been called on all of them.
+		private List<TextDocument>? affectedDocuments;
 
 		internal void RegisterAffectedDocument(TextDocument document)
 		{
@@ -470,7 +472,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// Is raised when a property (CanUndo, CanRedo) changed.
 		/// </summary>
-		public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler? PropertyChanged;
 
 		private void NotifyPropertyChanged(string propertyName)
 		{

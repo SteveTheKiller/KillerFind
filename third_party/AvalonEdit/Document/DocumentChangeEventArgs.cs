@@ -27,7 +27,9 @@ namespace ICSharpCode.AvalonEdit.Document
 	[Serializable]
 	public class DocumentChangeEventArgs : TextChangeEventArgs
 	{
-		private volatile OffsetChangeMap offsetChangeMap;
+		// Null until someone asks for a map: the common change is a single replacement, which the
+		// OffsetChangeMap property builds on demand rather than allocating for every keystroke.
+		private volatile OffsetChangeMap? offsetChangeMap;
 
 		/// <summary>
 		/// Gets the OffsetChangeMap associated with this document change.
@@ -35,7 +37,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <remarks>The OffsetChangeMap instance is guaranteed to be frozen and thus thread-safe.</remarks>
 		public OffsetChangeMap OffsetChangeMap {
 			get {
-				OffsetChangeMap map = offsetChangeMap;
+				OffsetChangeMap? map = offsetChangeMap;
 				if (map == null) {
 					// create OffsetChangeMap on demand
 					map = OffsetChangeMap.FromSingleElement(CreateSingleChangeMapEntry());
@@ -53,7 +55,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// Gets the OffsetChangeMap, or null if the default offset map (=single replacement) is being used.
 		/// </summary>
-		internal OffsetChangeMap OffsetChangeMapOrNull => offsetChangeMap;
+		internal OffsetChangeMap? OffsetChangeMapOrNull => offsetChangeMap;
 
 		/// <summary>
 		/// Gets the new offset where the specified offset moves after this document change.
@@ -78,7 +80,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// Creates a new DocumentChangeEventArgs object.
 		/// </summary>
-		public DocumentChangeEventArgs(int offset, string removedText, string insertedText, OffsetChangeMap offsetChangeMap)
+		public DocumentChangeEventArgs(int offset, string removedText, string insertedText, OffsetChangeMap? offsetChangeMap)
 			: base(offset, removedText, insertedText)
 		{
 			SetOffsetChangeMap(offsetChangeMap);
@@ -87,13 +89,14 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// Creates a new DocumentChangeEventArgs object.
 		/// </summary>
-		public DocumentChangeEventArgs(int offset, ITextSource removedText, ITextSource insertedText, OffsetChangeMap offsetChangeMap)
+		public DocumentChangeEventArgs(int offset, ITextSource removedText, ITextSource insertedText, OffsetChangeMap? offsetChangeMap)
 			: base(offset, removedText, insertedText)
 		{
 			SetOffsetChangeMap(offsetChangeMap);
 		}
 
-		private void SetOffsetChangeMap(OffsetChangeMap offsetChangeMap)
+		// Null means "no explicit map", which is the ordinary case and not an error.
+		private void SetOffsetChangeMap(OffsetChangeMap? offsetChangeMap)
 		{
 			if (offsetChangeMap != null) {
 				if (!offsetChangeMap.IsFrozen) {
@@ -111,7 +114,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <inheritdoc/>
 		public override TextChangeEventArgs Invert()
 		{
-			OffsetChangeMap map = this.OffsetChangeMapOrNull;
+			OffsetChangeMap? map = this.OffsetChangeMapOrNull;
 			if (map != null) {
 				map = map.Invert();
 				map.Freeze();

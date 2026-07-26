@@ -61,7 +61,9 @@ namespace ICSharpCode.AvalonEdit.Document
 
 		private readonly TextDocument document;
 		private readonly List<TextAnchorNode> nodesToDelete = [];
-		private TextAnchorNode root;
+		// Null while the tree holds no anchors, which is the normal state for a document nobody
+		// has put a marker in yet.
+		private TextAnchorNode? root;
 
 		public TextAnchorTree(TextDocument document)
 		{
@@ -86,7 +88,8 @@ namespace ICSharpCode.AvalonEdit.Document
 			if (offset == root.totalLength) {
 				PerformInsertText(FindActualBeginNode(root.RightMost), null, length, defaultAnchorMovementIsBeforeInsertion);
 			} else {
-				TextAnchorNode endNode = FindNode(ref offset);
+				// offset is inside the tree (checked above), so a node contains it.
+				TextAnchorNode endNode = FindNode(ref offset)!;
 				Debug.Assert(endNode.length > 0);
 
 				if (offset > 0) {
@@ -100,7 +103,9 @@ namespace ICSharpCode.AvalonEdit.Document
 			DeleteMarkedNodes();
 		}
 
-		private TextAnchorNode FindActualBeginNode(TextAnchorNode node)
+		// Takes null (an anchor at the very start has no predecessor) and never returns null: the
+		// caller only reaches this with a non-empty tree, so LeftMost is always something.
+		private TextAnchorNode FindActualBeginNode(TextAnchorNode? node)
 		{
 			// now find the actual beginNode
 			while (node != null && node.length == 0) {
@@ -108,24 +113,26 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 
 			// no predecessor = beginNode is first node in tree
-			node ??= root.LeftMost;
+			node ??= root!.LeftMost;
 			return node;
 		}
 
 		// Sorts the nodes in the range [beginNode, endNode) by MovementType
 		// and inserts the length between the BeforeInsertion and the AfterInsertion nodes.
-		private void PerformInsertText(TextAnchorNode beginNode, TextAnchorNode endNode, int length, bool defaultAnchorMovementIsBeforeInsertion)
+		// endNode is null at the end of the anchor tree; beginNode never is (the null assert that
+		// used to say so is gone - the parameter type says it, and asserting made every use of
+		// beginNode below read as possibly-null).
+		private void PerformInsertText(TextAnchorNode beginNode, TextAnchorNode? endNode, int length, bool defaultAnchorMovementIsBeforeInsertion)
 		{
-			Debug.Assert(beginNode != null);
-			// endNode may be null at the end of the anchor tree
-
 			// now we need to sort the nodes in the range [beginNode, endNode); putting those with
 			// MovementType.BeforeInsertion in front of those with MovementType.AfterInsertion
 			List<TextAnchorNode> beforeInsert = [];
 			//List<TextAnchorNode> afterInsert = new List<TextAnchorNode>();
-			TextAnchorNode temp = beginNode;
+			// temp is not null inside the loop: the walk stops at endNode, and the last node's
+			// Successor is null only when endNode is null too.
+			TextAnchorNode? temp = beginNode;
 			while (temp != endNode) {
-				TextAnchor anchor = (TextAnchor)temp.Target;
+				TextAnchor? anchor = (TextAnchor?)temp!.Target;
 				if (anchor == null) {
 					// afterInsert.Add(temp);
 					MarkNodeForDelete(temp);
@@ -141,8 +148,10 @@ namespace ICSharpCode.AvalonEdit.Document
 			// now again go through the range and swap the nodes with those in the beforeInsert list
 			temp = beginNode;
 			foreach (TextAnchorNode node in beforeInsert) {
-				SwapAnchors(node, temp);
-				temp = temp.Successor;
+				// Same invariant: beforeInsert only holds nodes from the range just walked, so
+				// there are at least that many nodes ahead of beginNode.
+				SwapAnchors(node, temp!);
+				temp = temp!.Successor;
 			}
 			// now temp is pointing to the first node that is afterInsert,
 			// or to endNode, if there is no afterInsert node at the offset
@@ -162,8 +171,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		private void SwapAnchors(TextAnchorNode n1, TextAnchorNode n2)
 		{
 			if (n1 != n2) {
-				TextAnchor anchor1 = (TextAnchor)n1.Target;
-				TextAnchor anchor2 = (TextAnchor)n2.Target;
+				// Both can be null: Target is a weak reference, and the anchor it pointed at may
+				// already have been collected.
+				TextAnchor? anchor1 = (TextAnchor?)n1.Target;
+				TextAnchor? anchor2 = (TextAnchor?)n2.Target;
 				if (anchor1 == null && anchor2 == null) {
 					// -> no swap required
 					return;
@@ -174,7 +185,8 @@ namespace ICSharpCode.AvalonEdit.Document
 					// unmark n1 from deletion, mark n2 for deletion
 					nodesToDelete.Remove(n1);
 					MarkNodeForDelete(n2);
-					anchor2.node = n1;
+					// anchor2 is not null: the early return above covers both being null.
+					anchor2!.node = n1;
 				} else if (anchor2 == null) {
 					// unmark n2 from deletion, mark n1 for deletion
 					nodesToDelete.Remove(n2);
@@ -214,11 +226,12 @@ namespace ICSharpCode.AvalonEdit.Document
 				return;
 			}
 
-			TextAnchorNode node = FindNode(ref offset);
-			TextAnchorNode firstDeletionSurvivor = null;
+			TextAnchorNode? node = FindNode(ref offset);
+			TextAnchorNode? firstDeletionSurvivor = null;
 			// go forward through the tree and delete all nodes in the removal segment
 			while (node != null && offset + remainingRemovalLength > node.length) {
-				TextAnchor anchor = (TextAnchor)node.Target;
+				// Null when the anchor has been collected - see SwapAnchors.
+				TextAnchor? anchor = (TextAnchor?)node.Target;
 				if (anchor != null && (anchor.SurviveDeletion || entry.RemovalNeverCausesAnchorDeletion)) {
 					firstDeletionSurvivor ??= node;
 					// This node should be deleted, but it wants to survive.
@@ -231,7 +244,7 @@ namespace ICSharpCode.AvalonEdit.Document
 					node = node.Successor;
 				} else {
 					// delete node
-					TextAnchorNode s = node.Successor;
+					TextAnchorNode? s = node.Successor;
 					remainingRemovalLength -= node.length;
 					RemoveNode(node);
 					// we already deleted the node, don't delete it twice
@@ -290,7 +303,7 @@ namespace ICSharpCode.AvalonEdit.Document
 				int pos = nodesToDelete.Count - 1;
 				TextAnchorNode n = nodesToDelete[pos];
 				// combine section of n with the following section
-				TextAnchorNode s = n.Successor;
+				TextAnchorNode? s = n.Successor;
 				if (s != null) {
 					s.length += n.length;
 				}
@@ -309,10 +322,12 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <summary>
 		/// Finds the node at the specified offset.
 		/// After the method has run, offset is relative to the beginning of the returned node.
+		/// Returns null when no node contains the offset.
 		/// </summary>
-		private TextAnchorNode FindNode(ref int offset)
+		private TextAnchorNode? FindNode(ref int offset)
 		{
-			TextAnchorNode n = root;
+			// Both callers check root for null before calling.
+			TextAnchorNode n = root!;
 			while (true) {
 				if (n.left != null) {
 					if (offset < n.left.totalLength) {
@@ -381,8 +396,9 @@ namespace ICSharpCode.AvalonEdit.Document
 				anchor.node.totalLength = anchor.node.length = offset - root.totalLength;
 				InsertAsRight(root.RightMost, anchor.node);
 			} else {
-				// insert anchor in middle of tree
-				TextAnchorNode n = FindNode(ref offset);
+				// insert anchor in middle of tree.
+				// offset is inside the tree (checked above), so a node contains it.
+				TextAnchorNode n = FindNode(ref offset)!;
 				Debug.Assert(offset < n.length);
 				// split segment 'n' at offset
 				anchor.node.totalLength = anchor.node.length = offset;
@@ -429,12 +445,13 @@ namespace ICSharpCode.AvalonEdit.Document
 
 		private void FixTreeOnInsert(TextAnchorNode node)
 		{
-			Debug.Assert(node != null);
+			// The null assert is gone: the parameter type states it, and keeping it told the
+			// compiler null was possible, which poisoned every dereference below.
 			Debug.Assert(node.color == RED);
 			Debug.Assert(node.left == null || node.left.color == BLACK);
 			Debug.Assert(node.right == null || node.right.color == BLACK);
 
-			TextAnchorNode parentNode = node.parent;
+			TextAnchorNode? parentNode = node.parent;
 			if (parentNode == null) {
 				// we inserted in the root -> the node must be black
 				// since this is a root node, making the node black increments the number of black nodes
@@ -451,8 +468,8 @@ namespace ICSharpCode.AvalonEdit.Document
 			// parentNode is red, so there is a conflict here!
 
 			// because the root is black, parentNode is not the root -> there is a grandparent node
-			TextAnchorNode grandparentNode = parentNode.parent;
-			TextAnchorNode uncleNode = Sibling(parentNode);
+			TextAnchorNode grandparentNode = parentNode.parent!;
+			TextAnchorNode? uncleNode = Sibling(parentNode);
 			if (uncleNode != null && uncleNode.color == RED) {
 				parentNode.color = BLACK;
 				uncleNode.color = BLACK;
@@ -462,16 +479,18 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 			// now we know: parent is red but uncle is black
 			// First rotation:
+			// The rotation moves node down one level, so the child it takes over from is there.
 			if (node == parentNode.right && parentNode == grandparentNode.left) {
 				RotateLeft(parentNode);
-				node = node.left;
+				node = node.left!;
 			} else if (node == parentNode.left && parentNode == grandparentNode.right) {
 				RotateRight(parentNode);
-				node = node.right;
+				node = node.right!;
 			}
 			// because node might have changed, reassign variables:
-			parentNode = node.parent;
-			grandparentNode = parentNode.parent;
+			// both still exist - a rotation cannot lift node above its grandparent.
+			parentNode = node.parent!;
+			grandparentNode = parentNode.parent!;
 
 			// Now recolor a bit:
 			parentNode.color = BLACK;
@@ -518,8 +537,8 @@ namespace ICSharpCode.AvalonEdit.Document
 
 			// now either removedNode.left or removedNode.right is null
 			// get the remaining child
-			TextAnchorNode parentNode = removedNode.parent;
-			TextAnchorNode childNode = removedNode.left ?? removedNode.right;
+			TextAnchorNode? parentNode = removedNode.parent;
+			TextAnchorNode? childNode = removedNode.left ?? removedNode.right;
 			ReplaceNode(removedNode, childNode);
 			if (parentNode != null) {
 				UpdateAugmentedData(parentNode);
@@ -534,7 +553,9 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		private void FixTreeOnDelete(TextAnchorNode node, TextAnchorNode parentNode)
+		// Both nullable: node may be the null leaf that replaced a deleted black node, and
+		// parentNode is null when the tree just lost its root.
+		private void FixTreeOnDelete(TextAnchorNode? node, TextAnchorNode? parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
 			if (parentNode == null) {
@@ -578,14 +599,16 @@ namespace ICSharpCode.AvalonEdit.Document
 				GetColor(sibling.left) == RED &&
 				GetColor(sibling.right) == BLACK) {
 				sibling.color = RED;
-				sibling.left.color = BLACK;
+				// GetColor returned RED, which only a real node can be.
+				sibling.left!.color = BLACK;
 				RotateRight(sibling);
 			} else if (node == parentNode.right &&
 					   sibling.color == BLACK &&
 					   GetColor(sibling.right) == RED &&
 					   GetColor(sibling.left) == BLACK) {
 				sibling.color = RED;
-				sibling.right.color = BLACK;
+				// Same here: RED means it is there.
+				sibling.right!.color = BLACK;
 				RotateLeft(sibling);
 			}
 			sibling = Sibling(node, parentNode); // update value of sibling after rotation
@@ -607,7 +630,8 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		private void ReplaceNode(TextAnchorNode replacedNode, TextAnchorNode newNode)
+		// newNode is null when the replaced node simply goes away, which is the delete path.
+		private void ReplaceNode(TextAnchorNode replacedNode, TextAnchorNode? newNode)
 		{
 			if (replacedNode.parent == null) {
 				Debug.Assert(replacedNode == root);
@@ -627,9 +651,9 @@ namespace ICSharpCode.AvalonEdit.Document
 
 		private void RotateLeft(TextAnchorNode p)
 		{
-			// let q be p's right child
-			TextAnchorNode q = p.right;
-			Debug.Assert(q != null);
+			// let q be p's right child. It is the node being lifted into p's place, so a null
+			// here is a caller that picked the wrong rotation, not a shape the tree can be in.
+			TextAnchorNode q = p.right!;
 			Debug.Assert(q.parent == p);
 			// set q to be the new root
 			ReplaceNode(p, q);
@@ -648,9 +672,8 @@ namespace ICSharpCode.AvalonEdit.Document
 
 		private void RotateRight(TextAnchorNode p)
 		{
-			// let q be p's left child
-			TextAnchorNode q = p.left;
-			Debug.Assert(q != null);
+			// let q be p's left child - see RotateLeft for why this is not a nullable read.
+			TextAnchorNode q = p.left!;
 			Debug.Assert(q.parent == p);
 			// set q to be the new root
 			ReplaceNode(p, q);
@@ -667,26 +690,33 @@ namespace ICSharpCode.AvalonEdit.Document
 			UpdateAugmentedData(q);
 		}
 
-		private static TextAnchorNode Sibling(TextAnchorNode node)
+		// The uncle. Null IS a legitimate answer here - a red parent's sibling can be the null
+		// leaf - which is why the caller null-checks the result. node.parent is not null: the
+		// caller has already established there is a grandparent.
+		private static TextAnchorNode? Sibling(TextAnchorNode node)
 		{
-			if (node == node.parent.left) {
+			if (node == node.parent!.left) {
 				return node.parent.right;
 			} else {
 				return node.parent.left;
 			}
 		}
 
-		private static TextAnchorNode Sibling(TextAnchorNode node, TextAnchorNode parentNode)
+		// The sibling of a node being fixed up after a delete. Never null: a black node was just
+		// removed from this side, so the other side has to carry at least one black node or the
+		// black-height property was already violated before this was called.
+		private static TextAnchorNode Sibling(TextAnchorNode? node, TextAnchorNode parentNode)
 		{
 			Debug.Assert(node == null || node.parent == parentNode);
 			if (node == parentNode.left) {
-				return parentNode.right;
+				return parentNode.right!;
 			} else {
-				return parentNode.left;
+				return parentNode.left!;
 			}
 		}
 
-		private static bool GetColor(TextAnchorNode node)
+		// Nullable by design: a missing child counts as black.
+		private static bool GetColor(TextAnchorNode? node)
 		{
 			return node != null && node.color;
 		}
@@ -729,7 +759,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		4. Both children of every red node are black. (So every red node must have a black parent.)
 		5. Every simple path from a node to a descendant leaf contains the same number of black nodes. (Not counting the leaf node.)
 		 */
-		private void CheckNodeProperties(TextAnchorNode node, TextAnchorNode parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
+		private void CheckNodeProperties(TextAnchorNode? node, TextAnchorNode? parentNode, bool parentColor, int blackCount, ref int expectedBlackCount)
 		{
 			if (node == null) {
 				return;
@@ -771,6 +801,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			return b.ToString();
 		}
 
+		// Not nullable: every call site (root, node.left, node.right) is null-checked first.
 		private static void AppendTreeToString(TextAnchorNode node, StringBuilder b, int indent)
 		{
 			if (node.color == RED) {

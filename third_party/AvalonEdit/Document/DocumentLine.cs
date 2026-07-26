@@ -51,7 +51,8 @@ namespace ICSharpCode.AvalonEdit.Document
 		internal DocumentLine(TextDocument document)
 		{
 #if DEBUG
-			Debug.Assert(document != null);
+			// No null assert: the parameter type states it, and asserting made the compiler treat
+			// the field assignment below as possibly-null.
 			this.document = document;
 #endif
 		}
@@ -197,14 +198,14 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Gets the next line in the document.
 		/// </summary>
 		/// <returns>The line following this line, or null if this is the last line.</returns>
-		public DocumentLine NextLine {
+		public DocumentLine? NextLine {
 			get {
 				DebugVerifyAccess();
 
 				if (right != null) {
 					return right.LeftMost;
 				} else {
-					DocumentLine node = this;
+					DocumentLine? node = this;
 					DocumentLine oldNode;
 					do {
 						oldNode = node;
@@ -220,14 +221,14 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Gets the previous line in the document.
 		/// </summary>
 		/// <returns>The line before this line, or null if this is the first line.</returns>
-		public DocumentLine PreviousLine {
+		public DocumentLine? PreviousLine {
 			get {
 				DebugVerifyAccess();
 
 				if (left != null) {
 					return left.RightMost;
 				} else {
-					DocumentLine node = this;
+					DocumentLine? node = this;
 					DocumentLine oldNode;
 					do {
 						oldNode = node;
@@ -239,9 +240,9 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		IDocumentLine IDocumentLine.NextLine => this.NextLine;
+		IDocumentLine? IDocumentLine.NextLine => this.NextLine;
 
-		IDocumentLine IDocumentLine.PreviousLine => this.PreviousLine;
+		IDocumentLine? IDocumentLine.PreviousLine => this.PreviousLine;
 		#endregion
 
 		#region ToString

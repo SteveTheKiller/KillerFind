@@ -199,7 +199,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// </summary>
 		public int GetNextFoldedFoldingStart(int startOffset)
 		{
-			FoldingSection fs = foldings.FindFirstSegmentWithStartAfter(startOffset);
+			FoldingSection? fs = foldings.FindFirstSegmentWithStartAfter(startOffset);
 			while (fs != null && !fs.IsFolded) {
 				fs = foldings.GetNextSegment(fs);
 			}
@@ -212,7 +212,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 		/// <paramref name="startOffset"/>.
 		/// Returns null if there are no foldings after <paramref name="startOffset"/>.
 		/// </summary>
-		public FoldingSection GetNextFolding(int startOffset)
+		public FoldingSection? GetNextFolding(int startOffset)
 		{
 			// TODO: returns the longest folding instead of any folding at the first position after startOffset
 			return foldings.FindFirstSegmentWithStartAfter(startOffset);
@@ -224,7 +224,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 		public ReadOnlyCollection<FoldingSection> GetFoldingsAt(int startOffset)
 		{
 			List<FoldingSection> result = [];
-			FoldingSection fs = foldings.FindFirstSegmentWithStartAfter(startOffset);
+			FoldingSection? fs = foldings.FindFirstSegmentWithStartAfter(startOffset);
 			while (fs != null && fs.StartOffset == startOffset) {
 				result.Add(fs);
 				fs = foldings.GetNextSegment(fs);

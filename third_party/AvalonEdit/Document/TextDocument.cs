@@ -219,7 +219,8 @@ namespace ICSharpCode.AvalonEdit.Document
 			return rope[offset];
 		}
 
-		private WeakReference cachedText;
+		// Null until someone asks for the whole text, and null again after every change.
+		private WeakReference? cachedText;
 
 		/// <summary>
 		/// Gets/Sets the text of the whole document.
@@ -227,7 +228,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		public string Text {
 			get {
 				VerifyAccess();
-				string completeText = cachedText != null ? (cachedText.Target as string) : null;
+				string? completeText = cachedText != null ? (cachedText.Target as string) : null;
 				if (completeText == null) {
 					completeText = rope.ToString();
 					cachedText = new WeakReference(completeText);
@@ -248,7 +249,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// This event is called after a group of changes is completed.
 		/// </summary>
 		/// <remarks><inheritdoc cref="Changing"/></remarks>
-		public event EventHandler TextChanged;
+		public event EventHandler? TextChanged;
 
 		event EventHandler IDocument.ChangeCompleted {
 			add => this.TextChanged += value; remove => this.TextChanged -= value;
@@ -267,7 +268,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <see cref="UndoStack"/> changes.
 		/// </summary>
 		/// <remarks><inheritdoc cref="Changing"/></remarks>
-		public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler? PropertyChanged;
 
 		/// <summary>
 		/// Is raised before the document changes.
@@ -306,10 +307,10 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// The <see cref="UndoStack"/> listens to the <c>UpdateStarted</c> and <c>UpdateFinished</c> events to group all changes into a single undo step.
 		/// </para>
 		/// </remarks>
-		public event EventHandler<DocumentChangeEventArgs> Changing;
+		public event EventHandler<DocumentChangeEventArgs>? Changing;
 
 		// Unfortunately EventHandler<T> is invariant, so we have to use two separate events
-		private event EventHandler<TextChangeEventArgs> textChanging;
+		private event EventHandler<TextChangeEventArgs>? textChanging;
 
 		event EventHandler<TextChangeEventArgs> IDocument.TextChanging {
 			add => textChanging += value; remove => textChanging -= value;
@@ -319,9 +320,9 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Is raised after the document has changed.
 		/// </summary>
 		/// <remarks><inheritdoc cref="Changing"/></remarks>
-		public event EventHandler<DocumentChangeEventArgs> Changed;
+		public event EventHandler<DocumentChangeEventArgs>? Changed;
 
-		private event EventHandler<TextChangeEventArgs> textChanged;
+		private event EventHandler<TextChangeEventArgs>? textChanged;
 
 		event EventHandler<TextChangeEventArgs> IDocument.TextChanged {
 			add => textChanged += value; remove => textChanged -= value;
@@ -469,13 +470,13 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Occurs when a document change starts.
 		/// </summary>
 		/// <remarks><inheritdoc cref="Changing"/></remarks>
-		public event EventHandler UpdateStarted;
+		public event EventHandler? UpdateStarted;
 
 		/// <summary>
 		/// Occurs when a document change is finished.
 		/// </summary>
 		/// <remarks><inheritdoc cref="Changing"/></remarks>
-		public event EventHandler UpdateFinished;
+		public event EventHandler? UpdateFinished;
 
 		void IDocument.StartUndoableAction()
 		{
@@ -748,7 +749,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Passing an OffsetChangeMap to the Replace method will automatically freeze it to ensure the thread safety of the resulting
 		/// DocumentChangeEventArgs instance.
 		/// </param>
-		public void Replace(int offset, int length, string text, OffsetChangeMap offsetChangeMap)
+		public void Replace(int offset, int length, string text, OffsetChangeMap? offsetChangeMap)
 		{
 			Replace(offset, length, new StringTextSource(text), offsetChangeMap);
 		}
@@ -768,7 +769,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Passing an OffsetChangeMap to the Replace method will automatically freeze it to ensure the thread safety of the resulting
 		/// DocumentChangeEventArgs instance.
 		/// </param>
-		public void Replace(int offset, int length, ITextSource text, OffsetChangeMap offsetChangeMap)
+		public void Replace(int offset, int length, ITextSource text, OffsetChangeMap? offsetChangeMap)
 		{
 			if (text == null) {
 				throw new ArgumentNullException("text");
@@ -797,7 +798,8 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		private void DoReplace(int offset, int length, ITextSource newText, OffsetChangeMap offsetChangeMap)
+		// Null offsetChangeMap means Normal mapping, which is the common case.
+		private void DoReplace(int offset, int length, ITextSource newText, OffsetChangeMap? offsetChangeMap)
 		{
 			if (length == 0 && newText.TextLength == 0) {
 				return;
@@ -1081,7 +1083,8 @@ namespace ICSharpCode.AvalonEdit.Document
 		#endregion
 
 		#region Service Provider
-		private IServiceProvider serviceProvider;
+		// Null until first asked for: the container below is built on demand.
+		private IServiceProvider? serviceProvider;
 
 		/// <summary>
 		/// Gets/Sets the service provider associated with this document.
@@ -1105,17 +1108,19 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		object IServiceProvider.GetService(Type serviceType)
+		// Null is the documented answer for a service nobody registered.
+		object? IServiceProvider.GetService(Type serviceType)
 		{
 			return this.ServiceProvider.GetService(serviceType);
 		}
 		#endregion
 
 		#region FileName
-		private string fileName;
+		// Null for a document that has never been saved, which is every new tab.
+		private string? fileName;
 
 		/// <inheritdoc/>
-		public event EventHandler FileNameChanged;
+		public event EventHandler? FileNameChanged;
 
 		private void OnFileNameChanged(EventArgs e)
 		{
@@ -1123,7 +1128,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		}
 
 		/// <inheritdoc/>
-		public string FileName {
+		public string? FileName {
 			get => fileName;
 			set {
 				if (fileName != value) {

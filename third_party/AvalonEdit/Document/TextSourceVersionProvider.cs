@@ -65,9 +65,11 @@ namespace ICSharpCode.AvalonEdit.Document
 			// ID used for CompareAge()
 			private readonly int id;
 
-			// the change from this version to the next version
-			internal TextChangeEventArgs change;
-			internal Version next;
+			// the change from this version to the next version.
+			// Both are null on the newest version - there is no "next" yet, and so no change to
+			// describe. AppendChange fills them in when a newer version is created.
+			internal TextChangeEventArgs? change;
+			internal Version? next;
 
 			internal Version(TextSourceVersionProvider provider)
 			{
@@ -114,9 +116,11 @@ namespace ICSharpCode.AvalonEdit.Document
 
 			private IEnumerable<TextChangeEventArgs> GetForwardChanges(Version other)
 			{
-				// Return changes from this(inclusive) to other(exclusive).
-				for (Version node = this; node != other; node = node.next) {
-					yield return node.change;
+				// Return changes from this(inclusive) to other(exclusive). Every version before
+				// 'other' is an older one, and an older version always has both a next and a
+				// change - only the newest has neither.
+				for (Version? node = this; node != other; node = node!.next) {
+					yield return node!.change!;
 				}
 			}
 

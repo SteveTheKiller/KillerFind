@@ -30,7 +30,8 @@ namespace ICSharpCode.AvalonEdit.Document
 	public sealed class RopeTextSource : ITextSource
 	{
 		private readonly Rope<char> rope;
-		private readonly ITextSourceVersion version;
+		// Null for an unversioned source, which is what the single-argument constructor makes.
+		private readonly ITextSourceVersion? version;
 
 		/// <summary>
 		/// Creates a new RopeTextSource.
@@ -136,7 +137,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		}
 
 		/// <inheritdoc/>
-		public ITextSourceVersion Version => version;
+		public ITextSourceVersion? Version => version;
 
 		/// <inheritdoc/>
 		public int IndexOf(string searchText, int startIndex, int count, StringComparison comparisonType)

@@ -63,7 +63,8 @@ namespace ICSharpCode.AvalonEdit.Document
 
 		public SimpleSegment(ISegment segment)
 		{
-			Debug.Assert(segment != null);
+			// No null assert: the parameter type states it, and asserting made both reads below
+			// look possibly-null.
 			this.Offset = segment.Offset;
 			this.Length = segment.Length;
 		}
@@ -75,7 +76,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return (obj is SimpleSegment) && Equals((SimpleSegment)obj);
 		}
