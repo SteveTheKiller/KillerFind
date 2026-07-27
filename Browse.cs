@@ -40,7 +40,12 @@ namespace KillerFind
                 try { folder = Path.GetFullPath(folder); }
                 catch { SetTabStatusKey(_active, "Str_Status_BadPath", folder); return; }
 
-                if (!Directory.Exists(folder))
+                // Demo mode browses a machine that is not on disk (DemoFileSystem.cs), so the
+                // existence check is what would stop every fabricated folder from opening -
+                // including a double-click on one in the listing or a click on one in the tree.
+                // GetFullPath above still runs: it only needs the path to be syntactically legal,
+                // which every fabricated path is.
+                if (!DemoMode && !Directory.Exists(folder))
                 {
                     SetTabStatusKey(_active, "Str_Status_BadPath", folder);
                     return;
@@ -96,8 +101,12 @@ namespace KillerFind
             // Watch AFTER the listing lands, so the first events cannot arrive against a
             // collection that is still being filled (BrowseWatcher.cs). There is no directory
             // behind This PC to watch, so the previous folder's watcher is simply dropped.
-            if (thisPc) StopWatching();
-            else        StartWatching(folder);
+            // Nothing to watch behind a fabricated folder either - and pointing the watcher at a
+            // REAL folder while the listing shows invented rows is worse than not watching: the
+            // first event has ApplyWatchChanges reconcile the list against the disk, which deletes
+            // every fabricated row on screen (BrowseWatcher.cs).
+            if (thisPc || DemoMode) StopWatching();
+            else                    StartWatching(folder);
 
             Pane.ResultsHeader.Text = string.Format(Loc("Str_Lbl_ResultsCount"), tab.Results.Count);
             SetTabStatusKey(tab, "Str_Status_Listed", entries.Count.ToString("N0"));
@@ -145,6 +154,23 @@ namespace KillerFind
             var list = new List<SearchResult>();
             int seq = 0;
 
+            // The fabricated volumes, so This PC agrees with the tree's roots (DemoFileSystem.cs).
+            if (DemoMode)
+            {
+                foreach (var root in DemoFs.Drives)
+                    list.Add(new SearchResult
+                    {
+                        FilePath    = root,
+                        FileName    = DemoFs.DriveLabel(root),
+                        Directory   = string.Empty,
+                        IsDirectory = true,
+                        SizeBytes   = 0,
+                        Modified    = default,
+                        Seq         = seq++,
+                    });
+                return list;
+            }
+
             DriveInfo[] drives;
             try { drives = DriveInfo.GetDrives(); }
             catch (IOException) { return list; }
@@ -183,6 +209,26 @@ namespace KillerFind
         {
             var list = new List<SearchResult>();
             int seq = 0;
+
+            // Demo mode lists the fabricated machine (DemoFileSystem.cs). Every field the real
+            // pass below sets is set here too, and set the same way, because the sort keys, the
+            // details columns and the icon view all read them - a row that skipped SizeBytes or
+            // Seq would sort and draw differently from its neighbours for no visible reason.
+            if (DemoMode)
+            {
+                foreach (var e in DemoFs.Children(folder))
+                    list.Add(new SearchResult
+                    {
+                        FilePath    = Path.Combine(folder, e.Name),
+                        FileName    = e.Name,
+                        Directory   = folder,
+                        IsDirectory = e.IsDir,
+                        SizeBytes   = e.IsDir ? 0 : e.Size,
+                        Modified    = e.Modified,
+                        Seq         = seq++,
+                    });
+                return list;
+            }
 
             try
             {

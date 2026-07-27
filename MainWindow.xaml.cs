@@ -120,10 +120,15 @@ namespace KillerFind
                 // run. Restored tabs and piped tabs are left exactly as they were.
                 if (!DemoMode && !_active.IsBrowsing
                     && _active.PipeFiles == null
-                    && string.IsNullOrEmpty(_active.RootPath))
+                    && string.IsNullOrEmpty(_active.RootPath)
+                    && StartupPaths.Count == 0)
                 {
                     _ = NavigateTo(HomeFolder);   // Browse.cs
                 }
+
+                // A path from Explorer wins over Home: it is the thing the user actually
+                // asked for, and it reuses that first tab rather than opening beside it.
+                if (!DemoMode) OpenStartupPaths();   // StartupPaths.cs
 
                 ApplyElevationHalo();   // Elevation.cs - mark an admin window before it shows
                 ApplyStartupShell();    // and open the shell an elevated relaunch asked for
@@ -848,10 +853,17 @@ namespace KillerFind
                 _active.Groups[_active.Groups.Count - 1].Terms.Add(new SearchTerm());
                 e.Handled = true;
             }
-            else if (e.Key == System.Windows.Input.Key.F7)
+            else if (shift && !ctrl && !alt && e.Key == System.Windows.Input.Key.F7)
             {
                 // Add a filter. It was Ctrl+Shift+N until New Folder claimed that chord back for
-                // Explorer; F7 is free here and a single key, which is the family preference.
+                // Explorer, then bare F7 - which collided with the editor further down this same
+                // chain. This branch is FIRST, so an unguarded F7 here swallowed the key and the
+                // editor's branch never ran at all: F7 opened a filter row and nothing else,
+                // while the card, the README and the results menu all promised it opened the
+                // file. The editor keeps the bare key, because opening what you just found is
+                // the more common thing to want and it has no other keyboard route; adding a
+                // filter still has its own button in the search panel. Shift for the secondary,
+                // as with Shift+F8 for CMD and Shift+F9 for CSV.
                 AddFilter_Click(this, new RoutedEventArgs());
                 e.Handled = true;
             }

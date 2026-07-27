@@ -51,6 +51,9 @@ namespace KillerFind.Terminal
         private bool _cursorOn = true;
         private DispatcherTimer? _blink;
 
+        /// <summary>--demo's canned session, waiting for the control to be given a real size.</summary>
+        private string? _demoPending;
+
         /// <summary>Raised when the child exits, so the tab can close or show a notice.</summary>
         public event Action<int>? Exited;
 
@@ -354,6 +357,42 @@ namespace KillerFind.Terminal
             _blink.Start();
         }
 
+        /// <summary>
+        /// Show a canned session with nothing behind it. What --demo opens instead of Start.
+        /// </summary>
+        /// <remarks>
+        /// No pseudoconsole is created AT ALL, which is the point: a capture can never end up
+        /// with a real shell running inside it, and nothing typed at the tab can reach a machine
+        /// - Send already no-ops without a pty. There is no reader thread and no pump timer
+        /// either, because nothing will ever arrive to drain. The glyph self-test is skipped as
+        /// well: it is a diagnostic banner, and here it would be the first thing in the shot.
+        ///
+        /// The text goes through the same local-write path the self-test and the shell-failure
+        /// notice use, so it is parsed as VT and comes out colored, and the buffer's version
+        /// bump is what gets it drawn. The blink timer is started exactly as Start does it, so
+        /// the demo shell has a live cursor sitting at its prompt.
+        /// </remarks>
+        public void StartDemo(string canned)
+        {
+            // Held rather than written here. StartDemo runs while the tab is still being built,
+            // which is before WPF has measured this control: ActualWidth is 0, so ApplySize
+            // makes the buffer one column by one row, and feeding it a full session scrolls the
+            // whole thing into scrollback and draws an empty terminal. A real shell never hits
+            // this because its output arrives on the pump AFTER layout. ApplySize flushes this
+            // as soon as the control has a genuine size.
+            _demoPending = canned;
+            ApplySize();
+
+            _blink = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(530) };
+            _blink.Tick += (_, _) =>
+            {
+                if (!_buf.CursorBlink) { _cursorOn = true; return; }
+                _cursorOn = !_cursorOn;
+                InvalidateVisual();
+            };
+            _blink.Start();
+        }
+
         private void Drain()
         {
             bool any = false;
@@ -415,11 +454,33 @@ namespace KillerFind.Terminal
             if (_cellW <= 0 || _cellH <= 0) return;
             int cols = Math.Max(1, (int)(ActualWidth / _cellW));
             int rows = Math.Max(1, (int)(ActualHeight / _cellH));
-            if (cols == _buf.Cols && rows == _buf.Rows) return;
 
-            _buf.Resize(cols, rows);
-            _pty?.Resize((short)cols, (short)rows);
-            InvalidateVisual();
+            if (cols != _buf.Cols || rows != _buf.Rows)
+            {
+                _buf.Resize(cols, rows);
+                _pty?.Resize((short)cols, (short)rows);
+                InvalidateVisual();
+            }
+
+            FlushDemo(cols, rows);
+        }
+
+        /// <summary>
+        /// Writes --demo's canned session once the control is actually big enough to hold it.
+        /// </summary>
+        /// <remarks>
+        /// The size test is not paranoia. Before WPF measures this control ActualWidth is 0, so
+        /// the arithmetic above clamps to a 1x1 buffer, and a session written into that is gone
+        /// - every line scrolls into scrollback a single column wide. Waiting for a plausible
+        /// terminal shape means the first frame a reader ever sees is the finished session.
+        /// </remarks>
+        private void FlushDemo(int cols, int rows)
+        {
+            if (_demoPending == null || cols < 20 || rows < 5) return;
+
+            string canned = _demoPending;
+            _demoPending = null;      // cleared first: WriteLocal can re-enter through layout
+            WriteLocal(canned);
         }
 
         // ═══════════════════════════════════════════════════════════

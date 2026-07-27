@@ -212,6 +212,25 @@
     <sys:String x:Key="Str_Fonts_Hint">Mit dem Mausrad über einer Liste durch die Schriftarten blättern. Jede Änderung wirkt sofort.</sys:String>
     <sys:String x:Key="Str_Fonts_Unreadable">{0} hat keine lesbaren Buchstaben - die vorherige Schriftart bleibt</sys:String>
 
+    <!-- Associations card (Associations.cs, AssociationsCard.cs) -->
+    <sys:String x:Key="Str_Assoc_Row">Dateizuordnungen...</sys:String>
+    <sys:String x:Key="Str_Assoc_Title">DATEIZUORDNUNGEN</sys:String>
+    <sys:String x:Key="Str_Assoc_Intro">Registrieren Sie KillerFind bei Windows, damit es unter „Öffnen mit“, in Settings unter Standard-Apps und im Rechtsklickmenü jedes Ordners und Laufwerks erscheint.</sys:String>
+    <sys:String x:Key="Str_Assoc_What">TEXTTYPEN</sys:String>
+    <sys:String x:Key="Str_Assoc_Safe">.bat, .cmd und .reg bekommen stattdessen einen Eintrag „Bearbeiten mit KillerFind“. Ihr Doppelklick führt sie weiterhin aus oder trägt sie in die Registrierung ein, denn das stillschweigend zu ändern kostet jemanden einen Nachmittag.</sys:String>
+    <sys:String x:Key="Str_Assoc_AllUsers">Für alle Benutzer dieses PCs registrieren</sys:String>
+    <sys:String x:Key="Str_Assoc_NeedsAdmin">Starten Sie KillerFind als Administrator, um es für alle Benutzer zu registrieren</sys:String>
+    <sys:String x:Key="Str_Assoc_Register">Registrieren</sys:String>
+    <sys:String x:Key="Str_Assoc_Remove">Registrierung entfernen</sys:String>
+    <sys:String x:Key="Str_Assoc_OpenSettings">Windows-Standard-Apps öffnen...</sys:String>
+    <sys:String x:Key="Str_Assoc_StateNone">Nicht registriert. Windows bietet KillerFind noch für keinen Dateityp an.</sys:String>
+    <sys:String x:Key="Str_Assoc_StateUser">Für Ihr Konto registriert. Windows stellt keine Standard-App für Sie um: Wählen Sie KillerFind in Settings je Dateityp selbst aus.</sys:String>
+    <sys:String x:Key="Str_Assoc_StateMachine">Für alle Benutzer dieses PCs registriert. Windows stellt keine Standard-App für Sie um: Wählen Sie KillerFind in Settings je Dateityp selbst aus.</sys:String>
+    <sys:String x:Key="Str_Assoc_Portable">Diese Kopie ist portabel. Die Zuordnungen zeigen auf den Ort, an dem diese .exe gerade liegt, und gehen ins Leere, wenn Sie sie verschieben oder löschen.</sys:String>
+    <sys:String x:Key="Str_Assoc_Registered">Bei Windows registriert</sys:String>
+    <sys:String x:Key="Str_Assoc_Removed">Registrierung entfernt</sys:String>
+    <sys:String x:Key="Str_Assoc_Failed">Windows hat diese Änderung nicht angenommen</sys:String>
+
     <!-- Title-bar caption on an elevated window, beside the wordmark -->
     <sys:String x:Key="Str_Title_Elevated">- Erhöhte Rechte</sys:String>
     <sys:String x:Key="Str_Ks_MenuBar">Bereichsleiste ein- oder ausblenden</sys:String>
@@ -408,6 +427,15 @@
     <sys:String x:Key="Str_Ed_Saved">{0} gespeichert.</sys:String>
     <sys:String x:Key="Str_Ed_SaveFailed">{0} konnte nicht gespeichert werden: {1}</sys:String>
     <sys:String x:Key="Str_Ed_OpenFailed">{0} konnte nicht geöffnet werden: {1}</sys:String>
+
+    <!-- New blank document: the rail's pencil, its tab title, and the first save's dialog -->
+    <sys:String x:Key="Str_TT_TabOverflow">Alle Tabs</sys:String>
+    <sys:String x:Key="Str_TT_ColResize">Ziehen zum Ändern der Breite  -  Doppelklick setzt zurück</sys:String>
+    <sys:String x:Key="Str_TT_NewDoc">Neues Dokument</sys:String>
+    <sys:String x:Key="Str_Ed_Untitled">unbenannt</sys:String>
+    <sys:String x:Key="Str_Ed_SaveAs">Speichern unter</sys:String>
+    <sys:String x:Key="Str_Ed_AllFiles">Alle Dateien</sys:String>
+
     <sys:String x:Key="Str_Dlg_DiscardMsg">Datei ohne Speichern schließen? Ihre Änderungen gehen verloren.</sys:String>
     <sys:String x:Key="Str_Btn_Discard">Verwerfen</sys:String>
 

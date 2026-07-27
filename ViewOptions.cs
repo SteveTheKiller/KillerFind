@@ -43,8 +43,10 @@ namespace KillerFind
         {
             bool browsing = _active != null && _active.IsBrowsing;
 
-            ResultsViewState.Current.LocationWidth =
-                browsing ? new System.Windows.GridLength(0) : ResultsViewState.SearchLocationWidth;
+            // A flag rather than writing a width: the column is draggable now, and assigning 0
+            // over the top would throw away whatever the user had sized it to the moment they
+            // opened a folder. Hidden and zero-wide look identical; only one of them remembers.
+            ResultsViewState.Current.LocationHidden = browsing;
 
             UpdateBrowseChrome(browsing);
         }

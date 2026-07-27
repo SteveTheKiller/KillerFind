@@ -71,16 +71,54 @@ namespace KillerFind
             bool show = LivePanes().Any(p => p.Tabs.Count > 1);
             Pane.TabBar.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
 
-            // Which tab is rightmost drives its divider (see SearchTab.IsLast).
-            for (int i = 0; i < _tabs.Count; i++)
-                _tabs[i].IsLast = i == _tabs.Count - 1;
+            // Which tabs fit at this width, before anything below asks which is on an edge.
+            ApplyTabWindow(Pane);
+
+            // First and last VISIBLE, not first and last in the list. Both are about the strip's
+            // own edges: IsLast drops the divider that would otherwise land on the right edge as
+            // a stray rule, and IsFirst/IsLast keep the tab from drawing the outer ring side that
+            // the band already draws (SearchTab, FilePane.xaml). With tabs windowed out, the tab
+            // sitting on an edge is not the one at the end of the collection.
+            //
+            // And NOT the last visible tab when the chevron is showing: the chevron is what sits
+            // on the band's right edge then, so the tab is a middle tab in every way that
+            // matters. Told otherwise it dropped the divider that separates it from the chevron
+            // AND handed its right side to the band, which drew that side at the band's edge -
+            // past the chevron, as a green stripe up the far right with nothing under it.
+            bool chevron = Pane.TabOverflowBtn.Visibility == Visibility.Visible;
+
+            var strip = _tabs.Where(t => t.IsStripVisible).ToList();
+            foreach (var t in _tabs) { t.IsFirst = false; t.IsLast = false; }
+            if (strip.Count > 0)
+            {
+                strip[0].IsFirst              = true;
+                strip[strip.Count - 1].IsLast = !chevron;
+            }
 
             if (show)
             {
-                bool firstActive = _tabs.Count > 0 && _tabs[0] == _active;
-                bool lastActive  = _tabs.Count > 0 && _tabs[_tabs.Count - 1] == _active;
+                // Off the tab, like the ring reads them (DualPane.UpdatePaneFocusRing) - NOT
+                // recomputed from the strip. Recomputed, "last" means last visible and misses
+                // the chevron, so the pane squared its top-right corner under a chevron that is
+                // sitting on that corner instead of the tab: a hard edge on the details header
+                // with no tab above it to explain the join.
+                //
+                // Pattern-matched rather than dereferenced: F11 creates the second pane EMPTY
+                // and this runs before SeedPane gives it a tab, so Active is genuinely null for
+                // one pass. `Active` is declared non-nullable ("set before anything reads it"),
+                // which is true of every other caller and was not true of this one - it threw a
+                // NullReferenceException the moment the second pane opened.
+                var act = Pane.Active;
+                bool firstActive = act is { IsFirst: true };
+                bool lastActive  = act is { IsLast:  true };
                 Pane.ResultsPane.CornerRadius = new CornerRadius(firstActive ? 0 : 6, lastActive ? 0 : 6, 6, 6);
                 Pane.ScopeBar.CornerRadius    = new CornerRadius(firstActive ? 0 : 5, 0, 0, 0);
+                // The details header is the top of the pane whenever the location row is hidden,
+                // so it has to nest inside the pane's curve the same way. Left at a fixed 5,5 it
+                // kept its own curve under a squared pane corner, and the sliver of pane showing
+                // outside the curve but inside the square border read as a hard edge.
+                Pane.DetailsHeader.CornerRadius =
+                    new CornerRadius(firstActive ? 0 : 5, lastActive ? 0 : 5, 0, 0);
                 // The ring line in the band IS the pane's top border, so it curves where the
                 // pane curves. Left flat and full-width it overshot the corner and read as a
                 // rule laid across the pane rather than as its edge (FilePane.xaml).
@@ -88,9 +126,172 @@ namespace KillerFind
             }
             else
             {
-                Pane.ResultsPane.CornerRadius = new CornerRadius(6);
-                Pane.ScopeBar.CornerRadius    = new CornerRadius(5, 0, 0, 0);
+                Pane.ResultsPane.CornerRadius   = new CornerRadius(6);
+                Pane.ScopeBar.CornerRadius      = new CornerRadius(5, 0, 0, 0);
+                Pane.DetailsHeader.CornerRadius = new CornerRadius(5, 5, 0, 0);
             }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  OVERFLOW
+        // ═══════════════════════════════════════════════════════════
+        // The strip is a UniformGrid, so every tab takes an equal share of the band whatever the
+        // count - right up to a point, and then off a cliff. Eight tabs in a half-width pane came
+        // out around forty pixels each: "~\D_ x", which is not a label, it is a shape. A tab you
+        // cannot read is a tab you have to click to identify, and at that point the strip has
+        // stopped being navigation.
+        //
+        // So the COUNT is capped rather than the width. As many tabs as fit at TabFloorWidth are
+        // shown and the rest are collapsed - UniformGrid ignores a collapsed child when it
+        // divides the band, so the survivors still fill it edge to edge with no arithmetic here.
+        // The chevron at the right end lists every tab, so nothing is unreachable.
+        //
+        // Scrolling was the other option and is what a browser does. It lost because the band is
+        // a bordered surface the pane's focus ring runs along, and a scrolled band cannot be edge
+        // to edge - the ring would have to stop somewhere that is not a corner. The chevron keeps
+        // the strip one complete object and puts the overflow in a list, which is how the
+        // family's toolbars already shed their groups (KillerPDF SettingsPanel.cs).
+
+        /// <summary>Narrowest a tab may get before the strip stops taking more.</summary>
+        /// <remarks>
+        /// Picked from what it has to hold rather than off a grid: 120px of Consolas 11.5 is
+        /// about sixteen characters once the glyph, the close x and the padding are paid for -
+        /// "Backup-Nightl...", enough to tell two scripts apart. Much below a hundred and the
+        /// ellipsis starts eating the part that distinguishes them, which is the whole job.
+        /// </remarks>
+        private const double TabFloorWidth = 120;
+
+        /// <summary>What the chevron takes out of the band while it is showing.</summary>
+        private const double TabChevronWidth = 26;
+
+        /// <summary>
+        /// Decide which of <paramref name="p"/>'s tabs are in the strip at its current width, and
+        /// show or hide the chevron. Called from UpdateTabBarInPane, before anything reads which
+        /// tab is on an edge.
+        /// </summary>
+        /// <remarks>
+        /// The window is a contiguous RUN, not a set: tabs keep their order and their neighbors,
+        /// so a strip that has moved still reads like the tab bar it was. It shifts the least it
+        /// can to keep the active tab on screen, which is the one invariant that matters - a tab
+        /// you just switched to and cannot see is worse than no strip at all.
+        /// </remarks>
+        private void ApplyTabWindow(FilePane p)
+        {
+            var tabs = p.Tabs;
+            int n = tabs.Count;
+            if (n == 0)
+            {
+                p.TabOverflowBtn.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            // ActualWidth is 0 until the band has been measured once - on the first pass, and on
+            // any pass that runs while the pane is collapsed. Falling back to the pane's own
+            // width keeps the answer sane instead of capping the strip at one tab and having to
+            // be undone by the SizeChanged that follows.
+            double avail = p.TabBar.ActualWidth > 0 ? p.TabBar.ActualWidth : p.ActualWidth;
+
+            // Two passes, because the chevron's width changes the answer that decides whether
+            // there is a chevron. Asked without it first: if everything fits there is none, and
+            // the whole band belongs to the strip.
+            int cap = (int)(avail / TabFloorWidth);
+            bool overflow = cap < n;
+            if (overflow)
+            {
+                cap = Math.Max(1, (int)((avail - TabChevronWidth) / TabFloorWidth));
+                if (cap >= n) overflow = false;
+            }
+
+            p.TabOverflowBtn.Visibility = overflow ? Visibility.Visible : Visibility.Collapsed;
+
+            int start = 0;
+            if (overflow)
+            {
+                // Clamped before the active tab is considered, so a window left pointing past the
+                // end by a close does not survive as a scroll nobody asked for.
+                start = Math.Max(0, Math.Min(p.TabWindow, n - cap));
+
+                int active = p.Active == null ? -1 : tabs.IndexOf(p.Active);
+                if      (active >= 0 && active < start)           start = active;
+                else if (active >= 0 && active > start + cap - 1) start = active - cap + 1;
+
+                p.TabWindow = start;
+            }
+            else
+            {
+                p.TabWindow = 0;
+                cap = n;
+            }
+
+            for (int i = 0; i < n; i++)
+                tabs[i].IsStripVisible = i >= start && i < start + cap;
+        }
+
+        /// <summary>The band was resized, so the strip may hold a different number of tabs.</summary>
+        /// <remarks>
+        /// Goes through UpdateTabBar rather than calling ApplyTabWindow alone: a different set of
+        /// visible tabs is a different first and last tab, and those are the pane's corner
+        /// rounding and the focus ring's outer verticals as much as they are the strip.
+        /// </remarks>
+        internal void TabBarResized(FilePane p)
+        {
+            if (p.Tabs.Count == 0 || _inTabResize) return;
+
+            // Reentrancy guard, not an optimization. UpdateTabBar reaches ApplyPaneMargins and
+            // flips the band's own Visibility, either of which can raise SizeChanged again from
+            // inside this call - and a layout loop in WPF is not a slow app, it is a hung one.
+            // The pass that follows would compute the same answer anyway.
+            _inTabResize = true;
+            try     { UpdateTabBar(); }
+            finally { _inTabResize = false; }
+        }
+
+        private bool _inTabResize;
+
+        /// <summary>The chevron: every tab in this pane, hidden ones included, in strip order.</summary>
+        /// <remarks>
+        /// EVERY tab, not only the overflowed ones. A list that shows just what is off screen
+        /// makes you work out which those are before you can use it, and the visible ones cost
+        /// nothing to include. Built on each open rather than kept: titles change on every save,
+        /// navigation and rename.
+        /// </remarks>
+        internal void TabOverflowMenu(FilePane p)
+        {
+            FocusPane(p);   // Panes.cs - the click already did this, but the menu acts on p
+
+            var menu = new ContextMenu
+            {
+                Placement       = System.Windows.Controls.Primitives.PlacementMode.Bottom,
+                PlacementTarget = p.TabOverflowBtn,
+            };
+
+            var glyphStyle = TryFindResource("MenuGlyph") as Style;
+
+            foreach (var t in p.Tabs)
+            {
+                var tab = t;   // captured per row, not per loop
+
+                // Doubled, because a lone underscore in a MenuItem header is an access-key
+                // marker: "Backup_Nightly.ps1" would draw as "BackupNightly.ps1" with an N
+                // underlined, and file names carry underscores all the time.
+                var item = new MenuItem { Header = tab.Title.Replace("_", "__") };
+
+                if (tab.TabGlyph.Length > 0)
+                {
+                    var g = new TextBlock { Text = tab.TabGlyph };
+                    if (glyphStyle != null) g.Style = glyphStyle;
+                    item.Icon = g;
+                }
+
+                // Bold rather than a check mark: IsChecked draws into the Icon slot, which the
+                // tab's own glyph is already using, and the two cannot both show.
+                if (tab.IsActive) item.FontWeight = FontWeights.Bold;
+
+                item.Click += (_, _) => { FocusPane(p); SwitchToTab(tab); };
+                menu.Items.Add(item);
+            }
+
+            menu.IsOpen = true;
         }
 
         // Save the left panel's editable fields into the outgoing tab.
@@ -107,8 +308,12 @@ namespace KillerFind
         {
             _active = t;
             foreach (var tab in _tabs) tab.IsActive = tab == t;
-            UpdatePaneFocusRing();   // DualPane.cs - the ring follows the ACTIVE tab, so
-                                     // switching tabs has to move it, not just switching panes
+
+            // The whole strip, not just the ring. Switching tabs can move the overflow window
+            // (the incoming tab may be behind the chevron), which changes which tab sits on each
+            // edge, which is the pane's corner rounding and the ring's outer verticals - and the
+            // ring is the last thing UpdateTabBar does anyway.
+            UpdateTabBar();
 
             TermsList.ItemsSource   = t.Groups;
             FiltersList.ItemsSource = t.Filters;

@@ -381,9 +381,12 @@ namespace KillerFind
                 // tab's own side border lands on the strip's clip edge and gets cut
                 // (FilePane.xaml). Same ownership rule the pane's corner rounding uses: the
                 // first tab owns the left edge, the last owns the right, and only while active.
-                int n = p.Tabs.Count;
-                bool firstActive = n > 0 && p.Tabs[0]     == p.Active;
-                bool lastActive  = n > 0 && p.Tabs[n - 1] == p.Active;
+                // Read off the tab rather than recomputed from the collection: with the strip
+                // windowed (Tabs.cs ApplyTabWindow) the tab on an edge is not the one at the end
+                // of the list, and two places working that out separately is two places to get
+                // it wrong. UpdateTabBarInPane sets them, and every path here runs after it.
+                bool firstActive = p.Active?.IsFirst == true;
+                bool lastActive  = p.Active?.IsLast  == true;
                 p.TabEdgeLeft.Visibility  = lit && firstActive ? Visibility.Visible : Visibility.Collapsed;
                 p.TabEdgeRight.Visibility = lit && lastActive  ? Visibility.Visible : Visibility.Collapsed;
             }

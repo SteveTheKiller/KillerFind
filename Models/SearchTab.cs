@@ -137,14 +137,42 @@ namespace KillerFind.Models
             set { _tabGlyph = value; Notify(); }
         }
 
-        // Rightmost tab in the strip. The tab's 1px right border is a divider BETWEEN tabs,
-        // so the last one has to drop it - there it lands on the strip's edge and reads as a
-        // stray rule. UpdateTabBar sets this on every add, close and drag-reorder.
+        // Sitting on the strip's right EDGE - which is the last visible tab, but only while the
+        // overflow chevron is hidden. The tab's 1px right border is a divider BETWEEN tabs, so a
+        // tab on the edge has to drop it, where it would read as a stray rule; a tab with the
+        // chevron beside it still wants it. It also decides who owns the ring's right vertical
+        // (see IsFirst). UpdateTabBar sets it on every add, close, drag-reorder and resize.
         private bool _isLast;
         public bool IsLast
         {
             get => _isLast;
             set { _isLast = value; Notify(); }
+        }
+
+        // Leftmost tab in the strip. Only the focus ring reads this: the band draws the ring's
+        // outermost verticals itself (FilePane.xaml TabEdgeLeft / TabEdgeRight), because a tab's
+        // own outer border sits on the ScrollViewer's clip edge and survives or vanishes
+        // depending on how the UniformGrid divided a fractional band width. Without this the
+        // first and last tab drew that side TOO, so the outer edge of the ring was 2px wherever
+        // the clip happened to spare it and 1px everywhere else - the same width the pane border
+        // and the band line are. Set beside IsLast on every add, close and drag-reorder.
+        private bool _isFirst;
+        public bool IsFirst
+        {
+            get => _isFirst;
+            set { _isFirst = value; Notify(); }
+        }
+
+        // In the strip right now, as opposed to behind the chevron. The strip caps the NUMBER of
+        // tabs rather than letting them shrink without limit (Tabs.cs ApplyTabWindow), and a tab
+        // outside the window collapses - UniformGrid ignores a collapsed child when it divides
+        // the band, so the ones left still fill it edge to edge. True by default: a tab is in the
+        // strip until something works out that it does not fit.
+        private bool _isStripVisible = true;
+        public bool IsStripVisible
+        {
+            get => _isStripVisible;
+            set { _isStripVisible = value; Notify(); }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

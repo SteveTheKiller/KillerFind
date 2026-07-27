@@ -51,6 +51,7 @@ html[data-theme="light"] .also-wm.light { display: block; }
 <a class="tb-dl" href="https://github.com/SteveTheKiller/KillerFind/releases/latest/download/KillerFind.exe"><svg viewBox="0 0 24 24"><path d="M11 4h2v7h3l-4 5-4-5h3V4zM5 18h14v2H5z"/></svg><span data-i18n="nav_dl">Download</span></a>
 <span class="tb-spacer"></span>
 <nav class="tb-nav">
+<a href="howto.html" data-i18n="nav_howto">How to</a>
 <a href="technical.html" data-i18n="nav_tech">Technical</a>
 <a href="about.html" class="on" data-i18n="nav_about">About</a>
 </nav>
@@ -110,9 +111,11 @@ html[data-theme="light"] .also-wm.light { display: block; }
 
 <div class="about-card" id="app">
 <h2 data-i18n="app_h">The app</h2>
-<p data-i18n="app_p1"><b>KillerFind</b> is a native Windows file search that ships as a single self-contained executable. There is no installer to run, no service to register, no account, and no subscription. Hand someone the .exe and they can search a folder tree right away.</p>
+<p data-i18n="app_p1"><b>KillerFind</b> is a native Windows file browser and search that ships as a single self-contained executable. There is no installer to run, no service to register, no account, and no subscription. Hand someone the .exe and they can search a folder tree right away.</p>
 <p data-i18n="app_p2">It is built for a field tech's reality. It matches filenames with wildcard patterns, searches inside files one line at a time so it never loads a whole file into memory, runs several search terms in a single pass, and streams matches as it finds them. Everything happens locally, with no index, no telemetry, and no ads.</p>
-<p data-i18n="app_p3">Much of what it does was driven by the tickets it helped close. The <a href="https://github.com/SteveTheKiller/KillerFind/issues" target="_blank" rel="noopener">GitHub issues</a> page stays open to anyone, and your suggestions genuinely shape where it goes next. KillerFind is free software under the <b>GPL-3.0</b> license. For the deep technical details, see the <a href="technical.html">Technical</a> page.</p>
+<p data-i18n="app_p4">It started as a search box and nothing else. But finding the file was never the end of the job: I would find it, then reach for Explorer to look at the folder, then for a terminal to run something against it, then for Notepad to read it, and every one of those was a different window with a different set of keys. So I kept pulling those tools in until the whole loop lived in one place. A tab is now a folder, a search, a PowerShell or CMD prompt opened where I was standing, or the file itself with syntax highlighting.</p>
+<p data-i18n="app_p5">The rule I held to while it grew was that everything gets a key. Not a chord buried in a menu - a real binding, single keys where I could find one free, and Explorer's own conventions everywhere they already existed, so nothing has to be relearned. F7 opens the file, F8 opens a shell in it, F11 splits the window, F1 draws the whole map on a keyboard you can hold a modifier over. A tool you have to go looking for with the mouse is a tool that costs you the thing it was supposed to save.</p>
+<p data-i18n="app_p3">Much of what it does was driven by the tickets it helped close. The <a href="https://github.com/SteveTheKiller/KillerFind/issues" target="_blank" rel="noopener">GitHub issues</a> page stays open to anyone, and your suggestions genuinely shape where it goes next. KillerFind is free software under the <b>GPL-3.0</b> license. The <a href="howto.html">How to</a> page walks through everything it does, and the <a href="technical.html">Technical</a> page has the deep details.</p>
 </div>
 
 <div class="about-card" id="contact">

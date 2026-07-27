@@ -212,6 +212,25 @@
     <sys:String x:Key="Str_Fonts_Hint">তালিকার উপরে হুইল ঘুরিয়ে ফন্ট দেখুন। প্রতিটি পরিবর্তন সঙ্গে সঙ্গে কার্যকর হয়।</sys:String>
     <sys:String x:Key="Str_Fonts_Unreadable">{0}-তে পাঠযোগ্য অক্ষর নেই - আগের ফন্ট রাখা হচ্ছে</sys:String>
 
+    <!-- Associations card (Associations.cs, AssociationsCard.cs) -->
+    <sys:String x:Key="Str_Assoc_Row">ফাইল অ্যাসোসিয়েশন...</sys:String>
+    <sys:String x:Key="Str_Assoc_Title">ফাইল অ্যাসোসিয়েশন</sys:String>
+    <sys:String x:Key="Str_Assoc_Intro">KillerFind-কে Windows-এ নিবন্ধন করুন, যাতে এটি “দিয়ে খুলুন” মেনুতে, Settings-এর ডিফল্ট অ্যাপ তালিকায় এবং যেকোনো ফোল্ডার ও ড্রাইভের ডান ক্লিক মেনুতে দেখা যায়।</sys:String>
+    <sys:String x:Key="Str_Assoc_What">টেক্সট ধরন</sys:String>
+    <sys:String x:Key="Str_Assoc_Safe">.bat, .cmd ও .reg-এর জন্য বদলে “KillerFind দিয়ে সম্পাদনা করুন” সারিটি যোগ হয়। এগুলিতে ডাবল ক্লিক আগের মতোই সেগুলি চালায় বা মার্জ করে, কারণ চুপচাপ সেটি বদলে দিলে কারও একটা বিকেল নষ্ট হয়।</sys:String>
+    <sys:String x:Key="Str_Assoc_AllUsers">এই পিসির সব ব্যবহারকারীর জন্য নিবন্ধন করুন</sys:String>
+    <sys:String x:Key="Str_Assoc_NeedsAdmin">সব ব্যবহারকারীর জন্য নিবন্ধন করতে KillerFind প্রশাসক হিসেবে চালান</sys:String>
+    <sys:String x:Key="Str_Assoc_Register">নিবন্ধন করুন</sys:String>
+    <sys:String x:Key="Str_Assoc_Remove">নিবন্ধন সরান</sys:String>
+    <sys:String x:Key="Str_Assoc_OpenSettings">Windows-এর ডিফল্ট অ্যাপ খুলুন...</sys:String>
+    <sys:String x:Key="Str_Assoc_StateNone">নিবন্ধিত নয়। Windows এখনো কোনো ফাইল ধরনের জন্য KillerFind দেখায় না।</sys:String>
+    <sys:String x:Key="Str_Assoc_StateUser">আপনার অ্যাকাউন্টের জন্য নিবন্ধিত। Windows আপনার হয়ে ডিফল্ট বদলাবে না; Settings-এ প্রতিটি ফাইল ধরনের জন্য KillerFind নিজে বেছে নিন।</sys:String>
+    <sys:String x:Key="Str_Assoc_StateMachine">এই পিসির সব ব্যবহারকারীর জন্য নিবন্ধিত। Windows আপনার হয়ে ডিফল্ট বদলাবে না; Settings-এ প্রতিটি ফাইল ধরনের জন্য KillerFind নিজে বেছে নিন।</sys:String>
+    <sys:String x:Key="Str_Assoc_Portable">এই কপিটি পোর্টেবল। অ্যাসোসিয়েশনগুলি এই .exe ফাইলটি এখন যেখানে আছে সেখানেই নির্দেশ করবে, আর ফাইলটি সরালে বা মুছলে কাজ করবে না।</sys:String>
+    <sys:String x:Key="Str_Assoc_Registered">Windows-এ নিবন্ধিত হয়েছে</sys:String>
+    <sys:String x:Key="Str_Assoc_Removed">নিবন্ধন সরানো হয়েছে</sys:String>
+    <sys:String x:Key="Str_Assoc_Failed">Windows সেই পরিবর্তন গ্রহণ করেনি</sys:String>
+
     <!-- Title-bar caption on an elevated window, beside the wordmark -->
     <sys:String x:Key="Str_Title_Elevated">- উন্নীত অধিকার</sys:String>
     <sys:String x:Key="Str_Ks_MenuBar">প্যানেলের বার দেখান বা লুকান</sys:String>
@@ -407,6 +426,12 @@
     <sys:String x:Key="Str_Ed_WrapOff">ওয়ার্ড র‍্যাপ বন্ধ - লম্বা লাইন দেখতে স্ক্রোল করুন।</sys:String>
     <sys:String x:Key="Str_Ed_Saved">{0} সংরক্ষিত হয়েছে।</sys:String>
     <sys:String x:Key="Str_Ed_SaveFailed">{0} সংরক্ষণ করা যায়নি: {1}</sys:String>
+    <sys:String x:Key="Str_TT_TabOverflow">সব ট্যাব</sys:String>
+    <sys:String x:Key="Str_TT_ColResize">টেনে প্রস্থ বদলান  -  ডাবল-ক্লিকে আগের অবস্থায়</sys:String>
+    <sys:String x:Key="Str_TT_NewDoc">নতুন নথি</sys:String>
+    <sys:String x:Key="Str_Ed_Untitled">শিরোনামহীন</sys:String>
+    <sys:String x:Key="Str_Ed_SaveAs">এইভাবে সংরক্ষণ করুন</sys:String>
+    <sys:String x:Key="Str_Ed_AllFiles">সব ফাইল</sys:String>
     <sys:String x:Key="Str_Ed_OpenFailed">{0} খোলা যায়নি: {1}</sys:String>
     <sys:String x:Key="Str_Dlg_DiscardMsg">সংরক্ষণ না করেই ফাইলটি বন্ধ করবেন? আপনার পরিবর্তনগুলি হারিয়ে যাবে।</sys:String>
     <sys:String x:Key="Str_Btn_Discard">বাতিল করুন</sys:String>

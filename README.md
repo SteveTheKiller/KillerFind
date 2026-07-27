@@ -1,28 +1,64 @@
 <p align="center">
-  <a href="https://killerfind.net"><img src="docs/wordmark.png" width="640" alt="KillerFind - Free File Search Browser"></a>
+  <a href="https://killerfind.net"><img src="docs/wordmark.png" width="640" alt="KillerFind - a shell for power users: file browser, terminal and text editor in one portable Windows exe"></a>
 </p>
 
-A file browser for Windows built around search. Browse folders in list, icon, or details view with tabs, or search any directory by filename wildcard or file content, streaming results in real time with no indexing required. Every result is a real file: open it, rename it, move it, or pipe the whole set into another search.
+A shell for power users. One window holds a file browser, a PowerShell or CMD terminal and a text editor, on one tab strip and one set of keys, so finding a file, reading it, changing it and running something against it never means switching tools. Search is built into the browser rather than bolted on: any folder by filename wildcard or by file content, streamed live with no index to build and nothing to wait for.
+
+It is one portable exe. No installer, no runtime, no agent, no account. Drop it on a machine that is not yours, do the work, delete it.
 #### Open-source, GPLv3, run portable or install for just you or every user on the PC.
 ##### Part of [KillerTools.net](https://KillerTools.net).
 
 ## Features
 
+### Browse
+
 - Browse any folder in list, icon, or details view, with a folder tree, an address bar, and back / forward / up on Explorer's own keys
-- File operations on results and folders alike: copy, cut, paste, rename, delete to the recycle bin or permanently, new folder, plus two-way drag and drop with Explorer
-- Right-click anything for the full Windows shell menu, so whatever your other tools add to Explorer is still one click away
+- Favorites drawer for the folders you live in, with Alt+1 to Alt+0 to jump to the first ten
+- Two panes, side by side or stacked (F11), each with its own tabs
+- A browsed folder tracks the disk, so a file deleted in another window disappears here too
+
+### Terminal
+
+- PowerShell, Windows PowerShell or CMD in a tab (F8), elevated on Ctrl+F8, opened in the folder you are looking at
+- The working directory is tracked live on the shell's own toolbar; click it to open that folder as a tab
+- A shipped prompt script you can edit or reset, and your PowerShell `$PROFILE` one click from the rail, the shell's right-click menu or Ctrl+comma. The submenu lists the hosts actually installed and asks each one where its profile is rather than guessing the path
+- Powerline separators, the git branch mark and the prompt chevron render on a machine with no Nerd Font installed: the exe carries a 26-glyph, 2.9 KB fallback face, used only for the codepoints your chosen font is missing
+
+### Edit
+
+- Open any file in a tab with F7 or the Edit row on the results menu: syntax highlighting, line numbers, undo, find (Ctrl+F), go to line (Ctrl+G), save (Ctrl+S) and a right-click menu, with word wrap on by default
+- Encoding is preserved, never invented. A BOM present is kept, a BOM absent stays absent, and the document bar shows both the encoding and the line ending
+- Highlighting for the formats a field tech actually opens: `.bat` / `.cmd`, `.reg`, `.ini` / `.conf` / `.cfg` / `.inf`, `.yml` / `.yaml`, `.log` and `.csv` / `.tsv`, on top of the languages AvalonEdit already knows
+- Settings behind a gear: line numbers, current-line highlight, visible spaces and tabs, spaces vs tabs and indent width, plus its own font slot in the Fonts dialog and Ctrl+wheel to resize
+
+### Search
+
 - Filename search with wildcard patterns (`*.log`, `report_*.xlsx`, etc.)
 - Content search streams through files line by line without loading them into RAM
-- Multicore engine: The scan parallelizes across every CPU core
-- Multiple search terms in a single pass, each independently tracked
+- Multicore engine: the scan parallelizes across every CPU core
+- Multiple search terms in a single pass, each independently tracked, in ANY / ALL groups
 - Filters by extension, date modified, and size, plus include/exclude patterns and a case-sensitive toggle
-- Tabs: Each tab is a whole independent search or a folder you are browsing; drag to reorder, optionally restored on the next launch
-- Search within results: Pipe one search's results into a new tab and drill deeper
+- Search within results: pipe one search's results into a new tab and drill deeper
 - Sort results by name, location, size, or modified date; Ctrl+F filters the list live<br>*(Yo dawg, I heard you liked search...)*
 - Results show matched lines with line numbers; open files directly or reveal them in Explorer
 - Export to a self-contained HTML report (with its own theme switcher) or CSV
+
+### Files
+
+- File operations on results and folders alike: copy, cut, paste, rename, delete to the Recycle Bin or permanently, new folder
+- Copy and move run off the UI thread with a real progress card, and a collision stops to ask, showing both files' size and date, with Replace, Skip or Keep both
+- Two-way drag and drop with Explorer, following Explorer's own modifier rules: Shift moves, Ctrl copies
+- Right-click anything for the full Windows shell menu, so whatever your other tools add to Explorer is still one click away
+- Copy the full path, file name, folder path, matched lines, the files themselves or a SHA-256, all from one menu
+
+### Interface
+
+- Keyboard first. Explorer's conventions where they exist (Enter opens, F2 renames, Alt+Enter for properties, Shift+F10 for the shell menu), and single keys rather than chords where they do not: F5 refresh, F6 reveal, F7 edit, F8 shell, F9 export, F11 split, F12 about
+- F1 opens a shortcuts card that lists every gesture as both a grouped list and a visual keyboard, with layer buttons for the Ctrl / Shift / Alt maps and a live preview when you hold a real modifier
+- Tabs: each tab is an independent search, a folder, a terminal or a document; drag to reorder, optionally restored on the next launch
+- Three toolbars, one per kind of tab, so a document is not carrying a folder listing's sort and view buttons
 - Six killer themes with live accent colors; UI localized in 10 languages
-- Keyboard driven: Explorer's conventions where they exist (Enter opens, F2 renames, Alt+Enter for properties, Shift+F10 for the shell menu), and F1 opens a shortcuts card that lists every gesture as both a list and a visual keyboard
+- App-wide accessibility zoom: roll the wheel over the wordmark to resize everything between 70% and 250%
 - Run portable, or install for just you or for every user on the PC (`/silent` installs machine-wide for winget/RMM)
 
 ## Requirements
@@ -33,14 +69,19 @@ A file browser for Windows built around search. Browse folders in list, icon, or
 ## Download
 
 - Prebuilt binary: <https://github.com/SteveTheKiller/KillerFind/releases/latest/download/KillerFind.exe>
-- Source (GPL3 corresponding source for this release): <https://github.com/SteveTheKiller/KillerFind/releases/download/v1.0.1/KillerFind-1.0.1-src.zip>
+- Source (GPL3 corresponding source for this release): <https://github.com/SteveTheKiller/KillerFind/releases/download/v2.0.0/KillerFind-2.0.0-src.zip>
 
 ## Build
 
-Open `KillerFind.sln` in Visual Studio 2022 and build. No external dependencies beyond the NuGet packages in the project file.
+Open `KillerFind.sln` in Visual Studio 2022 and build. No external dependencies beyond the NuGet packages in the project file. The editor is AvalonEdit, vendored as source under `third_party/AvalonEdit` and compiled into the exe rather than shipped as a DLL, so the build still produces one portable file.
 
 `release.ps1` additionally produces a versioned `KillerFind-<version>-src.zip` next to the published EXE, which is the GPL3 corresponding source published with every release.
 
 ## License
 
 GPL-3.0 - see [LICENSE](LICENSE).
+
+Two components carry their own licenses and keep them:
+
+- AvalonEdit, the editor - MIT. See [third_party/AvalonEdit/LICENSE](third_party/AvalonEdit/LICENSE).
+- `Fonts/KillerGlyphs.ttf`, a 26-glyph subset of Terminess Nerd Font - SIL OFL 1.1. See [Fonts/KillerGlyphs-NOTICE.txt](Fonts/KillerGlyphs-NOTICE.txt) and [Fonts/KillerGlyphs-OFL.txt](Fonts/KillerGlyphs-OFL.txt).

@@ -28,7 +28,8 @@
                    margin) lands its border ON TOP of the strip instead of behind it - which is
                    exactly the hairline that kept showing under the active tab. -->
               <Border Grid.Row="0" x:Name="TabBar" Panel.ZIndex="20" Margin="0,6,8,0"
-                      Background="{DynamicResource BackgroundBrush}" Visibility="Collapsed">
+                      Background="{DynamicResource BackgroundBrush}" Visibility="Collapsed"
+                      SizeChanged="TabBar_SizeChanged">
                <Grid>
                 <Border IsHitTestVisible="False" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
                 <!-- The line across the top of the pane: PaneBorderBrush normally, the accent
@@ -76,6 +77,20 @@
                         BorderThickness="1,1,1,0" CornerRadius="6,6,0,0" IsHitTestVisible="False"
                         BorderBrush="{DynamicResource PaneBorderBrush}"/>
                 <DockPanel LastChildFill="True">
+                <!-- Overflow chevron: every tab in this pane, hidden ones included (Tabs.cs
+                     TabOverflowMenu). Docked BEFORE the strip so the strip's remaining width is
+                     what the ScrollViewer measures against - docked after, the strip would take
+                     the whole band and the chevron would sit on top of the last tab.
+                     Collapsed while everything fits, which is the normal case: a chevron that is
+                     always there is a control that does nothing most of the time, and its 26px
+                     would be taken out of the tabs to say so. -->
+                <Button x:Name="TabOverflowBtn" DockPanel.Dock="Right" Visibility="Collapsed"
+                        Style="{StaticResource GrungeCalendarNavButton}"
+                        Content="&#xE70D;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                        Foreground="{DynamicResource MutedTextBrush}"
+                        Width="22" Height="20" Margin="2,4,2,3" VerticalAlignment="Center"
+                        FocusVisualStyle="{x:Null}"
+                        ToolTip="{DynamicResource Str_TT_TabOverflow}" Click="TabOverflow_Click"/>
                 <!-- Horizontal scrolling is DISABLED, not hidden: hidden still measures the
                      content at infinite width, which would let the tabs size to their own
                      content and defeat the UniformGrid below. Disabled constrains them to the
@@ -97,6 +112,16 @@
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsActive}" Value="True">
                                         <Setter Property="Panel.ZIndex" Value="1"/>
+                                    </DataTrigger>
+                                    <!-- Windowed out of the strip and living in the chevron
+                                         instead (Tabs.cs ApplyTabWindow). Collapsed rather than
+                                         removed from the collection, which is what makes this
+                                         cheap: UniformGrid does not count a collapsed child when
+                                         it divides the band, so the survivors fill it edge to
+                                         edge on their own, and nothing about the tabs' order,
+                                         their drag indices or the session's idea of them moves. -->
+                                    <DataTrigger Binding="{Binding IsStripVisible}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -193,15 +218,23 @@
                                         <Setter TargetName="tabLbl" Property="FontWeight" Value="Bold"/>
                                         <Setter TargetName="tabLbl" Property="FontSize" Value="11.5"/>
                                     </DataTrigger>
-                                    <!-- Unfocused pane: the lip goes to the dimmed accent, the
-                                         same treatment the site's feature cards use - resting
-                                         cards carry a darker tab-edge lip and only the hovered
-                                         one lights to full accent. At full brightness both panes
-                                         claimed to be the live one. Only the BRUSH changes, and
-                                         with no side borders on an unfocused pane the brush is
-                                         the lip. Mutually exclusive with PaneFocused below. -->
+                                    <!-- Unfocused pane: the lip drops off the accent entirely and
+                                         takes the pane's own border color, so the whole unlit
+                                         ring - lip, band line and pane border - is ONE value. At
+                                         full accent both panes claimed to be the live one.
+                                         It was TabEdgeBrush (the accent at 40%), which is the
+                                         right idea and the wrong number: over this band that
+                                         blends to about #196033 against a PaneBorderBrush of
+                                         #0f4a30 - near enough to read as the same green rendered
+                                         wrong rather than as a deliberate step down. Two 1px
+                                         lines meeting at almost the same color is the worst of
+                                         both; either match or differ, do not nearly match.
+                                         The active tab is still obvious on an unfocused pane
+                                         from its PaneBrush fill and bold title, which is how a
+                                         browser marks it too. Mutually exclusive with
+                                         PaneFocused below. -->
                                     <DataTrigger Binding="{Binding PaneDimmed}" Value="True">
-                                        <Setter TargetName="tabBd" Property="BorderBrush" Value="{DynamicResource TabEdgeBrush}"/>
+                                        <Setter TargetName="tabBd" Property="BorderBrush" Value="{DynamicResource PaneBorderBrush}"/>
                                     </DataTrigger>
                                     <!-- Focused pane: the ring continues UP both sides of the
                                          active tab, so the tab and the pane read as one outlined
@@ -216,6 +249,46 @@
                                         <Setter TargetName="tabBd" Property="BorderThickness" Value="1,3,1,0"/>
                                         <Setter TargetName="tabBd" Property="Padding" Value="11,1,4,5"/>
                                     </DataTrigger>
+                                    <!-- The OUTERMOST side is the band's to draw (TabEdgeLeft /
+                                         TabEdgeRight below), so the first and last tab must not
+                                         draw it as well. Two 1px borders at the same x is a 2px
+                                         edge on a ring that is 1px everywhere else - and only
+                                         SOMETIMES, because whether the tab's own outer border
+                                         clears the ScrollViewer's clip depends on how the
+                                         UniformGrid divided a fractional band width. That is
+                                         where the halo came out uneven, and why it changed when
+                                         the split moved.
+                                         The padding gives the pixel back on that side so the
+                                         title does not shift, exactly as PaneFocused does.
+                                         Declared after PaneFocused - all three match on a first
+                                         or last tab and the last match wins. -->
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding PaneFocused}" Value="True"/>
+                                            <Condition Binding="{Binding IsFirst}"     Value="True"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter TargetName="tabBd" Property="BorderThickness" Value="0,3,1,0"/>
+                                        <Setter TargetName="tabBd" Property="Padding" Value="12,1,4,5"/>
+                                    </MultiDataTrigger>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding PaneFocused}" Value="True"/>
+                                            <Condition Binding="{Binding IsLast}"      Value="True"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter TargetName="tabBd" Property="BorderThickness" Value="1,3,0,0"/>
+                                        <Setter TargetName="tabBd" Property="Padding" Value="11,1,5,5"/>
+                                    </MultiDataTrigger>
+                                    <!-- One tab in a focused pane owns BOTH edges, so it draws
+                                         neither. Last of the three for the same reason. -->
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding PaneFocused}" Value="True"/>
+                                            <Condition Binding="{Binding IsFirst}"     Value="True"/>
+                                            <Condition Binding="{Binding IsLast}"      Value="True"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter TargetName="tabBd" Property="BorderThickness" Value="0,3,0,0"/>
+                                        <Setter TargetName="tabBd" Property="Padding" Value="12,1,5,5"/>
+                                    </MultiDataTrigger>
                                 </DataTemplate.Triggers>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -566,11 +639,17 @@
                         Padding="{Binding HeaderPad, Source={x:Static local:ResultsViewState.Current}}">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="26"/>
-                            <ColumnDefinition Width="*"/>
+                            <!-- Tracks the row's icon column, or every row sits off its heading. -->
+                            <ColumnDefinition Width="{Binding RowIconColumn, Source={x:Static local:ResultsViewState.Current}}"/>
+                            <!-- Every column carries its own dragged width and the STAR is last:
+                                 a filler that takes whatever is left over. Name used to be the
+                                 star, which meant resizing anything had to move Name as well and
+                                 a drag could visibly shift a column you were not touching. -->
+                            <ColumnDefinition Width="{Binding NameWidth, Source={x:Static local:ResultsViewState.Current}}"/>
                             <ColumnDefinition Width="{Binding LocationWidth, Source={x:Static local:ResultsViewState.Current}}"/>
-                            <ColumnDefinition Width="86"/>
-                            <ColumnDefinition Width="128"/>
+                            <ColumnDefinition Width="{Binding SizeWidth, Source={x:Static local:ResultsViewState.Current}}"/>
+                            <ColumnDefinition Width="{Binding ModifiedWidth, Source={x:Static local:ResultsViewState.Current}}"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Button Grid.Column="1" Style="{StaticResource ColHeaderBtn}" Click="ColName_Click">
                             <StackPanel Orientation="Horizontal">
@@ -596,6 +675,51 @@
                                 <TextBlock x:Name="ColModArrow" FontFamily="Segoe MDL2 Assets" FontSize="8" Margin="4,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
+
+                        <!-- Column resize grips (ResultsView.cs). One on EVERY boundary between
+                             two headings, plus the outer edge of the last one - a gap with no
+                             handle is a gap you try to grab and nothing happens. Tag is the
+                             BOUNDARY number, not a column: which two columns a boundary sits
+                             between depends on whether the location column is on screen, so
+                             ResultsView.BoundaryPair works that out at drag time.
+                             Each grip lives in the column to its LEFT and is right-aligned, so
+                             it lands on that column's trailing edge.
+                             Declared AFTER the header buttons so they win the hit test - a grip
+                             overlaps the sort button's last few pixels, and a click that landed
+                             on the button instead would re-sort the list when you meant to drag.
+                             Transparent, not invisible: Background="Transparent" is what makes a
+                             Border hit-testable at all, and a drawn divider would be a stack of
+                             vertical rules in a header that already has a bottom border.
+                             6px wide and pulled 3 to the right so the target straddles the
+                             boundary rather than sitting inside one column - Fitts' law, and it
+                             is the difference between a grip you can grab and one you hunt for.
+                             The LOCATION grip is the one that goes while browsing, because its
+                             column is the one that goes; Name keeps its divider either way. -->
+                        <Border Grid.Column="1" Tag="1" Width="6" Margin="0,0,-3,0"
+                                HorizontalAlignment="Right" Background="Transparent" Cursor="SizeWE"
+                                PreviewMouseLeftButtonDown="ColGrip_MouseDown"
+                                PreviewMouseMove="ColGrip_MouseMove"
+                                PreviewMouseLeftButtonUp="ColGrip_MouseUp"
+                                ToolTip="{DynamicResource Str_TT_ColResize}"/>
+                        <Border Grid.Column="2" Tag="2" Width="6" Margin="0,0,-3,0"
+                                HorizontalAlignment="Right" Background="Transparent" Cursor="SizeWE"
+                                Visibility="{Binding LocationGripVisibility, Source={x:Static local:ResultsViewState.Current}}"
+                                PreviewMouseLeftButtonDown="ColGrip_MouseDown"
+                                PreviewMouseMove="ColGrip_MouseMove"
+                                PreviewMouseLeftButtonUp="ColGrip_MouseUp"
+                                ToolTip="{DynamicResource Str_TT_ColResize}"/>
+                        <Border Grid.Column="3" Tag="3" Width="6" Margin="0,0,-3,0"
+                                HorizontalAlignment="Right" Background="Transparent" Cursor="SizeWE"
+                                PreviewMouseLeftButtonDown="ColGrip_MouseDown"
+                                PreviewMouseMove="ColGrip_MouseMove"
+                                PreviewMouseLeftButtonUp="ColGrip_MouseUp"
+                                ToolTip="{DynamicResource Str_TT_ColResize}"/>
+                        <Border Grid.Column="4" Tag="4" Width="6" Margin="0,0,-3,0"
+                                HorizontalAlignment="Right" Background="Transparent" Cursor="SizeWE"
+                                PreviewMouseLeftButtonDown="ColGrip_MouseDown"
+                                PreviewMouseMove="ColGrip_MouseMove"
+                                PreviewMouseLeftButtonUp="ColGrip_MouseUp"
+                                ToolTip="{DynamicResource Str_TT_ColResize}"/>
                     </Grid>
                 </Border>
 
@@ -1086,14 +1210,28 @@
                                 </Border.Style>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="26"/>
-                                        <ColumnDefinition Width="*"/>
+                                        <!-- Grows with the icon (RowIconColumn) - keep DetailsHeader in step. -->
+                                        <ColumnDefinition Width="{Binding RowIconColumn, Source={x:Static local:ResultsViewState.Current}}"/>
+                                        <!-- Same five plus a trailing star filler as DetailsHeader,
+                                             in the same order. Change one, change both. -->
+                                        <ColumnDefinition Width="{Binding NameWidth, Source={x:Static local:ResultsViewState.Current}}"/>
                                         <!-- Collapses to 0 while browsing - see LocationWidth. -->
                                         <ColumnDefinition Width="{Binding LocationWidth, Source={x:Static local:ResultsViewState.Current}}"/>
-                                        <ColumnDefinition Width="86"/>
-                                        <ColumnDefinition Width="128"/>
+                                        <ColumnDefinition Width="{Binding SizeWidth, Source={x:Static local:ResultsViewState.Current}}"/>
+                                        <ColumnDefinition Width="{Binding ModifiedWidth, Source={x:Static local:ResultsViewState.Current}}"/>
+                                        <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <Image Grid.Column="0" Source="{Binding Icon}" Width="16" Height="16"
+                                    <!-- TileArt rather than {Binding Icon}, which is a fixed 32px
+                                         bitmap: Ctrl+wheel climbs to 64 here, and past 32 that
+                                         one would be upsampled. Same attached properties the
+                                         tile grid uses, so the shell hands back the right image
+                                         at each step instead of a resized copy of one. -->
+                                    <Image Grid.Column="0"
+                                           Width="{Binding RowIconSize, Source={x:Static local:ResultsViewState.Current}}"
+                                           Height="{Binding RowIconSize, Source={x:Static local:ResultsViewState.Current}}"
+                                           local:TileArt.Path="{Binding FilePath}"
+                                           local:TileArt.IsDirectory="{Binding IsDirectory}"
+                                           local:TileArt.Size="{Binding RowIconSize, Source={x:Static local:ResultsViewState.Current}}"
                                            HorizontalAlignment="Left" VerticalAlignment="Center"
                                            RenderOptions.BitmapScalingMode="HighQuality"/>
                                     <TextBlock Grid.Column="1" Text="{Binding FileName}" Foreground="{DynamicResource TextBrush}"
@@ -1161,8 +1299,16 @@
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <!-- Real shell icon for the file type -->
-                                            <Image Grid.Column="0" Source="{Binding Icon}" Width="18" Height="18" VerticalAlignment="Center"
+                                            <!-- Real shell icon for the file type, sized by
+                                                 Ctrl+wheel (ResultsView.cs). TileArt, not
+                                                 {Binding Icon}: that one is a fixed 32px bitmap
+                                                 and this climbs past it. -->
+                                            <Image Grid.Column="0" VerticalAlignment="Center"
+                                                   Width="{Binding CardIconSize, Source={x:Static local:ResultsViewState.Current}}"
+                                                   Height="{Binding CardIconSize, Source={x:Static local:ResultsViewState.Current}}"
+                                                   local:TileArt.Path="{Binding FilePath}"
+                                                   local:TileArt.IsDirectory="{Binding IsDirectory}"
+                                                   local:TileArt.Size="{Binding CardIconSize, Source={x:Static local:ResultsViewState.Current}}"
                                                    Margin="0,0,9,0" RenderOptions.BitmapScalingMode="HighQuality"/>
                                             <TextBlock Grid.Column="1" Text="{Binding FileName}" Foreground="{DynamicResource TextBrush}"
                                                        FontFamily="{DynamicResource MonoFont}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>

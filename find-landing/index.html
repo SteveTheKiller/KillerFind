@@ -9,21 +9,21 @@ var bg={dark:'#333333',light:'#b8b8b8',hc:'#0d0d0d',blood:'#4a1f20',greed:'#0a52
 <link rel="preload" href="brand/KillerScan.ttf" as="font" type="font/ttf" crossorigin>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="darkreader-lock">
-<title>KillerFind - Free, open-source file search for Windows</title>
+<title>KillerFind - Free, open-source file search and browser for Windows</title>
 <link rel="canonical" href="https://killerfind.net/">
-<meta name="description" content="One exe. No installer, no agent, no account, no telemetry. Fast file and content search built by a field tech, for field techs. GPLv3.">
+<meta name="description" content="One exe. No installer, no agent, no account, no telemetry. Fast file and content search, a folder browser, a terminal and a text editor, built by a field tech for field techs. GPLv3.">
 <link rel="icon" type="image/x-icon" href="brand/kf-icon.ico">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://killerfind.net/">
-<meta property="og:title" content="KillerFind - Free, open-source file search for Windows">
-<meta property="og:description" content="One exe. No installer, no agent, no account, no telemetry. Fast file and content search built by a field tech, for field techs. GPLv3.">
+<meta property="og:title" content="KillerFind - Free, open-source file search and browser for Windows">
+<meta property="og:description" content="One exe. No installer, no agent, no account, no telemetry. Fast file and content search, a folder browser, a terminal and a text editor, built by a field tech for field techs. GPLv3.">
 <meta property="og:image" content="https://killerfind.net/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:type" content="image/png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="KillerFind - Free, open-source file search for Windows">
-<meta name="twitter:description" content="One exe. No installer, no agent, no account, no telemetry. Fast file and content search built by a field tech, for field techs. GPLv3.">
+<meta name="twitter:title" content="KillerFind - Free, open-source file search and browser for Windows">
+<meta name="twitter:description" content="One exe. No installer, no agent, no account, no telemetry. Fast file and content search, a folder browser, a terminal and a text editor, built by a field tech for field techs. GPLv3.">
 <meta name="twitter:image" content="https://killerfind.net/og-image.png">
 <script defer src="https://koya.thekiller.net/script.js" data-website-id="8f6a2876-9457-45d5-96ca-9008ee743944"></script>
 <link rel="stylesheet" href="kf.css?v=6">
@@ -37,9 +37,9 @@ var bg={dark:'#333333',light:'#b8b8b8',hc:'#0d0d0d',blood:'#4a1f20',greed:'#0a52
 .hero .hero-lockup { display: flex; align-items: center; justify-content: center; gap: clamp(10px, 2vw, 22px); flex-wrap: wrap; }
 .hero .hero-lockup .wm-logo { margin: 0; }
 .hero .hero-icon { height: clamp(120px, 24vw, 230px); width: auto; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5)); }
-.hero .tagline { margin: 10px auto 0; max-width: 620px; font-size: 16px; color: var(--text2); }
+.hero .tagline { margin: 10px auto 0; max-width: 740px; font-size: 16px; color: var(--text2); }
 
-.hero-blurbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; max-width: 980px; margin: 30px auto 0; text-align: left; }
+.hero-blurbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; max-width: 980px; margin: 22px auto 0; text-align: left; }
 .blurb h3 { font-family: 'KillerScan', 'Courier New', monospace; font-size: 15px; font-weight: normal; letter-spacing: .5px; color: var(--accent); margin-bottom: 7px; text-shadow: 0 2px 5px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.5); }
 .blurb p { font-size: 13.5px; color: var(--muted); line-height: 1.55; }
 .blurb-list { list-style: none; }
@@ -47,7 +47,7 @@ var bg={dark:'#333333',light:'#b8b8b8',hc:'#0d0d0d',blood:'#4a1f20',greed:'#0a52
 .blurb-list li:last-child { margin-bottom: 0; }
 .blurb-list li::before { content: "\203A"; position: absolute; left: 3px; color: var(--accent); font-weight: 700; }
 
-.hero-grid { display: flex; flex-wrap: wrap; gap: 30px 40px; align-items: center; justify-content: center; margin: 34px auto 0; max-width: 980px; text-align: left; }
+.hero-grid { display: flex; flex-wrap: wrap; gap: 30px 40px; align-items: center; justify-content: center; margin: 24px auto 0; max-width: 980px; text-align: left; }
 
 /* Download CTA (flat) */
 .hero-cta { display: flex; flex-direction: column; align-items: stretch; gap: 14px; flex: 0 1 360px; }
@@ -112,6 +112,7 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
 <a class="tb-dl" href="https://github.com/SteveTheKiller/KillerFind/releases/latest/download/KillerFind.exe"><svg viewBox="0 0 24 24"><path d="M11 4h2v7h3l-4 5-4-5h3V4zM5 18h14v2H5z"/></svg><span data-i18n="nav_dl">Download</span></a>
 <span class="tb-spacer"></span>
 <nav class="tb-nav">
+<a href="howto.html" data-i18n="nav_howto">How to</a>
 <a href="technical.html" data-i18n="nav_tech">Technical</a>
 <a href="about.html" data-i18n="nav_about">About</a>
 </nav>
@@ -160,22 +161,21 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
 <img class="hero-icon" src="brand/kf-icon.png" alt="" aria-hidden="true" width="230" height="230">
 <img class="wm-logo" src="brand/killerfind-logo-dark-blue.svg" alt="KillerFind">
 </div>
-<p class="tagline" data-i18n="tagline">A fast, portable file search for Windows that finds files by name and searches inside them across an entire folder tree, with no index to build and no background service to wait for.</p>
+<p class="tagline" data-i18n="tagline">A file browser, a terminal and a text editor in one portable Windows exe. Find files by name or by what is inside them, then open a shell or edit them on the spot.</p>
 <div class="hero-blurbs">
 <div class="blurb"><h3 data-i18n="b1_t">Fully featured</h3><ul class="blurb-list" data-i18n="b1_d">
-<li>Wildcard filename search across the whole tree</li>
-<li>Content search that streams files line by line</li>
-<li>Multicore scanning across every CPU core</li>
-<li>Tabbed searches, each with its own folder and terms</li>
-<li>Filters by extension, date modified, and size</li>
-<li>Search within results to drill down, tab by tab</li>
-<li>Sort and Ctrl+F-filter the results live</li>
-<li>Reveal in Explorer or open the file directly</li>
-<li>Export to a self-contained HTML report or CSV</li>
-<li>Six themes with live accent colors</li>
+<li><b>Browse</b> - list, icon and details views</li>
+<li><b>Search</b> - names or contents, with no index</li>
+<li><b>Terminal</b> - PowerShell or CMD in a tab</li>
+<li><b>Editor</b> - F7, with syntax highlighting</li>
+<li><b>Files</b> - copy, move, rename, delete</li>
+<li><b>Refine</b> - filter, then search within results</li>
+<li><b>Tabs</b> - folders, searches, shells, files</li>
+<li><b>Export</b> - HTML report or CSV</li>
+<li><b>Themes</b> - six, with live accent colors</li>
 </ul></div>
-<div class="blurb"><h3 data-i18n="b2_t">Built from scratch</h3><p data-i18n="b2_d">KillerFind is written in C# and WPF on .NET Framework 4.8, so it runs as one self-contained native .exe with no runtime to install. There is no index and no background agent. It walks the folder tree across all your CPU cores as you search and streams each file one line at a time, so results start appearing the moment you hit search.<br><br>The <a href="technical.html">Technical</a> page has the full breakdown of how the search pipeline works.</p></div>
-<div class="blurb"><h3 data-i18n="b3_t">By a field tech, for field techs</h3><p data-i18n="b3_d">Created during everyday systems administration work at a large MSP, where tracking down the right file, or the right line buried inside a pile of files, was often the slowest part of closing a ticket.</p><p data-i18n="b3_d2">It was built to make that step quick, so you can point it at a folder, find exactly what you need, and get the ticket closed and move on to the next one.</p><br><p data-i18n="b3_d4">Read the story behind it on the <a href="about.html">About</a> page.</p></div>
+<div class="blurb"><h3 data-i18n="b2_t">Built from scratch</h3><p data-i18n="b2_d">KillerFind is written in C# and WPF on .NET Framework 4.8, so it runs as one self-contained native .exe with no runtime to install. No index, no background agent. It walks the tree across all your CPU cores and streams each file a line at a time, so results appear the moment you hit search. The terminal and the editor are built into that same exe.<br><br>The <a href="technical.html">Technical</a> page breaks down how it works, and <a href="howto.html">How to</a> covers every key and gesture.</p></div>
+<div class="blurb"><h3 data-i18n="b3_t">By a field tech, for field techs</h3><p data-i18n="b3_d">Created during everyday systems administration work at a large MSP, where tracking down the right file, or the right line buried in a pile of them, was often the slowest part of closing a ticket.</p><p data-i18n="b3_d2">It was built to make that step quick: point it at a folder, find what you need, close the ticket, move on.</p><br><p data-i18n="b3_d4">Read the story behind it on the <a href="about.html">About</a> page.</p></div>
 </div>
 <div class="hero-grid">
 <div class="hero-cta">
@@ -198,18 +198,24 @@ html[data-theme="light"] .blurb h3, html[data-theme="light"] .feature-card h3 { 
 <section class="features">
 <h2 data-i18n="features_h">What it does</h2>
 <div class="feature-grid">
+<div class="feature-card"><h3 data-i18n="f_browse_t">Browse, not just search</h3><p data-i18n="f_browse_d">List, icon and details views, with a folder tree, an address bar, and back / forward / up on Explorer's own keys. A browsed folder tracks the disk, so a file deleted in another window disappears here too.</p></div>
 <div class="feature-card"><h3 data-i18n="f_fname_t">Filename search</h3><p data-i18n="f_fname_d">Wildcard patterns like <code>*.log</code> or <code>report_*.xlsx</code> matched against every filename in the tree. Results stream in real time with no pre-indexing.</p></div>
 <div class="feature-card"><h3 data-i18n="f_content_t">Content search</h3><p data-i18n="f_content_d">Streams through files line by line without loading them into RAM. Shows matched lines with their line numbers, and skips binary files automatically.</p></div>
 <div class="feature-card"><h3 data-i18n="f_multi_t">Multiple terms</h3><p data-i18n="f_multi_d">Run several filename and content searches in a single pass. Each term is tracked independently with its own match count, so you can see which patterns hit.</p></div>
 <div class="feature-card"><h3 data-i18n="f_filters_t">Include / exclude filters</h3><p data-i18n="f_filters_d">Semicolon-separated patterns narrow or limit the scope by extension or directory segment, for example <code>*.txt;*.log</code> or <code>node_modules</code>.</p></div>
-<div class="feature-card"><h3 data-i18n="f_tabs_t">Tabbed searches</h3><p data-i18n="f_tabs_d">Each tab is its own search with its own folder, terms, filters, and results. Drag tabs to reorder, and optionally restore your open tabs on the next launch.</p></div>
 <div class="feature-card"><h3 data-i18n="f_pipe_t">Search within results</h3><p data-i18n="f_pipe_d">Pipe one search's results into a new tab and search inside just those files. Chain as deep as you like; each pass only touches the survivors of the last.</p></div>
 <div class="feature-card"><h3 data-i18n="f_sortfilter_t">Sort &amp; refine</h3><p data-i18n="f_sortfilter_d">Sort results by name, location, size, or modified date, and press Ctrl+F to filter the list live. Dropdown filters narrow by extension, date, or size.</p></div>
+<div class="feature-card"><h3 data-i18n="f_fileops_t">Real file operations</h3><p data-i18n="f_fileops_d">Copy, move, rename, new folder, and delete to the Recycle Bin or permanently. Copy and move show real progress and stop to ask on a collision, with both files' size and date in front of you.</p></div>
+<div class="feature-card"><h3 data-i18n="f_tabs_t">Tabs</h3><p data-i18n="f_tabs_d">Each tab is its own search, folder, terminal or open file, with its own history and results. Drag tabs to reorder, and optionally restore your open tabs on the next launch.</p></div>
+<div class="feature-card"><h3 data-i18n="f_panes_t">Two panes</h3><p data-i18n="f_panes_d">F11 splits the window side by side or stacked, each pane with its own tabs. Drag files from one to the other, or keep a search on the left and a shell on the right.</p></div>
+<div class="feature-card"><h3 data-i18n="f_term_t">Terminal in a tab</h3><p data-i18n="f_term_d">PowerShell, Windows PowerShell or CMD opens in the folder you are looking at, elevated if you want it. The working directory is tracked live, so one click turns it back into a browsing tab.</p></div>
+<div class="feature-card"><h3 data-i18n="f_editor_t">Editor in a tab</h3><p data-i18n="f_editor_d">Open any file with F7. Syntax highlighting, line numbers, find and go to line, with word wrap on by default. Your encoding and line endings are preserved exactly, never invented.</p></div>
 <div class="feature-card"><h3 data-i18n="f_export_t">HTML &amp; CSV export</h3><p data-i18n="f_export_d">Export results as a self-contained HTML report with matched lines and a built-in theme switcher, or as CSV for spreadsheets. Opens anywhere, no dependencies.</p></div>
+<div class="feature-card"><h3 data-i18n="f_keys_t">Keyboard driven</h3><p data-i18n="f_keys_d">Explorer's conventions where they exist, and single keys rather than chords where they do not. F1 shows every gesture as a list or on a visual keyboard you can hold Ctrl over.</p></div>
 <div class="feature-card"><h3 data-i18n="f_themes_t">Themes &amp; accents</h3><p data-i18n="f_themes_d">Six themes (Dark, Light, Black, Blood, Greed and Cyanotic) with per-theme accent colors, all switchable live.</p></div>
-<div class="feature-card"><h3 data-i18n="f_install_t">Install or run portable</h3><p data-i18n="f_install_d">Drop the .exe anywhere and run it, or use the built-in per-user installer.<br>No admin rights, extra runtimes or dependencies are required.</p></div>
+<div class="feature-card"><h3 data-i18n="f_install_t">Install or run portable</h3><p data-i18n="f_install_d">Drop the .exe anywhere and run it, or install it for just you, or for every user on the PC.<br>No extra runtimes or dependencies are required.</p></div>
 <div class="feature-card"><h3 data-i18n="f_private_t">Private by design</h3><p data-i18n="f_private_d">Everything runs on your machine. No agent is installed, no account is required, no cloud, and no telemetry is sent anywhere.<br>Nothing about your files leaves the device.</p></div>
-<div class="feature-card"><h3 data-i18n="f_lang_t">Eight languages</h3><p data-i18n="f_lang_d">The interface is localized in eight languages (English, Spanish, German, French, Turkish, Chinese Traditional and Simplified, and Bengali), switchable live from the toolbar.</p></div>
+<div class="feature-card"><h3 data-i18n="f_lang_t">Ten languages</h3><p data-i18n="f_lang_d">The interface is localized in ten languages (English, Spanish, German, French, Turkish, Czech, Japanese, Chinese Traditional and Simplified, and Bengali), switchable live from the toolbar.</p></div>
 </div>
 </section>
 

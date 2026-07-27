@@ -11,7 +11,7 @@ var bg={dark:'#333333',light:'#b8b8b8',hc:'#0d0d0d',blood:'#4a1f20',greed:'#0a52
 <meta name="darkreader-lock">
 <title>KillerFind - Technical</title>
 <link rel="canonical" href="https://killerfind.net/technical.html">
-<meta name="description" content="How KillerFind works under the hood: how it walks a folder tree, matches filenames, streams file contents line by line, and returns results without ever building an index.">
+<meta name="description" content="How KillerFind works under the hood: how it walks a folder tree, matches filenames, streams file contents line by line, moves files, hosts a shell and edits text, all without ever building an index.">
 <link rel="icon" type="image/x-icon" href="brand/kf-icon.ico">
 <script defer src="https://koya.thekiller.net/script.js" data-website-id="8f6a2876-9457-45d5-96ca-9008ee743944"></script>
 <link rel="stylesheet" href="kf.css?v=4">
@@ -40,6 +40,7 @@ var bg={dark:'#333333',light:'#b8b8b8',hc:'#0d0d0d',blood:'#4a1f20',greed:'#0a52
 <a class="tb-dl" href="https://github.com/SteveTheKiller/KillerFind/releases/latest/download/KillerFind.exe"><svg viewBox="0 0 24 24"><path d="M11 4h2v7h3l-4 5-4-5h3V4zM5 18h14v2H5z"/></svg><span data-i18n="nav_dl">Download</span></a>
 <span class="tb-spacer"></span>
 <nav class="tb-nav">
+<a href="howto.html" data-i18n="nav_howto">How to</a>
 <a href="technical.html" class="on" data-i18n="nav_tech">Technical</a>
 <a href="about.html" data-i18n="nav_about">About</a>
 </nav>
@@ -89,6 +90,9 @@ var bg={dark:'#333333',light:'#b8b8b8',hc:'#0d0d0d',blood:'#4a1f20',greed:'#0a52
 <a href="#filters" data-i18n="t_nav_filters">Filters &amp; terms</a>
 <a href="#streaming" data-i18n="t_nav_streaming">Streaming &amp; memory</a>
 <a href="#export" data-i18n="t_nav_export">Export</a>
+<a href="#fileops" data-i18n="t_nav_fileops">File operations</a>
+<a href="#terminal" data-i18n="t_nav_terminal">The terminal</a>
+<a href="#editor" data-i18n="t_nav_editor">The editor</a>
 <a href="#themes" data-i18n="t_nav_themes">Themes &amp; languages</a>
 <a href="#glossary" data-i18n="t_nav_glossary">Glossary</a>
 </nav>
@@ -100,7 +104,7 @@ var bg={dark:'#333333',light:'#b8b8b8',hc:'#0d0d0d',blood:'#4a1f20',greed:'#0a52
 <section class="page-hero">
 <span class="page-title" data-i18n="t_hero_kicker">The Tech of</span>
 <img class="wm-logo" src="brand/killerfind-logo-dark-blue.svg" alt="KillerFind">
-<p data-i18n="t_hero_sub">A look under the hood at how KillerFind walks a folder tree, matches filenames, reads inside files, and returns results without ever building an index.</p>
+<p data-i18n="t_hero_sub">A look under the hood at how KillerFind walks a folder tree, matches filenames, reads inside files, moves them around, hosts a shell and edits text, all without ever building an index.</p>
 </section>
 
 <div class="tech-sec" id="stack">
@@ -112,13 +116,15 @@ var bg={dark:'#333333',light:'#b8b8b8',hc:'#0d0d0d',blood:'#4a1f20',greed:'#0a52
 <tr><td data-i18n="t_stack_walk">File walk</td><td data-i18n="t_stack_walk_d">A breadth-first walk built on <code>Directory.EnumerateFiles</code>, yielding files one at a time and skipping folders it cannot read</td></tr>
 <tr><td data-i18n="t_stack_read">Content read</td><td data-i18n="t_stack_read_d">A buffered <code>FileStream</code> and <code>StreamReader</code> that reads each file line by line, with a null-byte check to skip binaries</td></tr>
 <tr><td data-i18n="t_stack_export">Export</td><td data-i18n="t_stack_export_d">A self-contained HTML report or CSV, written directly from the result set, no libraries required</td></tr>
-<tr><td data-i18n="t_stack_pkg">Packaging</td><td data-i18n="t_stack_pkg_d">Single executable. Install it for your user account or run it portable.</td></tr>
+<tr><td data-i18n="t_stack_term">Terminal</td><td data-i18n="t_stack_term_d">A hosted console: the shell you picked runs as a real child process and its output is drawn by the app, with the working directory tracked from the shell's own OSC 7 reports</td></tr>
+<tr><td data-i18n="t_stack_ed">Editor</td><td data-i18n="t_stack_ed_d">AvalonEdit (MIT), vendored as source and compiled into the exe rather than shipped as a DLL, so the app is still one file</td></tr>
+<tr><td data-i18n="t_stack_pkg">Packaging</td><td data-i18n="t_stack_pkg_d">Single executable. Run it portable, or install it for your account or for every user on the PC.</td></tr>
 </table>
 </div>
 
 <div class="tech-sec" id="install">
 <h2 data-i18n="t_install_h">Install &amp; data</h2>
-<p data-i18n="t_install_p1">KillerFind is a single .exe. Put it anywhere and run it as is, or use the built-in installer, which copies the app into your user folder, adds a Start Menu shortcut, and registers a normal Windows uninstall entry just for your account. It needs no admin rights, no .NET runtime, and nothing else installed.</p>
+<p data-i18n="t_install_p1">KillerFind is a single .exe. Put it anywhere and run it as is, or use the built-in installer, which copies the app in, adds a Start Menu shortcut, and registers a normal Windows uninstall entry. Installing for your own account needs no admin rights; installing for every user on the PC asks for permission once and puts it in Program Files, which is the same machine-wide install <code>/silent</code> performs for winget, Chocolatey and RMM tools. Either way there is no .NET runtime and nothing else to install.</p>
 <p data-i18n="t_install_p2">Your settings, such as the last folder you searched and your theme choice, are kept in the registry under your own account rather than in a file next to the .exe, so the program stays a clean single file you can move around. When you run it from outside its installed location, a <b>PORTABLE</b> badge appears so you know which copy you are using.</p>
 </div>
 
@@ -201,9 +207,32 @@ var bg={dark:'#333333',light:'#b8b8b8',hc:'#0d0d0d',blood:'#4a1f20',greed:'#0a52
 <p data-i18n="t_export_p">Any result set can be written to a self-contained HTML report: the matched files, the matched lines with their line numbers, and the search that produced them. The report is a single file that opens in any browser with no dependencies, which makes it easy to attach to a ticket or keep as a record of what was found and where. A CSV export sits alongside it for spreadsheets.</p>
 </div>
 
+<div class="tech-sec" id="fileops">
+<h2 data-i18n="t_fops_h">File operations</h2>
+<p data-i18n="t_fops_p1">Copy and move run on a background worker with a progress card showing the current file and a real byte count, so a large copy never freezes the window. A name collision at the destination stops the worker and asks, showing both files' size and date, with Replace, Skip or Keep both and a "do the same for the rest" checkbox. The worker genuinely waits on that answer rather than copying ahead of it, so nothing is overwritten while the question is still on screen.</p>
+<p data-i18n="t_fops_p2">A move within one volume is performed as a rename, which is a directory-entry change rather than a data copy, so it is instant whatever the size. Across volumes it copies first and deletes the source only once the copy has landed. Sending to the Recycle Bin is the one operation that goes through the Windows shell, because there is no other way in, and that is also what puts it on Explorer's undo stack, so <code>Ctrl+Z</code> in Explorer brings the files back.</p>
+<p data-i18n="t_fops_p3">Drops onto a browsed folder follow Explorer's modifier rules exactly: Shift moves, Ctrl copies, and neither means move within a drive and copy across drives. Files already sitting in the target folder are ignored rather than raising a collision with themselves, and a folder cannot be dropped into its own child.</p>
+</div>
+
+<div class="tech-sec" id="terminal">
+<h2 data-i18n="t_term_h">The terminal</h2>
+<p data-i18n="t_term_p1">A shell tab starts the host you picked as an ordinary child process with the folder you were looking at as its working directory, then draws its output itself. Nothing about the shell is emulated or wrapped: the process is a real PowerShell, Windows PowerShell or cmd.exe, so your modules, aliases and profile all behave the way they do anywhere else.</p>
+<p data-i18n="t_term_p2">The working directory shown on the shell's toolbar comes from the shell reporting it, not from KillerFind guessing. Shells emit an OSC 7 escape sequence naming their current directory, which is parsed out of the stream, so the readout stays correct through a <code>cd</code>, a script or a pushd, and clicking it opens that exact folder as a browsing tab.</p>
+<p data-i18n="t_term_p3">The <code>$PROFILE</code> path is obtained by launching the shell binary with <code>-NoProfile -NonInteractive</code> and asking it for <code>$PROFILE.CurrentUserCurrentHost</code>, then validating that what came back is a single rooted path ending in .ps1. Assuming <code>Documents\PowerShell\</code> instead would be wrong on any machine where OneDrive Known Folder Move has redirected Documents, which on a managed fleet is most of them, and the assumed path is a file the shell will never load.</p>
+<p data-i18n="t_term_p4">The shipped prompt draws powerline separators, a git branch mark and a chevron. No monospaced font Windows ships has any of them, so the exe carries <code>KillerGlyphs.ttf</code>: 26 glyphs, 2,928 bytes, subset from Terminess Nerd Font under the SIL OFL. The renderer asks the font you chose for a glyph and only falls back to that face for the codepoints it does not have, stretching the fallback glyph to the chosen face's cell width so a separator still butts against the next cell. Your font choice is untouched; it just stops being able to fail on those characters. A whole Nerd Font would have cost 2.6 MB, almost all of it icons no prompt draws.</p>
+</div>
+
+<div class="tech-sec" id="editor">
+<h2 data-i18n="t_ed_h">The editor</h2>
+<p data-i18n="t_ed_p1">The editor is AvalonEdit, the component behind SharpDevelop, vendored into the repository as source and compiled into the exe rather than referenced as a DLL. That keeps KillerFind a single portable file and costs about 640 KB. The vendored tree was audited to zero compiler warnings on the way in, without suppressing any of them.</p>
+<p data-i18n="t_ed_p2">Encoding is decided by inspecting the file's bytes, not by the editor's own loader, which hands back a UTF-8 encoding that <i>writes</i> a byte-order mark. Left alone, a plain .txt or .bat would silently grow three bytes at the front the first time it was saved. A BOM that is present is kept, a BOM that is absent stays absent, and bytes that do not decode as UTF-8 fall back to the system ANSI codepage rather than being replaced with U+FFFD. Both the encoding and the line ending are shown under the document, because whether PowerShell 5.1 will read a script depends on both and neither is visible in the text.</p>
+<p data-i18n="t_ed_p3">Syntax definitions for .bat, .reg, .ini, .yaml, .log and .csv are hand-written and embedded, since AvalonEdit ships none of them. Rather than maintain a repainted copy of every definition for each of the six themes, the shipped colors are run through the same contrast guard the terminal uses: hue is preserved and only lightness is moved, far enough to clear a readable contrast ratio against whatever the current background is. The original color is remembered per definition, so switching themes repeatedly cannot ratchet a color away from what its author intended.</p>
+</div>
+
 <div class="tech-sec" id="themes">
 <h2 data-i18n="t_themes_h">Themes &amp; languages</h2>
-<p data-i18n="t_themes_p">KillerFind ships with six themes (Dark, Light, Black, Blood, Greed, and Cyanotic), each with its own set of accent colors, all switchable live from the toolbar. The interface is localized in eight languages: English, Spanish, German, French, Turkish, Chinese in both Traditional and Simplified, and Bengali. Every visible string is resolved through a resource lookup, so switching language reflows the whole window with no restart.</p>
+<p data-i18n="t_themes_p">KillerFind ships with six themes (Dark, Light, Black, Blood, Greed, and Cyanotic), each with its own set of accent colors, all switchable live from the toolbar. The interface is localized in ten languages: English, Spanish, German, French, Turkish, Czech, Japanese, Chinese in both Traditional and Simplified, and Bengali. Every visible string is resolved through a resource lookup, so switching language reflows the whole window with no restart.</p>
+<p data-i18n="t_themes_p2">The whole app also scales. Rolling the wheel over the title-bar wordmark drives a layout transform on the content host, roughly 2% a notch between 70% and 250%, remembered between runs. Because it is a layout transform rather than a render transform, text reflows and re-rasterizes at the new size instead of being stretched as a bitmap, and the title bar and footer stay a fixed size so the wordmark never moves out from under the pointer.</p>
 </div>
 
 <div class="tech-sec" id="glossary">
@@ -215,8 +244,10 @@ var bg={dark:'#333333',light:'#b8b8b8',hc:'#0d0d0d',blood:'#4a1f20',greed:'#0a52
 <tr><td data-i18n="t_g_case">Case sensitivity</td><td data-i18n="t_g_case_d">Whether uppercase and lowercase letters are treated as different. The default is off, so "Error" and "error" both match; a toggle turns it on for both names and content.</td></tr>
 <tr><td data-i18n="t_g_content">Content search</td><td data-i18n="t_g_content_d">Searching inside the text of files for a run of characters, as opposed to searching their names.</td></tr>
 <tr><td data-i18n="t_g_filter">Include / exclude filter</td><td data-i18n="t_g_filter_d">Semicolon-separated patterns that decide which files are searched. Include narrows the pass to matching files; exclude drops matching files and folders.</td></tr>
+<tr><td data-i18n="t_g_fallback">Font fallback</td><td data-i18n="t_g_fallback_d">Drawing a character from a second font when the chosen one has no glyph for it. KillerFind does this per character in the terminal, so a prompt's powerline and git symbols render whatever font you picked.</td></tr>
 <tr><td data-i18n="t_g_index">Index</td><td data-i18n="t_g_index_d">A prebuilt catalog of files that some search tools rely on. KillerFind does not use one, which is why it needs no setup and no waiting for a catalog to build.</td></tr>
 <tr><td data-i18n="t_g_line">Line number</td><td data-i18n="t_g_line_d">The position of a matched line within its file, counted from the top, recorded so you can jump straight to it.</td></tr>
+<tr><td data-i18n="t_g_osc">OSC 7</td><td data-i18n="t_g_osc_d">A short escape sequence a shell emits to announce its current directory. KillerFind reads it, which is why the folder shown on a shell tab's toolbar stays right through a cd or a script.</td></tr>
 <tr><td data-i18n="t_g_portable">Portable</td><td data-i18n="t_g_portable_d">Able to run from anywhere without being installed. KillerFind runs as a loose .exe and shows a PORTABLE badge when it does.</td></tr>
 <tr><td data-i18n="t_g_regex">Regular expression</td><td data-i18n="t_g_regex_d">A precise pattern-matching notation. KillerFind converts each wildcard filename pattern into one internally to test names quickly.</td></tr>
 <tr><td data-i18n="t_g_stream">Streaming</td><td data-i18n="t_g_stream_d">Reading a file or a folder tree a small piece at a time instead of loading it whole, which keeps memory low no matter the size.</td></tr>

@@ -23,8 +23,18 @@ namespace KillerFind.Editing
 {
     internal sealed partial class EditorControl : TextEditor
     {
-        /// <summary>The file this tab is editing. Never empty.</summary>
-        internal string FilePath { get; }
+        /// <summary>
+        /// The file this tab is editing, or empty on a document that has never been saved.
+        /// </summary>
+        /// <remarks>
+        /// Empty is the ONLY thing that makes a document untitled, and it settles on a real path
+        /// the first time it is saved (MainWindow.PromptSaveAs). Every other way in - a result
+        /// row, the profile, a command-line path - arrives with the path already known.
+        /// </remarks>
+        internal string FilePath { get; private set; }
+
+        /// <summary>True on a blank document that has not been given a path yet.</summary>
+        internal bool IsUntitled => FilePath.Length == 0;
 
         /// <summary>This editor's find bar, installed once in the constructor.</summary>
         internal ICSharpCode.AvalonEdit.Search.SearchPanel Find { get; }
@@ -120,6 +130,63 @@ namespace KillerFind.Editing
                 return true;
             }
             catch (Exception ex) { error = ex.Message; return false; }
+        }
+
+        /// <summary>Fill the document from a string rather than from disk, for --demo.</summary>
+        /// <remarks>
+        /// The real loader reads bytes and sniffs the encoding off them, and a fabricated path
+        /// has no bytes to sniff. Highlighting is already chosen in the constructor from the
+        /// extension, so a demo document lights up exactly as the real one would. Never marked
+        /// dirty: a screenshot should not catch the unsaved dot on a file nobody edited.
+        /// </remarks>
+        internal void LoadDemo(string text)
+        {
+            _encoding     = new UTF8Encoding(false);
+            Text          = text;
+            EncodingLabel = Describe(_encoding);
+            NewLineLabel  = DescribeNewLine(Text);
+            Document.UndoStack.ClearAll();   // as in LoadFile - Ctrl+Z must not blank the document
+            IsModified    = false;
+            _wasDirty     = false;
+            CaretOffset   = 0;
+        }
+
+        /// <summary>Start an empty, never-saved document. Nothing to read and nothing to sniff.</summary>
+        /// <remarks>
+        /// Kept apart from LoadFile rather than folded into it as an "empty path" case: LoadFile
+        /// reports failure through an out parameter that every caller has to handle, and there
+        /// is no way for this to fail.
+        /// </remarks>
+        internal void LoadEmpty()
+        {
+            _encoding     = new UTF8Encoding(false);
+            EncodingLabel = Describe(_encoding);
+            NewLineLabel  = DescribeNewLine(Text);
+            Document.UndoStack.ClearAll();
+            IsModified    = false;
+            _wasDirty     = false;
+        }
+
+        /// <summary>
+        /// Give an untitled document the path it was just saved to, and the encoding to write
+        /// it in. Called from the Save As prompt (MainWindow.PromptSaveAs).
+        /// </summary>
+        /// <remarks>
+        /// Re-runs the highlighting lookup, because the extension is only known now: a blank
+        /// buffer saved as .ps1 has to come back colored, or the one thing that says the app has
+        /// an editor in it rather than a text box would only ever work on a file opened from a
+        /// row. ApplyTheme rather than a bare assignment - the shipped .xshd colors are written
+        /// for a white editor and have to be lifted onto this pane (EditorHighlighting).
+        /// </remarks>
+        internal void AdoptPath(string path, Encoding encoding)
+        {
+            FilePath      = path;
+            _encoding     = encoding;
+            EncodingLabel = Describe(encoding);
+
+            var highlighting = ForExtension(path);
+            if (highlighting != null) SyntaxHighlighting = highlighting;
+            ApplyTheme();
         }
 
         /// <summary>Write the file back in the encoding it was read in.</summary>

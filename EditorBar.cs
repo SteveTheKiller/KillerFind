@@ -47,7 +47,9 @@ namespace KillerFind
             if (pane == null) return;
 
             var editor = t.Editor;
-            pane.EditorPathText.Text     = editor.FilePath;
+            // An untitled document has no path to show yet, and an empty strip where the path
+            // goes reads as a bug. It fills in for real the moment the first save picks a name.
+            pane.EditorPathText.Text     = editor.IsUntitled ? Loc("Str_Ed_Untitled") : editor.FilePath;
             pane.EditorEncodingText.Text = editor.EncodingLabel;
             pane.EditorEolText.Text      = editor.NewLineLabel;
 

@@ -268,6 +268,27 @@
     <sys:String x:Key="Str_Fonts_Hint">Roll the wheel over a list to browse faces. Every change applies straight away.</sys:String>
     <sys:String x:Key="Str_Fonts_Unreadable">{0} has no readable letters - keeping the previous font</sys:String>
 
+    <!-- Associations card (Associations.cs, AssociationsCard.cs). Registering is something we
+         can do; DEFAULTING is the user's call in Settings, and the wording has to keep those
+         two apart or the card is promising something Windows will not let it deliver. -->
+    <sys:String x:Key="Str_Assoc_Row">File associations...</sys:String>
+    <sys:String x:Key="Str_Assoc_Title">FILE ASSOCIATIONS</sys:String>
+    <sys:String x:Key="Str_Assoc_Intro">Register KillerFind with Windows so it appears in "Open with", in Settings under Default apps, and on the right-click menu of any folder and drive.</sys:String>
+    <sys:String x:Key="Str_Assoc_What">TEXT TYPES</sys:String>
+    <sys:String x:Key="Str_Assoc_Safe">.bat, .cmd and .reg get an "Edit with KillerFind" row instead. Their double-click still runs or merges them, because quietly changing that is how someone loses an afternoon.</sys:String>
+    <sys:String x:Key="Str_Assoc_AllUsers">Register for all users on this PC</sys:String>
+    <sys:String x:Key="Str_Assoc_NeedsAdmin">Run KillerFind as administrator to register for all users</sys:String>
+    <sys:String x:Key="Str_Assoc_Register">Register</sys:String>
+    <sys:String x:Key="Str_Assoc_Remove">Remove registration</sys:String>
+    <sys:String x:Key="Str_Assoc_OpenSettings">Open Windows default apps...</sys:String>
+    <sys:String x:Key="Str_Assoc_StateNone">Not registered. Windows does not offer KillerFind for any file type yet.</sys:String>
+    <sys:String x:Key="Str_Assoc_StateUser">Registered for your account. Windows will not switch a default for you - pick KillerFind per file type in Settings.</sys:String>
+    <sys:String x:Key="Str_Assoc_StateMachine">Registered for all users on this PC. Windows will not switch a default for you - pick KillerFind per file type in Settings.</sys:String>
+    <sys:String x:Key="Str_Assoc_Portable">This copy is portable. The associations will point at wherever this .exe sits right now, and break if you move or delete it.</sys:String>
+    <sys:String x:Key="Str_Assoc_Registered">Registered with Windows</sys:String>
+    <sys:String x:Key="Str_Assoc_Removed">Registration removed</sys:String>
+    <sys:String x:Key="Str_Assoc_Failed">Windows would not accept that change</sys:String>
+
     <!-- Title-bar caption on an elevated window, beside the wordmark -->
     <sys:String x:Key="Str_Title_Elevated">- Escalated Privileges</sys:String>
     <sys:String x:Key="Str_Ks_MenuBar">hide or show the pane menubar</sys:String>
@@ -352,6 +373,15 @@
     <sys:String x:Key="Str_Ed_Saved">Saved {0}.</sys:String>
     <sys:String x:Key="Str_Ed_SaveFailed">Could not save {0}: {1}</sys:String>
     <sys:String x:Key="Str_Ed_OpenFailed">Could not open {0}: {1}</sys:String>
+
+    <!-- New blank document: the rail's pencil, its tab title, and the first save's dialog -->
+    <sys:String x:Key="Str_TT_TabOverflow">All tabs</sys:String>
+    <sys:String x:Key="Str_TT_ColResize">Drag to resize  -  double-click to reset</sys:String>
+    <sys:String x:Key="Str_TT_NewDoc">New document</sys:String>
+    <sys:String x:Key="Str_Ed_Untitled">untitled</sys:String>
+    <sys:String x:Key="Str_Ed_SaveAs">Save as</sys:String>
+    <sys:String x:Key="Str_Ed_AllFiles">All files</sys:String>
+
     <sys:String x:Key="Str_Dlg_DiscardMsg">Close this file without saving? Your changes will be lost.</sys:String>
     <sys:String x:Key="Str_Btn_Discard">Discard</sys:String>
 

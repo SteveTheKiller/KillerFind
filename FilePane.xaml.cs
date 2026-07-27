@@ -44,10 +44,28 @@ namespace KillerFind
         internal SearchTab Active { get; set; } = null!;   // set before anything reads it
 
         /// <summary>
+        /// Index of the leftmost tab currently in the strip. 0 whenever they all fit.
+        /// </summary>
+        /// <remarks>
+        /// Per pane, like the tabs themselves: the two strips are different widths and hold
+        /// different numbers of tabs, so one window index would have each pane scrolling the
+        /// other. Owned here rather than in Tabs.cs for the same reason every other bit of
+        /// per-pane state is (see ApplyTabWindow).
+        /// </remarks>
+        internal int TabWindow { get; set; }
+
+        /// <summary>
         /// This pane's location row is collapsed (F10, MenuBar.cs). Per pane and not per tab:
         /// the row is pane chrome, and hiding it per tab would make it jump on every switch.
         /// </summary>
         internal bool MenuBarHidden { get; set; }
+
+        // ── Tab strip ────────────────────────────────────────────
+        // These two take the PANE rather than (sender, args): both act on this pane's own strip,
+        // and the window's usual "act on whichever pane has focus" is a guess here - the band can
+        // be resized by a splitter drag that never touched it.
+        private void TabBar_SizeChanged(object s, SizeChangedEventArgs e)  => Owner.TabBarResized(this);
+        private void TabOverflow_Click(object s, RoutedEventArgs e)        => Owner.TabOverflowMenu(this);
 
         // ── Navigation + address bar ─────────────────────────────
         private void NavBack_Click(object s, RoutedEventArgs e)            => Owner.NavBack_Click(s, e);
@@ -78,6 +96,9 @@ namespace KillerFind
         private void ColFolder_Click(object s, RoutedEventArgs e)          => Owner.ColFolder_Click(s, e);
         private void ColSize_Click(object s, RoutedEventArgs e)            => Owner.ColSize_Click(s, e);
         private void ColModified_Click(object s, RoutedEventArgs e)        => Owner.ColModified_Click(s, e);
+        private void ColGrip_MouseDown(object s, MouseButtonEventArgs e)   => Owner.ColGrip_MouseDown(s, e);
+        private void ColGrip_MouseMove(object s, MouseEventArgs e)         => Owner.ColGrip_MouseMove(s, e);
+        private void ColGrip_MouseUp(object s, MouseButtonEventArgs e)     => Owner.ColGrip_MouseUp(s, e);
 
         // ── Pipe + export ────────────────────────────────────────
         private void PipeButton_Click(object s, RoutedEventArgs e)         => Owner.PipeButton_Click(s, e);

@@ -57,15 +57,38 @@ namespace KillerFind.Services
                 if (Cache.TryGetValue(key, out var hit)) return hit;
 
             string target = perFile ? filePath : "x" + ext;
-            var img = shil == SHIL_LARGE ? LoadSmallPath(target, perFile)
-                                         : LoadFromImageList(target, perFile, shil);
+            bool real = perFile;
+
+            // The per-file query asks the shell about a REAL path, and a demo path is not on disk
+            // (DemoFileSystem.cs). The shell answers a question about a path that does not exist
+            // with nothing at all, so every fabricated folder in the tree and every fabricated
+            // folder, .exe, .ico and .lnk row would draw blank - and the blank would be cached.
+            // Substituting something that resolves to the same GENERIC icon fixes the row without
+            // pretending the file is there: a directory that certainly exists for a folder, and
+            // the extension-only synthetic name for the rest. The cache key is still the fake
+            // path, so this costs one shell call per fake path rather than one per row.
+            if (perFile && MainWindow.DemoMode && !OnDisk(filePath, isDirectory))
+            {
+                if (isDirectory) target = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+                else { target = "x" + ext; real = false; }
+            }
+
+            var img = shil == SHIL_LARGE ? LoadSmallPath(target, real)
+                                         : LoadFromImageList(target, real, shil);
 
             // The image list can legitimately come up empty on a locked-down or unusual shell.
             // Falling back to the 32px path is better than a blank tile.
-            if (img == null && shil != SHIL_LARGE) img = LoadSmallPath(target, perFile);
+            if (img == null && shil != SHIL_LARGE) img = LoadSmallPath(target, real);
 
             lock (Cache) Cache[key] = img;
             return img;
+        }
+
+        // Only ever asked in demo mode, so the ordinary path pays nothing for it.
+        private static bool OnDisk(string filePath, bool isDirectory)
+        {
+            try { return isDirectory ? Directory.Exists(filePath) : File.Exists(filePath); }
+            catch { return false; }
         }
 
         private static int ShilFor(int px)

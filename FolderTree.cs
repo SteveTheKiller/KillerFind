@@ -148,6 +148,24 @@ namespace KillerFind
         private static List<FolderNode> EnumerateChildren(string path)
         {
             var list = new List<FolderNode>();
+
+            // Demo mode reads the fabricated machine instead of the disk (DemoFileSystem.cs).
+            // This is the ONLY place children are produced, for every node at every depth, so
+            // one branch here is the whole tree - and it is where the hidden-folder toggle is
+            // already reached out of, so reaching MainWindow again is nothing new. Folders only,
+            // the same as the real branch below: the tree has never shown files. The sort is
+            // repeated rather than shared so the disk path underneath is left exactly as it was.
+            if (MainWindow.DemoMode)
+            {
+                foreach (var e in DemoFs.Children(path))
+                    if (e.IsDir)
+                        list.Add(new FolderNode(System.IO.Path.Combine(path, e.Name), e.Name,
+                                                mayHaveChildren: true));
+
+                list.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.CurrentCultureIgnoreCase));
+                return list;
+            }
+
             try
             {
                 foreach (var d in new DirectoryInfo(path).EnumerateDirectories())
@@ -195,6 +213,19 @@ namespace KillerFind
         private void LoadDriveRoots()
         {
             _treeRoots.Clear();
+
+            // Demo mode roots the tree at the fabricated machine (DemoFileSystem.cs) so a capture
+            // never shows the real volumes, and so the tree, the browse listings and the search
+            // results all describe one place. Branched HERE rather than refilled after the fact:
+            // RefreshTreeAsync and RevealInTree both walk this same collection, and a second
+            // filling would leave them working from whichever version won.
+            if (DemoMode)
+            {
+                foreach (var root in DemoFs.Drives)
+                    _treeRoots.Add(new FolderNode(root, DemoFs.DriveLabel(root), mayHaveChildren: true));
+                return;
+            }
+
             DriveInfo[] drives;
             try { drives = DriveInfo.GetDrives(); }
             catch (IOException) { return; }

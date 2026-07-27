@@ -11,11 +11,10 @@ using KillerFind.Models;
 // PowerShell profile, the results menu - goes through OpenForEditing, so there is a single
 // method that decides what "edit" means and no call site holds an opinion about it.
 //
-// The placement rule is the opposite of the shell's (TerminalTabs.cs). A shell always opens in
-// the SECOND pane because it is a companion to whatever you are looking at; a document IS what
-// you are looking at, so it opens in the pane you asked from. Asking twice for the same file
-// opens nothing new: the tab already holding it comes forward, because two editors over one
-// file is a way to lose work rather than a feature.
+// The placement rule is the same one the shell now follows (TerminalTabs.cs): a new tab in the
+// FOCUSED pane, every time. Nothing here gets to be clever about which pane you meant. Asking
+// twice for the same file opens nothing new: the tab already holding it comes forward, because
+// two editors over one file is a way to lose work rather than a feature.
 namespace KillerFind
 {
     public partial class MainWindow
@@ -56,6 +55,24 @@ namespace KillerFind
         internal void OpenForEditing(string path)
         {
             if (string.IsNullOrWhiteSpace(path)) return;
+
+            // --demo: the results describe a machine that does not exist, so none of the disk
+            // work below can run - and the create-if-missing step would be actively wrong, since
+            // it would write empty files into the REAL folders the fabricated paths name.
+            // DemoTextFor invents a body to match the extension (DemoMode.cs).
+            if (DemoMode)
+            {
+                foreach (var pane in LivePanes())
+                    foreach (var open in pane.Tabs)
+                        if (open.Editor != null &&
+                            string.Equals(open.Editor.FilePath, path, StringComparison.OrdinalIgnoreCase))
+                        { FocusPane(pane); SwitchToTab(open); return; }
+
+                CaptureTab(_active);
+                var demoTab = CreateEditorTab(path, DemoTextFor(path));
+                if (demoTab != null) ActivateTab(demoTab);
+                return;
+            }
 
             try
             {
@@ -100,15 +117,49 @@ namespace KillerFind
             if (tab != null) ActivateTab(tab);
         }
 
+        /// <summary>
+        /// A blank document in a new tab in the focused pane. The rail's pencil, and the only
+        /// way into the editor that does not start from a file.
+        /// </summary>
+        /// <remarks>
+        /// Nothing is written anywhere until you save it, and the first save is the one that
+        /// asks where (SaveActiveEditor) - which is the whole reason FilePath is allowed to be
+        /// empty. Deliberately NOT reused when one is already open: two scratch buffers is a
+        /// normal thing to want, and unlike a file there is no risk of one save clobbering the
+        /// other, because neither of them points anywhere yet.
+        /// </remarks>
+        internal void NewDocument()
+        {
+            CaptureTab(_active);
+            var tab = CreateEditorTab(string.Empty);
+            if (tab != null) ActivateTab(tab);
+        }
+
+        internal void NewDoc_Click(object sender, RoutedEventArgs e) => NewDocument();
+
         // ═══════════════════════════════════════════════════════════
         //  BUILD
         // ═══════════════════════════════════════════════════════════
-        private SearchTab? CreateEditorTab(string path)
+        /// <param name="demoText">
+        /// --demo only. When set, the document is filled from this string instead of read off
+        /// disk, so a screenshot can show a script open with its highlighting without that
+        /// script existing on the machine taking the picture. Every other part of the tab is
+        /// built exactly as a real one, which is the point: what is captured is the real editor.
+        /// </param>
+        private SearchTab? CreateEditorTab(string path, string? demoText = null)
         {
+            // Read off the OUTGOING tab, before CreateTab moves _active: an untitled document
+            // has no folder of its own, and the folder you were standing in is where the Save As
+            // prompt should open.
+            string folder = path.Length == 0 ? _active.CurrentFolder
+                                             : Path.GetDirectoryName(path) ?? string.Empty;
+
             // Loaded BEFORE the tab is registered, so a file that cannot be read leaves no
             // half-built tab behind to close.
             var editor = new Editing.EditorControl(path);
-            if (!editor.LoadFile(out string error))
+            if (path.Length == 0) editor.LoadEmpty();    // untitled - there is nothing to read
+            else if (demoText != null) editor.LoadDemo(demoText);
+            else if (!editor.LoadFile(out string error))
             {
                 SetTabStatusKey(_active, "Str_Ed_OpenFailed", Path.GetFileName(path), error);
                 return null;
@@ -121,8 +172,8 @@ namespace KillerFind
 
             // The address row reads the file's FOLDER rather than "no folder selected", and the
             // nav buttons stay meaningful, exactly as they do on a shell tab.
-            tab.CurrentFolder = Path.GetDirectoryName(path) ?? string.Empty;
-            tab.RootPath      = tab.CurrentFolder;
+            tab.CurrentFolder = folder;
+            tab.RootPath      = folder;
 
             SetEditorTitle(tab);
             editor.DirtyChanged += () => { SetEditorTitle(tab); SyncEditorBar(tab); };
@@ -163,10 +214,11 @@ namespace KillerFind
         /// a close x on its right, and at this size an asterisk reads as part of the file name
         /// instead of as a mark on it.
         /// </remarks>
-        private static void SetEditorTitle(SearchTab t)
+        private void SetEditorTitle(SearchTab t)
         {
             if (t.Editor == null) return;
-            string name = Path.GetFileName(t.Editor.FilePath);
+            string name = t.Editor.IsUntitled ? Loc("Str_Ed_Untitled")
+                                              : Path.GetFileName(t.Editor.FilePath);
             t.Title = t.Editor.Dirty ? ((char)0x2022) + " " + name : name;
         }
 
@@ -223,12 +275,62 @@ namespace KillerFind
             var t = _active;
             if (t.Editor == null) return;
 
+            // An untitled document has nowhere to be written yet, so the first save asks. Backing
+            // out of the dialog cancels the save outright rather than picking somewhere for you.
+            if (t.Editor.IsUntitled)
+            {
+                if (!PromptSaveAs(t.Editor)) return;
+
+                // It has a folder now, so the tab's address row and nav buttons get one too.
+                t.CurrentFolder = Path.GetDirectoryName(t.Editor.FilePath) ?? string.Empty;
+                t.RootPath      = t.CurrentFolder;
+            }
+
             string name = Path.GetFileName(t.Editor.FilePath);
             if (t.Editor.SaveFile(out string error)) SetTabStatusKey(t, "Str_Ed_Saved", name);
             else                                     SetTabStatusKey(t, "Str_Ed_SaveFailed", name, error);
 
             SetEditorTitle(t);
             SyncEditorBar(t);   // EditorBar.cs - the save button drops out of the accent
+        }
+
+        /// <summary>
+        /// Ask where an untitled document should go, and hand the answer to the editor. False
+        /// if the user backed out.
+        /// </summary>
+        /// <remarks>
+        /// The stock shell dialog rather than the app's own FolderPickerDialog: that one picks a
+        /// FOLDER, and this needs a name typed into it as well. It is also the one surface here
+        /// that has to look like every other Save As on the machine.
+        /// </remarks>
+        private bool PromptSaveAs(Editing.EditorControl editor)
+        {
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                Title           = Loc("Str_Ed_SaveAs"),
+                Filter          = Loc("Str_Ed_AllFiles") + "|*.*",
+                OverwritePrompt = true,
+
+                // No silent extension. AddExtension with an all-files filter appends nothing
+                // anyway, and a shell script typed as "deploy" should stay "deploy".
+                AddExtension    = false,
+            };
+
+            // Only when it still exists: a tab restored from a session can name a folder that
+            // has since gone, and the dialog answers a dead InitialDirectory by opening
+            // somewhere of its own choosing with no explanation.
+            string folder = _active.CurrentFolder;
+            if (!string.IsNullOrEmpty(folder) && Directory.Exists(folder)) dlg.InitialDirectory = folder;
+
+            if (dlg.ShowDialog(this) != true) return false;
+
+            // The same BOM rule OpenForEditing uses on a file it creates: PowerShell 5.1 reads a
+            // BOM-less script as the system ANSI codepage, so a .ps1 written without one comes
+            // back as mojibake the first time it prints a box-drawing glyph.
+            bool bom = Array.IndexOf(BomExtensions,
+                                     Path.GetExtension(dlg.FileName).ToLowerInvariant()) >= 0;
+            editor.AdoptPath(dlg.FileName, new UTF8Encoding(bom));
+            return true;
         }
 
         /// <summary>Ask before throwing away unsaved changes. True to go ahead with the close.</summary>
@@ -241,7 +343,10 @@ namespace KillerFind
         {
             if (t.Editor == null || !t.Editor.Dirty) return true;
 
-            var dlg = new ConfirmDialog(Loc("Str_Dlg_DiscardMsg"), t.Editor.FilePath,
+            // The detail line is the path, which an untitled document does not have - and a
+            // blank line under the question reads as a rendering fault rather than as "no file".
+            var dlg = new ConfirmDialog(Loc("Str_Dlg_DiscardMsg"),
+                                        t.Editor.IsUntitled ? Loc("Str_Ed_Untitled") : t.Editor.FilePath,
                                         Loc("Str_Btn_Discard")) { Owner = this };
             dlg.ShowDialog();
             return dlg.Confirmed;

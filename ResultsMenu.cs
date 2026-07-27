@@ -169,7 +169,16 @@ namespace KillerFind
         internal void MenuEdit_Click(object sender, RoutedEventArgs e)
         {
             string? p = MenuFile();
-            if (p == null || !File.Exists(p)) { SetTabStatusKey(_active, "Str_Status_FileOnly"); return; }
+
+            // The existence test is skipped under --demo, where by design nothing in the results
+            // is on disk. Without this, Edit and F7 were dead in the one mode built for showing
+            // the editor off: every fabricated result failed File.Exists and the command stopped
+            // at a status line. OpenForEditing has its own demo branch and never touches disk.
+            if (p == null || (!DemoMode && !File.Exists(p)))
+            {
+                SetTabStatusKey(_active, "Str_Status_FileOnly");
+                return;
+            }
             OpenForEditing(p);
         }
 

@@ -61,20 +61,159 @@ namespace KillerFind
         // between the rows and nothing looks any tighter.
         public double TileHeight => _tileSize + TileExtraH[_density];
 
-        // Details view's "location" column. Zero while browsing, where it repeats the folder you
-        // are already standing in on every single row; restored for search results, which is the
-        // one case where rows come from different places and the column earns its width.
-        //
-        // Lives here rather than on the tab because both the header Grid and every row's Grid
-        // need the same value, and a DataTemplate's Grid can only reach a shared source.
-        private GridLength _locationWidth = SearchLocationWidth;
+        // ═══════════════════════════════════════════════════════════
+        //  ROW ICONS
+        // ═══════════════════════════════════════════════════════════
+        // Ctrl+wheel is the same gesture in all three views, but a row is a line of text with a
+        // picture on it, so it gets its own much shorter ladder: past 64px the icon stops being
+        // a marker and starts setting the row height, which is what the tile grid is for. One
+        // value drives both row layouts, so a size picked in the cards is still there in
+        // details - the way TileSize carries across tabs.
+        public static readonly int[] RowIconSteps = { 16, 20, 24, 32, 40, 48, 64 };
 
-        internal static readonly GridLength SearchLocationWidth = new GridLength(1.3, GridUnitType.Star);
+        private int _rowIconSize = 16;
 
-        public GridLength LocationWidth
+        public int RowIconSize
         {
-            get => _locationWidth;
-            set { if (_locationWidth != value) { _locationWidth = value; Notify(); } }
+            get => _rowIconSize;
+            set
+            {
+                int v = Math.Max(RowIconSteps[0],
+                                 Math.Min(RowIconSteps[RowIconSteps.Length - 1], value));
+                if (v == _rowIconSize) return;
+                _rowIconSize = v;
+                Notify();
+                Notify(nameof(CardIconSize));
+                Notify(nameof(RowIconColumn));
+            }
+        }
+
+        /// <summary>The list card's icon: two px up on the details row's, as it always was.</summary>
+        public int CardIconSize => _rowIconSize + 2;
+
+        /// <summary>
+        /// The details row's icon column - the art plus the gap to the name. Duplicated into
+        /// DetailsHeader, which has to keep the same width or every row sits off its heading.
+        /// </summary>
+        public GridLength RowIconColumn => new GridLength(_rowIconSize + 10);
+
+        // ═══════════════════════════════════════════════════════════
+        //  DETAILS COLUMNS
+        // ═══════════════════════════════════════════════════════════
+        // EVERY column is a pixel width, and a star FILLER sits after the last one to soak up
+        // whatever is left over. That is what a details list is, and copying it exactly is the
+        // point: a divider resizes the column to its LEFT and nothing else, and the columns to
+        // the right of it simply slide. One drag, one column.
+        //
+        // The first two attempts made Name a star column so it would absorb, which meant a drag
+        // always had to move a SECOND column to keep the arithmetic balanced - and when that
+        // second column hit its floor the overflow landed on Name and the whole row shifted
+        // sideways. Both times the complaint was the same and correct: something moved that was
+        // not the thing being dragged. A filler column has no opinion, so nothing has to.
+        //
+        // These live here rather than on the tab because the header Grid and every row's Grid
+        // need the same values, and a DataTemplate's Grid can only reach a shared source. That
+        // is also why the header's ColumnDefinitions and the row template's have to be kept in
+        // step by hand (FilePane.xaml says so in both places).
+
+        internal const double ColMinWidth = 44;
+        internal const double ColMaxWidth = 900;
+
+        internal const double DefaultNameWidth     = 260;
+        internal const double DefaultLocationWidth = 240;
+        internal const double DefaultSizeWidth     = 86;
+        internal const double DefaultModifiedWidth = 128;
+
+        private double _namePx     = DefaultNameWidth;
+        private double _locationPx = DefaultLocationWidth;
+        private double _sizePx     = DefaultSizeWidth;
+        private double _modifiedPx = DefaultModifiedWidth;
+
+        // Zero while browsing, where the location repeats the folder you are already standing in
+        // on every single row; restored for search results, which is the one case where rows come
+        // from different places and the column earns its width. The dragged width is remembered
+        // across that, so coming back from a folder listing does not reset it.
+        private bool _locationHidden;
+
+        public bool LocationHidden
+        {
+            get => _locationHidden;
+            set
+            {
+                if (_locationHidden == value) return;
+                _locationHidden = value;
+                Notify();
+                Notify(nameof(LocationWidth));
+                Notify(nameof(LocationGripVisibility));
+            }
+        }
+
+        /// <summary>The location column's resize grip, which follows the column out of sight.</summary>
+        /// <remarks>
+        /// A Visibility rather than a bool plus a converter: it is the only place in this file
+        /// that would need one, and a converter resource exists to be reused.
+        /// </remarks>
+        public Visibility LocationGripVisibility =>
+            _locationHidden ? Visibility.Collapsed : Visibility.Visible;
+
+        public GridLength NameWidth     => new GridLength(_namePx);
+        public GridLength LocationWidth => _locationHidden ? new GridLength(0) : new GridLength(_locationPx);
+        public GridLength SizeWidth     => new GridLength(_sizePx);
+        public GridLength ModifiedWidth => new GridLength(_modifiedPx);
+
+        /// <summary>Set one column's width, clamped. Returns what it actually became.</summary>
+        /// <remarks>
+        /// Indexed by the column's Grid.Column so the drag handler can carry one number from the
+        /// grip's Tag rather than a switch at every call site.
+        /// </remarks>
+        public double SetColumnWidth(int column, double px)
+        {
+            px = Math.Max(ColMinWidth, Math.Min(ColMaxWidth, px));
+            switch (column)
+            {
+                case 1: _namePx     = px; Notify(nameof(NameWidth));     break;
+                case 2: _locationPx = px; Notify(nameof(LocationWidth)); break;
+                case 3: _sizePx     = px; Notify(nameof(SizeWidth));     break;
+                case 4: _modifiedPx = px; Notify(nameof(ModifiedWidth)); break;
+            }
+            return px;
+        }
+
+        /// <summary>The current width of one column, for seeding a drag.</summary>
+        public double GetColumnWidth(int column) => column switch
+        {
+            1 => _namePx,
+            2 => _locationPx,
+            3 => _sizePx,
+            _ => _modifiedPx,
+        };
+
+        /// <summary>Back to the shipped width. Double-clicking a divider does this.</summary>
+        public double DefaultColumnWidth(int column) => column switch
+        {
+            1 => DefaultNameWidth,
+            2 => DefaultLocationWidth,
+            3 => DefaultSizeWidth,
+            _ => DefaultModifiedWidth,
+        };
+
+        /// <summary>
+        /// What every column EXCEPT <paramref name="column"/> is taking up right now.
+        /// </summary>
+        /// <remarks>
+        /// The drag uses this to stop the columns growing past the pane. Without a ceiling the
+        /// last one runs off the right edge and is simply cut off - the rows are not horizontally
+        /// scrollable, so anything past the edge is gone rather than reachable. A hidden location
+        /// column counts as nothing, which is what it is.
+        /// </remarks>
+        public double TotalWidthExcept(int column)
+        {
+            double t = 0;
+            if (column != 1) t += _namePx;
+            if (column != 2 && !_locationHidden) t += _locationPx;
+            if (column != 3) t += _sizePx;
+            if (column != 4) t += _modifiedPx;
+            return t;
         }
 
         // ═══════════════════════════════════════════════════════════
@@ -257,6 +396,17 @@ namespace KillerFind
                              CultureInfo.InvariantCulture, out int px))
                 ResultsViewState.Current.TileSize = px;
 
+            if (int.TryParse(Services.ThemeManager.GetSetting("ResultsRowIconSize"), NumberStyles.Integer,
+                             CultureInfo.InvariantCulture, out int rowPx))
+                ResultsViewState.Current.RowIconSize = rowPx;
+
+            // Dragged details-column widths. Each restored independently, so one bad or missing
+            // value leaves the others alone rather than resetting the whole row.
+            foreach (int col in new[] { 1, 2, 3, 4 })
+                if (double.TryParse(Services.ThemeManager.GetSetting(ColSettingKey(col)), NumberStyles.Float,
+                                    CultureInfo.InvariantCulture, out double w))
+                    ResultsViewState.Current.SetColumnWidth(col, w);
+
             ApplyResultsView();
         }
 
@@ -282,6 +432,21 @@ namespace KillerFind
         // as the folder picker's ApplyView, which is where the pattern comes from.
         private void ApplyResultsViewToPane()
         {
+            // Captured HERE and not only in InitResultsView, because this runs first and would
+            // otherwise destroy the thing InitResultsView is trying to capture.
+            //
+            // The card template is declared inline on the ListBox in FilePane.xaml, so the only
+            // reference to it is the one the pane starts with. ActivateTab reaches this method
+            // (via ApplyTerminalView -> ApplyPaneToolbarMode) during the Loaded handler, several
+            // lines BEFORE InitResultsView runs - and at that point _viewMode is still its field
+            // default of 0, so the assignment below wrote a null _listTemplate over the real
+            // template. InitResultsView then captured the null as "the list template", and every
+            // later switch to list view rendered rows as KillerFind.Models.SearchResult in the
+            // default black, because a ListBox with no ItemTemplate falls back to ToString().
+            // It survived this long because startup in icons or details view looks perfectly
+            // fine; only switching TO list view shows it.
+            _listTemplate ??= Pane.ResultsList.ItemTemplate;
+
             Pane.ResultsList.ItemsPanel = (ItemsPanelTemplate)Pane.ResultsList.FindResource(
                 _viewMode == 1 ? "PanelWrap" : "PanelStack");
 
@@ -355,27 +520,146 @@ namespace KillerFind
         // between them would just be resampling the same bitmap.
         internal void ResultsList_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
         {
-            if (_viewMode != 1) return;   // only the tile grid has a size to change
             if ((System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Control) == 0) return;
 
-            var steps = ResultsViewState.Steps;
-            int i = Array.IndexOf(steps, ResultsViewState.Current.TileSize);
+            // Each view steps its OWN ladder. The tile grid's art is the content, so it climbs to
+            // 256; a card or a details row is text with a marker beside it, so it stops at 64.
+            // Both are the same gesture in the same place, which is the part that matters.
+            var  state = ResultsViewState.Current;
+            bool tiles = _viewMode == 1;
+            var  steps = tiles ? ResultsViewState.Steps : ResultsViewState.RowIconSteps;
+            int  now   = tiles ? state.TileSize : state.RowIconSize;
+
+            int i = Array.IndexOf(steps, now);
             if (i < 0)
             {
                 // Restored from a setting that is not on the ladder: snap to the nearest step.
                 i = 0;
                 for (int k = 1; k < steps.Length; k++)
-                    if (Math.Abs(steps[k] - ResultsViewState.Current.TileSize) <
-                        Math.Abs(steps[i] - ResultsViewState.Current.TileSize)) i = k;
+                    if (Math.Abs(steps[k] - now) < Math.Abs(steps[i] - now)) i = k;
             }
 
             i = Math.Max(0, Math.Min(steps.Length - 1, i + (e.Delta > 0 ? 1 : -1)));
-            ResultsViewState.Current.TileSize = steps[i];
 
-            Services.ThemeManager.SetSetting("ResultsTileSize",
+            if (tiles) state.TileSize    = steps[i];
+            else       state.RowIconSize = steps[i];
+
+            Services.ThemeManager.SetSetting(tiles ? "ResultsTileSize" : "ResultsRowIconSize",
                 steps[i].ToString(CultureInfo.InvariantCulture));
 
             e.Handled = true;   // do not also scroll the list
+        }
+
+        // ── Column resizing (details view) ───────────────────────
+        // Hand-rolled rather than GridSplitter. A splitter resizes the grid it is IN, and the
+        // header and the rows are separate Grids in separate templates that merely agree on
+        // their widths - so a splitter in the header would have moved the header's columns and
+        // left every row where it was. Writing the widths to the shared state instead moves
+        // both, and moves the second pane's rows too, which is the behavior you want anyway:
+        // the columns are a view preference, not a property of one listing.
+        //
+        // ONE RULE: a divider resizes the column to its LEFT and NOTHING ELSE. The columns to
+        // its right keep the widths they had and simply slide over. That is what a divider does
+        // in Explorer, and it is the only rule under which the thing that moves is always the
+        // thing you were pointing at.
+        //
+        // Two earlier attempts had Name as a star column so it could absorb, which forced every
+        // drag to move a SECOND column to keep the sum right - and when that one hit its floor
+        // the remainder went to Name and the whole row shifted. That is why a drag on the right
+        // of Size appeared to widen Location: nothing was wrong with the wiring, the model was
+        // wrong. Every column carries its own width now and a star FILLER after the last one
+        // takes the slack, so no column has to answer for another.
+        //
+        // The grip's Tag is the column it resizes, which is also the column it sits inside.
+
+        private int    _colDrag = -1;   // column being resized, -1 for none
+        private double _colDragX;       // x where the drag started
+        private double _colDragStart;   // that column's width at the start
+
+        private static string ColSettingKey(int column) => column switch
+        {
+            1 => "ResultsColName",
+            2 => "ResultsColLocation",
+            3 => "ResultsColSize",
+            _ => "ResultsColModified",
+        };
+
+        private static void SaveColumn(int column)
+            => Services.ThemeManager.SetSetting(ColSettingKey(column),
+                   ResultsViewState.Current.GetColumnWidth(column).ToString("0.#", CultureInfo.InvariantCulture));
+
+        /// <summary>
+        /// How wide the dragged column is allowed to get before it would push the last one off
+        /// the right edge.
+        /// </summary>
+        /// <remarks>
+        /// The rows do not scroll horizontally, so anything past the pane's edge is not
+        /// off-screen, it is gone. The ceiling is what the header actually has minus what every
+        /// other column is using, with a little kept back so the filler never reaches zero and
+        /// the last heading always has somewhere to sit.
+        /// </remarks>
+        private double MaxWidthFor(int column)
+        {
+            double band = Pane.DetailsHeader.ActualWidth;
+            if (band <= 0) return ResultsViewState.ColMaxWidth;   // not measured yet
+
+            double icon = ResultsViewState.Current.RowIconColumn.Value;
+            double room = band - icon - 48;                       // padding + the filler's floor
+            return Math.Max(ResultsViewState.ColMinWidth,
+                            room - ResultsViewState.Current.TotalWidthExcept(column));
+        }
+
+        internal void ColGrip_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is not FrameworkElement grip) return;
+            if (!int.TryParse(grip.Tag as string, NumberStyles.Integer, CultureInfo.InvariantCulture,
+                              out int column)) return;
+
+            var state = ResultsViewState.Current;
+
+            // Double-click a divider to put its column back to the width it shipped with. There
+            // is no content-measuring auto-fit here: the list is virtualized and can hold six
+            // figures of rows, so "fit the widest value" would mean walking every one of them.
+            if (e.ClickCount == 2)
+            {
+                state.SetColumnWidth(column, state.DefaultColumnWidth(column));
+                SaveColumn(column);
+                e.Handled = true;
+                return;
+            }
+
+            _colDrag      = column;
+            _colDragStart = state.GetColumnWidth(column);
+            _colDragX     = e.GetPosition(this).X;
+
+            // Captured on the GRIP, not the window: the pointer leaves a 6px strip immediately
+            // and without capture the very first move would be delivered to whatever it crossed.
+            grip.CaptureMouse();
+            e.Handled = true;
+        }
+
+        internal void ColGrip_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (_colDrag < 0 || sender is not FrameworkElement grip || !grip.IsMouseCaptured) return;
+
+            // Against the drag's own start, never the previous move. Accumulating deltas drifts
+            // once the width clamps: the pointer keeps travelling past the limit and the column
+            // then has to be dragged all the way back before it moves at all.
+            double dx = e.GetPosition(this).X - _colDragX;
+
+            double want = Math.Min(_colDragStart + dx, MaxWidthFor(_colDrag));
+            ResultsViewState.Current.SetColumnWidth(_colDrag, want);
+        }
+
+        internal void ColGrip_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is FrameworkElement grip) grip.ReleaseMouseCapture();
+            if (_colDrag < 0) return;
+
+            // Written once at the end rather than on every move - a drag is a hundred mouse
+            // events and each Set would be a settings write.
+            SaveColumn(_colDrag);
+            _colDrag = -1;
         }
     }
 }

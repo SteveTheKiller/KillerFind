@@ -22,7 +22,7 @@ namespace KillerFind
             ("Search", "Enter",          "Str_Ks_Run"),
             ("Search", "Ctrl+E",         "Str_Ks_FocusSearch"),
             ("Search", "Ctrl+Shift+A",   "Str_Ks_AddTerm"),
-            ("Search", "F7",             "Str_Ks_AddFilter"),
+            ("Search", "Shift+F7",       "Str_Ks_AddFilter"),
             ("Search", "Alt+C",          "Str_Ks_CaseSensitive"),
             ("Search", "Ctrl+F",         "Str_Ks_FilterResults"),
             ("Search", "Ctrl+Shift+F",   "Str_Ks_Pipe"),
@@ -52,12 +52,16 @@ namespace KillerFind
             ("File",   "F9",             "Str_Ks_ExportHtml"),
             ("File",   "Shift+F9",       "Str_Ks_ExportCsv"),
 
-            // Shells open as tabs in the opposite pane, so they are grouped with tabs rather
+            // Shells open as tabs in the focused pane, so they are grouped with tabs rather
             // than given a category of their own - one more heading for three rows would cost
             // a Str_Ks_Cat key in ten locale files to say the same thing.
-            ("Tabs",   "F8",             "Str_Ks_Shell"),
+            // Ctrl+` and Ctrl+Alt+` are real aliases in the handler (MainWindow.xaml.cs), kept
+            // because VS Code and Windows Terminal both train that chord. Listed on the same row
+            // rather than their own, the way Ctrl+L / F4 and Alt+Left / Right already are - a
+            // second row would need a second locale key to say the same sentence twice.
+            ("Tabs",   "F8 / Ctrl+`",    "Str_Ks_Shell"),
             ("Tabs",   "Shift+F8",       "Str_Ks_ShellCmd"),
-            ("Tabs",   "Ctrl+F8",        "Str_Ks_ShellAdmin"),
+            ("Tabs",   "Ctrl+F8 / Ctrl+Alt+`", "Str_Ks_ShellAdmin"),
 
             ("Edit",   "Ctrl+A",         "Str_Ks_SelectAll"),
             ("Edit",   "Ctrl+X / C / V", "Str_Ks_CutCopyPaste"),

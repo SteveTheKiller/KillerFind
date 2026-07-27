@@ -80,6 +80,28 @@ namespace KillerFind
                 string.Equals(a, "--demo", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(a, "/demo",  StringComparison.OrdinalIgnoreCase));
 
+            // A bare path on the command line. Explorer's "Open in KillerFind" verbs and the
+            // file associations (Associations.cs) both launch us as `KillerFind.exe "<path>"`,
+            // and without this the app would come up on Home and quietly ignore what it was
+            // asked to open. Collected here, consumed once the window exists - a folder needs
+            // the tree built before it can be navigated, and a file needs an editor tab.
+            //
+            // --shell and --cwd each take a VALUE, so their value is skipped rather than
+            // treated as a path; otherwise an elevated relaunch would open its own working
+            // directory a second time as a browse tab.
+            for (int i = 0; i < e.Args.Length; i++)
+            {
+                string a = e.Args[i];
+                if (a.Length == 0) continue;
+                if (a[0] == '-' || a[0] == '/')
+                {
+                    if (string.Equals(a, "--shell", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(a, "--cwd",   StringComparison.OrdinalIgnoreCase)) i++;
+                    continue;
+                }
+                KillerFind.MainWindow.StartupPaths.Add(a);
+            }
+
             // Persist the theme/accent choice in HKCU so it survives restarts.
             Services.ThemeManager.GetSetting = GetSetting;
             Services.ThemeManager.SetSetting = SetSetting;
@@ -207,6 +229,11 @@ namespace KillerFind
                     @"Software\Microsoft\Windows\CurrentVersion\Uninstall\KillerFind", throwOnMissingSubKey: false);
             }
             catch { }
+
+            // The per-user copy is going away, so its associations have to go with it. A
+            // ProgID left pointing at a deleted exe is a dead row in Open With that nothing
+            // in the UI would ever offer to clean up. (Associations.cs)
+            UnregisterAssociations(machine: false);
         }
 
         // ============================================================
@@ -346,6 +373,13 @@ namespace KillerFind
             try { File.Delete(StartMenuLnk); } catch { }
             try { Directory.Delete(StartMenuDir, recursive: false); } catch { }
             try { File.Delete(DesktopLnk); } catch { }
+
+            // Associations first, while the keys they hang off still exist. Both scopes are
+            // attempted: the HKLM half is a no-op unless this uninstall was launched elevated
+            // from Add/Remove Programs, which is the only way a machine-wide install goes.
+            // (Associations.cs)
+            UnregisterAssociations(machine: false);
+            UnregisterAssociations(machine: true);
 
             try { Registry.CurrentUser.DeleteSubKeyTree(RegKey); } catch { }
             try { Registry.CurrentUser.DeleteSubKeyTree(

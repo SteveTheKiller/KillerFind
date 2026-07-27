@@ -124,6 +124,15 @@
                                            FontSize="11.5" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
+                        <Button x:Name="AssocRowBtn" Click="AssocRow_Click"
+                                Style="{StaticResource MenuRowButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE71B;" FontFamily="Segoe MDL2 Assets" FontSize="12"
+                                           Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource Str_Assoc_Row}" FontFamily="Consolas"
+                                           FontSize="11.5" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                 </Border>
             </Popup>
@@ -438,6 +447,14 @@
                             FontSize="12" Margin="0,0,0,10" Click="DualPane_Click"
                             MouseRightButtonUp="DualPaneOrient_Click"
                             ToolTip="{DynamicResource Str_TT_DualPane}"/>
+                    <!-- E70F (pencil): a blank document in a new tab in the FOCUSED pane, the
+                         same glyph an editor tab carries (EditorTabs.GlyphEdit). No shortcut of
+                         its own - F7 is the editor key and it belongs to the row you have
+                         selected; this is the one way in that starts from nothing, and nothing
+                         is written to disk until the first save asks where it goes. -->
+                    <Button x:Name="NewDocRailBtn" Style="{StaticResource RailButton}" Content="&#xE70F;"
+                            FontSize="12" Margin="0,0,0,10" Click="NewDoc_Click"
+                            ToolTip="{DynamicResource Str_TT_NewDoc}"/>
                     <!-- E756 (command prompt): opens a PowerShell here on a left click, and
                          right-click picks the shell. Four rows rather than four rail icons -
                          the rail is family furniture and a column of near-identical prompts
@@ -1119,6 +1136,59 @@
 
                     <TextBlock Text="{DynamicResource Str_Fonts_Hint}" Foreground="{DynamicResource DimTextBrush}"
                                FontSize="10.5" TextWrapping="Wrap" Margin="0,14,0,0"/>
+                </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ══════════ ASSOCIATIONS OVERLAY (register with the Windows shell) ══════════ -->
+        <!-- Registration and DEFAULTING are two different things and the card has to keep them
+             apart. This button writes the ProgID, the Open With hints and the folder verbs;
+             only Windows can promote KillerFind to the default, and only when the user says so
+             in Settings. See Associations.cs for why forging UserChoice is not on the table. -->
+        <Grid x:Name="AssocOverlay" Grid.RowSpan="3" Panel.ZIndex="9000" Visibility="Collapsed"
+              Background="#88000000" MouseLeftButtonDown="AssocOverlay_Click">
+            <Border Width="460" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource CardBorderBrush}"
+                    BorderThickness="1" CornerRadius="8" MouseLeftButtonDown="AssocCard_Click">
+                <Border.Effect><DropShadowEffect Color="Black" BlurRadius="30" ShadowDepth="6" Direction="270" Opacity="0.6"/></Border.Effect>
+                <Grid>
+                <Border IsHitTestVisible="False" CornerRadius="7" Background="{DynamicResource GrainTileBrush}" Opacity="{DynamicResource GrainOpacity}"/>
+                <StackPanel Margin="24,20">
+                    <Grid Margin="0,0,0,14">
+                        <TextBlock Text="{DynamicResource Str_Assoc_Title}" Style="{StaticResource SectionHeader}"
+                                   FontSize="13" Margin="0" VerticalAlignment="Center"/>
+                        <Button Content="&#xE8BB;" Click="AssocClose_Click" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                Width="30" Height="26" FontSize="10" FontFamily="Segoe MDL2 Assets"
+                                Style="{StaticResource DangerButton}" BorderThickness="0"/>
+                    </Grid>
+
+                    <TextBlock Text="{DynamicResource Str_Assoc_Intro}" Foreground="{DynamicResource MutedTextBrush}"
+                               FontSize="11.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
+
+                    <TextBlock Text="{DynamicResource Str_Assoc_What}" Foreground="{DynamicResource DimTextBrush}"
+                               FontFamily="Consolas" FontSize="10" Margin="0,0,0,4"/>
+                    <TextBlock x:Name="AssocExtList" Foreground="{DynamicResource MutedTextBrush}"
+                               FontFamily="Consolas" FontSize="10.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
+
+                    <TextBlock Text="{DynamicResource Str_Assoc_Safe}" Foreground="{DynamicResource DimTextBrush}"
+                               FontSize="10.5" TextWrapping="Wrap" Margin="0,0,0,14"/>
+
+                    <CheckBox x:Name="AssocAllUsers" Content="{DynamicResource Str_Assoc_AllUsers}"
+                              FontSize="11.5" Margin="0,0,0,14"/>
+
+                    <TextBlock x:Name="AssocStatus" Foreground="{DynamicResource MutedTextBrush}"
+                               FontSize="11" TextWrapping="Wrap" Margin="0,0,0,12"/>
+
+                    <Button x:Name="AssocRegisterBtn" Click="AssocRegister_Click"
+                            Style="{StaticResource OutlineButton}" Height="30" Margin="0,0,0,8"
+                            Content="{DynamicResource Str_Assoc_Register}"/>
+                    <Button x:Name="AssocRemoveBtn" Click="AssocRemove_Click"
+                            Style="{StaticResource OutlineButton}" Height="30" Margin="0,0,0,8"
+                            Content="{DynamicResource Str_Assoc_Remove}"/>
+                    <Button x:Name="AssocSettingsBtn" Click="AssocSettings_Click"
+                            Style="{StaticResource OutlineButton}" Height="30"
+                            Content="{DynamicResource Str_Assoc_OpenSettings}"/>
                 </StackPanel>
                 </Grid>
             </Border>

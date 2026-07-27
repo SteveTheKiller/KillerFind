@@ -35,12 +35,12 @@ Renamed to "KillerGlyphs" deliberately. The OFL requires that a Modified
 Version not be distributed under the original name, and this is very much a
 modified version - twenty-six glyphs out of eleven thousand.
 
-TODO before release
--------------------
-The OFL requires the full license text to travel with the font. Drop a verbatim
-copy of the SIL Open Font License 1.1 in this folder as KillerGlyphs-OFL.txt -
-the copy in the Nerd Fonts release you installed Terminess from will do, or
-https://openfontlicense.org/documents/OFL.txt.
+License text
+------------
+KillerGlyphs-OFL.txt, beside this file. The body was lifted from the name table
+of SIL's own Gentium Basic fonts, which are installed on this machine - eight
+files carrying it byte for byte identically, which is what makes it trustworthy
+as the canonical wording rather than one font's variant of it.
 
 Rebuilding the subset
 ---------------------

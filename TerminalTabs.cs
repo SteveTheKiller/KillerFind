@@ -5,22 +5,24 @@ using KillerFind.Terminal;
 
 // Shell tabs, and where they land. Partial of MainWindow.
 //
-// The placement rule is the point of the feature: a shell always opens in the SECOND pane, and
-// opens that pane if it is closed. Every shell after it joins the same pane as another tab.
+// The placement rule: a shell opens as a tab in the pane that HAS FOCUS, like every other tab
+// the app makes. Nothing is moved, nothing is split, and the tab appears where you were already
+// looking.
 //
-// Always the same side, not "whichever pane is not focused". Opening it in the current pane
-// would cover the folder you wanted the shell FOR; opening it opposite the focus sounds
-// smarter and is worse, because the terminal then lands left or right depending on where you
-// last clicked. Folders left, shells right, every time is a layout you stop having to think
-// about - and it is the arrangement you were going to make by hand anyway.
+// This replaced a fixed "always the second pane, open it if it is shut" rule. That one read
+// well - folders left, shells right, a layout you stop thinking about - but it meant a keypress
+// could tear a window into two panes you had deliberately closed, and it always moved your
+// focus to the other side of the window to do it. A shortcut whose effect depends on which pane
+// it decides to commandeer is a shortcut you have to watch. Predictable beats tidy: if you want
+// the shell beside a folder, F11 and put it there.
 namespace KillerFind
 {
     public partial class MainWindow
     {
         /// <summary>
-        /// Open a shell for <paramref name="folder"/> in the second pane.
+        /// Open a shell for <paramref name="folder"/> as a tab in the focused pane.
         /// </summary>
-        internal void OpenShell(TerminalProfile profile, string? folder = null, bool inPlace = false)
+        internal void OpenShell(TerminalProfile profile, string? folder = null)
         {
             folder = Resolve(folder);
 
@@ -39,7 +41,13 @@ namespace KillerFind
                 return;
             }
 
-            var target = inPlace ? Pane : ShellPane();
+            // The pane you are IN. A shell used to be forced into the right-hand pane, opening
+            // it if it was shut, on the theory that folders left / shells right is a habit you
+            // can build. In practice it meant a key you pressed while working in one pane threw
+            // a tab into the other one and moved your focus there, and it could split a window
+            // open that you had deliberately closed. Predictable beats tidy: every shortcut that
+            // makes a tab now makes it where you are standing.
+            var target = Pane;        // Panes.cs - the focused pane
             var tab = CreateTerminalTabIn(target, profile, folder);
             if (tab == null) return;
 
@@ -52,14 +60,13 @@ namespace KillerFind
         /// no menubar, wide enough for the Killer scripts.
         /// </summary>
         /// <remarks>
-        /// It opens in the pane that is already there rather than splitting. The second-pane
-        /// rule exists to keep a folder and its shell side by side; this window was started to
-        /// run one shell and has no folder to sit beside, so a split would only halve the width
-        /// of the thing you asked for.
+        /// It opens in the pane that is already there, which is now simply what OpenShell does
+        /// for everything. This used to need an explicit inPlace flag to opt out of the forced
+        /// second pane; that rule is gone, so the flag went with it.
         /// </remarks>
         internal void OpenStartupShell(TerminalProfile profile, string? folder)
         {
-            OpenShell(profile, folder, inPlace: true);
+            OpenShell(profile, folder);
 
             // Just the shell. The pane seeds itself with a folder tab at startup so the strip is
             // never empty (Tabs.cs), which is right for an ordinary window and wrong for this
@@ -125,27 +132,6 @@ namespace KillerFind
                 Left  = Math.Max(SystemParameters.WorkArea.Left,
                                  Left - (Width - ActualWidth) / 2);
             }), System.Windows.Threading.DispatcherPriority.Loaded);
-        }
-
-        /// <summary>
-        /// The pane a shell opens in: always the SECOND one, opened first if it is closed.
-        /// </summary>
-        /// <remarks>
-        /// This used to be "whichever pane does not have focus", which was clever and wrong.
-        /// It meant a shell landed left or right depending on where you happened to have
-        /// clicked, so the terminal moved around the window between one invocation and the next
-        /// and a second shell could split your shells across both panes. A fixed side is
-        /// something you can build a habit on: folders left, shells right, every time.
-        /// </remarks>
-        private FilePane ShellPane()
-        {
-            if (!DualPane)
-            {
-                // No second pane yet, so make one. It seeds itself with a folder tab, which is
-                // fine: the shell tab joins it and becomes the active one.
-                ToggleDualPane();     // DualPane.cs
-            }
-            return RightPane;
         }
 
         private string Resolve(string? folder)
@@ -246,6 +232,44 @@ namespace KillerFind
         }
 
         // ═══════════════════════════════════════════════════════════
+        //  DEMO
+        // ═══════════════════════════════════════════════════════════
+        /// <summary>
+        /// A shell tab showing canned output, with no process behind it (--demo, DemoMode.cs).
+        /// </summary>
+        /// <remarks>
+        /// Built here rather than through OpenShell on purpose. OpenShell publishes the bundled
+        /// modules and, for an elevated profile, relaunches the whole application behind a UAC
+        /// prompt; neither belongs in the middle of a screenshot session. Resolve is skipped for
+        /// the same reason: it falls back to the user's real home folder for any path that is not
+        /// a directory, and every demo path is fabricated, so it would put the actual machine's
+        /// home on the shell bar - exactly the leak demo mode exists to prevent.
+        ///
+        /// The pty-driven wiring CreateTerminalTabIn does - the title from OSC 0/2, the folder
+        /// from OSC 7, the exit glyph - is left off because nothing here will ever raise it.
+        /// </remarks>
+        private SearchTab CreateDemoTerminalTab(string folder, string canned)
+        {
+            var profile = TerminalProfile.PowerShell();
+
+            var tab = CreateTab();            // Tabs.cs - registers it in the current pane
+            var term = new TerminalControl(profile.Skin);
+            tab.Term = term;
+            tab.TabGlyph = profile.Glyph;
+            tab.Title = profile.Name;
+            tab.IsBrowsing = false;
+
+            // The working-directory readout is driven purely off these (TerminalBar.cs), so a
+            // fabricated folder on the tab is the whole of what the shell bar reads.
+            tab.CurrentFolder = folder;
+            tab.RootPath = folder;
+
+            term.StartDemo(canned);
+            SyncTerminalBar(tab);             // TerminalBar.cs
+            return tab;
+        }
+
+        // ═══════════════════════════════════════════════════════════
         //  ACTIVATION
         // ═══════════════════════════════════════════════════════════
         /// <summary>
@@ -279,10 +303,19 @@ namespace KillerFind
         // Everything on the location row that acts on a LISTING. Nav and the address bar are
         // deliberately absent: a shell has a working directory, so back, forward, up and the
         // path are all still meaningful there. Sorting a shell is not.
+        //
+        // DetailsHeader is not on the location row - it is the column-heading band directly
+        // above the results list - but it belongs here for the same reason: its visibility was
+        // decided by the VIEW MODE alone, which knows nothing about what kind of tab is on
+        // screen, so switching to a shell or a document while in details view left a row of
+        // name / location / size / modified sort buttons sitting on top of a terminal or an
+        // empty document. Forced Visible on the way back like the rest of these, then corrected
+        // by ApplyResultsView below, which is the one place that owns whether it belongs.
         private static readonly string[] ListingOnlyTools =
         {
             "ViewListBtn", "ViewIconsBtn", "ViewDetailsBtn", "SortBtn", "SortDirButton",
             "ExpandAllButton", "ShowHiddenBtn", "FoldersTopBtn", "PipeBtn", "ExportBtn",
+            "DetailsHeader",
         };
 
         /// <summary>
